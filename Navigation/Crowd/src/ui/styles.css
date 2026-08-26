@@ -1,0 +1,81 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #dbeafe;
+  background: #07101d;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at 25% 0%, #11243f 0, #07101d 42rem); }
+button, input, select { font: inherit; }
+button, select, input[type="number"] { color: #dbeafe; background: #111d2e; border: 1px solid #2b3b52; border-radius: 8px; }
+button { padding: 9px 13px; cursor: pointer; transition: border-color 150ms, background 150ms, transform 150ms; }
+button:hover { border-color: #60a5fa; background: #17263b; }
+button:active { transform: translateY(1px); }
+button.primary { color: #07101d; border-color: #38bdf8; background: #60a5fa; font-weight: 750; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #2dd4bf; outline-offset: 2px; }
+
+.topbar { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 24px; border-bottom: 1px solid rgba(96,165,250,.18); background: rgba(5, 12, 23, .72); backdrop-filter: blur(16px); }
+.eyebrow { margin: 0 0 4px; color: #38bdf8; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .18em; }
+h1 { margin: 0; font-size: clamp(19px, 2vw, 27px); letter-spacing: -.03em; }
+.run-status { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 8px; }
+.run-status span { width: 8px; height: 8px; border-radius: 99px; background: #4ade80; box-shadow: 0 0 12px #4ade80; }
+.run-status.paused span { background: #fbbf24; box-shadow: 0 0 12px #fbbf24; }
+.run-status small { grid-column: 2; color: #7890ad; font: 11px ui-monospace, monospace; }
+
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; padding: 16px; max-width: 1800px; margin: 0 auto; }
+.stage-panel, .controls-panel { min-width: 0; }
+.canvas-wrap { position: relative; overflow: hidden; border: 1px solid #263b57; border-radius: 12px; background: #0b1424; box-shadow: 0 16px 50px rgba(0,0,0,.24); }
+#crowd-canvas { display: block; width: 100%; height: auto; aspect-ratio: 5/3; cursor: crosshair; }
+.canvas-hint { position: absolute; right: 12px; bottom: 10px; color: #7290b4; padding: 5px 8px; border-radius: 6px; background: rgba(5,12,23,.72); font-size: 11px; pointer-events: none; }
+.canvas-badges { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; pointer-events: none; }
+.canvas-badges span { padding: 5px 8px; border: 1px solid rgba(96,165,250,.22); border-radius: 6px; background: rgba(5,12,23,.76); color: #9eb4cc; font: 10px ui-monospace, monospace; }
+.transport { display: flex; align-items: center; gap: 8px; padding: 11px 0; }
+.speed-control { display: flex; align-items: center; gap: 7px; margin-left: auto; color: #8fa5be; font-size: 12px; }
+.speed-control select { padding: 7px 8px; }
+
+.metrics-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.metric-card { min-width: 0; padding: 11px 12px; border: 1px solid #20344d; border-radius: 9px; background: rgba(13,26,44,.72); }
+.metric-card span { display: block; overflow: hidden; color: #7890ad; font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
+.metric-card strong { display: block; margin-top: 5px; color: #e0f2fe; font: 650 clamp(12px, 1.2vw, 16px) ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; }
+
+.controls-panel { overflow: hidden; align-self: start; border: 1px solid #20344d; border-radius: 12px; background: rgba(10,21,36,.88); box-shadow: 0 16px 50px rgba(0,0,0,.18); }
+.control-section { padding: 16px; border-bottom: 1px solid #1d3048; }
+.control-section h2 { margin: 0 0 13px; color: #bdd2e9; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+.control-section > label:not(.range-row) { display: grid; gap: 6px; color: #8fa5be; font-size: 11px; }
+select, input[type="number"] { width: 100%; padding: 8px 9px; }
+.description { min-height: 30px; margin: 8px 0 12px; color: #647d99; font-size: 11px; line-height: 1.45; }
+.split-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.split-fields label { display: grid; gap: 5px; color: #8fa5be; font-size: 11px; }
+.range-row { display: grid; gap: 6px; margin: 0 0 12px; }
+.range-row:last-child { margin-bottom: 0; }
+.range-row > span { display: flex; justify-content: space-between; color: #8fa5be; font-size: 11px; }
+.range-row output { color: #7dd3fc; font: 11px ui-monospace, monospace; }
+input[type="range"] { width: 100%; accent-color: #38bdf8; }
+.toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 8px; }
+.toggle { display: flex; align-items: center; gap: 7px; color: #8fa5be; font-size: 10px; cursor: pointer; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.toggle span { position: relative; width: 26px; height: 15px; flex: 0 0 auto; border-radius: 20px; background: #26364b; transition: background 150ms; }
+.toggle span::after { content: ''; position: absolute; left: 2px; top: 2px; width: 11px; height: 11px; border-radius: 99px; background: #8092a8; transition: transform 150ms, background 150ms; }
+.toggle input:checked + span { background: #164e63; }
+.toggle input:checked + span::after { transform: translateX(11px); background: #67e8f9; }
+.core-note { padding: 12px 16px; color: #526b87; font: 9px ui-monospace, monospace; letter-spacing: .04em; }
+.core-note span { color: #4ade80; }
+
+@media (max-width: 1080px) {
+  .workspace { grid-template-columns: 1fr; }
+  .controls-panel { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .control-section { border-right: 1px solid #1d3048; }
+  .core-note { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .topbar { padding: 12px; }
+  .workspace { padding: 8px; }
+  .controls-panel { display: block; }
+  .transport { flex-wrap: wrap; }
+  .speed-control { width: 100%; justify-content: flex-end; }
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .metric-card:last-child { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
