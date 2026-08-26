@@ -1,18 +1,23 @@
 # Crowd Navigation Lab
 
-1,000개 객체가 하나의 목표 영역으로 이동하는 2D 군중 이동 알고리즘을 독립적으로 연구하고 재현하는 웹 시뮬레이션입니다. 렌더링과 브라우저 UI는 알고리즘 코어에서 분리되어 있어 Unity, Unreal 또는 자체 엔진으로 코어를 옮길 수 있습니다.
+1,000개 유닛의 RTS형 군중 이동을 재현하는 결정론적 2D 웹 시뮬레이션입니다. Reverse-Dijkstra Flow Field가 전역 경로를 제공하고, 동적 유닛은 angular free-gap steering과 제한된 원형 비관통 보정으로 처리합니다. 공개된 StarCraft II GDC 설계 원리에서 계층 분리와 지역 여유 공간 선택을 참고했지만, SC2의 실제 구현을 복제한 코드는 아닙니다.
 
-## 현재 구현 범위
+## 구현 범위
 
-- 8방향 Reverse Dijkstra 통합 비용장과 보간된 Flow Field 방향
-- Flow Field Following, Separation, 약한 Alignment, Arrival, 속도/가속도 제한
-- 활성 객체만 색인하는 Uniform Grid Spatial Hash
-- 1/60초 고정 timestep, 렌더 루프 분리, 현재/다음 상태 이중 버퍼
-- 시드 기반 결정론적 배치, 결정론적 state hash, URL 기반 자동 정지
-- Open Field, Obstacle Field, Dense Spawn 시나리오
-- Canvas 목표 재지정, 파라미터 조작, 6종 디버그 표시와 9종 메트릭
+- 8방향 Reverse-Dijkstra 비용장과 exact clearance 선분 검증을 거치는 bilinear Flow Field 보간
+- 원·예측 위치·TTC를 heading 공간의 차단 각도 구간으로 투영하는 free-gap steering
+- 정적 AABB와 월드 경계의 반경·여백 확장, swept-circle TOI와 접선 슬라이드
+- Phase A intent 계산 → Phase B 네 번의 Jacobi 속도 조정 → Phase C 정적 적분/원형 위치 제약 → Phase D 상태/메트릭 집계
+- 같은 프레임의 전체 steering intent 공유와 이전 회피 방향 히스테리시스
+- 방향 회전율(`maxTurnRate`)과 속도 변화(`maxAcceleration`) 상한, 여유 거리/TTC 기반 연속 감속
+- seed와 agent ID 기반의 안전한 분산 arrival slot
+- 대형 stream splitter의 조기 formation-side 선택과 portal lane 분산
+- exact-tangent 고착을 막는 0.06px 정적 접촉 스킨
+- 활성 유닛만 색인하는 Uniform Grid Spatial Hash
+- 1/60초 fixed timestep, typed-array 이중 버퍼, persistent steering state를 포함한 state hash
+- Open Field, Obstacle Field, Dense Spawn 시나리오와 Canvas 디버그 UI
 
-## 실행과 테스트
+## 실행과 검증
 
 Node.js 20.19 이상 또는 22.12 이상을 권장합니다.
 
@@ -23,72 +28,67 @@ npm run dev
 ```
 
 ```bash
-npm run typecheck   # strict TypeScript 검사
-npm run test:run    # Vitest 단위/시뮬레이션 테스트
-npm run test:e2e    # Playwright 브라우저 테스트
-npm run build       # 프로덕션 빌드
-npm run verify      # typecheck + Vitest + build
+npm run typecheck       # strict TypeScript
+npm run test:run        # Vitest 단위/통합 회귀
+npm run test:e2e        # Playwright 브라우저 회귀
+npm run measure         # 60/300/600/900 step 측정
+npm run measure:long    # Open/Dense 1,800, Obstacle 3,600 step 측정
+npm run build           # 프로덕션 번들
+npm run verify          # typecheck + Vitest + build
 ```
 
 재현 URL 예시:
 
 ```text
-?scenario=open-field&agents=1000&seed=42&step=600&paused=true
+?scenario=obstacle-field&agents=1000&seed=42&step=900&paused=true
 ```
 
-`scenario`, `agents`, `seed`, `step`, `paused`를 지원합니다. `step`이 있으면 해당 스텝까지 결정론적으로 계산한 뒤 정지합니다. 브라우저 콘솔에서는 `window.crowdDebug.getSnapshot()`으로 step, hash, 활성/도착 수를 읽을 수 있습니다.
+`scenario`, `agents`, `seed`, `step`, `paused`를 지원합니다. 브라우저 콘솔의 `window.crowdDebug.getSnapshot()`은 현재 step, hash, 활성/도착 수와 안전성·부드러움 메트릭을 반환합니다.
 
-## 알고리즘 처리 순서
+## 데이터 흐름
 
-1. 현재 활성 객체로 Spatial Hash를 재구축합니다.
-2. 각 객체 위치에서 Flow Field 선호 방향을 보간합니다.
-3. 반경 내 후보만 검사해 Separation과 Alignment를 계산합니다.
-4. Arrival, 최대 가속도, 최대 속도를 적용합니다.
-5. 결과를 다음 typed-array 상태 버퍼에 씁니다.
-6. 상태 버퍼를 교체하고 도착 객체를 이후 색인에서 제외합니다.
-7. 겹침, 정체, 속도, 이웃 및 후보 검사 메트릭을 집계합니다.
-8. Canvas 렌더러가 읽기 전용 현재 상태를 그립니다.
+1. Planning은 Flow Field를 샘플링하고, stream splitter의 portal lane과 목표 근처 arrival slot을 혼합해 preferred heading을 만듭니다.
+2. Spatial Hash에서 지역 이웃을 모아 agent ID 순으로 재사용 버퍼에 정렬합니다.
+3. Steering Phase A는 유닛 원, 예측 위치, TTC, 장애물, 월드 경계의 차단 각도 구간을 병합하고 preferred heading에서 가장 가까운 열린 간격을 선택합니다.
+4. Steering Phase B는 모든 유닛의 동일 스냅샷 intent를 이용해 안전 속도를 계산하고, 네 번의 동시 Jacobi pass로 접촉 법선 속도를 조정합니다.
+5. Collision Phase C는 swept-circle TOI에서 법선 성분만 제거하고 접선 속도를 보존한 뒤, 6~8회의 제한된 원형 Jacobi 보정과 결정론적 component fallback을 적용합니다.
+6. Phase D는 실제 변위와 저장 속도를 동기화하고 상태 버퍼를 교체하며 도착, 겹침, 후진, 정체, 가속도, jerk, hard-stop, side-switch, 후보 검사 수를 집계합니다.
+
+모바일 유닛은 Flow Field의 전역 장애물로 넣지 않습니다. 일반 간격 유지는 velocity steering이 담당하며, 마지막 위치 보정은 다음 step의 실제 침투와 기존 겹침만 다룹니다. 물리 충격, 질량, 운동량 전달, 전체 ORCA 선형계획은 구현하지 않습니다. 다만 새 접촉이 제한된 Jacobi 반복 뒤에도 남으면 안전을 위해 접촉 component의 공통 변위를 사용하는 kinematic backstop이 작동합니다.
 
 ## 주요 파라미터
 
-- `maxSpeed`, `maxAcceleration`: 이동 속도와 가속도의 상한
-- `agentRadius`: 렌더 크기 및 겹침 판정 반경
-- `neighborRadius`: 지역 이웃 탐색 범위
-- `separationWeight`: 가까운 객체로부터 멀어지는 힘
-- `alignmentWeight`: 주변 속도와 맞추는 약한 힘. Cohesion은 0으로 두어 사용하지 않습니다.
-- `goalRadius`: 내부 진입 시 도착 처리하고 활성 업데이트/이웃 검색에서 제외하는 반경
-- `timeScale`: 렌더링과 무관하게 고정 스텝을 몇 배속으로 소비할지 결정
+- `maxSpeed`: 최고 속도(px/s)
+- `maxAcceleration`: fixed step 사이 속도 변화 상한(px/s²)
+- `maxTurnRate`: heading 회전율 상한(rad/s)
+- `agentRadius`, `agentGap`: 물리 반경과 선호 간격
+- `neighborRadius`: Spatial Hash 지역 탐색 반경
+- `avoidanceHorizon`, `avoidanceBiasSeconds`: TTC 예측과 좌우 히스테리시스 시간
+- `wallMargin`: 반경 밖 정적 안전 여백
+- `goalRadius`, `arrivalSlowRadius`: 도착 판정과 접근 감속 범위
+- `timeScale`: 렌더링과 무관하게 fixed step을 소비하는 배율
 
-## 시나리오
-
-- **Open Field**: 장애물 없는 기본 흐름과 처리 성능 확인
-- **Obstacle Field**: 중앙 장벽과 통로를 통한 Reverse Dijkstra 우회 확인
-- **Dense Spawn**: 좁은 영역의 Separation, Alignment, Spatial Hash 안정성 확인
-
-## 성능 메트릭
-
-FPS, 평균/최대 시뮬레이션 스텝 시간, 활성/도착 수와 도착률, 평균 속도, 겹친 객체 쌍, 일정 시간 저속인 정체 객체, 평균/최대 실제 이웃 수, 스텝당 Spatial Hash 후보 검사 수를 표시합니다. 후보 검사 수는 O(N²) 전수 검사 대신 지역 색인이 작동하는지 관찰하는 지표입니다.
-
-## 구조와 엔진 이식 경계
+## 구조
 
 ```text
-src/core                         상태, clock, RNG, 수학, 메트릭, 시뮬레이션 조정
-src/algorithms/flow-field        GlobalNavigator 구현
-src/algorithms/spatial-hash      NeighborIndex 구현
-src/algorithms/steering          LocalMovementSolver 구현
+src/core                         상태, fixed-step 조정, 도착 슬롯, 정적/군중 충돌
+src/algorithms/flow-field        Reverse-Dijkstra GlobalNavigator
+src/algorithms/spatial-hash      지역 NeighborIndex
+src/algorithms/steering          angular free-gap LocalMovementSolver
 src/scenarios                    월드 입력 데이터
-src/rendering                    Canvas Renderer와 debug drawing
-src/ui                           DOM 템플릿과 스타일
+src/rendering | src/ui           Canvas 표시와 조작 UI
+scripts                          재현 가능한 측정·진단 도구
 tests/unit | simulation | browser
 ```
 
-게임 엔진으로 이식할 때 `core`, `algorithms`, `scenarios`는 Canvas/DOM 의존 없이 유지할 수 있습니다. 엔진 좌표계와 메모리 컨테이너에 맞춰 상태 저장소를 교체하고, `GlobalNavigator`, `NeighborIndex`, `LocalMovementSolver`, `Renderer` 경계를 유지하면 됩니다.
+`core`, `algorithms`, `scenarios`에는 Canvas/DOM 의존성이 없어 엔진 좌표계와 상태 컨테이너만 맞추면 이식할 수 있습니다.
 
-## 현재 한계와 2차 확장
+## 현재 한계
 
-- 장애물은 정적 격자 사각형이며 객체-장애물 연속 충돌 검사는 단순한 축별 되돌림입니다.
-- Flow Field는 목표나 장애물 변경 시 전체를 다시 계산합니다.
-- 도착 객체는 목표 원 내부에서 비활성화되며 별도의 개별 도착 슬롯은 없습니다.
-- 고밀도에서 물리적으로 완전한 비관통을 보장하는 ORCA/RVO 해법은 아닙니다.
+- 정적 장애물은 축 정렬 사각형이며, 서로 다른 목표를 가진 양방향 군중의 최적 통과는 범위 밖입니다.
+- 마지막 비관통 보정은 안전을 우선하므로 극고밀도 접촉에서는 설정된 steering 가속도보다 큰 위치 보정이 `emergencyStopCount`로 별도 계수될 수 있습니다. 이 값은 실제 완전 정지만이 아니라 모든 acceleration 초과 안전 보정의 agent-frame 수입니다.
+- component fallback은 운동량을 전달하지 않고 침투를 만들지 않지만, 밀집 접촉 그래프에서는 많은 유닛의 한-step 변위를 결합할 수 있습니다. 후보 검사와 jerk가 늘어나는 현재 구현의 가장 큰 성능·모션 절충입니다.
+- 대형 splitter 판정은 월드 횡축의 50%를 기준으로 하므로, 더 복잡한 국소 복도에는 명시적 portal graph 또는 topology metadata가 필요합니다.
+- 목표나 장애물이 바뀌면 Flow Field 전체를 다시 계산하고 formation 좌표는 초기 배치 순서를 유지합니다.
 
-혼잡도 기반 양갈래 선택은 `FlowField.computeCosts`가 사용하는 이동 비용에 `CellCostProvider` 성격의 동적 비용 입력을 추가하는 방식으로 확장할 수 있습니다. Spatial Hash의 셀별 활성 밀도를 저주기로 비용 스냅샷에 반영하고, 히스테리시스와 재계산 주기를 두어 경로 진동을 억제하는 것이 핵심입니다. 렌더러나 상태 버퍼는 이 변경의 영향을 받지 않습니다.
+참고: [GDC Vault – AI Navigation: It’s Not a Solved Problem](https://www.gdcvault.com/play/1014514/AI-Navigation-It-s-Not), [GameDev StackExchange의 공개 원리 요약](https://gamedev.stackexchange.com/questions/191954/how-can-i-create-the-arriving-engaging-in-combat-movement-like-in-starcraft-2)

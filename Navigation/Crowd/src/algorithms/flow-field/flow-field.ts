@@ -1,4 +1,5 @@
 import { clamp, normalize } from '../../core/math';
+import { segmentDistanceSquaredToRect } from '../../core/obstacle-collision';
 import type { GlobalNavigator, Rect, Vec2 } from '../../core/types';
 
 const OFFSETS = [
@@ -59,6 +60,10 @@ export class FlowField implements GlobalNavigator {
   readonly directionX: Float64Array;
   readonly directionY: Float64Array;
   goalCell = -1;
+  clearance = 0;
+  private goalX = 0;
+  private goalY = 0;
+  private obstacles: readonly Rect[] = [];
 
   constructor(public readonly width: number, public readonly height: number, public readonly cellSize: number) {
     this.columns = Math.ceil(width / cellSize);
@@ -70,7 +75,11 @@ export class FlowField implements GlobalNavigator {
     this.directionY = new Float64Array(count);
   }
 
-  rebuild(goal: Vec2, obstacles: readonly Rect[]): void {
+  rebuild(goal: Vec2, obstacles: readonly Rect[], clearance = 0): void {
+    this.clearance = Math.max(0, clearance);
+    this.obstacles = obstacles;
+    this.goalX = goal.x;
+    this.goalY = goal.y;
     this.blocked.fill(0);
     for (const obstacle of obstacles) this.rasterizeObstacle(obstacle);
     const goalColumn = clamp(Math.floor(goal.x / this.cellSize), 0, this.columns - 1);
@@ -82,6 +91,10 @@ export class FlowField implements GlobalNavigator {
   }
 
   sampleDirection(x: number, y: number, out: Vec2): boolean {
+    if (this.hasLineOfSight(x, y, this.goalX, this.goalY)) {
+      normalize(this.goalX - x, this.goalY - y, out);
+      return out.x !== 0 || out.y !== 0;
+    }
     const gx = clamp(x / this.cellSize - 0.5, 0, this.columns - 1);
     const gy = clamp(y / this.cellSize - 0.5, 0, this.rows - 1);
     const x0 = Math.floor(gx);
@@ -101,15 +114,12 @@ export class FlowField implements GlobalNavigator {
     const dx = this.directionX[i00]! * w00 + this.directionX[i10]! * w10 + this.directionX[i01]! * w01 + this.directionX[i11]! * w11;
     const dy = this.directionY[i00]! * w00 + this.directionY[i10]! * w10 + this.directionY[i01]! * w01 + this.directionY[i11]! * w11;
     normalize(dx, dy, out);
-    // Interpolation smooths turns, but near obstacle boundaries it can blend two
-    // valid vectors into an invalid direction. Fall back to the source cell's
-    // discrete safe direction when a short look-ahead enters a blocked cell.
-    if (this.isBlockedAt(x + out.x * this.cellSize * 0.8, y + out.y * this.cellSize * 0.8)) {
-      const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
-      const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
-      const index = row * this.columns + column;
-      out.x = this.directionX[index]!;
-      out.y = this.directionY[index]!;
+    // Bilinear blending can point between two individually safe grid edges.
+    // Validate the actual short segment against the same radius-expanded
+    // geometry used by collision, then choose a lower-cost exact-safe edge.
+    const lookAhead = this.cellSize * 0.8;
+    if (!this.isSegmentSafe(x, y, x + out.x * lookAhead, y + out.y * lookAhead)) {
+      this.sampleSafeDiscreteDirection(x, y, lookAhead, out);
     }
     return out.x !== 0 || out.y !== 0;
   }
@@ -125,13 +135,74 @@ export class FlowField implements GlobalNavigator {
     return Number.isFinite(this.costs[row * this.columns + column]);
   }
 
+  private hasLineOfSight(startX: number, startY: number, endX: number, endY: number): boolean {
+    return this.isSegmentSafe(startX, startY, endX, endY);
+  }
+
+  private isSegmentSafe(startX: number, startY: number, endX: number, endY: number): boolean {
+    if (
+      startX < this.clearance || startY < this.clearance
+      || endX < this.clearance || endY < this.clearance
+      || startX > this.width - this.clearance || startY > this.height - this.clearance
+      || endX > this.width - this.clearance || endY > this.height - this.clearance
+    ) return false;
+    const clearanceSquared = this.clearance * this.clearance;
+    for (const obstacle of this.obstacles) {
+      const distanceSquared = segmentDistanceSquaredToRect(startX, startY, endX, endY, obstacle);
+      if (clearanceSquared <= 1e-12 ? distanceSquared <= 1e-12 : distanceSquared < clearanceSquared - 1e-10) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private sampleSafeDiscreteDirection(x: number, y: number, lookAhead: number, out: Vec2): void {
+    const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
+    const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
+    const cell = row * this.columns + column;
+    let bestCost = this.costs[cell]!;
+    let bestX = 0;
+    let bestY = 0;
+    for (const [dx, dy] of OFFSETS) {
+      const nextColumn = column + dx;
+      const nextRow = row + dy;
+      if (
+        nextColumn < 0 || nextRow < 0
+        || nextColumn >= this.columns || nextRow >= this.rows
+      ) continue;
+      const next = nextRow * this.columns + nextColumn;
+      if (this.blocked[next] === 1 || this.costs[next]! >= bestCost) continue;
+      const scale = dx !== 0 && dy !== 0 ? Math.SQRT1_2 : 1;
+      const directionX = dx * scale;
+      const directionY = dy * scale;
+      if (!this.isSegmentSafe(
+        x,
+        y,
+        x + directionX * lookAhead,
+        y + directionY * lookAhead,
+      )) continue;
+      bestCost = this.costs[next]!;
+      bestX = directionX;
+      bestY = directionY;
+    }
+    out.x = bestX;
+    out.y = bestY;
+  }
+
   private rasterizeObstacle(rect: Rect): void {
-    const minColumn = clamp(Math.floor(rect.x / this.cellSize), 0, this.columns - 1);
-    const maxColumn = clamp(Math.ceil((rect.x + rect.width) / this.cellSize) - 1, 0, this.columns - 1);
-    const minRow = clamp(Math.floor(rect.y / this.cellSize), 0, this.rows - 1);
-    const maxRow = clamp(Math.ceil((rect.y + rect.height) / this.cellSize) - 1, 0, this.rows - 1);
+    const minimumX = rect.x - this.clearance;
+    const maximumX = rect.x + rect.width + this.clearance;
+    const minimumY = rect.y - this.clearance;
+    const maximumY = rect.y + rect.height + this.clearance;
+    const minColumn = clamp(Math.floor(minimumX / this.cellSize), 0, this.columns - 1);
+    const maxColumn = clamp(Math.ceil(maximumX / this.cellSize) - 1, 0, this.columns - 1);
+    const minRow = clamp(Math.floor(minimumY / this.cellSize), 0, this.rows - 1);
+    const maxRow = clamp(Math.ceil(maximumY / this.cellSize) - 1, 0, this.rows - 1);
     for (let row = minRow; row <= maxRow; row += 1) {
       for (let column = minColumn; column <= maxColumn; column += 1) {
+        const centerX = (column + 0.5) * this.cellSize;
+        const centerY = (row + 0.5) * this.cellSize;
+        if (centerX < minimumX || centerX >= maximumX || centerY < minimumY || centerY >= maximumY) continue;
         this.blocked[row * this.columns + column] = 1;
       }
     }

@@ -27,9 +27,25 @@ test('deterministic URL stops at the requested step and produces a visual artifa
   await expect(page.locator('body')).toHaveAttribute('data-step', '900', { timeout: 30_000 });
   await expect(page.locator('body')).toHaveAttribute('data-paused', 'true');
   const first = await page.evaluate(() => window.crowdDebug.getSnapshot());
+  const firstMetrics = await page.evaluate(() => window.crowdDebug.simulation().metrics);
+  expect(firstMetrics.overlapPairs).toBe(0);
+  expect(firstMetrics.backwardCount).toBe(0);
+  expect(firstMetrics.strongBackwardCount).toBe(0);
+  expect(firstMetrics.wallOverlapCount).toBe(0);
   await page.reload();
   await expect(page.locator('body')).toHaveAttribute('data-step', '900', { timeout: 30_000 });
   const second = await page.evaluate(() => window.crowdDebug.getSnapshot());
   expect(second.hash).toBe(first.hash);
   await page.screenshot({ path: testInfo.outputPath('deterministic-obstacle-field.png'), fullPage: true });
+});
+
+test('dense spawn remains non-overlapping and non-reversing at step 900', async ({ page }, testInfo) => {
+  await page.goto('/?scenario=dense-spawn&agents=1000&seed=42&step=900&paused=true');
+  await expect(page.locator('body')).toHaveAttribute('data-step', '900', { timeout: 30_000 });
+  const metrics = await page.evaluate(() => window.crowdDebug.simulation().metrics);
+  expect(metrics.overlapPairs).toBe(0);
+  expect(metrics.backwardCount).toBe(0);
+  expect(metrics.strongBackwardCount).toBe(0);
+  expect(metrics.wallOverlapCount).toBe(0);
+  await page.screenshot({ path: testInfo.outputPath('dense-spawn-step-900.png'), fullPage: true });
 });

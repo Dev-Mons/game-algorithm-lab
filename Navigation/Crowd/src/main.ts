@@ -2,7 +2,7 @@ import './ui/styles.css';
 import { FixedClock } from './core/fixed-clock';
 import { RuntimeMetrics } from './core/metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from './core/simulation';
-import type { SimulationConfig } from './core/types';
+import type { SimulationConfig, StepMetrics } from './core/types';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DEFAULT_DEBUG_OPTIONS } from './rendering/debug-drawing';
 import { getScenario } from './scenarios/scenarios';
@@ -11,7 +11,14 @@ import { appTemplate } from './ui/template';
 declare global {
   interface Window {
     crowdDebug: {
-      getSnapshot: () => { step: number; hash: string; active: number; arrived: number; scenario: string };
+      getSnapshot: () => {
+        step: number;
+        hash: string;
+        active: number;
+        arrived: number;
+        scenario: string;
+        metrics: StepMetrics;
+      };
       simulation: () => CrowdSimulation;
       ready: boolean;
     };
@@ -52,6 +59,7 @@ window.crowdDebug = {
     active: simulation.metrics.activeCount,
     arrived: simulation.metrics.arrivedCount,
     scenario: simulation.scenario.id,
+    metrics: { ...simulation.metrics },
   }),
   simulation: () => simulation,
   ready: !fastForwarding,
@@ -131,10 +139,11 @@ function initializeControls(): void {
 
   bindRange('max-speed', 'maxSpeed');
   bindRange('max-acceleration', 'maxAcceleration');
+  bindRange('max-turn-rate', 'maxTurnRate');
   bindRange('agent-radius', 'agentRadius');
   bindRange('neighbor-radius', 'neighborRadius');
-  bindRange('separation-weight', 'separationWeight');
-  bindRange('alignment-weight', 'alignmentWeight');
+  bindRange('agent-gap', 'agentGap');
+  bindRange('avoidance-horizon', 'avoidanceHorizon');
   bindRange('goal-radius', 'goalRadius');
   bindToggle('debug-flow', 'flowField');
   bindToggle('debug-grid', 'spatialGrid');
@@ -213,6 +222,12 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-stalled').textContent = metrics.stalledCount.toLocaleString();
   element<HTMLElement>('metric-neighbors').textContent = `${metrics.averageNeighbors.toFixed(1)} / ${metrics.maxNeighbors}`;
   element<HTMLElement>('metric-candidates').textContent = metrics.candidateChecks.toLocaleString();
+  element<HTMLElement>('metric-backward').textContent = `${metrics.backwardCount.toLocaleString()} / ${metrics.strongBackwardCount.toLocaleString()}`;
+  element<HTMLElement>('metric-wall-overlap').textContent = metrics.wallOverlapCount.toLocaleString();
+  element<HTMLElement>('metric-velocity-delta').textContent = `${metrics.averageVelocityDelta.toFixed(2)} / ${metrics.maxVelocityDelta.toFixed(2)}`;
+  element<HTMLElement>('metric-hard-stop').textContent = `${metrics.hardStopCount.toLocaleString()} / ${metrics.emergencyStopCount.toLocaleString()}`;
+  element<HTMLElement>('metric-side-switch').textContent = `${metrics.sideSwitchCount.toLocaleString()} / ${metrics.stopMoveStopCount.toLocaleString()}`;
+  element<HTMLElement>('metric-adjacent-stop').textContent = metrics.longAdjacentStopCount.toLocaleString();
   document.body.dataset.step = String(simulation.stepCount);
   document.body.dataset.agents = String(simulation.config.agentCount);
   document.body.dataset.paused = String(!running && !fastForwarding);

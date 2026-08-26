@@ -35,6 +35,12 @@ export function appTemplate(): string {
           ${metricCard('정체 객체', 'metric-stalled', '0')}
           ${metricCard('평균 / 최대 이웃', 'metric-neighbors', '0.0 / 0')}
           ${metricCard('후보 검사 / step', 'metric-candidates', '0')}
+          ${metricCard('역방향 / 강한 후진', 'metric-backward', '0 / 0')}
+          ${metricCard('벽 반경 침투', 'metric-wall-overlap', '0')}
+          ${metricCard('평균 / 최대 Δv', 'metric-velocity-delta', '0.00 / 0.00')}
+          ${metricCard('Hard / Emergency stop', 'metric-hard-stop', '0 / 0')}
+          ${metricCard('Side switch / 재정지', 'metric-side-switch', '0 / 0')}
+          ${metricCard('1초 인접 공동 정지', 'metric-adjacent-stop', '0')}
         </div>
       </section>
       <aside class="controls-panel">
@@ -51,10 +57,11 @@ export function appTemplate(): string {
           <h2>이동 파라미터</h2>
           ${rangeControl('최대 속도', 'max-speed', 20, 180, 1, 86)}
           ${rangeControl('최대 가속도', 'max-acceleration', 40, 500, 5, 210)}
+          ${rangeControl('최대 회전률 (rad/s)', 'max-turn-rate', 1, 12, 0.25, 4.5)}
           ${rangeControl('객체 반지름', 'agent-radius', 1.5, 8, 0.1, 3.2)}
-          ${rangeControl('이웃 탐색 거리', 'neighbor-radius', 8, 60, 1, 22)}
-          ${rangeControl('Separation', 'separation-weight', 0, 5, 0.1, 2.3)}
-          ${rangeControl('Alignment', 'alignment-weight', 0, 1, 0.01, 0.12)}
+          ${rangeControl('회피 탐색 거리', 'neighbor-radius', 8, 60, 1, 28)}
+          ${rangeControl('객체 간 여유', 'agent-gap', 0.1, 3, 0.1, 0.4)}
+          ${rangeControl('충돌 예측 시간', 'avoidance-horizon', 0.2, 1.5, 0.05, 0.3)}
           ${rangeControl('목표 반경', 'goal-radius', 20, 130, 1, 58)}
         </section>
         <section class="control-section">

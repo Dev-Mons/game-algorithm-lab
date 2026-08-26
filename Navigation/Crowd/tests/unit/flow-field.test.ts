@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FlowField } from '../../src/algorithms/flow-field/flow-field';
+import { segmentDistanceSquaredToRect } from '../../src/core/obstacle-collision';
 
 describe('Reverse Dijkstra Flow Field', () => {
   it('always points to a lower integration cost on reachable cells', () => {
@@ -38,5 +39,45 @@ describe('Reverse Dijkstra Flow Field', () => {
     expect(field.isReachable(8, 5)).toBe(true);
     expect(field.isReachable(1, 5)).toBe(false);
     expect(field.isReachable(4, 5)).toBe(false);
+  });
+
+  it('keeps sampled directions outside the radius-expanded blocked area', () => {
+    const obstacle = { x: 50, y: 20, width: 20, height: 60 };
+    const clearance = 4;
+    const field = new FlowField(120, 100, 10);
+    field.rebuild({ x: 115, y: 50 }, [obstacle], clearance);
+    const direction = { x: 0, y: 0 };
+    for (let y = 5; y < 100; y += 5) {
+      for (let x = 5; x < 120; x += 5) {
+        if (field.isBlockedAt(x, y) || !field.sampleDirection(x, y, direction)) continue;
+        expect(segmentDistanceSquaredToRect(
+          x,
+          y,
+          x + direction.x * 8,
+          y + direction.y * 8,
+          obstacle,
+        )).toBeGreaterThanOrEqual(clearance * clearance - 1e-9);
+      }
+    }
+  });
+
+  it('rejects a bilinear direction whose exact look-ahead crosses clearance geometry', () => {
+    const obstacle = { x: 50, y: 20, width: 20, height: 60 };
+    const clearance = 4;
+    const field = new FlowField(120, 100, 10);
+    field.rebuild({ x: 115, y: 50 }, [obstacle], clearance);
+    const direction = { x: 0, y: 0 };
+    const startX = 63.5;
+    const startY = 15.7;
+
+    field.sampleDirection(startX, startY, direction);
+
+    expect(segmentDistanceSquaredToRect(
+      startX,
+      startY,
+      startX + direction.x * 8,
+      startY + direction.y * 8,
+      obstacle,
+    )).toBeGreaterThanOrEqual(clearance * clearance - 1e-9);
   });
 });

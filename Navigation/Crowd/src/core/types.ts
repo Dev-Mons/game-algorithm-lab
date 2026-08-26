@@ -18,10 +18,14 @@ export interface SimulationConfig {
   seed: number;
   maxSpeed: number;
   maxAcceleration: number;
+  /** Maximum steering-heading rotation in radians per second. */
+  maxTurnRate: number;
   agentRadius: number;
   neighborRadius: number;
-  separationWeight: number;
-  alignmentWeight: number;
+  agentGap: number;
+  wallMargin: number;
+  avoidanceHorizon: number;
+  avoidanceBiasSeconds: number;
   goalRadius: number;
   fixedDelta: number;
   arrivalSlowRadius: number;
@@ -47,6 +51,24 @@ export interface StepMetrics {
   averageNeighbors: number;
   maxNeighbors: number;
   candidateChecks: number;
+  backwardCount: number;
+  strongBackwardCount: number;
+  wallOverlapCount: number;
+  averageVelocityDelta: number;
+  maxVelocityDelta: number;
+  averageAcceleration: number;
+  maxAcceleration: number;
+  averageJerk: number;
+  maxJerk: number;
+  hardStopCount: number;
+  emergencyStopCount: number;
+  stopMoveStopCount: number;
+  sideSwitchCount: number;
+  longAdjacentStopCount: number;
+  collisionCorrectionCount: number;
+  collisionJacobiCorrectionCount: number;
+  collisionFallbackAgentCount: number;
+  collisionRollbackAgentCount: number;
 }
 
 export interface NeighborIndex {
@@ -55,7 +77,7 @@ export interface NeighborIndex {
 }
 
 export interface GlobalNavigator {
-  rebuild(goal: Vec2, obstacles: readonly Rect[]): void;
+  rebuild(goal: Vec2, obstacles: readonly Rect[], clearance?: number): void;
   sampleDirection(x: number, y: number, out: Vec2): boolean;
   isBlockedAt(x: number, y: number): boolean;
 }

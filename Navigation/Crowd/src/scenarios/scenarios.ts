@@ -24,7 +24,7 @@ export const SCENARIOS: readonly ScenarioDefinition[] = [
   {
     id: 'dense-spawn',
     name: 'Dense Spawn',
-    description: '좁은 시작 영역에서 Separation과 Spatial Hash 안정성을 확인합니다.',
+    description: '좁은 시작 영역에서 속도 기반 회피와 Spatial Hash 안정성을 확인합니다.',
     goal: { x: 1080, y: 360 },
     obstacles: [],
     spawn: { x: 90, y: 245, width: 190, height: 230 },
