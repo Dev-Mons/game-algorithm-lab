@@ -105,4 +105,36 @@ describe('unified crowd pipeline', () => {
     expect(maximumStrongBackward).toBe(0);
     expect(fallbackAgentFrames / activeAgentFrames).toBeLessThan(0.001);
   }, 30_000);
+
+  it('bounds work for a pathological 1000-agent coincident cluster', () => {
+    const makeCluster = (): CrowdSimulation => {
+      const simulation = new CrowdSimulation(
+        { ...DEFAULT_CONFIG, pipeline: 'unified' },
+        getScenario('open-field'),
+      );
+      for (let agent = 0; agent < simulation.state.count; agent += 1) {
+        simulation.state.x[agent] = 200;
+        simulation.state.y[agent] = 360;
+        simulation.state.vx[agent] = 40;
+        simulation.state.vy[agent] = 0;
+        simulation.state.active[agent] = 1;
+      }
+      return simulation;
+    };
+    const first = makeCluster();
+    const second = makeCluster();
+
+    first.step();
+    second.step();
+
+    expect(first.metrics.overlapPairs).toBeGreaterThan(0);
+    expect(first.metrics.candidateChecks).toBeLessThan(600_000);
+    expect(first.stateHash()).toBe(second.stateHash());
+    for (let agent = 0; agent < first.state.count; agent += 1) {
+      expect(Number.isFinite(first.state.x[agent])).toBe(true);
+      expect(Number.isFinite(first.state.y[agent])).toBe(true);
+      expect(Number.isFinite(first.state.vx[agent])).toBe(true);
+      expect(Number.isFinite(first.state.vy[agent])).toBe(true);
+    }
+  });
 });

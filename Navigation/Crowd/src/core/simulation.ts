@@ -109,6 +109,15 @@ const DENSITY_SLOW_NEIGHBOR_FRACTION = 0.5;
 const UNIFIED_TIME_HORIZON = 0.5;
 const UNIFIED_GUIDANCE_HORIZON = 0.4;
 const UNIFIED_NEIGHBOR_CAP = 8;
+// Corrupt/imported states can place hundreds of agents in one cell. Keeping
+// every pair turns all downstream agreement and fallback passes quadratic and
+// can freeze the render loop for seconds. Normal packed layouts stay well
+// below these limits; above them a bounded deterministic subset is enough to
+// recover the invalid cluster over subsequent fixed steps.
+const MAX_CACHED_NEIGHBORS_PER_AGENT = 192;
+const MAX_SOLVER_NEIGHBORS_PER_AGENT = 96;
+const OVERLOAD_CACHED_NEIGHBORS_PER_AGENT = 16;
+const OVERLOAD_SOLVER_NEIGHBORS_PER_AGENT = 8;
 const UNIFIED_STATIC_RESPONSE = 0.5;
 const UNIFIED_SOLVER_ACCELERATION_FRACTION = 1;
 // Keep the velocity agreement just outside exact physical tangency. Without a
@@ -158,6 +167,8 @@ export class CrowdSimulation {
 
   private queryAgent = 0;
   private queryRadius = 0;
+  private cachedQuerySaturated = false;
+  private solverQuerySaturated = false;
   private neighborCount = 0;
   private candidateChecks = 0;
   private overlapPairs = 0;
@@ -239,8 +250,8 @@ export class CrowdSimulation {
   private stoppedState: AgentBuffer | null = null;
   private stoppedAgent = 0;
   private stoppedNeighborFound = false;
-  private readonly visitCandidate = (candidate: number): void => this.accumulateCandidate(candidate);
-  private readonly visitSolverCandidate = (candidate: number): void => this.accumulateSolverCandidate(candidate);
+  private readonly visitCandidate = (candidate: number): boolean => this.accumulateCandidate(candidate);
+  private readonly visitSolverCandidate = (candidate: number): boolean => this.accumulateSolverCandidate(candidate);
   private readonly visitStoppedCandidate = (candidate: number): void => this.findStoppedCandidate(candidate);
 
   constructor(public config: SimulationConfig, scenario: ScenarioDefinition) {
@@ -1432,6 +1443,7 @@ export class CrowdSimulation {
       this.neighborOffsets[agent] = this.cachedNeighborCount;
       if (this.activeThisStep[agent] !== 1) continue;
       this.queryAgent = agent;
+      this.cachedQuerySaturated = false;
       if (sweptHorizon > 0) {
         const comfortRadius = this.config.agentRadius * 2 + Math.max(0, this.config.agentGap);
         this.queryRadius = Math.max(
@@ -1441,13 +1453,16 @@ export class CrowdSimulation {
           ) * sweptHorizon,
         );
       }
-      this.neighbors.forEachCandidate(
+      this.neighbors.forEachCandidateUntil(
         current.x[agent]!,
         current.y[agent]!,
         this.queryRadius,
         this.visitCandidate,
       );
       const start = this.neighborOffsets[agent]!;
+      if (this.cachedQuerySaturated) {
+        this.cachedNeighborCount = start + OVERLOAD_CACHED_NEIGHBORS_PER_AGENT;
+      }
       this.sortCachedNeighborRange(start, this.cachedNeighborCount);
       const count = this.cachedNeighborCount - start;
       this.cachedTotalNeighbors += count;
@@ -1472,7 +1487,8 @@ export class CrowdSimulation {
       this.solverNeighborOffsets[agent] = this.solverNeighborCount;
       if (this.activeThisStep[agent] !== 1) continue;
       this.queryAgent = agent;
-      this.sweptNeighbors.forEachCandidate(
+      this.solverQuerySaturated = false;
+      this.sweptNeighbors.forEachCandidateUntil(
         agent,
         current.x[agent]!,
         current.y[agent]!,
@@ -1482,13 +1498,17 @@ export class CrowdSimulation {
         expansion,
         this.visitSolverCandidate,
       );
+      if (this.solverQuerySaturated) {
+        this.solverNeighborCount = this.solverNeighborOffsets[agent]!
+          + OVERLOAD_SOLVER_NEIGHBORS_PER_AGENT;
+      }
       this.sortSolverNeighborRange(this.solverNeighborOffsets[agent]!, this.solverNeighborCount);
     }
     this.solverNeighborOffsets[current.count] = this.solverNeighborCount;
   }
 
-  private accumulateSolverCandidate(candidate: number): void {
-    if (candidate === this.queryAgent || this.activeThisStep[candidate] !== 1) return;
+  private accumulateSolverCandidate(candidate: number): boolean {
+    if (candidate === this.queryAgent || this.activeThisStep[candidate] !== 1) return true;
     this.candidateChecks += 1;
     const current = this.state;
     const dx = current.x[candidate]! - current.x[this.queryAgent]!;
@@ -1512,7 +1532,12 @@ export class CrowdSimulation {
     if (
       closestX * closestX + closestY * closestY > activationRadius * activationRadius
       && currentDistanceSquared > activationRadius * activationRadius
-    ) return;
+    ) return true;
+    const start = this.solverNeighborOffsets[this.queryAgent]!;
+    if (this.solverNeighborCount - start >= MAX_SOLVER_NEIGHBORS_PER_AGENT) {
+      this.solverQuerySaturated = true;
+      return false;
+    }
     if (this.solverNeighborCount >= this.solverNeighborIndices.length) {
       const grown = new Int32Array(Math.max(1, this.solverNeighborIndices.length * 2));
       grown.set(this.solverNeighborIndices);
@@ -1520,9 +1545,25 @@ export class CrowdSimulation {
     }
     this.solverNeighborIndices[this.solverNeighborCount] = candidate;
     this.solverNeighborCount += 1;
+    const keepScanning = this.solverNeighborCount - start < MAX_SOLVER_NEIGHBORS_PER_AGENT;
+    this.solverQuerySaturated = !keepScanning;
+    return keepScanning;
   }
 
   private sortSolverNeighborRange(start: number, end: number): void {
+    const length = end - start;
+    if (length >= 16) {
+      for (let root = Math.floor(length * 0.5) - 1; root >= 0; root -= 1) {
+        this.siftSolverNeighborHeap(start, length, root);
+      }
+      for (let last = length - 1; last > 0; last -= 1) {
+        const value = this.solverNeighborIndices[start]!;
+        this.solverNeighborIndices[start] = this.solverNeighborIndices[start + last]!;
+        this.solverNeighborIndices[start + last] = value;
+        this.siftSolverNeighborHeap(start, last, 0);
+      }
+      return;
+    }
     for (let index = start + 1; index < end; index += 1) {
       const value = this.solverNeighborIndices[index]!;
       let target = index - 1;
@@ -1534,6 +1575,24 @@ export class CrowdSimulation {
     }
   }
 
+  private siftSolverNeighborHeap(start: number, length: number, root: number): void {
+    let parent = root;
+    const value = this.solverNeighborIndices[start + parent]!;
+    while (true) {
+      const left = parent * 2 + 1;
+      if (left >= length) break;
+      const right = left + 1;
+      const child = right < length
+        && this.solverNeighborIndices[start + right]! > this.solverNeighborIndices[start + left]!
+        ? right
+        : left;
+      if (this.solverNeighborIndices[start + child]! <= value) break;
+      this.solverNeighborIndices[start + parent] = this.solverNeighborIndices[start + child]!;
+      parent = child;
+    }
+    this.solverNeighborIndices[start + parent] = value;
+  }
+
   private loadCachedNeighbors(agent: number): void {
     const start = this.neighborOffsets[agent]!;
     const end = this.neighborOffsets[agent + 1]!;
@@ -1543,13 +1602,18 @@ export class CrowdSimulation {
     }
   }
 
-  private accumulateCandidate(candidate: number): void {
-    if (candidate === this.queryAgent || this.activeThisStep[candidate] !== 1) return;
+  private accumulateCandidate(candidate: number): boolean {
+    if (candidate === this.queryAgent || this.activeThisStep[candidate] !== 1) return true;
     this.candidateChecks += 1;
     const dx = this.state.x[this.queryAgent]! - this.state.x[candidate]!;
     const dy = this.state.y[this.queryAgent]! - this.state.y[candidate]!;
     const squared = dx * dx + dy * dy;
-    if (squared > this.queryRadius * this.queryRadius) return;
+    if (squared > this.queryRadius * this.queryRadius) return true;
+    const start = this.neighborOffsets[this.queryAgent]!;
+    if (this.cachedNeighborCount - start >= MAX_CACHED_NEIGHBORS_PER_AGENT) {
+      this.cachedQuerySaturated = true;
+      return false;
+    }
     if (this.cachedNeighborCount >= this.cachedNeighborIndices.length) {
       const grown = new Int32Array(Math.max(1, this.cachedNeighborIndices.length * 2));
       grown.set(this.cachedNeighborIndices);
@@ -1557,6 +1621,9 @@ export class CrowdSimulation {
     }
     this.cachedNeighborIndices[this.cachedNeighborCount] = candidate;
     this.cachedNeighborCount += 1;
+    const keepScanning = this.cachedNeighborCount - start < MAX_CACHED_NEIGHBORS_PER_AGENT;
+    this.cachedQuerySaturated = !keepScanning;
+    return keepScanning;
   }
 
   private sortCachedNeighborRange(start: number, end: number): void {

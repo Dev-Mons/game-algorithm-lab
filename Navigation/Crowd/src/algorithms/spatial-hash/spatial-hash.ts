@@ -40,6 +40,28 @@ export class SpatialHash implements NeighborIndex {
     }
   }
 
+  /** Bounded variant used by overload-safe local queries. */
+  forEachCandidateUntil(
+    x: number,
+    y: number,
+    radius: number,
+    visit: (index: number) => boolean,
+  ): void {
+    const minColumn = Math.max(0, Math.floor((x - radius) / this.cellSize));
+    const maxColumn = Math.min(this.columns - 1, Math.floor((x + radius) / this.cellSize));
+    const minRow = Math.max(0, Math.floor((y - radius) / this.cellSize));
+    const maxRow = Math.min(this.rows - 1, Math.floor((y + radius) / this.cellSize));
+    for (let row = minRow; row <= maxRow; row += 1) {
+      for (let column = minColumn; column <= maxColumn; column += 1) {
+        let index = this.heads[row * this.columns + column]!;
+        while (index !== -1) {
+          if (!visit(index)) return;
+          index = this.next[index]!;
+        }
+      }
+    }
+  }
+
   private cellIndex(x: number, y: number): number {
     const column = Math.max(0, Math.min(this.columns - 1, Math.floor(x / this.cellSize)));
     const row = Math.max(0, Math.min(this.rows - 1, Math.floor(y / this.cellSize)));

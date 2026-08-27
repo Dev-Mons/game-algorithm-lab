@@ -27,6 +27,7 @@
 - 1/60초 fixed timestep, typed-array 이중 버퍼, persistent steering state를 포함한 state hash
 - Open Field, Obstacle Field, Dense Spawn, Merge/Opposing/Crossing 500+500 시나리오
 - FixedClock alpha 위치 보간, 물리 이동과 분리된 visual heading, density/preferred/final/fallback Canvas 디버그
+- 비정상 중첩 군집의 이웃 작업량 상한과 배속별 FixedClock step budget으로 렌더 catch-up 악순환 방지
 
 ## 실행과 검증
 
@@ -102,6 +103,8 @@ seed 7/42/73의 Merge/Opposing/Crossing 9개 run은 모두 Jain fairness 0.978 �
 6. Coupled Velocity Projector가 독립 LP 사이의 잔여 pair agreement를 대칭적으로 맞춥니다. 예측 단계에는 작은 comfort skin을 두고, 실제 endpoint 단계에는 물리 접촉 skin만 둡니다.
 7. exact swept static integration이 선형화한 정적 제약을 검증합니다. 잔여 pair나 static slide가 있을 때만 Priority solver를 safety fallback으로 호출하며, 남은 수치 epsilon 침투에만 최대 0.01px position relaxation을 허용합니다.
 8. 실제 변위/`dt`로 velocity를 동기화하고 도착, 겹침, 후진, 정체, fallback, infeasible, 가속도와 처리량을 집계합니다.
+
+정상 밀집도에서는 모든 지역 후보를 사용합니다. 한 Agent 주변 후보가 비정상 과밀 임계값을 넘으면 이후 단계에는 결정론적인 제한 집합만 전달해 프레임 비용을 제한합니다. 이 복구 모드의 `overlapPairs`는 전체 조합 수가 아닌 확인된 pair의 하한입니다. FixedClock도 1×에서 프레임당 최대 한 step만 실행하고, 높은 배속에서는 배속만큼의 제한된 step만 실행해 느린 step이 추가 catch-up step을 부르는 악순환을 차단합니다.
 
 모바일 유닛은 Flow Field의 전역 장애물로 넣지 않습니다. 일반 간격 유지는 velocity steering이 담당하며, 마지막 비관통 backstop도 새 위치를 만들어 밀어내지 않고 각 유닛이 이미 제안한 변위만 축소합니다. 물리 충격, 질량, 운동량 전달은 모델링하지 않습니다. 따라서 충돌은 충격량 전파가 아니라 사전 양보와 국소 감속으로 보입니다.
 

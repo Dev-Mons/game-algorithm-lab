@@ -73,3 +73,29 @@ test('dense spawn remains non-overlapping and non-reversing at step 900', async 
   expect(metrics.wallOverlapCount).toBe(0);
   await page.screenshot({ path: testInfo.outputPath('dense-spawn-step-900.png'), fullPage: true });
 });
+
+test('a pathological overlap stays bounded and does not freeze the browser', async ({ page }) => {
+  await page.goto('/?scenario=open-field&agents=1000&pipeline=unified&paused=true');
+  const result = await page.evaluate(() => {
+    const simulation = window.crowdDebug.simulation();
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      simulation.state.x[agent] = 200;
+      simulation.state.y[agent] = 360;
+      simulation.state.vx[agent] = 40;
+      simulation.state.vy[agent] = 0;
+      simulation.state.active[agent] = 1;
+    }
+    const startedAt = performance.now();
+    simulation.step();
+    return {
+      milliseconds: performance.now() - startedAt,
+      candidateChecks: simulation.metrics.candidateChecks,
+      overlapPairs: simulation.metrics.overlapPairs,
+    };
+  });
+
+  expect(result.milliseconds).toBeLessThan(250);
+  expect(result.candidateChecks).toBeLessThan(600_000);
+  expect(result.overlapPairs).toBeGreaterThan(0);
+  await expect(page.locator('#crowd-canvas')).toBeVisible();
+});

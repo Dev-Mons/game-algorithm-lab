@@ -99,6 +99,42 @@ export class SweptSpatialHash {
     }
   }
 
+  /** Bounded variant used when a pathological contact cluster saturates a query. */
+  forEachCandidateUntil(
+    agent: number,
+    x: number,
+    y: number,
+    velocityX: number,
+    velocityY: number,
+    horizon: number,
+    expansion: number,
+    visit: (candidate: number) => boolean,
+  ): void {
+    this.visitGeneration = (this.visitGeneration + 1) >>> 0;
+    if (this.visitGeneration === 0) {
+      this.visited.fill(0);
+      this.visitGeneration = 1;
+    }
+    const endX = x + velocityX * horizon;
+    const endY = y + velocityY * horizon;
+    const minColumn = this.column(Math.min(x, endX) - expansion);
+    const maxColumn = this.column(Math.max(x, endX) + expansion);
+    const minRow = this.row(Math.min(y, endY) - expansion);
+    const maxRow = this.row(Math.max(y, endY) + expansion);
+    for (let row = minRow; row <= maxRow; row += 1) {
+      for (let column = minColumn; column <= maxColumn; column += 1) {
+        let entry = this.heads[row * this.columns + column]!;
+        while (entry !== -1) {
+          const candidate = this.entries[entry]!;
+          entry = this.next[entry]!;
+          if (candidate === agent || this.visited[candidate] === this.visitGeneration) continue;
+          this.visited[candidate] = this.visitGeneration;
+          if (!visit(candidate)) return;
+        }
+      }
+    }
+  }
+
   private ensureEntryCapacity(required: number): void {
     if (required <= this.entries.length) return;
     let capacity = this.entries.length;
