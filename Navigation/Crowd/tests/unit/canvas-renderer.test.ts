@@ -7,7 +7,7 @@ import { getScenario } from '../../src/scenarios/scenarios';
 describe('CanvasRenderer', () => {
   it('interpolates previous/current fixed-step positions without changing simulation state', () => {
     const simulation = new CrowdSimulation(
-      { ...DEFAULT_CONFIG, pipeline: 'unified', agentCount: 1, seed: 42 },
+      { ...DEFAULT_CONFIG, agentCount: 1, seed: 42 },
       getScenario('open-field'),
     );
     simulation.step();
@@ -41,7 +41,7 @@ describe('CanvasRenderer', () => {
     } as unknown as HTMLCanvasElement;
     const debug = {
       ...DEFAULT_DEBUG_OPTIONS,
-      fallbacks: false,
+      recovery: false,
       overlaps: false,
       stalled: false,
     };

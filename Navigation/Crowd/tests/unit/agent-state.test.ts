@@ -3,29 +3,29 @@ import { AgentBuffer } from '../../src/core/agent-state';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { getScenario } from '../../src/scenarios/scenarios';
 
-describe('persistent agent movement state', () => {
-  it('copies every steering and smoothness field between state buffers', () => {
+describe('agent movement state', () => {
+  it('copies every field between fixed-size state buffers', () => {
     const source = new AgentBuffer(2);
+    source.x.set([10, 20]);
+    source.y.set([30, 40]);
+    source.vx.set([2, -4]);
+    source.vy.set([3, 5]);
+    source.active.set([1, 0]);
+    source.stalledFor.set([0.5, 1.25]);
     source.intentX.set([0.25, -0.75]);
     source.intentY.set([0.5, 0.125]);
-    source.accelerationX.set([10, 20]);
-    source.accelerationY.set([-3, 4]);
-    source.adjacentStoppedFor.set([0.5, 1.25]);
-    source.motionPhase.set([1, 2]);
-    source.avoidanceSide.set([-1, 1]);
-    source.avoidanceHold.set([0.2, 0.8]);
 
     const target = new AgentBuffer(2);
     target.copyFrom(source);
 
+    expect([...target.x]).toEqual([...source.x]);
+    expect([...target.y]).toEqual([...source.y]);
+    expect([...target.vx]).toEqual([...source.vx]);
+    expect([...target.vy]).toEqual([...source.vy]);
+    expect([...target.active]).toEqual([...source.active]);
+    expect([...target.stalledFor]).toEqual([...source.stalledFor]);
     expect([...target.intentX]).toEqual([...source.intentX]);
     expect([...target.intentY]).toEqual([...source.intentY]);
-    expect([...target.accelerationX]).toEqual([...source.accelerationX]);
-    expect([...target.accelerationY]).toEqual([...source.accelerationY]);
-    expect([...target.adjacentStoppedFor]).toEqual([...source.adjacentStoppedFor]);
-    expect([...target.motionPhase]).toEqual([...source.motionPhase]);
-    expect([...target.avoidanceSide]).toEqual([...source.avoidanceSide]);
-    expect([...target.avoidanceHold]).toEqual([...source.avoidanceHold]);
   });
 
   it('includes persistent steering intent in the deterministic state hash', () => {

@@ -4,9 +4,9 @@ export interface DebugOptions {
   flowField: boolean;
   spatialGrid: boolean;
   velocity: boolean;
-  preferredVelocity: boolean;
+  desiredVelocity: boolean;
   density: boolean;
-  fallbacks: boolean;
+  recovery: boolean;
   neighborRadius: boolean;
   overlaps: boolean;
   stalled: boolean;
@@ -16,9 +16,9 @@ export const DEFAULT_DEBUG_OPTIONS: DebugOptions = {
   flowField: false,
   spatialGrid: false,
   velocity: false,
-  preferredVelocity: false,
+  desiredVelocity: false,
   density: false,
-  fallbacks: true,
+  recovery: true,
   neighborRadius: false,
   overlaps: true,
   stalled: true,
@@ -34,9 +34,9 @@ export function drawDebug(
   if (options.spatialGrid) drawSpatialGrid(context, simulation);
   if (options.flowField) drawFlowField(context, simulation);
   if (options.neighborRadius) drawNeighborRadii(context, simulation, alpha);
-  if (options.preferredVelocity) drawPreferredVelocity(context, simulation, alpha);
+  if (options.desiredVelocity) drawDesiredVelocity(context, simulation, alpha);
   if (options.velocity) drawVelocity(context, simulation, alpha);
-  if (options.fallbacks) drawFallbacks(context, simulation, alpha);
+  if (options.recovery) drawRecovery(context, simulation, alpha);
   if (options.overlaps || options.stalled) drawWarnings(context, simulation, options);
 }
 
@@ -90,10 +90,16 @@ function drawNeighborRadii(
   context.save();
   context.strokeStyle = 'rgba(167, 139, 250, 0.28)';
   context.lineWidth = 1;
-  for (let i = 0; i < simulation.state.count; i += 20) {
-    if (simulation.state.active[i] !== 1) continue;
+  for (let agent = 0; agent < simulation.state.count; agent += 20) {
+    if (simulation.state.active[agent] !== 1) continue;
     context.beginPath();
-    context.arc(renderX(simulation, i, alpha), renderY(simulation, i, alpha), simulation.config.neighborRadius, 0, Math.PI * 2);
+    context.arc(
+      renderX(simulation, agent, alpha),
+      renderY(simulation, agent, alpha),
+      simulation.config.neighborRadius,
+      0,
+      Math.PI * 2,
+    );
     context.stroke();
   }
   context.restore();
@@ -108,18 +114,18 @@ function drawVelocity(
   context.strokeStyle = 'rgba(250, 204, 21, 0.55)';
   context.lineWidth = 1;
   context.beginPath();
-  for (let i = 0; i < simulation.state.count; i += 5) {
-    if (simulation.state.active[i] !== 1) continue;
-    const x = renderX(simulation, i, alpha);
-    const y = renderY(simulation, i, alpha);
+  for (let agent = 0; agent < simulation.state.count; agent += 5) {
+    if (simulation.state.active[agent] !== 1) continue;
+    const x = renderX(simulation, agent, alpha);
+    const y = renderY(simulation, agent, alpha);
     context.moveTo(x, y);
-    context.lineTo(x + simulation.state.vx[i]! * 0.18, y + simulation.state.vy[i]! * 0.18);
+    context.lineTo(x + simulation.state.vx[agent]! * 0.18, y + simulation.state.vy[agent]! * 0.18);
   }
   context.stroke();
   context.restore();
 }
 
-function drawPreferredVelocity(
+function drawDesiredVelocity(
   context: CanvasRenderingContext2D,
   simulation: CrowdSimulation,
   alpha: number,
@@ -129,14 +135,14 @@ function drawPreferredVelocity(
   context.strokeStyle = 'rgba(34, 211, 238, 0.72)';
   context.lineWidth = 1;
   context.beginPath();
-  for (let i = 0; i < simulation.state.count; i += 5) {
-    if (simulation.state.active[i] !== 1) continue;
-    const x = renderX(simulation, i, alpha);
-    const y = renderY(simulation, i, alpha);
+  for (let agent = 0; agent < simulation.state.count; agent += 5) {
+    if (simulation.state.active[agent] !== 1) continue;
+    const x = renderX(simulation, agent, alpha);
+    const y = renderY(simulation, agent, alpha);
     context.moveTo(x, y);
     context.lineTo(
-      x + layers.preferredVelocityX[i]! * 0.18,
-      y + layers.preferredVelocityY[i]! * 0.18,
+      x + layers.desiredVelocityX[agent]! * 0.18,
+      y + layers.desiredVelocityY[agent]! * 0.18,
     );
   }
   context.stroke();
@@ -151,35 +157,32 @@ function drawDensity(
   const density = simulation.debugLayers.density;
   const radius = simulation.config.agentRadius * 2.4;
   context.save();
-  for (let i = 0; i < simulation.state.count; i += 1) {
-    if (simulation.state.active[i] !== 1 || density[i]! <= 0.02) continue;
-    const normalized = Math.min(1, Math.max(0, density[i]!));
+  for (let agent = 0; agent < simulation.state.count; agent += 1) {
+    if (simulation.state.active[agent] !== 1 || density[agent]! <= 0.02) continue;
+    const normalized = Math.min(1, Math.max(0, density[agent]!));
     context.fillStyle = `rgba(251, ${Math.round(191 - normalized * 120)}, 36, ${0.05 + normalized * 0.2})`;
     context.beginPath();
-    context.arc(renderX(simulation, i, alpha), renderY(simulation, i, alpha), radius, 0, Math.PI * 2);
+    context.arc(renderX(simulation, agent, alpha), renderY(simulation, agent, alpha), radius, 0, Math.PI * 2);
     context.fill();
   }
   context.restore();
 }
 
-function drawFallbacks(
+function drawRecovery(
   context: CanvasRenderingContext2D,
   simulation: CrowdSimulation,
   alpha: number,
 ): void {
-  const reasons = simulation.debugLayers.fallbackReason;
+  const recovery = simulation.debugLayers.recovery;
   context.save();
+  context.strokeStyle = '#fb923c';
   context.lineWidth = 2.2;
-  for (let i = 0; i < simulation.state.count; i += 1) {
-    const reason = reasons[i]!;
-    if (reason === 0 || simulation.state.active[i] !== 1) continue;
-    context.strokeStyle = reason === 1
-      ? '#fb923c'
-      : reason === 2 ? '#f43f5e' : reason === 3 ? '#c084fc' : '#facc15';
+  for (let agent = 0; agent < simulation.state.count; agent += 1) {
+    if (recovery[agent] !== 1 || simulation.state.active[agent] !== 1) continue;
     context.beginPath();
     context.arc(
-      renderX(simulation, i, alpha),
-      renderY(simulation, i, alpha),
+      renderX(simulation, agent, alpha),
+      renderY(simulation, agent, alpha),
       simulation.config.agentRadius + 4,
       0,
       Math.PI * 2,
@@ -197,28 +200,28 @@ function drawWarnings(
   const radius = simulation.config.agentRadius + 2.2;
   context.save();
   context.lineWidth = 1.5;
-  for (let i = 0; i < simulation.state.count; i += 1) {
-    const overlapping = options.overlaps && simulation.overlapFlags[i] === 1;
+  for (let agent = 0; agent < simulation.state.count; agent += 1) {
+    const overlapping = options.overlaps && simulation.overlapFlags[agent] === 1;
     const stalled = options.stalled
-      && simulation.state.active[i] === 1
-      && simulation.state.stalledFor[i]! >= simulation.config.stallSeconds;
+      && simulation.state.active[agent] === 1
+      && simulation.state.stalledFor[agent]! >= simulation.config.stallSeconds;
     if (!overlapping && !stalled) continue;
     context.strokeStyle = overlapping ? '#fb7185' : '#fbbf24';
     context.beginPath();
-    context.arc(simulation.state.x[i]!, simulation.state.y[i]!, radius, 0, Math.PI * 2);
+    context.arc(simulation.state.x[agent]!, simulation.state.y[agent]!, radius, 0, Math.PI * 2);
     context.stroke();
   }
   context.restore();
 }
 
 function renderX(simulation: CrowdSimulation, agent: number, alpha: number): number {
-  const t = Math.min(1, Math.max(0, alpha));
+  const interpolation = Math.min(1, Math.max(0, alpha));
   return simulation.previousState.x[agent]!
-    + (simulation.state.x[agent]! - simulation.previousState.x[agent]!) * t;
+    + (simulation.state.x[agent]! - simulation.previousState.x[agent]!) * interpolation;
 }
 
 function renderY(simulation: CrowdSimulation, agent: number, alpha: number): number {
-  const t = Math.min(1, Math.max(0, alpha));
+  const interpolation = Math.min(1, Math.max(0, alpha));
   return simulation.previousState.y[agent]!
-    + (simulation.state.y[agent]! - simulation.previousState.y[agent]!) * t;
+    + (simulation.state.y[agent]! - simulation.previousState.y[agent]!) * interpolation;
 }

@@ -1,0 +1,101 @@
+{
+  "command": "npm run measure && npm run measure:flows",
+  "config": {
+    "agents": 1000,
+    "seed": 42,
+    "fixedDelta": 0.016666666666666666,
+    "avoidanceHorizon": 0.5
+  },
+  "core": [
+    {
+      "scenario": "open-field",
+      "steps": 600,
+      "active": 932,
+      "arrived": 68,
+      "averageSpeed": 48.1123,
+      "averageGoalProgress": 48.0101,
+      "gateThroughputPerSecond": 98.3,
+      "recoveryRate": 0,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "maximumBackward": 0,
+      "maximumCandidates": 130338,
+      "hash": "27c27059"
+    },
+    {
+      "scenario": "dense-spawn",
+      "steps": 60,
+      "active": 1000,
+      "arrived": 0,
+      "averageSpeed": 38.8303,
+      "averageGoalProgress": 38.6961,
+      "recoveryRate": 0.0008,
+      "maximumRecoveryDistance": 0.206,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "maximumBackward": 0,
+      "maximumCandidates": 224196,
+      "hash": "5af46f01"
+    },
+    {
+      "scenario": "obstacle-field",
+      "steps": 600,
+      "active": 994,
+      "arrived": 6,
+      "averageSpeed": 44.728,
+      "averageGoalProgress": 41.9263,
+      "gateThroughputPerSecond": 32.4,
+      "recoveryRate": 0.001,
+      "maximumRecoveryDistance": 1.4224,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "maximumBackward": 2,
+      "maximumCandidates": 512866,
+      "hash": "07d7e5a4"
+    }
+  ],
+  "multiFlow": [
+    {
+      "scenario": "merge-500-500",
+      "steps": 900,
+      "crossings": [500, 500],
+      "arrived": [196, 176],
+      "crossingFairness": 1,
+      "arrivalFairness": 0.9971178233802167,
+      "maximumStarvationSteps": [19, 14],
+      "minimumRollingThroughputPerSecond": 18,
+      "recoveryRate": 0.0000023700445331367774,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "hash": "a55f7f6e"
+    },
+    {
+      "scenario": "opposing-500-500",
+      "steps": 900,
+      "crossings": [169, 218],
+      "arrived": [62, 79],
+      "crossingFairness": 0.9842215942695669,
+      "arrivalFairness": 0.9856717897868121,
+      "maximumStarvationSteps": [28, 15],
+      "minimumRollingThroughputPerSecond": 4.4,
+      "recoveryRate": 0.025407026174249486,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "hash": "d26d6ca1"
+    },
+    {
+      "scenario": "crossing-500-500",
+      "steps": 900,
+      "crossings": [498, 494],
+      "arrived": [38, 334],
+      "crossingFairness": 0.9999837411592554,
+      "arrivalFairness": 0.6123185840707964,
+      "maximumStarvationSteps": [215, 8],
+      "minimumRollingThroughputPerSecond": 46.6,
+      "recoveryRate": 0.00020001230844975075,
+      "maximumOverlaps": 0,
+      "maximumWallOverlaps": 0,
+      "hash": "9aea2f0c"
+    }
+  ]
+}

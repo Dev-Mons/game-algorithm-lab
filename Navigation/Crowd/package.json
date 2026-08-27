@@ -12,10 +12,6 @@
     "test:e2e": "playwright test",
     "measure": "vite-node scripts/measure.ts",
     "measure:long": "vite-node scripts/measure.ts --long",
-    "diagnose:flow": "vite-node scripts/diagnose-flow.ts",
-    "diagnose:agreement": "vite-node scripts/diagnose-agreement.ts",
-    "trace:agent": "vite-node scripts/trace-agent.ts",
-    "compare:pipelines": "vite-node scripts/compare-pipelines.ts",
     "measure:flows": "vite-node scripts/measure-flow-behavior.ts",
     "verify": "npm run typecheck && npm run test:run && npm run build"
   },

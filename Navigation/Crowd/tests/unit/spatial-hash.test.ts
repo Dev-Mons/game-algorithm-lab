@@ -19,4 +19,20 @@ describe('Uniform Grid Spatial Hash', () => {
     }
     expect(candidates.has(4)).toBe(false);
   });
+
+  it('visits the query cell before distant AABB corners in a bounded query', () => {
+    const x = new Float64Array([5, 55, 52]);
+    const y = new Float64Array([5, 55, 53]);
+    const active = new Uint8Array([1, 1, 1]);
+    const hash = new SpatialHash(100, 100, 10, x.length);
+    hash.rebuild(x, y, active);
+    let firstCandidate = -1;
+
+    hash.forEachCandidateUntil(55, 55, 60, (candidate) => {
+      firstCandidate = candidate;
+      return false;
+    });
+
+    expect(firstCandidate).toBe(2);
+  });
 });

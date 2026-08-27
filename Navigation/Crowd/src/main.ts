@@ -17,7 +17,6 @@ declare global {
         active: number;
         arrived: number;
         scenario: string;
-        pipeline: string;
         metrics: StepMetrics;
       };
       simulation: () => CrowdSimulation;
@@ -31,21 +30,15 @@ if (!root) throw new Error('Missing #app root.');
 root.innerHTML = appTemplate();
 
 const params = new URLSearchParams(location.search);
-const scenarioId = params.get('scenario') ?? 'open-field';
-const initialScenario = getScenario(scenarioId);
+const initialScenario = getScenario(params.get('scenario') ?? 'open-field');
 const requestedAgents = parseInteger(params.get('agents'), DEFAULT_CONFIG.agentCount, 1, 5000);
 const requestedSeed = parseInteger(params.get('seed'), DEFAULT_CONFIG.seed, -2147483648, 2147483647);
 const targetStep = parseInteger(params.get('step'), 0, 0, 1_000_000);
 const requestedPaused = params.get('paused') === 'true';
-const pipelineParameter = params.get('pipeline');
-const requestedPipeline = pipelineParameter === 'minimal' || pipelineParameter === 'unified'
-  ? pipelineParameter
-  : initialScenario.flows?.length ? 'unified' : 'current';
 const config: SimulationConfig = {
   ...DEFAULT_CONFIG,
   agentCount: requestedAgents,
   seed: requestedSeed,
-  pipeline: requestedPipeline,
 };
 let simulation = new CrowdSimulation(config, initialScenario);
 let running = !requestedPaused;
@@ -70,7 +63,6 @@ window.crowdDebug = {
     active: simulation.metrics.activeCount,
     arrived: simulation.metrics.arrivedCount,
     scenario: simulation.scenario.id,
-    pipeline: simulation.config.pipeline ?? 'current',
     metrics: { ...simulation.metrics },
   }),
   simulation: () => simulation,
@@ -89,7 +81,7 @@ function frame(now: number): void {
     for (let i = 0; i < batch; i += 1) timedStep();
     if (simulation.stepCount >= targetStep) {
       fastForwarding = false;
-      running = !requestedPaused && targetStep === 0;
+      running = false;
       alpha = 1;
       window.crowdDebug.ready = true;
       updateRunState();
@@ -109,16 +101,14 @@ function frame(now: number): void {
 }
 
 function timedStep(): void {
-  const start = performance.now();
+  const startedAt = performance.now();
   simulation.step();
-  runtimeMetrics.recordStep(performance.now() - start);
+  runtimeMetrics.recordStep(performance.now() - startedAt);
 }
 
 function initializeControls(): void {
   const scenarioSelect = element<HTMLSelectElement>('scenario-select');
   scenarioSelect.value = simulation.scenario.id;
-  const pipelineSelect = element<HTMLSelectElement>('pipeline-select');
-  pipelineSelect.value = simulation.config.pipeline ?? 'current';
   element<HTMLInputElement>('agent-count').value = String(config.agentCount);
   element<HTMLInputElement>('seed').value = String(config.seed);
 
@@ -141,21 +131,13 @@ function initializeControls(): void {
     timeScale = Number((event.currentTarget as HTMLSelectElement).value);
   });
   scenarioSelect.addEventListener('change', () => {
-    const scenario = getScenario(scenarioSelect.value);
-    if (scenario.flows?.length) {
-      config.pipeline = 'unified';
-      pipelineSelect.value = 'unified';
-    }
-    rebuildSimulation(scenario);
-    updateScenarioText();
-  });
-  pipelineSelect.addEventListener('change', () => {
-    const value = pipelineSelect.value;
-    config.pipeline = value === 'minimal' || value === 'unified' ? value : 'current';
-    rebuildSimulation(simulation.scenario);
+    rebuildSimulation(getScenario(scenarioSelect.value));
   });
   element<HTMLInputElement>('agent-count').addEventListener('change', (event) => {
-    config.agentCount = Math.max(1, Math.min(5000, Number((event.currentTarget as HTMLInputElement).value) || 1000));
+    config.agentCount = Math.max(
+      1,
+      Math.min(5000, Number((event.currentTarget as HTMLInputElement).value) || 1000),
+    );
     rebuildSimulation(simulation.scenario);
   });
   element<HTMLInputElement>('seed').addEventListener('change', (event) => {
@@ -165,7 +147,6 @@ function initializeControls(): void {
 
   bindRange('max-speed', 'maxSpeed');
   bindRange('max-acceleration', 'maxAcceleration');
-  bindRange('max-turn-rate', 'maxTurnRate');
   bindRange('agent-radius', 'agentRadius', true);
   bindRange('neighbor-radius', 'neighborRadius', true);
   bindRange('agent-gap', 'agentGap');
@@ -174,9 +155,9 @@ function initializeControls(): void {
   bindToggle('debug-flow', 'flowField');
   bindToggle('debug-grid', 'spatialGrid');
   bindToggle('debug-velocity', 'velocity');
-  bindToggle('debug-preferred', 'preferredVelocity');
+  bindToggle('debug-desired', 'desiredVelocity');
   bindToggle('debug-density', 'density');
-  bindToggle('debug-fallbacks', 'fallbacks');
+  bindToggle('debug-recovery', 'recovery');
   bindToggle('debug-neighbors', 'neighborRadius');
   bindToggle('debug-overlaps', 'overlaps');
   bindToggle('debug-stalled', 'stalled');
@@ -200,10 +181,7 @@ function bindRange(id: string, key: NumericConfigKey, rebuild = false): void {
   const output = element<HTMLOutputElement>(`${id}-output`);
   input.addEventListener('input', () => {
     output.value = input.value;
-    if (rebuild) return;
-    const value = Number(input.value);
-    const current = simulation.config[key];
-    if (typeof current === 'number') simulation.config[key] = value;
+    if (!rebuild) simulation.config[key] = Number(input.value);
   });
   if (rebuild) {
     input.addEventListener('change', () => {
@@ -239,7 +217,9 @@ function resetSimulation(): void {
 
 function updateRunState(): void {
   const paused = !running && !fastForwarding;
-  element<HTMLElement>('status-label').textContent = fastForwarding ? '목표 스텝 계산 중' : paused ? '일시정지' : '실행 중';
+  element<HTMLElement>('status-label').textContent = fastForwarding
+    ? '목표 스텝 계산 중'
+    : paused ? '일시정지' : '실행 중';
   element<HTMLButtonElement>('run-toggle').textContent = paused ? '▶ 실행' : '❚❚ 일시정지';
   element<HTMLElement>('status-dot').parentElement?.classList.toggle('paused', paused);
 }
@@ -259,22 +239,16 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-arrived').textContent = `${metrics.arrivedCount.toLocaleString()} / ${(metrics.arrivalRate * 100).toFixed(1)}%`;
   element<HTMLElement>('metric-speed').textContent = metrics.averageSpeed.toFixed(1);
   element<HTMLElement>('metric-overlap').textContent = metrics.overlapPairs.toLocaleString();
+  element<HTMLElement>('metric-recovery').textContent = `${metrics.recoveredAgents.toLocaleString()} / ${metrics.maxRecoveryDistance.toFixed(2)} px`;
   element<HTMLElement>('metric-stalled').textContent = metrics.stalledCount.toLocaleString();
   element<HTMLElement>('metric-neighbors').textContent = `${metrics.averageNeighbors.toFixed(1)} / ${metrics.maxNeighbors}`;
   element<HTMLElement>('metric-candidates').textContent = metrics.candidateChecks.toLocaleString();
-  element<HTMLElement>('metric-backward').textContent = `${metrics.backwardCount.toLocaleString()} / ${metrics.strongBackwardCount.toLocaleString()}`;
+  element<HTMLElement>('metric-backward').textContent = metrics.backwardCount.toLocaleString();
   element<HTMLElement>('metric-wall-overlap').textContent = metrics.wallOverlapCount.toLocaleString();
   element<HTMLElement>('metric-velocity-delta').textContent = `${metrics.averageVelocityDelta.toFixed(2)} / ${metrics.maxVelocityDelta.toFixed(2)}`;
-  element<HTMLElement>('metric-hard-stop').textContent = `${metrics.hardStopCount.toLocaleString()} / ${metrics.emergencyStopCount.toLocaleString()}`;
-  element<HTMLElement>('metric-reservation').textContent = `${metrics.reservationLimitedCount.toLocaleString()} / ${metrics.reservationStoppedCount.toLocaleString()}`;
-  element<HTMLElement>('metric-reciprocal').textContent = `${metrics.reciprocalConstraintCount.toLocaleString()} / ${metrics.reciprocalProjectionRepairCount.toLocaleString()}`;
-  element<HTMLElement>('metric-side-switch').textContent = `${metrics.sideSwitchCount.toLocaleString()} / ${metrics.stopMoveStopCount.toLocaleString()}`;
-  element<HTMLElement>('metric-adjacent-stop').textContent = metrics.longAdjacentStopCount.toLocaleString();
-  element<HTMLElement>('metric-fallback').textContent = metrics.safetyFallbackCount.toLocaleString();
-  element<HTMLElement>('metric-infeasible').textContent = metrics.unifiedInfeasibleCount.toLocaleString();
+  element<HTMLElement>('metric-acceleration').textContent = `${metrics.averageAcceleration.toFixed(1)} / ${metrics.maxAcceleration.toFixed(1)}`;
   document.body.dataset.step = String(simulation.stepCount);
   document.body.dataset.agents = String(simulation.config.agentCount);
-  document.body.dataset.pipeline = simulation.config.pipeline ?? 'current';
   document.body.dataset.paused = String(!running && !fastForwarding);
 }
 
