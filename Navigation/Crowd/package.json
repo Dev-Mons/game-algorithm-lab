@@ -12,6 +12,7 @@
     "test:e2e": "playwright test",
     "measure": "vite-node scripts/measure.ts",
     "measure:long": "vite-node scripts/measure.ts --long",
+    "measure:flows": "vite-node scripts/measure-flow-behavior.ts",
     "verify": "npm run typecheck && npm run test:run && npm run build"
   },
   "devDependencies": {

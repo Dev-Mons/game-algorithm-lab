@@ -1,5 +1,5 @@
-import type { Renderer } from '../core/types';
 import type { CrowdSimulation } from '../core/simulation';
+import type { Renderer } from '../core/types';
 import { drawDebug, type DebugOptions } from './debug-drawing';
 
 export class CanvasRenderer implements Renderer {
@@ -16,8 +16,8 @@ export class CanvasRenderer implements Renderer {
   }
 
   render(alpha: number): void {
-    void alpha;
     const simulation = this.getSimulation();
+    const interpolation = Math.min(1, Math.max(0, alpha));
     const context = this.context;
     context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -36,27 +36,62 @@ export class CanvasRenderer implements Renderer {
     }
 
     const pulse = 3 + Math.sin(simulation.stepCount * 0.05) * 2;
-    context.fillStyle = 'rgba(45, 212, 191, 0.08)';
-    context.strokeStyle = '#2dd4bf';
-    context.lineWidth = 2;
-    context.beginPath();
-    context.arc(simulation.goal.x, simulation.goal.y, simulation.config.goalRadius + pulse, 0, Math.PI * 2);
-    context.fill();
-    context.stroke();
-    context.fillStyle = '#5eead4';
-    context.beginPath();
-    context.arc(simulation.goal.x, simulation.goal.y, 4, 0, Math.PI * 2);
-    context.fill();
-
-    context.fillStyle = '#60a5fa';
-    const radius = simulation.config.agentRadius;
-    for (let i = 0; i < simulation.state.count; i += 1) {
-      if (simulation.state.active[i] !== 1) continue;
+    for (const goal of simulation.goals) {
+      context.fillStyle = 'rgba(45, 212, 191, 0.08)';
+      context.strokeStyle = '#2dd4bf';
+      context.lineWidth = 2;
       context.beginPath();
-      context.arc(simulation.state.x[i]!, simulation.state.y[i]!, radius, 0, Math.PI * 2);
+      context.arc(goal.x, goal.y, simulation.config.goalRadius + pulse, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.fillStyle = '#5eead4';
+      context.beginPath();
+      context.arc(goal.x, goal.y, 4, 0, Math.PI * 2);
       context.fill();
     }
 
-    drawDebug(context, simulation, this.debug);
+    const radius = simulation.config.agentRadius;
+    const previous = simulation.previousState;
+    context.fillStyle = '#60a5fa';
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      if (simulation.state.active[agent] !== 1) continue;
+      const x = previous.x[agent]!
+        + (simulation.state.x[agent]! - previous.x[agent]!) * interpolation;
+      const y = previous.y[agent]!
+        + (simulation.state.y[agent]! - previous.y[agent]!) * interpolation;
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+
+    // Heading is presentation-only and follows the latest command intent
+    // immediately. Physical velocity remains acceleration-limited by the solver.
+    context.strokeStyle = 'rgba(219, 234, 254, 0.72)';
+    context.lineWidth = Math.max(1, radius * 0.32);
+    context.beginPath();
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      if (simulation.state.active[agent] !== 1) continue;
+      const x = previous.x[agent]!
+        + (simulation.state.x[agent]! - previous.x[agent]!) * interpolation;
+      const y = previous.y[agent]!
+        + (simulation.state.y[agent]! - previous.y[agent]!) * interpolation;
+      let headingX = simulation.state.intentX[agent]!;
+      let headingY = simulation.state.intentY[agent]!;
+      let length = Math.hypot(headingX, headingY);
+      if (length <= 1e-6) {
+        headingX = simulation.state.vx[agent]!;
+        headingY = simulation.state.vy[agent]!;
+        length = Math.hypot(headingX, headingY);
+      }
+      if (length <= 1e-6) continue;
+      context.moveTo(x, y);
+      context.lineTo(
+        x + headingX / length * radius * 1.45,
+        y + headingY / length * radius * 1.45,
+      );
+    }
+    context.stroke();
+
+    drawDebug(context, simulation, this.debug, interpolation);
   }
 }

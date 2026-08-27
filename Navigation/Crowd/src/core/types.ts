@@ -10,31 +10,19 @@ export interface Rect {
   height: number;
 }
 
-/**
- * 'current' runs the full layered pipeline (free-gap + reciprocal + priority
- * reservation). 'minimal' runs the P1 experiment pipeline: flow-field preferred
- * velocity → full-velocity-space ORCA → static slide → symmetric position
- * relaxation. Undefined behaves as 'current'.
- */
-export type PipelineKind = 'current' | 'minimal';
-
 export interface SimulationConfig {
   width: number;
   height: number;
   cellSize: number;
   agentCount: number;
   seed: number;
-  pipeline?: PipelineKind;
   maxSpeed: number;
   maxAcceleration: number;
-  /** Maximum steering-heading rotation in radians per second. */
-  maxTurnRate: number;
   agentRadius: number;
   neighborRadius: number;
   agentGap: number;
   wallMargin: number;
   avoidanceHorizon: number;
-  avoidanceBiasSeconds: number;
   goalRadius: number;
   fixedDelta: number;
   arrivalSlowRadius: number;
@@ -48,6 +36,14 @@ export interface ScenarioDefinition {
   goal: Vec2;
   obstacles: Rect[];
   spawn: Rect;
+  flows?: readonly ScenarioFlowDefinition[];
+}
+
+export interface ScenarioFlowDefinition {
+  id: string;
+  spawn: Rect;
+  goal: Vec2;
+  weight?: number;
 }
 
 export interface StepMetrics {
@@ -56,38 +52,27 @@ export interface StepMetrics {
   arrivalRate: number;
   averageSpeed: number;
   overlapPairs: number;
+  recoveredAgents: number;
+  maxRecoveryDistance: number;
   stalledCount: number;
   averageNeighbors: number;
   maxNeighbors: number;
   candidateChecks: number;
   backwardCount: number;
-  strongBackwardCount: number;
   wallOverlapCount: number;
   averageVelocityDelta: number;
   maxVelocityDelta: number;
   averageAcceleration: number;
   maxAcceleration: number;
-  averageJerk: number;
-  maxJerk: number;
-  hardStopCount: number;
-  emergencyStopCount: number;
-  stopMoveStopCount: number;
-  sideSwitchCount: number;
-  longAdjacentStopCount: number;
-  /** Agents whose own proposal was shortened by front-to-back reservation. */
-  reservationLimitedCount: number;
-  /** Limited agents that yielded their complete proposed displacement. */
-  reservationStoppedCount: number;
-  /** Largest velocity reduction caused by reservation in this step. */
-  maxReservationVelocityChange: number;
-  /** Number of reciprocal velocity half-planes built in this step. */
-  reciprocalConstraintCount: number;
-  /** Agents requiring the deterministic half-plane projection repair pass. */
-  reciprocalProjectionRepairCount: number;
-  /** Minimal pipeline: agents whose position was moved by symmetric relaxation. */
-  relaxationCorrectedCount: number;
-  /** Minimal pipeline: largest per-agent relaxation correction this step, in px. */
-  maxRelaxationCorrection: number;
+}
+
+export interface CrowdDebugLayers {
+  desiredVelocityX: Float64Array;
+  desiredVelocityY: Float64Array;
+  solvedVelocityX: Float64Array;
+  solvedVelocityY: Float64Array;
+  density: Float64Array;
+  recovery: Uint8Array;
 }
 
 export interface NeighborIndex {
