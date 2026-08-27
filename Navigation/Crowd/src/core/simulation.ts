@@ -8,6 +8,7 @@ import {
   type SweptCircleSlideOutput,
 } from './obstacle-collision';
 import { computeArrivalSlot } from './arrival-slots';
+import { PositionRelaxationSolver } from './position-relaxation';
 import { PriorityVelocitySolver } from './priority-velocity-solver';
 import { SeededRandom } from './random';
 import type { Rect, ScenarioDefinition, SimulationConfig, StepMetrics, Vec2 } from './types';
@@ -18,6 +19,7 @@ import {
   type LocalMovementOutput,
   type LocalSteeringIntent,
 } from '../algorithms/steering/local-movement-solver';
+import { OrcaVelocitySolver } from '../algorithms/steering/orca-velocity-solver';
 import { ReciprocalVelocitySolver } from '../algorithms/steering/reciprocal-velocity-solver';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 
@@ -50,6 +52,8 @@ const ZERO_METRICS: StepMetrics = {
   maxReservationVelocityChange: 0,
   reciprocalConstraintCount: 0,
   reciprocalProjectionRepairCount: 0,
+  relaxationCorrectedCount: 0,
+  maxRelaxationCorrection: 0,
 };
 
 const FLOW_LANE_STEP = 0.6180339887498949;
@@ -57,6 +61,33 @@ const UINT32_RANGE = 0x1_0000_0000;
 // Keep physical endpoints just outside the reporting contact band so exact
 // AABB tangency cannot become a persistent all-directions-blocked state.
 const STATIC_CONTACT_SKIN = 0.06;
+// Minimal (P1/P2 experiment) pipeline tuning. The ORCA horizon is deliberately
+// short of the legacy 2s so dense half-plane sets stay feasible, and the
+// relaxation cap keeps per-frame positional corrections below one pixel.
+// The ORCA neighbor query radius is derived as comfortRadius +
+// maxSpeed * ORCA_TIME_HORIZON: a constraint then activates exactly when its
+// speed bound reaches the agent's own speed, so entering the neighbor set
+// never demands a discontinuous velocity change.
+const ORCA_TIME_HORIZON = 0.5;
+const ORCA_NEIGHBOR_CAP = 16;
+// Hard static half-planes limit approach toward walls to gap / response time;
+// the infeasibility repair never relaxes them.
+const ORCA_STATIC_RESPONSE = 0.25;
+const RELAXATION_ITERATIONS = 6;
+const RELAXATION_CAP_RATIO = 0.5;
+// Comfortable spacing is a preference, not a constraint: a gentle separation
+// term in the preferred velocity keeps packed groups near the comfort radius
+// while the ORCA constraints stay limited to actual collision safety.
+const SEPARATION_RANGE_MARGIN = 2;
+const SEPARATION_SPEED = 12;
+const SEPARATION_SPEED_CAP = 18;
+// Congestion slowdown: approaching a *slow* group ahead lowers desired speed
+// before hard constraints have to, turning dash-and-stop into a smooth queue.
+// A column moving at full speed is not congestion and is never slowed.
+const DENSITY_RADIUS = 16;
+const DENSITY_SATURATION = 10;
+const DENSITY_MAX_SLOWDOWN = 0.4;
+const DENSITY_SLOW_NEIGHBOR_FRACTION = 0.5;
 
 export class CrowdSimulation {
   state: AgentBuffer;
@@ -124,6 +155,8 @@ export class CrowdSimulation {
   };
   private readonly movementInput: LocalMovementInput;
   private readonly priorityVelocitySolver = new PriorityVelocitySolver();
+  private readonly orcaVelocitySolver = new OrcaVelocitySolver();
+  private readonly positionRelaxation = new PositionRelaxationSolver();
   private readonly staticIntegrator = new SweptCircleStaticIntegrator();
   private readonly staticIntegration: SweptCircleSlideOutput = {
     x: 0,
@@ -283,9 +316,12 @@ export class CrowdSimulation {
   }
 
   step(): void {
+    if ((this.config.pipeline ?? 'current') === 'minimal') {
+      this.stepMinimal();
+      return;
+    }
     const current = this.state;
     const next = this.nextState;
-    const goalRadiusSquared = this.config.goalRadius * this.config.goalRadius;
     const brakingDistance = this.config.maxAcceleration <= 0
       ? this.config.neighborRadius
       : (this.config.maxSpeed * this.config.maxSpeed) / (2 * this.config.maxAcceleration);
@@ -304,28 +340,13 @@ export class CrowdSimulation {
     next.copyFrom(current);
     this.activeThisStep.fill(0);
     this.activeThisStep.set(current.active);
-    for (let i = 0; i < current.count; i += 1) {
-      if (current.active[i] !== 1) continue;
-      if (distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y) > goalRadiusSquared) continue;
-      this.activeThisStep[i] = 0;
-      next.active[i] = 0;
-      next.vx[i] = 0;
-      next.vy[i] = 0;
-      next.intentX[i] = 0;
-      next.intentY[i] = 0;
-      next.accelerationX[i] = 0;
-      next.accelerationY[i] = 0;
-      next.stalledFor[i] = 0;
-      next.adjacentStoppedFor[i] = 0;
-    }
+    this.deactivateArrivals(current, next);
     this.planPreferredVelocities(current);
     this.neighbors.rebuild(current.x, current.y, this.activeThisStep);
     this.candidateChecks = 0;
     this.buildNeighborCache(current);
     this.overlapPairs = 0;
     this.overlapFlags.fill(0);
-    const totalNeighbors = this.cachedTotalNeighbors;
-    const maxNeighbors = this.cachedMaxNeighbors;
     this.emergencyStops.fill(0);
 
     // Phase A: calculate every steering intent from the same immutable snapshot.
@@ -427,6 +448,232 @@ export class CrowdSimulation {
     }
 
     // Phase D: update persistent state and aggregate smoothness/safety metrics.
+    this.finalizeStep(current, next, {
+      reservationLimitedCount: reservation.limitedAgents,
+      reservationStoppedCount: reservation.stoppedAgents,
+      maxReservationVelocityChange: reservation.maximumVelocityChange,
+      reciprocalConstraintCount,
+      reciprocalProjectionRepairCount,
+      relaxationCorrectedCount: 0,
+      maxRelaxationCorrection: 0,
+    });
+  }
+
+  /**
+   * P1 experiment pipeline: flow-field preferred velocity → full-velocity-space
+   * ORCA → integration with a swept static slide → symmetric capped position
+   * relaxation. One dynamic-avoidance authority, one non-penetration authority,
+   * no reverse-projection invariants, and no velocity/displacement re-sync —
+   * persisted velocity is the solver agreement, and relaxation corrections stay
+   * spatial.
+   */
+  private stepMinimal(): void {
+    const current = this.state;
+    const next = this.nextState;
+    next.copyFrom(current);
+    this.activeThisStep.fill(0);
+    this.activeThisStep.set(current.active);
+    this.deactivateArrivals(current, next);
+
+    // The neighbor cache is built before planning so frontal density can shape
+    // desired speed. The radius makes ORCA constraint activation seamless (see
+    // the constant block).
+    const comfortRadius = this.config.agentRadius * 2 + Math.max(0, this.config.agentGap);
+    this.queryRadius = Math.max(
+      this.config.neighborRadius,
+      comfortRadius + this.config.maxSpeed * ORCA_TIME_HORIZON,
+    );
+    this.neighbors.rebuild(current.x, current.y, this.activeThisStep);
+    this.candidateChecks = 0;
+    this.buildNeighborCache(current);
+    this.overlapFlags.fill(0);
+    this.emergencyStops.fill(0);
+
+    // Preferred velocity: acceleration-limited pursuit of the flow direction,
+    // slowed by the packing density ahead. This is the only place the
+    // acceleration budget shapes motion; the ORCA agreement below is applied
+    // as solved.
+    const arrivalRadius = Math.max(this.config.arrivalSlowRadius, this.config.goalRadius * 1.5);
+    const maximumDelta = Math.max(0, this.config.maxAcceleration) * this.config.fixedDelta;
+    const densityRadiusSquared = DENSITY_RADIUS * DENSITY_RADIUS;
+    const physicalDiameter = this.config.agentRadius * 2;
+    const separationRange = physicalDiameter
+      + Math.max(0, this.config.agentGap)
+      + SEPARATION_RANGE_MARGIN;
+    const separationRangeSquared = separationRange * separationRange;
+    const separationFalloff = Math.max(1e-9, separationRange - physicalDiameter);
+    for (let i = 0; i < current.count; i += 1) {
+      if (this.activeThisStep[i] !== 1) {
+        this.preferredX[i] = 0;
+        this.preferredY[i] = 0;
+        this.plannedVelocityX[i] = 0;
+        this.plannedVelocityY[i] = 0;
+        continue;
+      }
+      this.navigator.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
+      this.preferredX[i] = this.flowDirection.x;
+      this.preferredY[i] = this.flowDirection.y;
+      const distanceToGoal = Math.sqrt(
+        distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y),
+      );
+      let congestedCount = 0;
+      let separationX = 0;
+      let separationY = 0;
+      const slowNeighborSpeed = this.config.maxSpeed * DENSITY_SLOW_NEIGHBOR_FRACTION;
+      const start = this.neighborOffsets[i]!;
+      const end = this.neighborOffsets[i + 1]!;
+      for (let offset = start; offset < end; offset += 1) {
+        const neighbor = this.cachedNeighborIndices[offset]!;
+        const offsetX = current.x[neighbor]! - current.x[i]!;
+        const offsetY = current.y[neighbor]! - current.y[i]!;
+        const offsetSquared = offsetX * offsetX + offsetY * offsetY;
+        if (offsetSquared > densityRadiusSquared || offsetSquared <= 1e-12) continue;
+        const distance = Math.sqrt(offsetSquared);
+        if (offsetSquared < separationRangeSquared) {
+          const weight = Math.min(1, (separationRange - distance) / separationFalloff);
+          separationX -= (offsetX / distance) * weight * SEPARATION_SPEED;
+          separationY -= (offsetY / distance) * weight * SEPARATION_SPEED;
+        }
+        const forward = offsetX * this.flowDirection.x + offsetY * this.flowDirection.y;
+        if (forward <= 0.3 * distance) continue;
+        const neighborForwardSpeed = current.vx[neighbor]! * this.flowDirection.x
+          + current.vy[neighbor]! * this.flowDirection.y;
+        if (neighborForwardSpeed < slowNeighborSpeed) congestedCount += 1;
+      }
+      const separationLength = Math.hypot(separationX, separationY);
+      if (separationLength > SEPARATION_SPEED_CAP) {
+        separationX *= SEPARATION_SPEED_CAP / separationLength;
+        separationY *= SEPARATION_SPEED_CAP / separationLength;
+      }
+      const densityScale = 1
+        - DENSITY_MAX_SLOWDOWN * Math.min(1, congestedCount / DENSITY_SATURATION);
+      const desiredSpeed = this.config.maxSpeed
+        * Math.min(1, distanceToGoal / Math.max(arrivalRadius, 1e-9))
+        * densityScale;
+      const deltaX = this.flowDirection.x * desiredSpeed + separationX - current.vx[i]!;
+      const deltaY = this.flowDirection.y * desiredSpeed + separationY - current.vy[i]!;
+      const deltaLength = Math.hypot(deltaX, deltaY);
+      const scale = deltaLength > maximumDelta && deltaLength > 1e-9
+        ? maximumDelta / deltaLength
+        : 1;
+      this.plannedVelocityX[i] = current.vx[i]! + deltaX * scale;
+      this.plannedVelocityY[i] = current.vy[i]! + deltaY * scale;
+      next.intentX[i] = this.flowDirection.x;
+      next.intentY[i] = this.flowDirection.y;
+    }
+
+    const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
+    const orca = this.orcaVelocitySolver.solve({
+      current,
+      active: this.activeThisStep,
+      preferredVelocityX: this.plannedVelocityX,
+      preferredVelocityY: this.plannedVelocityY,
+      neighborOffsets: this.neighborOffsets,
+      neighborIndices: this.cachedNeighborIndices,
+      neighborCap: ORCA_NEIGHBOR_CAP,
+      agentRadius: this.config.agentRadius,
+      separationPadding: Math.max(0, this.config.agentGap),
+      maxSpeed: this.config.maxSpeed,
+      fixedDelta: this.config.fixedDelta,
+      timeHorizon: ORCA_TIME_HORIZON,
+      obstacles: this.scenario.obstacles,
+      worldWidth: this.config.width,
+      worldHeight: this.config.height,
+      wallClearance: clearance,
+      staticResponseTime: ORCA_STATIC_RESPONSE,
+      outputVelocityX: this.resolvedVelocityX,
+      outputVelocityY: this.resolvedVelocityY,
+    });
+
+    // Integrate the agreement against statics. The slide result is both the
+    // next position and the persisted velocity — no displacement re-sync.
+    for (let i = 0; i < current.count; i += 1) {
+      if (this.activeThisStep[i] !== 1) continue;
+      this.staticIntegrator.integrate(
+        current.x[i]!,
+        current.y[i]!,
+        this.resolvedVelocityX[i]!,
+        this.resolvedVelocityY[i]!,
+        this.config.fixedDelta,
+        clearance,
+        this.config.width,
+        this.config.height,
+        this.scenario.obstacles,
+        4,
+        this.staticIntegration,
+      );
+      next.x[i] = this.staticIntegration.x;
+      next.y[i] = this.staticIntegration.y;
+      next.vx[i] = this.staticIntegration.velocityX;
+      next.vy[i] = this.staticIntegration.velocityY;
+      if (Math.hypot(
+        next.vx[i]! - current.vx[i]!,
+        next.vy[i]! - current.vy[i]!,
+      ) > maximumDelta + 1e-9) {
+        this.emergencyStops[i] = 1;
+      }
+    }
+
+    const relaxation = this.positionRelaxation.solve({
+      next,
+      active: this.activeThisStep,
+      neighborOffsets: this.neighborOffsets,
+      neighborIndices: this.cachedNeighborIndices,
+      agentRadius: this.config.agentRadius,
+      maxCorrection: this.config.agentRadius * RELAXATION_CAP_RATIO,
+      iterations: RELAXATION_ITERATIONS,
+      obstacles: this.scenario.obstacles,
+      worldWidth: this.config.width,
+      worldHeight: this.config.height,
+      staticClearance: clearance,
+      overlapFlags: this.overlapFlags,
+    });
+    this.candidateChecks += relaxation.candidateChecks;
+    this.overlapPairs = relaxation.remainingOverlapPairs;
+
+    this.finalizeStep(current, next, {
+      reservationLimitedCount: 0,
+      reservationStoppedCount: 0,
+      maxReservationVelocityChange: 0,
+      reciprocalConstraintCount: orca.constraintCount,
+      reciprocalProjectionRepairCount: orca.infeasibleAgents,
+      relaxationCorrectedCount: relaxation.correctedAgents,
+      maxRelaxationCorrection: relaxation.maxCorrection,
+    });
+  }
+
+  private deactivateArrivals(current: AgentBuffer, next: AgentBuffer): void {
+    const goalRadiusSquared = this.config.goalRadius * this.config.goalRadius;
+    for (let i = 0; i < current.count; i += 1) {
+      if (current.active[i] !== 1) continue;
+      if (distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y) > goalRadiusSquared) continue;
+      this.activeThisStep[i] = 0;
+      next.active[i] = 0;
+      next.vx[i] = 0;
+      next.vy[i] = 0;
+      next.intentX[i] = 0;
+      next.intentY[i] = 0;
+      next.accelerationX[i] = 0;
+      next.accelerationY[i] = 0;
+      next.stalledFor[i] = 0;
+      next.adjacentStoppedFor[i] = 0;
+    }
+  }
+
+  /** Shared Phase D: persistent state, smoothness/safety metrics, buffer swap. */
+  private finalizeStep(
+    current: AgentBuffer,
+    next: AgentBuffer,
+    extras: {
+      reservationLimitedCount: number;
+      reservationStoppedCount: number;
+      maxReservationVelocityChange: number;
+      reciprocalConstraintCount: number;
+      reciprocalProjectionRepairCount: number;
+      relaxationCorrectedCount: number;
+      maxRelaxationCorrection: number;
+    },
+  ): void {
     let activeCount = 0;
     let arrivedCount = 0;
     let stalledCount = 0;
@@ -536,8 +783,8 @@ export class CrowdSimulation {
       averageSpeed: activeCount === 0 ? 0 : totalSpeed / activeCount,
       overlapPairs: this.overlapPairs,
       stalledCount,
-      averageNeighbors: activeCount === 0 ? 0 : totalNeighbors / activeCount,
-      maxNeighbors,
+      averageNeighbors: activeCount === 0 ? 0 : this.cachedTotalNeighbors / activeCount,
+      maxNeighbors: this.cachedMaxNeighbors,
       candidateChecks: this.candidateChecks,
       backwardCount,
       strongBackwardCount,
@@ -553,11 +800,13 @@ export class CrowdSimulation {
       stopMoveStopCount,
       sideSwitchCount,
       longAdjacentStopCount,
-      reservationLimitedCount: reservation.limitedAgents,
-      reservationStoppedCount: reservation.stoppedAgents,
-      maxReservationVelocityChange: reservation.maximumVelocityChange,
-      reciprocalConstraintCount,
-      reciprocalProjectionRepairCount,
+      reservationLimitedCount: extras.reservationLimitedCount,
+      reservationStoppedCount: extras.reservationStoppedCount,
+      maxReservationVelocityChange: extras.maxReservationVelocityChange,
+      reciprocalConstraintCount: extras.reciprocalConstraintCount,
+      reciprocalProjectionRepairCount: extras.reciprocalProjectionRepairCount,
+      relaxationCorrectedCount: extras.relaxationCorrectedCount,
+      maxRelaxationCorrection: extras.maxRelaxationCorrection,
     };
   }
 
@@ -1284,6 +1533,7 @@ export const DEFAULT_CONFIG: SimulationConfig = {
   cellSize: 24,
   agentCount: 1000,
   seed: 42,
+  pipeline: 'current',
   maxSpeed: 86,
   maxAcceleration: 210,
   maxTurnRate: 4.5,

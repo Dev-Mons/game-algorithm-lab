@@ -271,7 +271,9 @@ describe('crowd simulation', () => {
     expect(maximumStrongBackward).toBe(0);
     expect(maximumWallOverlaps).toBe(0);
     if (scenarioId === 'obstacle-field') expect(maximumContactSteps).toBeLessThanOrEqual(10);
-  }, 15_000);
+    // The 3,600-step obstacle-field run takes ~15s on a loaded machine; the
+    // budget covers it with headroom so the spec fails on behavior, not load.
+  }, 30_000);
 
   it('drains a dense 1000-agent spawn without reverse waves or all-pairs checks', () => {
     const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG }, getScenario('dense-spawn'));

@@ -44,7 +44,27 @@ npm run verify          # typecheck + Vitest + build
 ?scenario=obstacle-field&agents=1000&seed=42&step=900&paused=true
 ```
 
-`scenario`, `agents`, `seed`, `step`, `paused`를 지원합니다. 브라우저 콘솔의 `window.crowdDebug.getSnapshot()`은 현재 step, hash, 활성/도착 수와 안전성·부드러움 메트릭을 반환합니다.
+`scenario`, `agents`, `seed`, `step`, `paused`, `pipeline`을 지원합니다.
+
+### 파이프라인 A/B (P1/P2 실험)
+
+`pipeline=minimal`은 재설계 파이프라인을 실행합니다: Flow Field preferred
+velocity(가속 제한·혼잡 감속·separation 선호는 이 단계에만) → 전속도 공간
+ORCA(horizon 0.5s, 최근접 이웃 16, 탐색 반경 = 접촉반경 + maxSpeed×horizon으로
+제약 진입 불연속 제거) → swept 정적 슬라이드 → 대칭 위치 완화(프레임당 상한
+0.5×radius). LP 안에서 정적 half-plane과 깊은 겹침(>0.5px)의 접근 차단은
+하드(불능 repair가 완화하지 않음)이고, comfort 간격은 제약이 아니라 preferred
+velocity의 separation 항입니다. 측정 비교:
+
+```bash
+npm run measure -- --pipeline=current   # 기존 4중 회피 파이프라인
+npm run measure -- --pipeline=minimal   # P1 실험 파이프라인
+```
+
+기준 측정값은 `baselines/`에 저장합니다. 새 시각 품질 지표:
+`headingDeltaP95Deg`(프레임당 방향 변화 p95), `averageSpeedStd1s`(1초 창 속도
+표준편차), `gateThroughputPerSec`(병목 관문 통과율),
+`relaxationCorrectedAgents`/`maximumRelaxationCorrection`(위치 완화 활동). 브라우저 콘솔의 `window.crowdDebug.getSnapshot()`은 현재 step, hash, 활성/도착 수와 안전성·부드러움 메트릭을 반환합니다.
 
 ## 데이터 흐름
 

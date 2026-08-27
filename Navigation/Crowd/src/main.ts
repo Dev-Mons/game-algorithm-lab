@@ -35,7 +35,13 @@ const requestedAgents = parseInteger(params.get('agents'), DEFAULT_CONFIG.agentC
 const requestedSeed = parseInteger(params.get('seed'), DEFAULT_CONFIG.seed, -2147483648, 2147483647);
 const targetStep = parseInteger(params.get('step'), 0, 0, 1_000_000);
 const requestedPaused = params.get('paused') === 'true';
-const config: SimulationConfig = { ...DEFAULT_CONFIG, agentCount: requestedAgents, seed: requestedSeed };
+const requestedPipeline = params.get('pipeline') === 'minimal' ? 'minimal' : 'current';
+const config: SimulationConfig = {
+  ...DEFAULT_CONFIG,
+  agentCount: requestedAgents,
+  seed: requestedSeed,
+  pipeline: requestedPipeline,
+};
 let simulation = new CrowdSimulation(config, getScenario(scenarioId));
 let running = !requestedPaused;
 let fastForwarding = targetStep > 0;
@@ -162,7 +168,11 @@ function initializeControls(): void {
   });
 }
 
-function bindRange(id: string, key: keyof SimulationConfig): void {
+type NumericConfigKey = {
+  [K in keyof SimulationConfig]-?: SimulationConfig[K] extends number ? K : never;
+}[keyof SimulationConfig];
+
+function bindRange(id: string, key: NumericConfigKey): void {
   const input = element<HTMLInputElement>(id);
   const output = element<HTMLOutputElement>(`${id}-output`);
   input.addEventListener('input', () => {

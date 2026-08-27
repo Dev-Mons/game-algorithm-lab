@@ -4,6 +4,8 @@ import { getScenario } from '../src/scenarios/scenarios';
 const CHECKPOINTS = new Set([60, 300, 600, 900]);
 const SCENARIOS = ['open-field', 'obstacle-field', 'dense-spawn'] as const;
 const LONG_RUN = process.argv.includes('--long');
+const pipelineArgument = process.argv.find((argument) => argument.startsWith('--pipeline='))?.slice('--pipeline='.length);
+const PIPELINE = pipelineArgument === 'minimal' ? 'minimal' : 'current';
 const scenarioArgument = process.argv.find((argument) => argument.startsWith('--scenario='))?.slice('--scenario='.length);
 const stepArgument = process.argv.find((argument) => argument.startsWith('--steps='))?.slice('--steps='.length);
 const requestedSteps = stepArgument === undefined
@@ -60,9 +62,24 @@ function countReverseVelocities(simulation: CrowdSimulation): { backward: number
   return { backward, strongBackward };
 }
 
+/** Center of the histogram bin holding the q-quantile, in degrees over [0, 180]. */
+function histogramPercentileDegrees(histogram: Float64Array, total: number, quantile: number): number {
+  if (total <= 0) return 0;
+  const target = total * quantile;
+  let cumulative = 0;
+  for (let bin = 0; bin < histogram.length; bin += 1) {
+    cumulative += histogram[bin]!;
+    if (cumulative >= target) return ((bin + 0.5) / histogram.length) * 180;
+  }
+  return 180;
+}
+
 const records: object[] = [];
 for (const scenarioId of selectedScenarios) {
-  const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, seed: 42, agentCount: 1000 }, getScenario(scenarioId));
+  const simulation = new CrowdSimulation(
+    { ...DEFAULT_CONFIG, seed: 42, agentCount: 1000, pipeline: PIPELINE },
+    getScenario(scenarioId),
+  );
   const simulationInternals = simulation as unknown as {
     resolvedVelocityX: Float64Array;
     resolvedVelocityY: Float64Array;
@@ -104,6 +121,35 @@ for (const scenarioId of selectedScenarios) {
   let positionalStops = 0;
   let maximumProposalDisplacementMismatch = 0;
   let proposalPositionalStops = 0;
+  // Visual-quality metrics: per-frame heading change distribution, 1-second
+  // speed variability, bottleneck gate throughput, relaxation activity.
+  const HEADING_BINS = 360;
+  const headingHistogram = new Float64Array(HEADING_BINS);
+  let headingSamples = 0;
+  let headingSum = 0;
+  const SPEED_WINDOW = 60;
+  const speedWindow = new Float64Array(simulation.state.count * SPEED_WINDOW);
+  const speedWindowSum = new Float64Array(simulation.state.count);
+  const speedWindowSumSq = new Float64Array(simulation.state.count);
+  const speedWindowCount = new Int32Array(simulation.state.count);
+  const speedWindowHead = new Int32Array(simulation.state.count);
+  let speedStdSum = 0;
+  let speedStdSamples = 0;
+  let maximumSpeedStd = 0;
+  const gateX = simulation.scenario.obstacles.length > 0
+    ? Math.max(...simulation.scenario.obstacles.map((obstacle) => obstacle.x + obstacle.width))
+    : simulation.config.width * 0.5;
+  let gateCrossings = 0;
+  let relaxationCorrectedAgents = 0;
+  let maximumRelaxationCorrection = 0;
+  // Displacement-based smoothness: what actually renders is positions, so the
+  // second difference of positions is the honest visual acceleration measure.
+  const previousDisplacementVX = new Float64Array(simulation.state.count);
+  const previousDisplacementVY = new Float64Array(simulation.state.count);
+  let displacementAccelerationSum = 0;
+  let displacementAccelerationSamples = 0;
+  let maximumDisplacementAcceleration = 0;
+  let maximumPenetrationDepth = 0;
   const startedAt = performance.now();
   const stepLimit = requestedSteps > 0 ? requestedSteps : LONG_RUN ? LONG_LIMITS[scenarioId] : 900;
   for (let step = 1; step <= stepLimit; step += 1) {
@@ -135,6 +181,11 @@ for (const scenarioId of selectedScenarios) {
       simulation.metrics.maxReservationVelocityChange,
     );
     reciprocalProjectionRepairAgents += simulation.metrics.reciprocalProjectionRepairCount;
+    relaxationCorrectedAgents += simulation.metrics.relaxationCorrectedCount;
+    maximumRelaxationCorrection = Math.max(
+      maximumRelaxationCorrection,
+      simulation.metrics.maxRelaxationCorrection,
+    );
     let longAdjacentStops = 0;
     const stoppedThreshold = simulation.config.maxSpeed * 0.08;
     const movingThreshold = simulation.config.maxSpeed * 0.35;
@@ -150,6 +201,12 @@ for (const scenarioId of selectedScenarios) {
         previousSide[agent] = simulation.state.avoidanceSide[agent]!;
         previousPositionX[agent] = simulation.state.x[agent]!;
         previousPositionY[agent] = simulation.state.y[agent]!;
+        speedWindowSum[agent] = 0;
+        speedWindowSumSq[agent] = 0;
+        speedWindowCount[agent] = 0;
+        speedWindowHead[agent] = 0;
+        previousDisplacementVX[agent] = 0;
+        previousDisplacementVY[agent] = 0;
         continue;
       }
       const vx = simulation.state.vx[agent]!;
@@ -167,6 +224,18 @@ for (const scenarioId of selectedScenarios) {
         maximumVelocityDisplacementMismatch,
         Math.hypot(vx - displacementVelocityX, vy - displacementVelocityY),
       );
+      const displacementAcceleration = Math.hypot(
+        displacementVelocityX - previousDisplacementVX[agent]!,
+        displacementVelocityY - previousDisplacementVY[agent]!,
+      ) / simulation.config.fixedDelta;
+      displacementAccelerationSum += displacementAcceleration;
+      displacementAccelerationSamples += 1;
+      maximumDisplacementAcceleration = Math.max(
+        maximumDisplacementAcceleration,
+        displacementAcceleration,
+      );
+      previousDisplacementVX[agent] = displacementVelocityX;
+      previousDisplacementVY[agent] = displacementVelocityY;
       const proposalMismatch = Math.hypot(
         simulationInternals.resolvedVelocityX[agent]! - displacementVelocityX,
         simulationInternals.resolvedVelocityY[agent]! - displacementVelocityY,
@@ -190,6 +259,36 @@ for (const scenarioId of selectedScenarios) {
       const previousVy = previousVelocityY[agent]!;
       const speed = Math.hypot(vx, vy);
       const previousSpeed = Math.hypot(previousVx, previousVy);
+      if (previousPositionX[agent]! < gateX && simulation.state.x[agent]! >= gateX) gateCrossings += 1;
+      if (speed >= simulation.config.maxSpeed * 0.2 && previousSpeed >= simulation.config.maxSpeed * 0.2) {
+        const headingDelta = Math.abs(Math.atan2(
+          previousVx * vy - previousVy * vx,
+          previousVx * vx + previousVy * vy,
+        ));
+        headingSum += headingDelta;
+        headingSamples += 1;
+        const bin = Math.min(HEADING_BINS - 1, Math.floor((headingDelta / Math.PI) * HEADING_BINS));
+        headingHistogram[bin] = headingHistogram[bin]! + 1;
+      }
+      const windowIndex = agent * SPEED_WINDOW + speedWindowHead[agent]!;
+      if (speedWindowCount[agent] === SPEED_WINDOW) {
+        const evicted = speedWindow[windowIndex]!;
+        speedWindowSum[agent] = speedWindowSum[agent]! - evicted;
+        speedWindowSumSq[agent] = speedWindowSumSq[agent]! - evicted * evicted;
+      }
+      speedWindow[windowIndex] = speed;
+      speedWindowSum[agent] = speedWindowSum[agent]! + speed;
+      speedWindowSumSq[agent] = speedWindowSumSq[agent]! + speed * speed;
+      speedWindowHead[agent] = (speedWindowHead[agent]! + 1) % SPEED_WINDOW;
+      if (speedWindowCount[agent]! < SPEED_WINDOW) speedWindowCount[agent] = speedWindowCount[agent]! + 1;
+      if (speedWindowCount[agent] === SPEED_WINDOW) {
+        const mean = speedWindowSum[agent]! / SPEED_WINDOW;
+        const variance = Math.max(0, speedWindowSumSq[agent]! / SPEED_WINDOW - mean * mean);
+        const std = Math.sqrt(variance);
+        speedStdSum += std;
+        speedStdSamples += 1;
+        maximumSpeedStd = Math.max(maximumSpeedStd, std);
+      }
       const deltaX = vx - previousVx;
       const deltaY = vy - previousVy;
       const velocityDelta = Math.hypot(deltaX, deltaY);
@@ -251,10 +350,25 @@ for (const scenarioId of selectedScenarios) {
     maximumStalled = Math.max(maximumStalled, simulation.metrics.stalledCount);
     maximumNeighbors = Math.max(maximumNeighbors, simulation.metrics.maxNeighbors);
     maximumCandidateChecks = Math.max(maximumCandidateChecks, simulation.metrics.candidateChecks);
+    if (simulation.metrics.overlapPairs > 0) {
+      for (let agent = 0; agent < simulation.state.count; agent += 1) {
+        if (simulation.overlapFlags[agent] !== 1) continue;
+        for (let other = agent + 1; other < simulation.state.count; other += 1) {
+          if (simulation.overlapFlags[other] !== 1) continue;
+          const dx = simulation.state.x[agent]! - simulation.state.x[other]!;
+          const dy = simulation.state.y[agent]! - simulation.state.y[other]!;
+          maximumPenetrationDepth = Math.max(
+            maximumPenetrationDepth,
+            simulation.config.agentRadius * 2 - Math.hypot(dx, dy),
+          );
+        }
+      }
+    }
     if (!CHECKPOINTS.has(step) && step !== stepLimit) continue;
     const reverse = countReverseVelocities(simulation);
     records.push({
       scenario: scenarioId,
+      pipeline: PIPELINE,
       step,
       active: simulation.metrics.activeCount,
       arrived: simulation.metrics.arrivedCount,
@@ -300,6 +414,27 @@ for (const scenarioId of selectedScenarios) {
       reservationStoppedAgents,
       maximumReservationVelocityChange: Number(maximumReservationVelocityChange.toFixed(4)),
       reciprocalProjectionRepairAgents,
+      headingDeltaMeanDeg: Number((
+        headingSamples === 0 ? 0 : (headingSum / headingSamples) * (180 / Math.PI)
+      ).toFixed(4)),
+      headingDeltaP95Deg: Number(
+        histogramPercentileDegrees(headingHistogram, headingSamples, 0.95).toFixed(3),
+      ),
+      averageSpeedStd1s: Number((
+        speedStdSamples === 0 ? 0 : speedStdSum / speedStdSamples
+      ).toFixed(3)),
+      maximumSpeedStd1s: Number(maximumSpeedStd.toFixed(3)),
+      gateCrossings,
+      gateThroughputPerSec: Number((gateCrossings / (step / 60)).toFixed(2)),
+      relaxationCorrectedAgents,
+      maximumRelaxationCorrection: Number(maximumRelaxationCorrection.toFixed(4)),
+      averageDisplacementAcceleration: Number((
+        displacementAccelerationSamples === 0
+          ? 0
+          : displacementAccelerationSum / displacementAccelerationSamples
+      ).toFixed(2)),
+      maximumDisplacementAcceleration: Number(maximumDisplacementAcceleration.toFixed(2)),
+      maximumPenetrationDepth: Number(maximumPenetrationDepth.toFixed(4)),
       elapsedMs: Number((performance.now() - startedAt).toFixed(1)),
       hash: simulation.stateHash(),
     });
