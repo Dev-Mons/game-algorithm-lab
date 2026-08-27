@@ -31,7 +31,7 @@ root.innerHTML = appTemplate();
 
 const params = new URLSearchParams(location.search);
 const initialScenario = getScenario(params.get('scenario') ?? 'open-field');
-const requestedAgents = parseInteger(params.get('agents'), DEFAULT_CONFIG.agentCount, 1, 5000);
+const requestedAgents = parseInteger(params.get('agents'), DEFAULT_CONFIG.agentCount, 1, 10_000);
 const requestedSeed = parseInteger(params.get('seed'), DEFAULT_CONFIG.seed, -2147483648, 2147483647);
 const targetStep = parseInteger(params.get('step'), 0, 0, 1_000_000);
 const requestedPaused = params.get('paused') === 'true';
@@ -136,7 +136,7 @@ function initializeControls(): void {
   element<HTMLInputElement>('agent-count').addEventListener('change', (event) => {
     config.agentCount = Math.max(
       1,
-      Math.min(5000, Number((event.currentTarget as HTMLInputElement).value) || 1000),
+      Math.min(10_000, Number((event.currentTarget as HTMLInputElement).value) || 1000),
     );
     rebuildSimulation(simulation.scenario);
   });

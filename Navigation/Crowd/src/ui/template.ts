@@ -28,7 +28,7 @@ export function appTemplate(): string {
           ${metricCard('활성 객체', 'metric-active', '1,000')}
           ${metricCard('도착 / 도착률', 'metric-arrived', '0 / 0.0%')}
           ${metricCard('평균 속도', 'metric-speed', '0.0')}
-          ${metricCard('겹친 쌍', 'metric-overlap', '0')}
+          ${metricCard('겹친 쌍 / 5k+ 표본', 'metric-overlap', '0')}
           ${metricCard('복구 객체 / 최대 보정', 'metric-recovery', '0 / 0.00 px')}
           ${metricCard('정체 객체', 'metric-stalled', '0')}
           ${metricCard('평균 / 최대 이웃', 'metric-neighbors', '0.0 / 0')}
@@ -45,7 +45,7 @@ export function appTemplate(): string {
           <label>시나리오<select id="scenario-select">${scenarios}</select></label>
           <p id="scenario-description" class="description"></p>
           <div class="split-fields">
-            <label>객체 수<input id="agent-count" type="number" min="1" max="5000" step="100" value="1000"></label>
+            <label>객체 수<input id="agent-count" type="number" min="1" max="10000" step="100" value="1000"></label>
             <label>랜덤 시드<input id="seed" type="number" step="1" value="42"></label>
           </div>
         </section>
@@ -69,7 +69,7 @@ export function appTemplate(): string {
             ${toggle('국소 밀도', 'debug-density', false)}
             ${toggle('겹침 복구', 'debug-recovery', true)}
             ${toggle('이웃 탐색 반경', 'debug-neighbors', false)}
-            ${toggle('겹친 객체', 'debug-overlaps', true)}
+            ${toggle('겹친 객체', 'debug-overlaps', false)}
             ${toggle('정체 객체', 'debug-stalled', true)}
           </div>
         </section>

@@ -15,6 +15,7 @@ import { FlowField } from '../algorithms/flow-field/flow-field';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 
 const EPSILON = 1e-9;
+const DENSE_CROWD_THRESHOLD = 2_000;
 
 const ZERO_METRICS: StepMetrics = {
   activeCount: 0,
@@ -37,8 +38,8 @@ const ZERO_METRICS: StepMetrics = {
 };
 
 /**
- * Deterministic crowd simulation with one movement pipeline:
- * navigation -> desired velocity -> local pair solve -> static sweep -> recovery.
+ * Deterministic crowd simulation with one movement authority:
+ * navigation -> desired velocity -> scale-appropriate local solve -> static sweep.
  */
 export class CrowdSimulation {
   state: AgentBuffer;
@@ -75,10 +76,19 @@ export class CrowdSimulation {
     this.previousState = new AgentBuffer(config.agentCount);
     this.nextState = new AgentBuffer(config.agentCount);
     this.navigator = new FlowField(config.width, config.height, config.cellSize);
+    const spatialCellSize = config.agentCount > DENSE_CROWD_THRESHOLD
+      ? Math.min(
+          config.cellSize,
+          Math.max(
+            config.neighborRadius * 0.25,
+            config.agentRadius * 4 + Math.max(0, config.agentGap) * 2,
+          ),
+        )
+      : config.cellSize;
     this.neighbors = new SpatialHash(
       config.width,
       config.height,
-      config.cellSize,
+      spatialCellSize,
       config.agentCount,
     );
     this.agentFlow = new Uint16Array(config.agentCount);
@@ -134,6 +144,7 @@ export class CrowdSimulation {
     }
     this.previousState.copyFrom(this.state);
     this.nextState.copyFrom(this.state);
+    this.movement.resetRecoveryState();
     this.clearWorkingState();
     this.stepCount = 0;
     this.metrics = { ...ZERO_METRICS, activeCount: this.state.count };

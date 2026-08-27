@@ -121,6 +121,100 @@ describe('single crowd movement pipeline', () => {
     expect(simulation.stateHash()).toMatch(/^[0-9a-f]{8}$/);
   });
 
+  it('keeps a 10000-agent crowd on the bounded scale path', () => {
+    const simulation = new CrowdSimulation(
+      {
+        ...DEFAULT_CONFIG,
+        agentCount: 10_000,
+        agentRadius: 1.5,
+        agentGap: 0.05,
+      },
+      getScenario('open-field'),
+    );
+
+    expect(simulation.state.count).toBe(10_000);
+    expect(simulation.unspawnedCount).toBe(0);
+    for (let step = 0; step < 5; step += 1) simulation.step();
+
+    expect(simulation.metrics.maxNeighbors).toBeLessThanOrEqual(12);
+    expect(simulation.metrics.candidateChecks).toBeLessThan(10_000 * 96 * 2);
+    expect(simulation.metrics.overlapPairs).toBe(0);
+    expect(simulation.metrics.averageSpeed).toBeGreaterThan(0);
+  });
+
+  it('keeps a completely overlapping 10000-agent crowd moving under fixed work', () => {
+    const simulation = new CrowdSimulation(
+      {
+        ...DEFAULT_CONFIG,
+        agentCount: 10_000,
+        agentRadius: 1.5,
+        agentGap: 0.05,
+      },
+      getScenario('open-field'),
+    );
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      simulation.state.x[agent] = 200;
+      simulation.state.y[agent] = 360;
+      simulation.state.vx[agent] = 40;
+      simulation.state.vy[agent] = 0;
+      simulation.state.active[agent] = 1;
+    }
+
+    let maximumCandidates = 0;
+    simulation.step();
+    maximumCandidates = simulation.metrics.candidateChecks;
+    for (let step = 1; step < 60; step += 1) {
+      simulation.step();
+      maximumCandidates = Math.max(maximumCandidates, simulation.metrics.candidateChecks);
+    }
+
+    let averageX = 0;
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      averageX += simulation.state.x[agent]!;
+      expect(Number.isFinite(simulation.state.x[agent])).toBe(true);
+      expect(Number.isFinite(simulation.state.y[agent])).toBe(true);
+    }
+    averageX /= simulation.state.count;
+
+    expect(maximumCandidates).toBeLessThanOrEqual(10_000 * 8);
+    expect(simulation.metrics.overlapPairs).toBeGreaterThan(0);
+    expect(simulation.metrics.recoveredAgents).toBe(0);
+    expect(simulation.metrics.wallOverlapCount).toBe(0);
+    expect(simulation.metrics.averageSpeed).toBeGreaterThan(80);
+    expect(averageX).toBeGreaterThan(275);
+  });
+
+  it('moves 10000 overlap-tolerant agents through obstacle gates with bounded work', () => {
+    const simulation = new CrowdSimulation(
+      {
+        ...DEFAULT_CONFIG,
+        agentCount: 10_000,
+        agentRadius: 1.5,
+        agentGap: 0.05,
+      },
+      getScenario('obstacle-field'),
+    );
+    const previousX = new Float64Array(simulation.state.x);
+    let crossings = 0;
+    let maximumCandidates = 0;
+    let maximumWallOverlaps = 0;
+    for (let step = 0; step < 360; step += 1) {
+      simulation.step();
+      maximumCandidates = Math.max(maximumCandidates, simulation.metrics.candidateChecks);
+      maximumWallOverlaps = Math.max(maximumWallOverlaps, simulation.metrics.wallOverlapCount);
+      for (let agent = 0; agent < simulation.state.count; agent += 1) {
+        if (previousX[agent]! < 660 && simulation.state.x[agent]! >= 660) crossings += 1;
+        previousX[agent] = simulation.state.x[agent]!;
+      }
+    }
+
+    expect(maximumCandidates).toBeLessThanOrEqual(10_000 * 8);
+    expect(maximumWallOverlaps).toBe(0);
+    expect(simulation.metrics.stalledCount).toBe(0);
+    expect(simulation.metrics.averageSpeed).toBeGreaterThan(80);
+    expect(crossings).toBeGreaterThan(3_000);
+  }, 15_000);
+
   it('releases a dense 1000-agent crowd without overlap or stop-wave collapse', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },

@@ -35,4 +35,22 @@ describe('Uniform Grid Spatial Hash', () => {
 
     expect(firstCandidate).toBe(2);
   });
+
+  it('writes bounded candidates in the same order as callback traversal', () => {
+    const x = new Float64Array([5, 55, 52, 61, 88]);
+    const y = new Float64Array([5, 55, 53, 59, 88]);
+    const active = new Uint8Array([1, 1, 1, 1, 1]);
+    const hash = new SpatialHash(100, 100, 10, x.length);
+    hash.rebuild(x, y, active);
+    const callbackCandidates: number[] = [];
+    hash.forEachCandidateUntil(55, 55, 60, (candidate) => {
+      callbackCandidates.push(candidate);
+      return callbackCandidates.length < 3;
+    });
+    const output = new Int32Array(3);
+    const count = hash.queryCandidates(55, 55, 60, output, 3);
+
+    expect(count).toBe(3);
+    expect(Array.from(output)).toEqual(callbackCandidates);
+  });
 });

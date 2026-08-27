@@ -20,9 +20,12 @@ export const DEFAULT_DEBUG_OPTIONS: DebugOptions = {
   density: false,
   recovery: true,
   neighborRadius: false,
-  overlaps: true,
+  overlaps: false,
   stalled: true,
 };
+
+const FAST_WARNING_THRESHOLD = 5_000;
+const MAX_WARNING_MARKERS = 1_000;
 
 export function drawDebug(
   context: CanvasRenderingContext2D,
@@ -199,6 +202,29 @@ function drawWarnings(
 ): void {
   const radius = simulation.config.agentRadius + 2.2;
   context.save();
+  if (simulation.state.count >= FAST_WARNING_THRESHOLD) {
+    // Thousands of individual arc+stroke calls can cost more than the entire
+    // scalable movement step. A representative point sample keeps the warning
+    // layer useful without making intentional overlap a rendering bottleneck.
+    const stride = Math.max(1, Math.ceil(simulation.state.count / MAX_WARNING_MARKERS));
+    const size = Math.max(2, simulation.config.agentRadius * 2);
+    for (let agent = 0; agent < simulation.state.count; agent += stride) {
+      const overlapping = options.overlaps && simulation.overlapFlags[agent] === 1;
+      const stalled = options.stalled
+        && simulation.state.active[agent] === 1
+        && simulation.state.stalledFor[agent]! >= simulation.config.stallSeconds;
+      if (!overlapping && !stalled) continue;
+      context.fillStyle = overlapping ? '#fb7185' : '#fbbf24';
+      context.fillRect(
+        simulation.state.x[agent]! - size * 0.5,
+        simulation.state.y[agent]! - size * 0.5,
+        size,
+        size,
+      );
+    }
+    context.restore();
+    return;
+  }
   context.lineWidth = 1.5;
   for (let agent = 0; agent < simulation.state.count; agent += 1) {
     const overlapping = options.overlaps && simulation.overlapFlags[agent] === 1;
