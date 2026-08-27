@@ -43,12 +43,15 @@ export function appTemplate(): string {
           ${metricCard('RVO 제약 / 투영 보정', 'metric-reciprocal', '0 / 0')}
           ${metricCard('Side switch / 재정지', 'metric-side-switch', '0 / 0')}
           ${metricCard('1초 인접 공동 정지', 'metric-adjacent-stop', '0')}
+          ${metricCard('Safety fallback', 'metric-fallback', '0')}
+          ${metricCard('Unified infeasible', 'metric-infeasible', '0')}
         </div>
       </section>
       <aside class="controls-panel">
         <section class="control-section">
           <h2>실험 설정</h2>
           <label>시나리오<select id="scenario-select">${scenarios}</select></label>
+          <label>이동 파이프라인<select id="pipeline-select"><option value="current">Current</option><option value="minimal">Minimal</option><option value="unified">Unified</option></select></label>
           <p id="scenario-description" class="description"></p>
           <div class="split-fields">
             <label>객체 수<input id="agent-count" type="number" min="1" max="5000" step="100" value="1000"></label>
@@ -71,7 +74,10 @@ export function appTemplate(): string {
           <div class="toggle-grid">
             ${toggle('Flow Field 방향', 'debug-flow', false)}
             ${toggle('Spatial Hash 셀', 'debug-grid', false)}
-            ${toggle('속도 벡터', 'debug-velocity', false)}
+            ${toggle('Preferred 속도', 'debug-preferred', false)}
+            ${toggle('최종 속도', 'debug-velocity', false)}
+            ${toggle('국소 밀도', 'debug-density', false)}
+            ${toggle('Safety fallback', 'debug-fallbacks', true)}
             ${toggle('이웃 탐색 반경', 'debug-neighbors', false)}
             ${toggle('겹친 객체', 'debug-overlaps', true)}
             ${toggle('정체 객체', 'debug-stalled', true)}

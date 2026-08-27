@@ -1,4 +1,6 @@
 import type { AgentBuffer } from './agent-state';
+import { segmentDistanceSquaredToRect } from './obstacle-collision';
+import type { Rect } from './types';
 
 const DISTANCE_EPSILON = 1e-12;
 const CONTACT_EPSILON = 1e-4;
@@ -23,6 +25,14 @@ export interface PriorityVelocitySolverInput {
   agentRadius: number;
   fixedDelta: number;
   overlapFlags?: Uint8Array;
+  /** Residual fallback may redirect inside the acceleration-reachable disk. */
+  allowLateralSearch?: boolean;
+  maxAcceleration?: number;
+  maxSpeed?: number;
+  obstacles?: readonly Rect[];
+  worldWidth?: number;
+  worldHeight?: number;
+  staticClearance?: number;
 }
 
 export interface PriorityVelocityResult {
@@ -32,6 +42,7 @@ export interface PriorityVelocityResult {
   remainingOverlapPairs: number;
   minimumScale: number;
   maximumVelocityChange: number;
+  redirectedAgents: number;
 }
 
 /**
@@ -53,6 +64,7 @@ export class PriorityVelocitySolver {
   private proposalY = new Float64Array(0);
   private scale = new Float64Array(0);
   private rank = new Int32Array(0);
+  private redirected = new Uint8Array(0);
   private readonly order: number[] = [];
   private input: PriorityVelocitySolverInput | null = null;
   private contactRadius = 0;
@@ -65,6 +77,7 @@ export class PriorityVelocitySolver {
     remainingOverlapPairs: 0,
     minimumScale: 1,
     maximumVelocityChange: 0,
+    redirectedAgents: 0,
   };
 
   solve(input: PriorityVelocitySolverInput): PriorityVelocityResult {
@@ -77,6 +90,7 @@ export class PriorityVelocitySolver {
     this.proposalY.set(input.next.y);
     this.scale.fill(1, 0, input.current.count);
     this.rank.fill(-1, 0, input.current.count);
+    this.redirected.fill(0, 0, input.current.count);
     input.overlapFlags?.fill(0);
     this.order.length = 0;
     this.resetResult();
@@ -106,6 +120,11 @@ export class PriorityVelocitySolver {
           const follower = firstHasPriority ? other : leader;
           if (this.pairIsSafe(pairLeader, this.scale[pairLeader]!, follower, this.scale[follower]!)) continue;
           violations += 1;
+
+          if (input.allowLateralSearch === true && this.tryLateralProposal(follower, pairLeader)) {
+            changed = true;
+            continue;
+          }
 
           const oldFollowerScale = this.scale[follower]!;
           const followerScale = this.maximumSafeScale(follower, pairLeader, oldFollowerScale);
@@ -152,6 +171,7 @@ export class PriorityVelocitySolver {
     this.result.remainingOverlapPairs = 0;
     this.result.minimumScale = 1;
     this.result.maximumVelocityChange = 0;
+    this.result.redirectedAgents = 0;
   }
 
   private assertCompatibleInput(input: PriorityVelocitySolverInput): void {
@@ -168,6 +188,17 @@ export class PriorityVelocitySolver {
       throw new RangeError('Priority velocity solver buffers must describe the same agent count.');
     }
     if (!(input.fixedDelta > 0)) throw new RangeError('fixedDelta must be positive.');
+    if (
+      input.allowLateralSearch === true
+      && (
+        input.maxAcceleration === undefined
+        || input.maxSpeed === undefined
+        || input.obstacles === undefined
+        || input.worldWidth === undefined
+        || input.worldHeight === undefined
+        || input.staticClearance === undefined
+      )
+    ) throw new RangeError('Lateral reservation search requires movement and static-world limits.');
   }
 
   private ensureCapacity(count: number): void {
@@ -176,6 +207,7 @@ export class PriorityVelocitySolver {
     this.proposalY = new Float64Array(count);
     this.scale = new Float64Array(count);
     this.rank = new Int32Array(count);
+    this.redirected = new Uint8Array(count);
   }
 
   private comparePriority(first: number, second: number): number {
@@ -253,6 +285,108 @@ export class PriorityVelocitySolver {
     return safe;
   }
 
+  /**
+   * Search the acceleration-reachable boundary for a tangential residual
+   * avoidance velocity before falling back to scalar braking.
+   */
+  private tryLateralProposal(agent: number, blocker: number): boolean {
+    const input = this.input!;
+    const maximumDelta = Math.max(0, input.maxAcceleration!) * input.fixedDelta;
+    if (maximumDelta <= DISTANCE_EPSILON) return false;
+    const originalX = this.proposalX[agent]!;
+    const originalY = this.proposalY[agent]!;
+    const originalScale = this.scale[agent]!;
+    const currentX = input.current.x[agent]!;
+    const currentY = input.current.y[agent]!;
+    const originalVelocityX = (originalX - currentX) / input.fixedDelta;
+    const originalVelocityY = (originalY - currentY) / input.fixedDelta;
+    const currentVelocityX = input.current.vx[agent]!;
+    const currentVelocityY = input.current.vy[agent]!;
+    const preferredX = input.preferredDirectionX[agent]!;
+    const preferredY = input.preferredDirectionY[agent]!;
+    let bestX = 0;
+    let bestY = 0;
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    for (let ring = 1; ring >= 0; ring -= 1) {
+      const radius = maximumDelta * (ring === 1 ? 1 : 0.5);
+      for (let sample = 0; sample < 24; sample += 1) {
+        const angle = (sample / 24) * Math.PI * 2;
+        const velocityX = currentVelocityX + Math.cos(angle) * radius;
+        const velocityY = currentVelocityY + Math.sin(angle) * radius;
+        if (velocityX * velocityX + velocityY * velocityY > input.maxSpeed! * input.maxSpeed! + SAFETY_EPSILON) continue;
+        const candidateX = currentX + velocityX * input.fixedDelta;
+        const candidateY = currentY + velocityY * input.fixedDelta;
+        if (!this.staticSegmentIsSafe(agent, candidateX, candidateY)) continue;
+        this.proposalX[agent] = candidateX;
+        this.proposalY[agent] = candidateY;
+        this.scale[agent] = 1;
+        if (!this.candidateIsSafeAgainstPriority(agent, blocker)) continue;
+        const deltaX = velocityX - originalVelocityX;
+        const deltaY = velocityY - originalVelocityY;
+        const reverseProgress = Math.max(0, -(velocityX * preferredX + velocityY * preferredY));
+        const score = deltaX * deltaX + deltaY * deltaY + reverseProgress * reverseProgress * 4;
+        if (score >= bestScore - DISTANCE_EPSILON) continue;
+        bestScore = score;
+        bestX = candidateX;
+        bestY = candidateY;
+      }
+    }
+
+    if (!Number.isFinite(bestScore)) {
+      this.proposalX[agent] = originalX;
+      this.proposalY[agent] = originalY;
+      this.scale[agent] = originalScale;
+      return false;
+    }
+    this.proposalX[agent] = bestX;
+    this.proposalY[agent] = bestY;
+    this.scale[agent] = 1;
+    if (this.redirected[agent] === 0) {
+      this.redirected[agent] = 1;
+      this.result.redirectedAgents += 1;
+    }
+    return true;
+  }
+
+  private candidateIsSafeAgainstPriority(agent: number, blocker: number): boolean {
+    const input = this.input!;
+    const start = input.neighborOffsets[agent]!;
+    const end = input.neighborOffsets[agent + 1]!;
+    for (let offset = start; offset < end; offset += 1) {
+      const other = input.neighborIndices[offset]!;
+      if (other === agent || input.active[other] !== 1) continue;
+      const hasPriority = other === blocker
+        || this.rank[other]! < this.rank[agent]!
+        || this.firstHasLocalPriority(other, agent);
+      if (!hasPriority) continue;
+      if (!this.pairIsSafe(agent, 1, other, this.scale[other]!)) return false;
+    }
+    return true;
+  }
+
+  private staticSegmentIsSafe(agent: number, candidateX: number, candidateY: number): boolean {
+    const input = this.input!;
+    const clearance = input.staticClearance!;
+    if (
+      candidateX < clearance
+      || candidateY < clearance
+      || candidateX > input.worldWidth! - clearance
+      || candidateY > input.worldHeight! - clearance
+    ) return false;
+    const clearanceSquared = clearance * clearance;
+    for (const obstacle of input.obstacles!) {
+      if (segmentDistanceSquaredToRect(
+        input.current.x[agent]!,
+        input.current.y[agent]!,
+        candidateX,
+        candidateY,
+        obstacle,
+      ) < clearanceSquared - SAFETY_EPSILON) return false;
+    }
+    return true;
+  }
+
   private pairIsSafe(agent: number, agentScale: number, other: number, otherScale: number): boolean {
     const input = this.input!;
     const relativeX = input.current.x[agent]! - input.current.x[other]!;
@@ -290,8 +424,19 @@ export class PriorityVelocitySolver {
       const currentY = input.current.y[agent]!;
       const proposedDeltaX = this.proposalX[agent]! - currentX;
       const proposedDeltaY = this.proposalY[agent]! - currentY;
+      const originalDeltaX = input.next.x[agent]! - currentX;
+      const originalDeltaY = input.next.y[agent]! - currentY;
       input.next.x[agent] = currentX + proposedDeltaX * scale;
       input.next.y[agent] = currentY + proposedDeltaY * scale;
+      if (this.redirected[agent] === 1) {
+        this.result.maximumVelocityChange = Math.max(
+          this.result.maximumVelocityChange,
+          Math.hypot(
+            proposedDeltaX * scale - originalDeltaX,
+            proposedDeltaY * scale - originalDeltaY,
+          ) / input.fixedDelta,
+        );
+      }
       if (scale >= 1 - 1e-6) continue;
       this.result.limitedAgents += 1;
       this.result.minimumScale = Math.min(this.result.minimumScale, scale);

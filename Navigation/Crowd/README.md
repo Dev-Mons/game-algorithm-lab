@@ -1,6 +1,6 @@
 # Crowd Navigation Lab
 
-1,000개 유닛의 RTS형 군중 이동을 재현하는 결정론적 2D 웹 시뮬레이션입니다. Reverse-Dijkstra Flow Field가 전역 경로를 제공하고, 동적 유닛은 angular free-gap steering, 가속도 제한 reciprocal velocity projection, 선후행 안전 감속으로 처리합니다. 접촉 component를 위치 보정으로 함께 이동시키지 않으므로 뒤쪽 대열까지 충격처럼 밀리는 현상이 없습니다. 공개된 StarCraft II GDC 설계 원리에서 계층 분리와 지역 여유 공간 선택을 참고했지만, SC2의 실제 구현을 복제한 코드는 아닙니다.
+1,000개 유닛의 RTS형 군중 이동을 재현하는 결정론적 2D 웹 시뮬레이션입니다. `pipeline=unified`는 Agent별 Reverse-Dijkstra Flow Field 위에 밀도·선두 간격·동일 흐름 평균 속도를 반영한 crowd preference를 만들고, 정적/동적/속도/가속도 제약을 하나의 local velocity authority에서 풉니다. 구형 우선순위 예약과 위치 완화는 잔여 충돌이 실제로 검출된 프레임의 safety fallback으로만 실행됩니다.
 
 ## 구현 범위
 
@@ -13,10 +13,20 @@
 - 방향 회전율(`maxTurnRate`)과 속도 변화(`maxAcceleration`) 상한, 여유 거리/TTC 기반 연속 감속
 - seed와 agent ID 기반의 안전한 분산 arrival slot
 - 대형 stream splitter의 조기 formation-side 선택과 portal lane 분산
+- swept AABB Spatial Hash와 predicted-separation 후보 선택
+- 국소 밀도, 동일 흐름 평균 속도, leader gap/speed를 이용한 crowd-aware preferred velocity
+- 서로 다른 spawn·goal을 가진 다중 flow와 Agent별 Flow Field
+- shared conflict zone의 용량 기반 round-robin token, drain-before-switch, 완만한 정지선 감속
+- opposing flow의 formation-order-preserving 오른쪽 차선 guidance
+- acceleration-aware ORCA와 대칭 coupled velocity projection을 결합한 `unified` 파이프라인
+- 정적 half-plane, 속도 원, 가속도 도달 원을 같은 velocity space에서 처리
+- fallback 원인·호출률·unified infeasible 수와 Agent layer trace 계측
+- merge/crossing의 Jain fairness, starvation, rolling throughput, lane-switch rate 계측
 - exact-tangent 고착을 막는 0.06px 정적 접촉 스킨
 - 활성 유닛만 색인하는 Uniform Grid Spatial Hash
 - 1/60초 fixed timestep, typed-array 이중 버퍼, persistent steering state를 포함한 state hash
-- Open Field, Obstacle Field, Dense Spawn 시나리오와 Canvas 디버그 UI
+- Open Field, Obstacle Field, Dense Spawn, Merge/Opposing/Crossing 500+500 시나리오
+- FixedClock alpha 위치 보간, 물리 이동과 분리된 visual heading, density/preferred/final/fallback Canvas 디버그
 
 ## 실행과 검증
 
@@ -34,6 +44,9 @@ npm run test:run        # Vitest 단위/통합 회귀
 npm run test:e2e        # Playwright 브라우저 회귀
 npm run measure         # 60/300/600/900 step 측정
 npm run measure:long    # Open/Dense 1,800, Obstacle 3,600 step 측정
+npm run compare:pipelines -- --scenario=obstacle-field --steps=600
+npm run trace:agent -- --pipeline=unified --scenario=obstacle-field --steps=600
+npm run measure:flows -- --steps=900 --seed=42
 npm run build           # 프로덕션 번들
 npm run verify          # typecheck + Vitest + build
 ```
@@ -46,34 +59,49 @@ npm run verify          # typecheck + Vitest + build
 
 `scenario`, `agents`, `seed`, `step`, `paused`, `pipeline`을 지원합니다.
 
-### 파이프라인 A/B (P1/P2 실험)
+### 파이프라인 A/B
 
-`pipeline=minimal`은 재설계 파이프라인을 실행합니다: Flow Field preferred
-velocity(가속 제한·혼잡 감속·separation 선호는 이 단계에만) → 전속도 공간
-ORCA(horizon 0.5s, 최근접 이웃 16, 탐색 반경 = 접촉반경 + maxSpeed×horizon으로
-제약 진입 불연속 제거) → swept 정적 슬라이드 → 대칭 위치 완화(프레임당 상한
-0.5×radius). LP 안에서 정적 half-plane과 깊은 겹침(>0.5px)의 접근 차단은
-하드(불능 repair가 완화하지 않음)이고, comfort 간격은 제약이 아니라 preferred
-velocity의 separation 항입니다. 측정 비교:
+- `current`: 기존 free-gap → reciprocal projection → static slide → priority reservation.
+- `minimal`: P1/P2 실험군. 단순 ORCA와 routine 위치 완화를 유지합니다.
+- `unified`: crowd preference → acceleration-aware ORCA → coupled velocity agreement → exact static validation. Priority/position correction은 residual safety fallback일 때만 실행합니다.
+
+UI의 **이동 파이프라인** 선택기나 `pipeline` URL 파라미터로 같은 seed/config에서 전환할 수 있습니다. 측정 비교:
 
 ```bash
 npm run measure -- --pipeline=current   # 기존 4중 회피 파이프라인
 npm run measure -- --pipeline=minimal   # P1 실험 파이프라인
+npm run measure -- --pipeline=unified   # 통합 velocity authority
+npm run compare:pipelines -- --scenario=obstacle-field --steps=600
 ```
 
-기준 측정값은 `baselines/`에 저장합니다. 새 시각 품질 지표:
+고정 조건(1,000 Agent, seed 42, 60 Hz)의 첫 acceptance 결과는 다음과 같습니다.
+
+| 시나리오 | 핵심 결과 |
+|---|---|
+| `dense-spawn`, step 60 | 평균 Goal 진척 35.10px, long stop 0, strong backward 0, overlap 0, fallback 0 |
+| `obstacle-field`, step 600 | 도착 4, gate 49.2 agent/s, stop-move-stop 102, long stop 0, overlap/wall 0, fallback 0.043% |
+| `merge-500-500`, step 900 | flow crossing 422/424, Jain 1.000, 최대 starvation 98 step, rolling gate 최저 14.4 agent/s, fallback 0.024% |
+| `crossing-500-500`, step 900 | flow crossing 411/434, Jain 0.999, 최대 starvation 147 step, rolling gate 최저 23.6 agent/s, fallback 0.007% |
+| 성능 | paired A/B에서 current 6,592ms, unified 7,731ms로 +17.3% |
+
+seed 7/42/73의 Merge/Opposing/Crossing 9개 run은 모두 Jain fairness 0.978 이상, starvation 157 step 이하, 5초 rolling throughput 양수, fallback 0.039% 이하, overlap/wall 0을 기록했습니다. 기준 측정값은 `baselines/`에 저장합니다. 시각 품질 지표:
 `headingDeltaP95Deg`(프레임당 방향 변화 p95), `averageSpeedStd1s`(1초 창 속도
 표준편차), `gateThroughputPerSec`(병목 관문 통과율),
-`relaxationCorrectedAgents`/`maximumRelaxationCorrection`(위치 완화 활동). 브라우저 콘솔의 `window.crowdDebug.getSnapshot()`은 현재 step, hash, 활성/도착 수와 안전성·부드러움 메트릭을 반환합니다.
+`averageGoalProgress`, `safetyFallbackRate`, `unifiedInfeasibleRate`,
+`relaxationCorrectedAgents`/`maximumRelaxationCorrection`입니다. 브라우저 콘솔의 `window.crowdDebug.getSnapshot()`은 현재 step, hash, pipeline, 활성/도착 수와 안전성·부드러움 메트릭을 반환합니다.
+
+`FlowBehaviorTracker`는 flow별 conflict-plane crossing/arrival, Jain fairness, 최대 starvation, 300-step rolling throughput, conflict-zone lane-switch rate를 Agent-frame 기준으로 계산합니다. 다중-flow 시나리오를 UI에서 선택하면 기본 파이프라인이 `unified`로 전환되며, 명시적인 URL 파라미터나 선택기로 다른 파이프라인과 비교할 수 있습니다.
 
 ## 데이터 흐름
 
-1. Planning은 Flow Field를 샘플링하고, stream splitter의 portal lane과 목표 근처 arrival slot을 혼합해 preferred heading을 만듭니다.
-2. Spatial Hash에서 지역 이웃을 모아 agent ID 순으로 재사용 버퍼에 정렬합니다.
-3. Steering Phase A는 유닛 원, 예측 위치, TTC, 장애물, 월드 경계의 차단 각도 구간을 병합하고 preferred heading에서 가장 가까운 열린 간격을 선택합니다.
-4. Steering Phase B는 모든 유닛의 동일 스냅샷 intent로 local preferred velocity를 만든 뒤, 현재 속도를 중심으로 한 `maxAcceleration × dt` 원 안에서 ORCA형 half-plane 제약을 풉니다. 같은 흐름에서는 뒤 유닛이 더 큰 회피 책임을 집니다.
-5. Collision Phase C는 swept-circle TOI에서 정적 접촉의 법선 성분만 제거하고 접선 속도를 보존합니다. 마지막 동적 안전 계층은 실제 진행 방향으로 선후행을 판정하고, 충돌하는 후행 유닛의 `current → proposal` 변위 비율만 줄입니다. 선두를 앞으로 끌거나 후방 component에 위치 보정을 전달하지 않습니다.
-6. Phase D는 실제 변위와 저장 속도를 동기화하고 상태 버퍼를 교체하며 도착, 겹침, 후진, 정체, 가속도, jerk, hard-stop, side-switch, 후보 검사 수를 집계합니다.
+1. Planning은 Agent별 Flow Field, splitter portal lane, arrival slot을 조합해 전역 진행 방향을 만듭니다.
+2. Multi-flow guidance는 shared conflict zone의 queue/capacity token과 opposing-flow 오른쪽 차선을 preferred path에 반영합니다. red flow는 정지선까지 연속적으로 감속하고, 기존 token의 Agent가 zone을 비운 뒤 다음 flow로 권한을 넘깁니다.
+3. Crowd Preference는 국소 밀도, 평균 co-flow velocity, 같은 lane의 leader gap/speed를 읽어 preferred velocity를 만듭니다.
+4. Swept Spatial Hash는 0.5초 horizon의 swept AABB가 교차하는 후보만 모읍니다.
+5. acceleration-aware ORCA가 static/dynamic half-plane, max-speed 원, `maxAcceleration × dt` 도달 원을 동시에 풉니다.
+6. Coupled Velocity Projector가 독립 LP 사이의 잔여 pair agreement를 대칭적으로 맞춥니다. 예측 단계에는 작은 comfort skin을 두고, 실제 endpoint 단계에는 물리 접촉 skin만 둡니다.
+7. exact swept static integration이 선형화한 정적 제약을 검증합니다. 잔여 pair나 static slide가 있을 때만 Priority solver를 safety fallback으로 호출하며, 남은 수치 epsilon 침투에만 최대 0.01px position relaxation을 허용합니다.
+8. 실제 변위/`dt`로 velocity를 동기화하고 도착, 겹침, 후진, 정체, fallback, infeasible, 가속도와 처리량을 집계합니다.
 
 모바일 유닛은 Flow Field의 전역 장애물로 넣지 않습니다. 일반 간격 유지는 velocity steering이 담당하며, 마지막 비관통 backstop도 새 위치를 만들어 밀어내지 않고 각 유닛이 이미 제안한 변위만 축소합니다. 물리 충격, 질량, 운동량 전달은 모델링하지 않습니다. 따라서 충돌은 충격량 전파가 아니라 사전 양보와 국소 감속으로 보입니다.
 
@@ -99,17 +127,17 @@ src/algorithms/steering          angular free-gap + reciprocal velocity solver
 src/scenarios                    월드 입력 데이터
 src/rendering | src/ui           Canvas 표시와 조작 UI
 scripts                          재현 가능한 측정·진단 도구
-tests/unit | simulation | browser
+tests/unit | simulation | behavior | browser
 ```
 
 `core`, `algorithms`, `scenarios`에는 Canvas/DOM 의존성이 없어 엔진 좌표계와 상태 컨테이너만 맞추면 이식할 수 있습니다.
 
 ## 현재 한계
 
-- 정적 장애물은 축 정렬 사각형이며, 서로 다른 목표를 가진 양방향 군중의 최적 통과는 범위 밖입니다.
-- 마지막 안전 예약은 겹침 방지를 우선하므로 ORCA 제약이 극고밀도에서 동시에 실현되지 않으면 자기 변위를 급히 줄일 수 있습니다. 이때 acceleration 초과는 `emergencyStopCount`, 완전 양보는 `reservationStoppedCount`로 분리해 계수합니다.
-- 안전 예약은 위치 보정을 전파하지 않지만, 복도 합류처럼 제약이 많은 곳에서는 국소 stop/go가 남을 수 있습니다. `reciprocalProjectionRepairCount`와 `maxReservationVelocityChange`가 이 절충을 확인하는 지표입니다.
+- 정적 장애물은 축 정렬 사각형입니다. 다중 목표의 합류·정면·교차 흐름은 지원하지만, flow control은 명시적인 conflict-zone metadata를 사용하며 임의 topology에서 zone을 자동 추출하지 않습니다.
+- 극고밀도 다중 접촉에서 acceleration-reachable 해가 없으면 safety fallback이 가속도 상한을 넘길 수 있습니다. 이는 정상 solver 결과와 분리되어 `safetyFallbackCount`, `fallbackReason`, `emergencyStopCount`로 계측됩니다.
+- seed 7/42/73 obstacle acceptance에서 fallback은 0.026–0.055%이고 multi-flow에서는 최대 0.039%이지만 0은 아닙니다. trace 도구로 해당 Agent와 레이어별 속도 변화를 재현할 수 있습니다.
 - 대형 splitter 판정은 월드 횡축의 50%를 기준으로 하므로, 더 복잡한 국소 복도에는 명시적 portal graph 또는 topology metadata가 필요합니다.
-- 목표나 장애물이 바뀌면 Flow Field 전체를 다시 계산하고 formation 좌표는 초기 배치 순서를 유지합니다.
+- temporary closure나 움직이는 blocker의 실시간 global reroute는 아직 별도 모델이 없습니다. 목표·정적 장애물이 바뀌면 Flow Field 전체를 다시 계산하고 formation 좌표는 초기 배치 순서를 유지합니다.
 
 참고: [GDC Vault – AI Navigation: It’s Not a Solved Problem](https://www.gdcvault.com/play/1014514/AI-Navigation-It-s-Not), [GameDev StackExchange의 공개 원리 요약](https://gamedev.stackexchange.com/questions/191954/how-can-i-create-the-arriving-engaging-in-combat-movement-like-in-starcraft-2)

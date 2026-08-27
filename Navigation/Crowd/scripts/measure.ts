@@ -2,10 +2,19 @@ import { CrowdSimulation, DEFAULT_CONFIG } from '../src/core/simulation';
 import { getScenario } from '../src/scenarios/scenarios';
 
 const CHECKPOINTS = new Set([60, 300, 600, 900]);
-const SCENARIOS = ['open-field', 'obstacle-field', 'dense-spawn'] as const;
+const SCENARIOS = [
+  'open-field',
+  'obstacle-field',
+  'dense-spawn',
+  'merge-500-500',
+  'opposing-500-500',
+  'crossing-500-500',
+] as const;
 const LONG_RUN = process.argv.includes('--long');
 const pipelineArgument = process.argv.find((argument) => argument.startsWith('--pipeline='))?.slice('--pipeline='.length);
-const PIPELINE = pipelineArgument === 'minimal' ? 'minimal' : 'current';
+const PIPELINE = pipelineArgument === 'minimal' || pipelineArgument === 'unified'
+  ? pipelineArgument
+  : 'current';
 const scenarioArgument = process.argv.find((argument) => argument.startsWith('--scenario='))?.slice('--scenario='.length);
 const stepArgument = process.argv.find((argument) => argument.startsWith('--steps='))?.slice('--steps='.length);
 const requestedSteps = stepArgument === undefined
@@ -17,6 +26,9 @@ const LONG_LIMITS: Readonly<Record<(typeof SCENARIOS)[number], number>> = {
   'open-field': 1800,
   'obstacle-field': 3600,
   'dense-spawn': 1800,
+  'merge-500-500': 1800,
+  'opposing-500-500': 2400,
+  'crossing-500-500': 2400,
 };
 
 function countWallOverlaps(simulation: CrowdSimulation): number {
@@ -54,7 +66,12 @@ function countReverseVelocities(simulation: CrowdSimulation): { backward: number
   const direction = { x: 0, y: 0 };
   for (let agent = 0; agent < simulation.state.count; agent += 1) {
     if (simulation.state.active[agent] !== 1) continue;
-    simulation.navigator.sampleDirection(simulation.state.x[agent]!, simulation.state.y[agent]!, direction);
+    simulation.sampleNavigationDirection(
+      agent,
+      simulation.state.x[agent]!,
+      simulation.state.y[agent]!,
+      direction,
+    );
     const progressSpeed = simulation.state.vx[agent]! * direction.x + simulation.state.vy[agent]! * direction.y;
     if (progressSpeed < -1e-6) backward += 1;
     if (progressSpeed < -simulation.config.maxSpeed * 0.25) strongBackward += 1;
@@ -91,6 +108,14 @@ for (const scenarioId of selectedScenarios) {
   const previousAccelerationX = new Float64Array(simulation.state.count);
   const previousAccelerationY = new Float64Array(simulation.state.count);
   const previousSide = new Int8Array(simulation.state.avoidanceSide);
+  const initialGoalDistance = new Float64Array(simulation.state.count);
+  for (let agent = 0; agent < simulation.state.count; agent += 1) {
+    const goal = simulation.goalForAgent(agent);
+    initialGoalDistance[agent] = Math.hypot(
+      goal.x - simulation.state.x[agent]!,
+      goal.y - simulation.state.y[agent]!,
+    );
+  }
   const motionPhase = new Uint8Array(simulation.state.count);
   motionPhase.fill(1);
   const adjacentStopFrames = new Uint16Array(simulation.state.count);
@@ -142,6 +167,10 @@ for (const scenarioId of selectedScenarios) {
   let gateCrossings = 0;
   let relaxationCorrectedAgents = 0;
   let maximumRelaxationCorrection = 0;
+  let safetyFallbackAgents = 0;
+  let maximumSafetyFallbackVelocityChange = 0;
+  let unifiedInfeasibleAgents = 0;
+  let activeAgentFrames = 0;
   // Displacement-based smoothness: what actually renders is positions, so the
   // second difference of positions is the honest visual acceleration measure.
   const previousDisplacementVX = new Float64Array(simulation.state.count);
@@ -186,6 +215,13 @@ for (const scenarioId of selectedScenarios) {
       maximumRelaxationCorrection,
       simulation.metrics.maxRelaxationCorrection,
     );
+    safetyFallbackAgents += simulation.metrics.safetyFallbackCount;
+    maximumSafetyFallbackVelocityChange = Math.max(
+      maximumSafetyFallbackVelocityChange,
+      simulation.metrics.maxSafetyFallbackVelocityChange,
+    );
+    unifiedInfeasibleAgents += simulation.metrics.unifiedInfeasibleCount;
+    activeAgentFrames += simulation.metrics.activeCount;
     let longAdjacentStops = 0;
     const stoppedThreshold = simulation.config.maxSpeed * 0.08;
     const movingThreshold = simulation.config.maxSpeed * 0.35;
@@ -366,6 +402,14 @@ for (const scenarioId of selectedScenarios) {
     }
     if (!CHECKPOINTS.has(step) && step !== stepLimit) continue;
     const reverse = countReverseVelocities(simulation);
+    let totalGoalProgress = 0;
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      const goal = simulation.goalForAgent(agent);
+      totalGoalProgress += initialGoalDistance[agent]! - Math.hypot(
+        goal.x - simulation.state.x[agent]!,
+        goal.y - simulation.state.y[agent]!,
+      );
+    }
     records.push({
       scenario: scenarioId,
       pipeline: PIPELINE,
@@ -383,6 +427,9 @@ for (const scenarioId of selectedScenarios) {
       wallOverlaps: countWallOverlaps(simulation),
       stalled: simulation.metrics.stalledCount,
       averageSpeed: Number(simulation.metrics.averageSpeed.toFixed(2)),
+      averageGoalProgress: Number((
+        totalGoalProgress / Math.max(1, simulation.state.count)
+      ).toFixed(2)),
       averageDisplacementSpeed: Number((
         displacementSpeedSum / Math.max(1, displacementSpeedSamples)
       ).toFixed(2)),
@@ -428,6 +475,14 @@ for (const scenarioId of selectedScenarios) {
       gateThroughputPerSec: Number((gateCrossings / (step / 60)).toFixed(2)),
       relaxationCorrectedAgents,
       maximumRelaxationCorrection: Number(maximumRelaxationCorrection.toFixed(4)),
+      safetyFallbackAgents,
+      safetyFallbackRate: Number((safetyFallbackAgents / Math.max(1, activeAgentFrames)).toFixed(6)),
+      maximumSafetyFallbackVelocityChange: Number(maximumSafetyFallbackVelocityChange.toFixed(4)),
+      unifiedInfeasibleAgents,
+      unifiedInfeasibleRate: Number((unifiedInfeasibleAgents / Math.max(1, activeAgentFrames)).toFixed(6)),
+      stopMoveStopPer1000AgentSeconds: Number((
+        stopMoveStopTransitions * 60_000 / Math.max(1, activeAgentFrames)
+      ).toFixed(3)),
       averageDisplacementAcceleration: Number((
         displacementAccelerationSamples === 0
           ? 0

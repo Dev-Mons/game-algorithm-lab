@@ -8,10 +8,20 @@ import {
   type SweptCircleSlideOutput,
 } from './obstacle-collision';
 import { computeArrivalSlot } from './arrival-slots';
+import { CrowdPreference } from './crowd-preference';
 import { PositionRelaxationSolver } from './position-relaxation';
 import { PriorityVelocitySolver } from './priority-velocity-solver';
 import { SeededRandom } from './random';
-import type { Rect, ScenarioDefinition, SimulationConfig, StepMetrics, Vec2 } from './types';
+import type {
+  AgentLayerTrace,
+  CrowdDebugLayers,
+  Rect,
+  ScenarioDefinition,
+  ScenarioFlowDefinition,
+  SimulationConfig,
+  StepMetrics,
+  Vec2,
+} from './types';
 import { FlowField } from '../algorithms/flow-field/flow-field';
 import {
   LocalMovementSolver,
@@ -20,8 +30,10 @@ import {
   type LocalSteeringIntent,
 } from '../algorithms/steering/local-movement-solver';
 import { OrcaVelocitySolver } from '../algorithms/steering/orca-velocity-solver';
+import { CoupledVelocityProjector } from '../algorithms/steering/coupled-velocity-projector';
 import { ReciprocalVelocitySolver } from '../algorithms/steering/reciprocal-velocity-solver';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
+import { SweptSpatialHash } from '../algorithms/spatial-hash/swept-spatial-hash';
 
 const ZERO_METRICS: StepMetrics = {
   activeCount: 0,
@@ -54,6 +66,9 @@ const ZERO_METRICS: StepMetrics = {
   reciprocalProjectionRepairCount: 0,
   relaxationCorrectedCount: 0,
   maxRelaxationCorrection: 0,
+  safetyFallbackCount: 0,
+  maxSafetyFallbackVelocityChange: 0,
+  unifiedInfeasibleCount: 0,
 };
 
 const FLOW_LANE_STEP = 0.6180339887498949;
@@ -88,20 +103,58 @@ const DENSITY_RADIUS = 16;
 const DENSITY_SATURATION = 10;
 const DENSITY_MAX_SLOWDOWN = 0.4;
 const DENSITY_SLOW_NEIGHBOR_FRACTION = 0.5;
+// Unified pipeline: constraints enter continuously over this short horizon;
+// the per-agent broad phase also includes the agent's own swept distance so
+// opposite flows are discovered earlier than same-speed following traffic.
+const UNIFIED_TIME_HORIZON = 0.5;
+const UNIFIED_GUIDANCE_HORIZON = 0.4;
+const UNIFIED_NEIGHBOR_CAP = 8;
+const UNIFIED_STATIC_RESPONSE = 0.5;
+const UNIFIED_SOLVER_ACCELERATION_FRACTION = 1;
+// Keep the velocity agreement just outside exact physical tangency. Without a
+// tiny numerical skin, independently solved half-planes land at ~1e-4 px from
+// contact and make the residual validator execute on otherwise safe pairs.
+const UNIFIED_DYNAMIC_SKIN = 0;
+const UNIFIED_RELAXATION_EPSILON = 0.01;
+const FALLBACK_NONE = 0;
+const FALLBACK_STATIC = 1;
+const FALLBACK_DYNAMIC = 2;
+const FALLBACK_DEPENETRATION = 3;
+const FALLBACK_SOLVER = 4;
+
+interface SpawnPlacement extends Vec2 {
+  flow: number;
+}
 
 export class CrowdSimulation {
   state: AgentBuffer;
   private nextState: AgentBuffer;
   readonly navigator: FlowField;
   readonly neighbors: SpatialHash;
+  private readonly sweptNeighbors: SweptSpatialHash;
   readonly movement = new LocalMovementSolver();
   private readonly reciprocalVelocitySolver = new ReciprocalVelocitySolver();
   scenario: ScenarioDefinition;
   goal: Vec2;
+  readonly agentFlow: Uint16Array;
   stepCount = 0;
   metrics: StepMetrics = { ...ZERO_METRICS };
   overlapFlags: Uint8Array;
   unspawnedCount = 0;
+  readonly debugLayers: CrowdDebugLayers;
+
+  private flowNavigators: FlowField[] = [];
+  private flowGoals: Vec2[] = [];
+  private flowSpawns: Rect[] = [];
+  private flowIds: string[] = [];
+  private flowWeights: number[] = [];
+  private flowApproachX = new Float64Array(0);
+  private flowApproachY = new Float64Array(0);
+  private flowActiveCounts = new Uint32Array(0);
+  private flowInsideCounts = new Uint32Array(0);
+  private flowControlOwner = 0;
+  private flowControlPhaseStep = 0;
+  private flowControlDraining = false;
 
   private queryAgent = 0;
   private queryRadius = 0;
@@ -114,11 +167,21 @@ export class CrowdSimulation {
   private cachedNeighborCount = 0;
   private cachedTotalNeighbors = 0;
   private cachedMaxNeighbors = 0;
+  private readonly solverNeighborOffsets: Int32Array;
+  private solverNeighborIndices: Int32Array;
+  private solverNeighborCount = 0;
   private readonly preferredX: Float64Array;
   private readonly preferredY: Float64Array;
   private readonly plannedVelocityX: Float64Array;
   private readonly plannedVelocityY: Float64Array;
   private readonly desiredSpeed: Float64Array;
+  private readonly localDensity: Float64Array;
+  private readonly meanNeighborVelocityX: Float64Array;
+  private readonly meanNeighborVelocityY: Float64Array;
+  private readonly leaderId: Int32Array;
+  private readonly leaderGap: Float64Array;
+  private readonly leaderSpeed: Float64Array;
+  private readonly minimumNeighborDistance: Float64Array;
   private readonly intentDirectionX: Float64Array;
   private readonly intentDirectionY: Float64Array;
   private readonly intentVelocityX: Float64Array;
@@ -131,6 +194,8 @@ export class CrowdSimulation {
   private readonly reconciledVelocityY: Float64Array;
   private readonly routeCost: Float64Array;
   private readonly emergencyStops: Uint8Array;
+  private readonly solverRelaxedAcceleration: Uint8Array;
+  private readonly fallbackReason: Uint8Array;
   private readonly activeThisStep: Uint8Array;
   private readonly arrivalSlotX: Float64Array;
   private readonly arrivalSlotY: Float64Array;
@@ -156,7 +221,9 @@ export class CrowdSimulation {
   private readonly movementInput: LocalMovementInput;
   private readonly priorityVelocitySolver = new PriorityVelocitySolver();
   private readonly orcaVelocitySolver = new OrcaVelocitySolver();
+  private readonly coupledVelocityProjector = new CoupledVelocityProjector();
   private readonly positionRelaxation = new PositionRelaxationSolver();
+  private readonly crowdPreference = new CrowdPreference();
   private readonly staticIntegrator = new SweptCircleStaticIntegrator();
   private readonly staticIntegration: SweptCircleSlideOutput = {
     x: 0,
@@ -173,6 +240,7 @@ export class CrowdSimulation {
   private stoppedAgent = 0;
   private stoppedNeighborFound = false;
   private readonly visitCandidate = (candidate: number): void => this.accumulateCandidate(candidate);
+  private readonly visitSolverCandidate = (candidate: number): void => this.accumulateSolverCandidate(candidate);
   private readonly visitStoppedCandidate = (candidate: number): void => this.findStoppedCandidate(candidate);
 
   constructor(public config: SimulationConfig, scenario: ScenarioDefinition) {
@@ -182,14 +250,29 @@ export class CrowdSimulation {
     this.nextState = new AgentBuffer(config.agentCount);
     this.navigator = new FlowField(config.width, config.height, config.cellSize);
     this.neighbors = new SpatialHash(config.width, config.height, config.neighborRadius, config.agentCount);
+    this.sweptNeighbors = new SweptSpatialHash(
+      config.width,
+      config.height,
+      config.neighborRadius,
+      config.agentCount,
+    );
     this.neighborIndices = new Int32Array(config.agentCount);
     this.neighborOffsets = new Int32Array(config.agentCount + 1);
     this.cachedNeighborIndices = new Int32Array(Math.max(1, config.agentCount * 64));
+    this.solverNeighborOffsets = new Int32Array(config.agentCount + 1);
+    this.solverNeighborIndices = new Int32Array(Math.max(1, config.agentCount * 24));
     this.preferredX = new Float64Array(config.agentCount);
     this.preferredY = new Float64Array(config.agentCount);
     this.plannedVelocityX = new Float64Array(config.agentCount);
     this.plannedVelocityY = new Float64Array(config.agentCount);
     this.desiredSpeed = new Float64Array(config.agentCount);
+    this.localDensity = new Float64Array(config.agentCount);
+    this.meanNeighborVelocityX = new Float64Array(config.agentCount);
+    this.meanNeighborVelocityY = new Float64Array(config.agentCount);
+    this.leaderId = new Int32Array(config.agentCount);
+    this.leaderGap = new Float64Array(config.agentCount);
+    this.leaderSpeed = new Float64Array(config.agentCount);
+    this.minimumNeighborDistance = new Float64Array(config.agentCount);
     this.intentDirectionX = new Float64Array(config.agentCount);
     this.intentDirectionY = new Float64Array(config.agentCount);
     this.intentVelocityX = new Float64Array(config.agentCount);
@@ -202,11 +285,22 @@ export class CrowdSimulation {
     this.reconciledVelocityY = new Float64Array(config.agentCount);
     this.routeCost = new Float64Array(config.agentCount);
     this.emergencyStops = new Uint8Array(config.agentCount);
+    this.solverRelaxedAcceleration = new Uint8Array(config.agentCount);
+    this.fallbackReason = new Uint8Array(config.agentCount);
     this.activeThisStep = new Uint8Array(config.agentCount);
     this.arrivalSlotX = new Float64Array(config.agentCount);
     this.arrivalSlotY = new Float64Array(config.agentCount);
     this.formationUnitX = new Float64Array(config.agentCount);
     this.formationUnitY = new Float64Array(config.agentCount);
+    this.agentFlow = new Uint16Array(config.agentCount);
+    this.debugLayers = {
+      preferredVelocityX: this.plannedVelocityX,
+      preferredVelocityY: this.plannedVelocityY,
+      localVelocityX: this.resolvedVelocityX,
+      localVelocityY: this.resolvedVelocityY,
+      density: this.localDensity,
+      fallbackReason: this.fallbackReason,
+    };
     this.overlapFlags = new Uint8Array(config.agentCount);
     this.movementInput = {
       agentIndex: 0,
@@ -252,35 +346,38 @@ export class CrowdSimulation {
       throw new RangeError('Increasing agentCount requires constructing a new CrowdSimulation.');
     }
     const random = new SeededRandom(this.config.seed);
-    this.goal = { ...this.scenario.goal };
-    this.navigator.rebuild(
-      this.goal,
-      this.scenario.obstacles,
-      this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN,
-    );
+    this.configureFlows();
     const positions = this.createSpawnPositions(random);
     this.unspawnedCount = Math.max(0, this.config.agentCount - positions.length);
     this.state = new AgentBuffer(positions.length);
     this.nextState = new AgentBuffer(positions.length);
     this.overlapFlags = new Uint8Array(positions.length);
+    this.agentFlow.fill(0);
     for (let i = 0; i < positions.length; i += 1) {
+      const flow = positions[i]!.flow;
+      const spawn = this.flowSpawns[flow]!;
+      this.agentFlow[i] = flow;
       this.state.x[i] = positions[i]!.x;
       this.state.y[i] = positions[i]!.y;
       this.state.active[i] = 1;
       this.state.avoidanceSide[i] = 0;
       this.state.motionPhase[i] = 1;
       this.formationUnitX[i] = clamp(
-        (positions[i]!.x - this.scenario.spawn.x) / Math.max(this.scenario.spawn.width, 1e-9),
+        (positions[i]!.x - spawn.x) / Math.max(spawn.width, 1e-9),
         0,
         1,
       );
       this.formationUnitY[i] = clamp(
-        (positions[i]!.y - this.scenario.spawn.y) / Math.max(this.scenario.spawn.height, 1e-9),
+        (positions[i]!.y - spawn.y) / Math.max(spawn.height, 1e-9),
         0,
         1,
       );
     }
     this.rebuildArrivalSlots();
+    this.fallbackReason.fill(FALLBACK_NONE);
+    this.leaderId.fill(-1);
+    this.leaderGap.fill(Number.POSITIVE_INFINITY);
+    this.minimumNeighborDistance.fill(Number.POSITIVE_INFINITY);
     this.nextState.copyFrom(this.state);
     this.stepCount = 0;
     this.metrics = { ...ZERO_METRICS, activeCount: this.state.count };
@@ -294,11 +391,18 @@ export class CrowdSimulation {
   setGoal(x: number, y: number): void {
     this.goal.x = clamp(x, 0, this.config.width - 0.001);
     this.goal.y = clamp(y, 0, this.config.height - 0.001);
-    this.navigator.rebuild(
-      this.goal,
-      this.scenario.obstacles,
-      this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN,
-    );
+    const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
+    for (let flow = 0; flow < this.flowGoals.length; flow += 1) {
+      this.flowGoals[flow]!.x = this.goal.x;
+      this.flowGoals[flow]!.y = this.goal.y;
+      const spawn = this.flowSpawns[flow]!;
+      const approachX = this.goal.x - (spawn.x + spawn.width * 0.5);
+      const approachY = this.goal.y - (spawn.y + spawn.height * 0.5);
+      const approachLength = Math.hypot(approachX, approachY);
+      this.flowApproachX[flow] = approachLength > 1e-9 ? approachX / approachLength : 1;
+      this.flowApproachY[flow] = approachLength > 1e-9 ? approachY / approachLength : 0;
+      this.flowNavigators[flow]!.rebuild(this.flowGoals[flow]!, this.scenario.obstacles, clearance);
+    }
     this.state.active.fill(1);
     this.state.stalledFor.fill(0);
     this.state.adjacentStoppedFor.fill(0);
@@ -310,14 +414,37 @@ export class CrowdSimulation {
     this.state.avoidanceSide.fill(0);
     this.state.avoidanceHold.fill(0);
     this.rebuildArrivalSlots();
+    this.flowControlOwner = 0;
+    this.flowControlPhaseStep = this.stepCount;
+    this.flowControlDraining = false;
     this.nextState.copyFrom(this.state);
     this.overlapFlags.fill(0);
     this.metrics = { ...ZERO_METRICS, activeCount: this.state.count };
   }
 
+  get goals(): readonly Vec2[] {
+    return this.flowGoals;
+  }
+
+  get flowCount(): number {
+    return this.flowGoals.length;
+  }
+
+  flowId(flow: number): string {
+    if (!Number.isInteger(flow) || flow < 0 || flow >= this.flowIds.length) {
+      throw new RangeError(`Flow index ${flow} is outside 0..${this.flowIds.length - 1}.`);
+    }
+    return this.flowIds[flow]!;
+  }
+
   step(): void {
-    if ((this.config.pipeline ?? 'current') === 'minimal') {
+    const pipeline = this.config.pipeline ?? 'current';
+    if (pipeline === 'minimal') {
       this.stepMinimal();
+      return;
+    }
+    if (pipeline === 'unified') {
+      this.stepUnified();
       return;
     }
     const current = this.state;
@@ -456,6 +583,9 @@ export class CrowdSimulation {
       reciprocalProjectionRepairCount,
       relaxationCorrectedCount: 0,
       maxRelaxationCorrection: 0,
+      safetyFallbackCount: 0,
+      maxSafetyFallbackVelocityChange: 0,
+      unifiedInfeasibleCount: 0,
     });
   }
 
@@ -510,11 +640,13 @@ export class CrowdSimulation {
         this.plannedVelocityY[i] = 0;
         continue;
       }
-      this.navigator.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
+      const flow = this.agentFlow[i]!;
+      const goal = this.flowGoals[flow]!;
+      this.flowNavigators[flow]!.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
       this.preferredX[i] = this.flowDirection.x;
       this.preferredY[i] = this.flowDirection.y;
       const distanceToGoal = Math.sqrt(
-        distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y),
+        distanceSquared(current.x[i]!, current.y[i]!, goal.x, goal.y),
       );
       let congestedCount = 0;
       let separationX = 0;
@@ -639,14 +771,318 @@ export class CrowdSimulation {
       reciprocalProjectionRepairCount: orca.infeasibleAgents,
       relaxationCorrectedCount: relaxation.correctedAgents,
       maxRelaxationCorrection: relaxation.maxCorrection,
+      safetyFallbackCount: 0,
+      maxSafetyFallbackVelocityChange: 0,
+      unifiedInfeasibleCount: 0,
+    });
+  }
+
+  /**
+   * Production redesign: crowd guidance creates one preferred velocity and an
+   * acceleration-aware ORCA LP owns routine dynamic/static velocity choice.
+   * Swept integration, reservation, and tiny depenetration are validators for
+   * residual numerical conflicts only; every correction is synchronized back
+   * to actual displacement before the state is published.
+   */
+  private stepUnified(): void {
+    const current = this.state;
+    const next = this.nextState;
+    next.copyFrom(current);
+    this.activeThisStep.fill(0);
+    this.activeThisStep.set(current.active);
+    this.deactivateArrivals(current, next);
+    this.planPreferredVelocities(current);
+
+    const comfortRadius = this.config.agentRadius * 2 + Math.max(0, this.config.agentGap);
+    this.queryRadius = Math.max(
+      this.config.neighborRadius,
+      comfortRadius + this.config.maxSpeed * UNIFIED_GUIDANCE_HORIZON,
+    );
+    this.neighbors.rebuild(current.x, current.y, this.activeThisStep);
+    this.candidateChecks = 0;
+    this.buildNeighborCache(current);
+    this.overlapFlags.fill(0);
+    this.emergencyStops.fill(0);
+    this.solverRelaxedAcceleration.fill(0);
+    this.fallbackReason.fill(FALLBACK_NONE);
+
+    this.crowdPreference.build({
+      current,
+      active: this.activeThisStep,
+      globalDirectionX: this.preferredX,
+      globalDirectionY: this.preferredY,
+      goalSpeed: this.desiredSpeed,
+      neighborOffsets: this.neighborOffsets,
+      neighborIndices: this.cachedNeighborIndices,
+      agentRadius: this.config.agentRadius,
+      agentGap: this.config.agentGap,
+      maxSpeed: this.config.maxSpeed,
+      maxAcceleration: this.config.maxAcceleration,
+      fixedDelta: this.config.fixedDelta,
+      leaderHorizon: UNIFIED_GUIDANCE_HORIZON,
+      preserveLongitudinalSpeed: this.scenario.obstacles.length === 0,
+      outputVelocityX: this.plannedVelocityX,
+      outputVelocityY: this.plannedVelocityY,
+      outputDesiredSpeed: this.desiredSpeed,
+      outputDensity: this.localDensity,
+      outputMeanVelocityX: this.meanNeighborVelocityX,
+      outputMeanVelocityY: this.meanNeighborVelocityY,
+      outputLeaderId: this.leaderId,
+      outputLeaderGap: this.leaderGap,
+      outputLeaderSpeed: this.leaderSpeed,
+      outputMinimumDistance: this.minimumNeighborDistance,
+    });
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      next.intentX[agent] = this.preferredX[agent]!;
+      next.intentY[agent] = this.preferredY[agent]!;
+    }
+    this.buildSweptSolverNeighborCache(current);
+
+    const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
+    const orca = this.orcaVelocitySolver.solve({
+      current,
+      active: this.activeThisStep,
+      preferredVelocityX: this.plannedVelocityX,
+      preferredVelocityY: this.plannedVelocityY,
+      neighborOffsets: this.solverNeighborOffsets,
+      neighborIndices: this.solverNeighborIndices,
+      neighborCap: UNIFIED_NEIGHBOR_CAP,
+      agentRadius: this.config.agentRadius + UNIFIED_DYNAMIC_SKIN,
+      separationPadding: 0,
+      maxSpeed: this.config.maxSpeed,
+      maxAcceleration: this.config.maxAcceleration * UNIFIED_SOLVER_ACCELERATION_FRACTION,
+      fixedDelta: this.config.fixedDelta,
+      timeHorizon: UNIFIED_TIME_HORIZON,
+      rankNeighborsByPredictedSeparation: true,
+      accelerationRelaxed: this.solverRelaxedAcceleration,
+      obstacles: this.scenario.obstacles,
+      worldWidth: this.config.width,
+      worldHeight: this.config.height,
+      wallClearance: clearance,
+      staticResponseTime: UNIFIED_STATIC_RESPONSE,
+      outputVelocityX: this.resolvedVelocityX,
+      outputVelocityY: this.resolvedVelocityY,
+    });
+    const anticipatoryProjection = this.coupledVelocityProjector.solve({
+      current,
+      active: this.activeThisStep,
+      neighborOffsets: this.solverNeighborOffsets,
+      neighborIndices: this.solverNeighborIndices,
+      velocityX: this.resolvedVelocityX,
+      velocityY: this.resolvedVelocityY,
+      agentRadius: this.config.agentRadius,
+      fixedDelta: this.config.fixedDelta,
+      maxAcceleration: this.config.maxAcceleration,
+      maxSpeed: this.config.maxSpeed,
+      iterations: 8,
+      separationSkin: this.scenario.obstacles.length > 0 ? 0.7 : 0.01,
+      timeHorizon: 0.4,
+      obstacles: this.scenario.obstacles,
+      worldWidth: this.config.width,
+      worldHeight: this.config.height,
+      wallClearance: clearance,
+      staticResponseTime: UNIFIED_STATIC_RESPONSE,
+    });
+    const anticipatoryCandidateChecks = anticipatoryProjection.candidateChecks;
+    const coupledProjection = this.coupledVelocityProjector.solve({
+      current,
+      active: this.activeThisStep,
+      neighborOffsets: this.solverNeighborOffsets,
+      neighborIndices: this.solverNeighborIndices,
+      velocityX: this.resolvedVelocityX,
+      velocityY: this.resolvedVelocityY,
+      agentRadius: this.config.agentRadius,
+      fixedDelta: this.config.fixedDelta,
+      maxAcceleration: this.config.maxAcceleration,
+      maxSpeed: this.config.maxSpeed,
+      iterations: 32,
+      separationSkin: 0.001,
+      obstacles: this.scenario.obstacles,
+      worldWidth: this.config.width,
+      worldHeight: this.config.height,
+      wallClearance: clearance,
+      staticResponseTime: UNIFIED_STATIC_RESPONSE,
+    });
+    this.candidateChecks += anticipatoryCandidateChecks + coupledProjection.candidateChecks;
+
+    // Exact static sweep validates the LP's linearized wall constraints.
+    let needsPriorityFallback = coupledProjection.remainingOverlapPairs > 0;
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      if (this.solverRelaxedAcceleration[agent] === 1) {
+        this.fallbackReason[agent] = FALLBACK_SOLVER;
+        this.emergencyStops[agent] = 1;
+      }
+      this.staticIntegrator.integrate(
+        current.x[agent]!,
+        current.y[agent]!,
+        this.resolvedVelocityX[agent]!,
+        this.resolvedVelocityY[agent]!,
+        this.config.fixedDelta,
+        clearance,
+        this.config.width,
+        this.config.height,
+        this.scenario.obstacles,
+        4,
+        this.staticIntegration,
+      );
+      next.x[agent] = this.staticIntegration.x;
+      next.y[agent] = this.staticIntegration.y;
+      next.vx[agent] = this.staticIntegration.velocityX;
+      next.vy[agent] = this.staticIntegration.velocityY;
+      const staticChanged = (
+        this.staticIntegration.startedOverlapping
+        || this.staticIntegration.exhausted
+        || Math.hypot(
+          next.vx[agent]! - this.resolvedVelocityX[agent]!,
+          next.vy[agent]! - this.resolvedVelocityY[agent]!,
+        ) > 1e-6
+      );
+      if (staticChanged) {
+        this.fallbackReason[agent] = FALLBACK_STATIC;
+        needsPriorityFallback = true;
+      }
+      this.reconciledVelocityX[agent] = next.x[agent]!;
+      this.reconciledVelocityY[agent] = next.y[agent]!;
+    }
+
+    // Only residual endpoint conflicts left by the unified agreement or a wall
+    // slide reach the legacy solver. A zero limited count means it was purely
+    // observational; routine movement authority stays in the unified LP.
+    let remainingFallbackOverlaps = 0;
+    if (needsPriorityFallback) {
+      const priorityFallback = this.priorityVelocitySolver.solve({
+        current,
+        next,
+        active: this.activeThisStep,
+        preferredDirectionX: this.preferredX,
+        preferredDirectionY: this.preferredY,
+        routeCost: this.routeCost,
+        neighborOffsets: this.solverNeighborOffsets,
+        neighborIndices: this.solverNeighborIndices,
+        agentRadius: this.config.agentRadius,
+        fixedDelta: this.config.fixedDelta,
+        allowLateralSearch: true,
+        maxAcceleration: this.config.maxAcceleration,
+        maxSpeed: this.config.maxSpeed,
+        obstacles: this.scenario.obstacles,
+        worldWidth: this.config.width,
+        worldHeight: this.config.height,
+        staticClearance: clearance,
+        overlapFlags: this.overlapFlags,
+      });
+      this.candidateChecks += priorityFallback.candidateChecks;
+      remainingFallbackOverlaps = priorityFallback.remainingOverlapPairs;
+      if (priorityFallback.remainingOverlapPairs > 0) {
+        const cleanup = this.priorityVelocitySolver.solve({
+          current,
+          next,
+          active: this.activeThisStep,
+          preferredDirectionX: this.preferredX,
+          preferredDirectionY: this.preferredY,
+          routeCost: this.routeCost,
+          neighborOffsets: this.solverNeighborOffsets,
+          neighborIndices: this.solverNeighborIndices,
+          agentRadius: this.config.agentRadius,
+          fixedDelta: this.config.fixedDelta,
+          overlapFlags: this.overlapFlags,
+        });
+        this.candidateChecks += cleanup.candidateChecks;
+        remainingFallbackOverlaps = cleanup.remainingOverlapPairs;
+      }
+    }
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      if (Math.hypot(
+          next.x[agent]! - this.reconciledVelocityX[agent]!,
+          next.y[agent]! - this.reconciledVelocityY[agent]!,
+        ) > 1e-9) this.fallbackReason[agent] = FALLBACK_DYNAMIC;
+      this.intentVelocityX[agent] = next.x[agent]!;
+      this.intentVelocityY[agent] = next.y[agent]!;
+    }
+
+    let relaxationCorrectedCount = 0;
+    let maximumRelaxationCorrection = 0;
+    this.overlapPairs = remainingFallbackOverlaps;
+    if (remainingFallbackOverlaps > 0) {
+      const relaxation = this.positionRelaxation.solve({
+        next,
+        active: this.activeThisStep,
+        neighborOffsets: this.neighborOffsets,
+        neighborIndices: this.cachedNeighborIndices,
+        agentRadius: this.config.agentRadius,
+        maxCorrection: UNIFIED_RELAXATION_EPSILON,
+        iterations: 4,
+        obstacles: this.scenario.obstacles,
+        worldWidth: this.config.width,
+        worldHeight: this.config.height,
+        staticClearance: clearance,
+        overlapFlags: this.overlapFlags,
+      });
+      this.candidateChecks += relaxation.candidateChecks;
+      this.overlapPairs = relaxation.remainingOverlapPairs;
+      relaxationCorrectedCount = relaxation.correctedAgents;
+      maximumRelaxationCorrection = relaxation.maxCorrection;
+    }
+
+    let safetyFallbackCount = 0;
+    let maximumSafetyVelocityChange = 0;
+    const maximumDelta = Math.max(0, this.config.maxAcceleration) * this.config.fixedDelta;
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      if (Math.hypot(
+        next.x[agent]! - this.intentVelocityX[agent]!,
+        next.y[agent]! - this.intentVelocityY[agent]!,
+      ) > 1e-9) this.fallbackReason[agent] = FALLBACK_DEPENETRATION;
+      const actualVelocityX = (next.x[agent]! - current.x[agent]!) / this.config.fixedDelta;
+      const actualVelocityY = (next.y[agent]! - current.y[agent]!) / this.config.fixedDelta;
+      maximumSafetyVelocityChange = Math.max(
+        maximumSafetyVelocityChange,
+        Math.hypot(
+          actualVelocityX - this.resolvedVelocityX[agent]!,
+          actualVelocityY - this.resolvedVelocityY[agent]!,
+        ),
+      );
+      if (this.fallbackReason[agent] !== FALLBACK_NONE) safetyFallbackCount += 1;
+      if (Math.hypot(
+        actualVelocityX - current.vx[agent]!,
+        actualVelocityY - current.vy[agent]!,
+      ) > maximumDelta + 1e-7) this.emergencyStops[agent] = 1;
+      next.vx[agent] = actualVelocityX;
+      next.vy[agent] = actualVelocityY;
+    }
+    // Publish arrivals in the frame that enters the goal disk. The legacy
+    // start-of-step check remains for backwards compatibility, while this
+    // unified end-of-step check makes step-N metrics describe the step-N state.
+    this.deactivateArrivals(next, next);
+
+    this.finalizeStep(current, next, {
+      reservationLimitedCount: 0,
+      reservationStoppedCount: 0,
+      maxReservationVelocityChange: 0,
+      reciprocalConstraintCount: orca.constraintCount,
+      reciprocalProjectionRepairCount: orca.infeasibleAgents,
+      relaxationCorrectedCount,
+      maxRelaxationCorrection: maximumRelaxationCorrection,
+      safetyFallbackCount,
+      maxSafetyFallbackVelocityChange: maximumSafetyVelocityChange,
+      unifiedInfeasibleCount: coupledProjection.remainingOverlapPairs,
     });
   }
 
   private deactivateArrivals(current: AgentBuffer, next: AgentBuffer): void {
-    const goalRadiusSquared = this.config.goalRadius * this.config.goalRadius;
+    // Unified's pass-through policy completes when the moving agent disk first
+    // touches the goal disk. Legacy pipelines retain their historical
+    // center-inside-radius behavior for stable A/B comparisons.
+    const arrivalRadius = this.config.goalRadius + (
+      (this.config.pipeline ?? 'current') === 'unified' ? this.config.agentRadius : 0
+    );
+    const goalRadiusSquared = arrivalRadius * arrivalRadius;
     for (let i = 0; i < current.count; i += 1) {
       if (current.active[i] !== 1) continue;
-      if (distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y) > goalRadiusSquared) continue;
+      const goal = this.flowGoals[this.agentFlow[i]!]!;
+      if (distanceSquared(current.x[i]!, current.y[i]!, goal.x, goal.y) > goalRadiusSquared) continue;
       this.activeThisStep[i] = 0;
       next.active[i] = 0;
       next.vx[i] = 0;
@@ -672,6 +1108,9 @@ export class CrowdSimulation {
       reciprocalProjectionRepairCount: number;
       relaxationCorrectedCount: number;
       maxRelaxationCorrection: number;
+      safetyFallbackCount: number;
+      maxSafetyFallbackVelocityChange: number;
+      unifiedInfeasibleCount: number;
     },
   ): void {
     let activeCount = 0;
@@ -807,7 +1246,141 @@ export class CrowdSimulation {
       reciprocalProjectionRepairCount: extras.reciprocalProjectionRepairCount,
       relaxationCorrectedCount: extras.relaxationCorrectedCount,
       maxRelaxationCorrection: extras.maxRelaxationCorrection,
+      safetyFallbackCount: extras.safetyFallbackCount,
+      maxSafetyFallbackVelocityChange: extras.maxSafetyFallbackVelocityChange,
+      unifiedInfeasibleCount: extras.unifiedInfeasibleCount,
     };
+  }
+
+  getAgentTrace(agent: number): AgentLayerTrace {
+    if (!Number.isInteger(agent) || agent < 0 || agent >= this.state.count) {
+      throw new RangeError(`Agent index ${agent} is outside 0..${this.state.count - 1}.`);
+    }
+    const fallback = this.fallbackReason[agent]!;
+    const limiting = this.findLimitingNeighbor(agent);
+    const fallbackReason = fallback === FALLBACK_STATIC
+      ? 'static-slide'
+      : fallback === FALLBACK_DYNAMIC
+        ? 'dynamic-reservation'
+        : fallback === FALLBACK_DEPENETRATION
+          ? 'depenetration'
+          : fallback === FALLBACK_SOLVER
+            ? 'solver-relaxation'
+          : 'none';
+    return {
+      agent,
+      flow: this.agentFlow[agent]!,
+      goal: { ...this.flowGoals[this.agentFlow[agent]!]! },
+      step: this.stepCount,
+      active: this.state.active[agent] === 1,
+      position: { x: this.state.x[agent]!, y: this.state.y[agent]! },
+      currentVelocity: { x: this.nextState.vx[agent]!, y: this.nextState.vy[agent]! },
+      globalDirection: { x: this.preferredX[agent]!, y: this.preferredY[agent]! },
+      routeCost: this.routeCost[agent]!,
+      localDensity: this.localDensity[agent]!,
+      meanNeighborVelocity: {
+        x: this.meanNeighborVelocityX[agent]!,
+        y: this.meanNeighborVelocityY[agent]!,
+      },
+      leaderId: this.leaderId[agent]!,
+      leaderGap: this.leaderGap[agent]!,
+      leaderSpeed: this.leaderSpeed[agent]!,
+      desiredSpeed: this.desiredSpeed[agent]!,
+      plannedVelocity: { x: this.plannedVelocityX[agent]!, y: this.plannedVelocityY[agent]! },
+      localVelocity: { x: this.resolvedVelocityX[agent]!, y: this.resolvedVelocityY[agent]! },
+      finalVelocity: { x: this.state.vx[agent]!, y: this.state.vy[agent]! },
+      fallbackReason,
+      neighborCount: this.neighborOffsets[agent + 1]! - this.neighborOffsets[agent]!,
+      minimumDistance: this.minimumNeighborDistance[agent]!,
+      limitingNeighborId: limiting.id,
+      minimumTimeToCollision: limiting.timeToCollision,
+      layerVelocityDelta: {
+        crowdPreference: Math.hypot(
+          this.plannedVelocityX[agent]! - this.nextState.vx[agent]!,
+          this.plannedVelocityY[agent]! - this.nextState.vy[agent]!,
+        ),
+        localSolver: Math.hypot(
+          this.resolvedVelocityX[agent]! - this.plannedVelocityX[agent]!,
+          this.resolvedVelocityY[agent]! - this.plannedVelocityY[agent]!,
+        ),
+        safetyFallback: Math.hypot(
+          this.state.vx[agent]! - this.resolvedVelocityX[agent]!,
+          this.state.vy[agent]! - this.resolvedVelocityY[agent]!,
+        ),
+      },
+    };
+  }
+
+  /** Previous fixed-step snapshot retained by the simulation's double buffer. */
+  get previousState(): AgentBuffer {
+    return this.nextState;
+  }
+
+  private findLimitingNeighbor(agent: number): { id: number; timeToCollision: number } {
+    const current = this.nextState;
+    const start = this.solverNeighborOffsets[agent]!;
+    const end = this.solverNeighborOffsets[agent + 1]!;
+    let id = -1;
+    let minimumPredictedSeparation = Number.POSITIVE_INFINITY;
+    let minimumTimeToCollision = Number.POSITIVE_INFINITY;
+    const combinedRadius = this.config.agentRadius * 2;
+    for (let offset = start; offset < end; offset += 1) {
+      const other = this.solverNeighborIndices[offset]!;
+      if (other < 0 || other >= current.count || current.active[other] !== 1) continue;
+      const dx = current.x[other]! - current.x[agent]!;
+      const dy = current.y[other]! - current.y[agent]!;
+      const relativeVelocityX = this.plannedVelocityX[other]! - this.plannedVelocityX[agent]!;
+      const relativeVelocityY = this.plannedVelocityY[other]! - this.plannedVelocityY[agent]!;
+      const relativeSpeedSquared = relativeVelocityX * relativeVelocityX
+        + relativeVelocityY * relativeVelocityY;
+      const closestTime = relativeSpeedSquared > 1e-9
+        ? clamp(
+            -(dx * relativeVelocityX + dy * relativeVelocityY) / relativeSpeedSquared,
+            0,
+            UNIFIED_TIME_HORIZON,
+          )
+        : 0;
+      const closestX = dx + relativeVelocityX * closestTime;
+      const closestY = dy + relativeVelocityY * closestTime;
+      const predictedSeparation = closestX * closestX + closestY * closestY;
+      if (
+        predictedSeparation < minimumPredictedSeparation - 1e-12
+        || (Math.abs(predictedSeparation - minimumPredictedSeparation) <= 1e-12 && other < id)
+      ) {
+        minimumPredictedSeparation = predictedSeparation;
+        id = other;
+      }
+
+      const currentDistanceSquared = dx * dx + dy * dy;
+      const collisionConstant = currentDistanceSquared - combinedRadius * combinedRadius;
+      if (collisionConstant <= 0) {
+        minimumTimeToCollision = 0;
+        continue;
+      }
+      if (relativeSpeedSquared <= 1e-9) continue;
+      const linear = 2 * (dx * relativeVelocityX + dy * relativeVelocityY);
+      const discriminant = linear * linear - 4 * relativeSpeedSquared * collisionConstant;
+      if (linear >= 0 || discriminant < 0) continue;
+      const time = (-linear - Math.sqrt(discriminant)) / (2 * relativeSpeedSquared);
+      if (time >= 0 && time <= UNIFIED_TIME_HORIZON) {
+        minimumTimeToCollision = Math.min(minimumTimeToCollision, time);
+      }
+    }
+    return { id, timeToCollision: minimumTimeToCollision };
+  }
+
+  goalForAgent(agent: number): Readonly<Vec2> {
+    if (!Number.isInteger(agent) || agent < 0 || agent >= this.state.count) {
+      throw new RangeError(`Agent index ${agent} is outside 0..${this.state.count - 1}.`);
+    }
+    return this.flowGoals[this.agentFlow[agent]!]!;
+  }
+
+  sampleNavigationDirection(agent: number, x: number, y: number, out: Vec2): boolean {
+    if (!Number.isInteger(agent) || agent < 0 || agent >= this.state.count) {
+      throw new RangeError(`Agent index ${agent} is outside 0..${this.state.count - 1}.`);
+    }
+    return this.flowNavigators[this.agentFlow[agent]!]!.sampleDirection(x, y, out);
   }
 
   stateHash(): string {
@@ -818,8 +1391,15 @@ export class CrowdSimulation {
     };
     mix(this.stepCount);
     mix(this.unspawnedCount);
-    mix(Math.round(this.goal.x * 1000));
-    mix(Math.round(this.goal.y * 1000));
+    for (const goal of this.flowGoals) {
+      mix(Math.round(goal.x * 1000));
+      mix(Math.round(goal.y * 1000));
+    }
+    if (this.flowCount > 1) {
+      mix(this.flowControlOwner);
+      mix(this.flowControlPhaseStep);
+      mix(this.flowControlDraining ? 1 : 0);
+    }
     for (let i = 0; i < this.state.count; i += 1) {
       mix(Math.round(this.state.x[i]! * 1000));
       mix(Math.round(this.state.y[i]! * 1000));
@@ -839,11 +1419,12 @@ export class CrowdSimulation {
       mix(Math.round(this.arrivalSlotY[i]! * 1000));
       mix(Math.round(this.formationUnitX[i]! * 1_000_000));
       mix(Math.round(this.formationUnitY[i]! * 1_000_000));
+      if (this.flowCount > 1) mix(this.agentFlow[i]!);
     }
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
 
-  private buildNeighborCache(current: AgentBuffer): void {
+  private buildNeighborCache(current: AgentBuffer, sweptHorizon = 0): void {
     this.cachedNeighborCount = 0;
     this.cachedTotalNeighbors = 0;
     this.cachedMaxNeighbors = 0;
@@ -851,6 +1432,15 @@ export class CrowdSimulation {
       this.neighborOffsets[agent] = this.cachedNeighborCount;
       if (this.activeThisStep[agent] !== 1) continue;
       this.queryAgent = agent;
+      if (sweptHorizon > 0) {
+        const comfortRadius = this.config.agentRadius * 2 + Math.max(0, this.config.agentGap);
+        this.queryRadius = Math.max(
+          this.config.neighborRadius,
+          comfortRadius + (
+            this.config.maxSpeed + Math.hypot(current.vx[agent]!, current.vy[agent]!)
+          ) * sweptHorizon,
+        );
+      }
       this.neighbors.forEachCandidate(
         current.x[agent]!,
         current.y[agent]!,
@@ -864,6 +1454,84 @@ export class CrowdSimulation {
       this.cachedMaxNeighbors = Math.max(this.cachedMaxNeighbors, count);
     }
     this.neighborOffsets[current.count] = this.cachedNeighborCount;
+  }
+
+  private buildSweptSolverNeighborCache(current: AgentBuffer): void {
+    this.solverNeighborCount = 0;
+    const expansion = this.config.agentRadius + Math.max(0, this.config.agentGap) * 0.5 + 1;
+    this.sweptNeighbors.rebuild(
+      current.x,
+      current.y,
+      this.plannedVelocityX,
+      this.plannedVelocityY,
+      this.activeThisStep,
+      UNIFIED_TIME_HORIZON,
+      expansion,
+    );
+    for (let agent = 0; agent < current.count; agent += 1) {
+      this.solverNeighborOffsets[agent] = this.solverNeighborCount;
+      if (this.activeThisStep[agent] !== 1) continue;
+      this.queryAgent = agent;
+      this.sweptNeighbors.forEachCandidate(
+        agent,
+        current.x[agent]!,
+        current.y[agent]!,
+        this.plannedVelocityX[agent]!,
+        this.plannedVelocityY[agent]!,
+        UNIFIED_TIME_HORIZON,
+        expansion,
+        this.visitSolverCandidate,
+      );
+      this.sortSolverNeighborRange(this.solverNeighborOffsets[agent]!, this.solverNeighborCount);
+    }
+    this.solverNeighborOffsets[current.count] = this.solverNeighborCount;
+  }
+
+  private accumulateSolverCandidate(candidate: number): void {
+    if (candidate === this.queryAgent || this.activeThisStep[candidate] !== 1) return;
+    this.candidateChecks += 1;
+    const current = this.state;
+    const dx = current.x[candidate]! - current.x[this.queryAgent]!;
+    const dy = current.y[candidate]! - current.y[this.queryAgent]!;
+    const relativeVelocityX = this.plannedVelocityX[candidate]! - this.plannedVelocityX[this.queryAgent]!;
+    const relativeVelocityY = this.plannedVelocityY[candidate]! - this.plannedVelocityY[this.queryAgent]!;
+    const relativeSpeedSquared = relativeVelocityX * relativeVelocityX
+      + relativeVelocityY * relativeVelocityY;
+    const closestTime = relativeSpeedSquared > 1e-9
+      ? clamp(
+        -(dx * relativeVelocityX + dy * relativeVelocityY) / relativeSpeedSquared,
+        0,
+        UNIFIED_TIME_HORIZON,
+      )
+      : 0;
+    const closestX = dx + relativeVelocityX * closestTime;
+    const closestY = dy + relativeVelocityY * closestTime;
+    const comfortRadius = this.config.agentRadius * 2 + Math.max(0, this.config.agentGap);
+    const activationRadius = comfortRadius + 2;
+    const currentDistanceSquared = dx * dx + dy * dy;
+    if (
+      closestX * closestX + closestY * closestY > activationRadius * activationRadius
+      && currentDistanceSquared > activationRadius * activationRadius
+    ) return;
+    if (this.solverNeighborCount >= this.solverNeighborIndices.length) {
+      const grown = new Int32Array(Math.max(1, this.solverNeighborIndices.length * 2));
+      grown.set(this.solverNeighborIndices);
+      this.solverNeighborIndices = grown;
+    }
+    this.solverNeighborIndices[this.solverNeighborCount] = candidate;
+    this.solverNeighborCount += 1;
+  }
+
+  private sortSolverNeighborRange(start: number, end: number): void {
+    for (let index = start + 1; index < end; index += 1) {
+      const value = this.solverNeighborIndices[index]!;
+      let target = index - 1;
+      while (target >= start && this.solverNeighborIndices[target]! > value) {
+        this.solverNeighborIndices[target + 1] = this.solverNeighborIndices[target]!;
+        target -= 1;
+      }
+      this.solverNeighborIndices[target + 1] = value;
+    }
   }
 
   private loadCachedNeighbors(agent: number): void {
@@ -892,6 +1560,19 @@ export class CrowdSimulation {
   }
 
   private sortCachedNeighborRange(start: number, end: number): void {
+    const length = end - start;
+    if (length >= 16) {
+      for (let root = Math.floor(length * 0.5) - 1; root >= 0; root -= 1) {
+        this.siftCachedNeighborHeap(start, length, root);
+      }
+      for (let last = length - 1; last > 0; last -= 1) {
+        const value = this.cachedNeighborIndices[start]!;
+        this.cachedNeighborIndices[start] = this.cachedNeighborIndices[start + last]!;
+        this.cachedNeighborIndices[start + last] = value;
+        this.siftCachedNeighborHeap(start, last, 0);
+      }
+      return;
+    }
     for (let index = start + 1; index < end; index += 1) {
       const value = this.cachedNeighborIndices[index]!;
       let target = index - 1;
@@ -901,6 +1582,24 @@ export class CrowdSimulation {
       }
       this.cachedNeighborIndices[target + 1] = value;
     }
+  }
+
+  private siftCachedNeighborHeap(start: number, length: number, root: number): void {
+    let parent = root;
+    const value = this.cachedNeighborIndices[start + parent]!;
+    while (true) {
+      const left = parent * 2 + 1;
+      if (left >= length) break;
+      const right = left + 1;
+      const child = right < length
+        && this.cachedNeighborIndices[start + right]! > this.cachedNeighborIndices[start + left]!
+        ? right
+        : left;
+      if (this.cachedNeighborIndices[start + child]! <= value) break;
+      this.cachedNeighborIndices[start + parent] = this.cachedNeighborIndices[start + child]!;
+      parent = child;
+    }
+    this.cachedNeighborIndices[start + parent] = value;
   }
 
   private prepareMovementInput(
@@ -918,11 +1617,12 @@ export class CrowdSimulation {
     input.velocityY = current.vy[agent]!;
     input.preferredX = this.preferredX[agent]!;
     input.preferredY = this.preferredY[agent]!;
+    const goal = this.flowGoals[this.agentFlow[agent]!]!;
     input.distanceToGoal = Math.sqrt(distanceSquared(
       current.x[agent]!,
       current.y[agent]!,
-      this.goal.x,
-      this.goal.y,
+      goal.x,
+      goal.y,
     ));
     input.maxSpeed = this.config.maxSpeed;
     input.maxAcceleration = this.config.maxAcceleration;
@@ -1068,11 +1768,14 @@ export class CrowdSimulation {
 
   private planPreferredVelocities(current: AgentBuffer): void {
     const maximumDelta = this.config.maxAcceleration * this.config.fixedDelta;
-    const approachX = this.goal.x - (this.scenario.spawn.x + this.scenario.spawn.width * 0.5);
-    const approachY = this.goal.y - (this.scenario.spawn.y + this.scenario.spawn.height * 0.5);
-    const approachLength = Math.hypot(approachX, approachY);
-    const approachUnitX = approachLength > 1e-9 ? approachX / approachLength : 1;
-    const approachUnitY = approachLength > 1e-9 ? approachY / approachLength : 0;
+    this.updateFlowControl(current);
+    const hasFlowControl = this.scenario.flowControl !== undefined && this.flowCount > 1;
+    // Unified uses a pass-through/despawn arrival policy: entering the goal
+    // disk completes the route, so braking toward the disk center would only
+    // delay completion. Legacy pipelines retain their center-target slowdown.
+    const arrivalRadius = (this.config.pipeline ?? 'current') === 'unified'
+      ? this.config.goalRadius
+      : Math.max(this.config.arrivalSlowRadius, this.config.goalRadius * 1.5);
     for (let i = 0; i < current.count; i += 1) {
       if (this.activeThisStep[i] !== 1) {
         this.preferredX[i] = 0;
@@ -1083,11 +1786,46 @@ export class CrowdSimulation {
         this.routeCost[i] = Number.POSITIVE_INFINITY;
         continue;
       }
-      this.routeCost[i] = this.navigator.sampleCost(current.x[i]!, current.y[i]!);
-      this.navigator.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
-      this.applyCorridorDispersion(i, current.x[i]!, current.y[i]!);
-      const distanceToGoal = Math.sqrt(distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y));
-      const arrivalRadius = Math.max(this.config.arrivalSlowRadius, this.config.goalRadius * 1.5);
+      const flow = this.agentFlow[i]!;
+      const goal = this.flowGoals[flow]!;
+      const spawn = this.flowSpawns[flow]!;
+      const navigator = this.flowNavigators[flow]!;
+      const approachUnitX = this.flowApproachX[flow]!;
+      const approachUnitY = this.flowApproachY[flow]!;
+      this.routeCost[i] = navigator.sampleCost(current.x[i]!, current.y[i]!);
+      const distanceToGoal = Math.sqrt(distanceSquared(current.x[i]!, current.y[i]!, goal.x, goal.y));
+      navigator.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
+      if (
+        (this.config.pipeline ?? 'current') === 'unified'
+        && this.scenario.obstacles.length === 0
+      ) {
+        // Preserve formation in open space instead of steering every packed
+        // row toward the same point from frame one. The flow direction blends
+        // back near the goal, where agents fan into their arrival slots.
+        const parallelWeight = clamp(
+          (distanceToGoal - arrivalRadius * 2) / Math.max(arrivalRadius, 1e-9),
+          0,
+          1,
+        );
+        const parallelX = this.flowDirection.x * (1 - parallelWeight) + approachUnitX * parallelWeight;
+        const parallelY = this.flowDirection.y * (1 - parallelWeight) + approachUnitY * parallelWeight;
+        const parallelLength = Math.hypot(parallelX, parallelY);
+        if (parallelLength > 1e-9) {
+          this.flowDirection.x = parallelX / parallelLength;
+          this.flowDirection.y = parallelY / parallelLength;
+        }
+      }
+      if (hasFlowControl) {
+        this.applyFlowLaneGuidance(
+          i,
+          current.x[i]!,
+          current.y[i]!,
+          approachUnitX,
+          approachUnitY,
+          spawn,
+        );
+      }
+      this.applyCorridorDispersion(i, current.x[i]!, current.y[i]!, goal, spawn);
       const slotX = this.arrivalSlotX[i]! - current.x[i]!;
       const slotY = this.arrivalSlotY[i]! - current.y[i]!;
       const slotLength = Math.hypot(slotX, slotY);
@@ -1107,8 +1845,8 @@ export class CrowdSimulation {
         preferredY /= preferredLength;
       }
       const reverseApproach = preferredX * approachUnitX + preferredY * approachUnitY;
-      const goalPlaneOffset = (current.x[i]! - this.goal.x) * approachUnitX
-        + (current.y[i]! - this.goal.y) * approachUnitY;
+      const goalPlaneOffset = (current.x[i]! - goal.x) * approachUnitX
+        + (current.y[i]! - goal.y) * approachUnitY;
       if (goalPlaneOffset <= 0 && reverseApproach < 0) {
         preferredX -= approachUnitX * reverseApproach;
         preferredY -= approachUnitY * reverseApproach;
@@ -1144,7 +1882,17 @@ export class CrowdSimulation {
       }
       this.preferredX[i] = preferredX;
       this.preferredY[i] = preferredY;
-      const desiredSpeed = this.config.maxSpeed * Math.min(1, distanceToGoal / Math.max(arrivalRadius, 1e-9));
+      const freeSpeed = this.config.maxSpeed * Math.min(1, distanceToGoal / Math.max(arrivalRadius, 1e-9));
+      const desiredSpeed = hasFlowControl
+        ? this.applyFlowControlSpeed(
+            i,
+            current.x[i]!,
+            current.y[i]!,
+            preferredX,
+            preferredY,
+            freeSpeed,
+          )
+        : freeSpeed;
       this.desiredSpeed[i] = desiredSpeed;
       const targetX = preferredX * desiredSpeed;
       const targetY = preferredY * desiredSpeed;
@@ -1173,10 +1921,16 @@ export class CrowdSimulation {
    * preference only; steering and Phase C still own dynamic and physical
    * non-penetration.
    */
-  private applyCorridorDispersion(agent: number, x: number, y: number): void {
+  private applyCorridorDispersion(
+    agent: number,
+    x: number,
+    y: number,
+    goal: Vec2,
+    spawn: Rect,
+  ): void {
     if (this.scenario.obstacles.length === 0) return;
-    const toGoalX = this.goal.x - x;
-    const toGoalY = this.goal.y - y;
+    const toGoalX = goal.x - x;
+    const toGoalY = goal.y - y;
     const horizontal = Math.abs(toGoalX) >= Math.abs(toGoalY);
     const progressSign = horizontal ? Math.sign(toGoalX) : Math.sign(toGoalY);
     if (progressSign === 0) return;
@@ -1199,7 +1953,7 @@ export class CrowdSimulation {
         ? progressSign > 0 ? obstacle.x + obstacle.width + clearance : obstacle.x - clearance
         : progressSign > 0 ? obstacle.y + obstacle.height + clearance : obstacle.y - clearance;
       const position = horizontal ? x : y;
-      const goal = horizontal ? this.goal.x : this.goal.y;
+      const goalCoordinate = horizontal ? goal.x : goal.y;
       const distanceToNear = (near - position) * progressSign;
       const minimum = horizontal ? obstacle.y - clearance : obstacle.x - clearance;
       const maximum = horizontal
@@ -1214,18 +1968,30 @@ export class CrowdSimulation {
       const activationDistance = isSplitter
         ? Math.max(baseActivationDistance * 2, this.config.cellSize * 16)
         : baseActivationDistance;
-      if ((goal - far) * progressSign <= 0) continue;
-      if (distanceToNear > activationDistance || (position - far) * progressSign > exitLead) continue;
-
+      if ((goalCoordinate - far) * progressSign <= 0) continue;
+      // Hand route authority to the next portal as soon as this obstacle's far
+      // face is physically clear. Keeping the previous lane target for the
+      // whole exit lead makes alternating portals start their lateral turn too
+      // late and creates a dense 90-degree queue at the following gate.
       const lateralPosition = horizontal ? y : x;
+      const outsidePortal = lateralPosition <= minimum - this.config.agentGap
+        || lateralPosition >= maximum + this.config.agentGap;
+      const earlyHandoff = outsidePortal
+        && (position - far) * progressSign > -this.config.cellSize * 0.5;
+      if (
+        distanceToNear > activationDistance
+        || (position - far) * progressSign > 0
+        || earlyHandoff
+      ) continue;
+
       const lateralFlow = horizontal ? this.flowDirection.y : this.flowDirection.x;
       let side = lateralPosition < minimum - 1e-9
         ? -1
         : lateralPosition > maximum + 1e-9 ? 1 : Math.sign(lateralFlow);
       if (isSplitter && (position - far) * progressSign <= exitLead) {
         const formationUnit = horizontal ? this.formationUnitY[agent]! : this.formationUnitX[agent]!;
-        const spawnMinimum = horizontal ? this.scenario.spawn.y : this.scenario.spawn.x;
-        const spawnSpan = horizontal ? this.scenario.spawn.height : this.scenario.spawn.width;
+        const spawnMinimum = horizontal ? spawn.y : spawn.x;
+        const spawnSpan = horizontal ? spawn.height : spawn.width;
         const obstacleCenter = (minimum + maximum) * 0.5;
         const routeCut = clamp(
           (obstacleCenter - spawnMinimum) / Math.max(spawnSpan, 1e-9),
@@ -1287,18 +2053,42 @@ export class CrowdSimulation {
       this.config.agentRadius * 4 + Math.max(0, this.config.agentGap),
       laneSpan * 0.25,
     );
+    let usableLaneMinimum = laneMinimum + laneMargin;
+    let usableLaneMaximum = laneMaximum - laneMargin;
+    if (bestIsSplitter) {
+      // Keep the same usable portal width but bias it toward the splitter's
+      // inner edge. Centering it in the outside pocket made every route travel
+      // tens of pixels toward the world boundary and then undo that detour at
+      // the next alternating portal.
+      const usableSpan = (usableLaneMaximum - usableLaneMinimum) * 0.85;
+      const innerInset = Math.max(0.5, this.config.agentGap);
+      if (bestSide < 0) {
+        usableLaneMaximum = laneMaximum - innerInset;
+        usableLaneMinimum = usableLaneMaximum - usableSpan;
+      } else {
+        usableLaneMinimum = laneMinimum + innerInset;
+        usableLaneMaximum = usableLaneMinimum + usableSpan;
+      }
+    }
     const formationUnit = horizontal ? this.formationUnitY[agent]! : this.formationUnitX[agent]!;
-    const spawnMinimum = horizontal ? this.scenario.spawn.y : this.scenario.spawn.x;
-    const spawnSpan = horizontal ? this.scenario.spawn.height : this.scenario.spawn.width;
+    const spawnMinimum = horizontal ? spawn.y : spawn.x;
+    const spawnSpan = horizontal ? spawn.height : spawn.width;
     const obstacleCenter = horizontal
       ? obstacle.y + obstacle.height * 0.5
       : obstacle.x + obstacle.width * 0.5;
     const routeCut = clamp((obstacleCenter - spawnMinimum) / Math.max(spawnSpan, 1e-9), 0, 1);
-    const laneUnit = bestSide < 0
+    let laneUnit = bestSide < 0
       ? routeCut > 1e-9 ? clamp(formationUnit / routeCut, 0, 1) : formationUnit
       : routeCut < 1 - 1e-9 ? clamp((formationUnit - routeCut) / (1 - routeCut), 0, 1) : formationUnit;
-    const lane = laneMinimum + laneMargin
-      + (laneSpan - laneMargin * 2) * laneUnit;
+    if (bestIsSplitter) {
+      // Preserve lateral ordering while giving the shorter inner portal lanes
+      // more of the spawn width. Depending on longitudinal rank here makes a
+      // single row cross itself and creates seed-sensitive merge shocks.
+      laneUnit = bestSide < 0
+        ? Math.sqrt(laneUnit)
+        : 1 - Math.sqrt(1 - laneUnit);
+    }
+    const lane = usableLaneMinimum + (usableLaneMaximum - usableLaneMinimum) * laneUnit;
     const nearEdge = horizontal
       ? progressSign > 0 ? obstacle.x - clearance : obstacle.x + obstacle.width + clearance
       : progressSign > 0 ? obstacle.y - clearance : obstacle.y + obstacle.height + clearance;
@@ -1382,12 +2172,178 @@ export class CrowdSimulation {
     return value - Math.floor(value);
   }
 
+  private configureFlows(): void {
+    const definitions: readonly ScenarioFlowDefinition[] = this.scenario.flows?.length
+      ? this.scenario.flows
+      : [{
+          id: this.scenario.id,
+          spawn: this.scenario.spawn,
+          goal: this.scenario.goal,
+        }];
+    this.flowGoals = definitions.map((flow) => ({ ...flow.goal }));
+    this.flowSpawns = definitions.map((flow) => ({ ...flow.spawn }));
+    this.flowIds = definitions.map((flow) => flow.id);
+    this.flowWeights = definitions.map((flow) => Math.max(0, flow.weight ?? 1));
+    this.flowApproachX = new Float64Array(definitions.length);
+    this.flowApproachY = new Float64Array(definitions.length);
+    this.flowActiveCounts = new Uint32Array(definitions.length);
+    this.flowInsideCounts = new Uint32Array(definitions.length);
+    this.flowControlOwner = 0;
+    this.flowControlPhaseStep = 0;
+    this.flowControlDraining = false;
+    this.goal = { ...this.flowGoals[0]! };
+    const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
+    const navigators = new Array<FlowField>(definitions.length);
+    for (let flow = 0; flow < definitions.length; flow += 1) {
+      const spawn = this.flowSpawns[flow]!;
+      const goal = this.flowGoals[flow]!;
+      const approachX = goal.x - (spawn.x + spawn.width * 0.5);
+      const approachY = goal.y - (spawn.y + spawn.height * 0.5);
+      const approachLength = Math.hypot(approachX, approachY);
+      this.flowApproachX[flow] = approachLength > 1e-9 ? approachX / approachLength : 1;
+      this.flowApproachY[flow] = approachLength > 1e-9 ? approachY / approachLength : 0;
+      const navigator = flow === 0
+        ? this.navigator
+        : this.flowNavigators[flow] ?? new FlowField(
+            this.config.width,
+            this.config.height,
+            this.config.cellSize,
+          );
+      navigator.rebuild(this.flowGoals[flow]!, this.scenario.obstacles, clearance);
+      navigators[flow] = navigator;
+    }
+    this.flowNavigators = navigators;
+  }
+
+  private updateFlowControl(current: AgentBuffer): void {
+    const control = this.scenario.flowControl;
+    if (!control || this.flowCount <= 1) return;
+    this.flowActiveCounts.fill(0);
+    this.flowInsideCounts.fill(0);
+    const radiusSquared = Math.max(0, control.radius) ** 2;
+    let inside = 0;
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      const flow = this.agentFlow[agent]!;
+      this.flowActiveCounts[flow] = this.flowActiveCounts[flow]! + 1;
+      const dx = current.x[agent]! - control.center.x;
+      const dy = current.y[agent]! - control.center.y;
+      if (dx * dx + dy * dy > radiusSquared) continue;
+      this.flowInsideCounts[flow] = this.flowInsideCounts[flow]! + 1;
+      inside += 1;
+    }
+
+    if (
+      !this.flowControlDraining
+      && this.stepCount - this.flowControlPhaseStep >= Math.max(1, control.greenSteps)
+    ) this.flowControlDraining = true;
+
+    if (
+      (this.flowControlDraining && inside === 0)
+      || this.flowActiveCounts[this.flowControlOwner] === 0
+    ) {
+      const next = this.nextActiveFlow(this.flowControlOwner);
+      if (next >= 0) this.flowControlOwner = next;
+      this.flowControlPhaseStep = this.stepCount;
+      this.flowControlDraining = false;
+    }
+  }
+
+  private nextActiveFlow(after: number): number {
+    for (let offset = 1; offset <= this.flowCount; offset += 1) {
+      const flow = (after + offset) % this.flowCount;
+      if (this.flowActiveCounts[flow]! > 0) return flow;
+    }
+    return -1;
+  }
+
+  private applyFlowControlSpeed(
+    agent: number,
+    x: number,
+    y: number,
+    directionX: number,
+    directionY: number,
+    desiredSpeed: number,
+  ): number {
+    const control = this.scenario.flowControl;
+    if (!control || this.flowCount <= 1) return desiredSpeed;
+    const flow = this.agentFlow[agent]!;
+    if (flow === this.flowControlOwner && !this.flowControlDraining) return desiredSpeed;
+    const offsetX = control.center.x - x;
+    const offsetY = control.center.y - y;
+    const forward = offsetX * directionX + offsetY * directionY;
+    const radius = Math.max(0, control.radius);
+    if (forward <= radius) return desiredSpeed;
+    const lateral = Math.abs(offsetX * -directionY + offsetY * directionX);
+    if (lateral > radius * 1.6 + this.config.agentRadius * 2) return desiredSpeed;
+    const approachDistance = Math.max(this.config.agentRadius * 2, control.approachDistance);
+    const distanceToStop = forward - radius - this.config.agentRadius * 2;
+    if (distanceToStop >= approachDistance) return desiredSpeed;
+    const speedScale = clamp(distanceToStop / approachDistance, 0, 1);
+    return Math.min(desiredSpeed, this.config.maxSpeed * speedScale);
+  }
+
+  private applyFlowLaneGuidance(
+    agent: number,
+    x: number,
+    y: number,
+    approachX: number,
+    approachY: number,
+    spawn: Rect,
+  ): void {
+    const control = this.scenario.flowControl;
+    const laneOffset = control?.laneOffset ?? 0;
+    const laneWidth = Math.max(0, control?.laneWidth ?? 0);
+    if (!control || laneOffset <= 0 || laneWidth <= 0) return;
+    const rightX = -approachY;
+    const rightY = approachX;
+    const initialX = spawn.x + this.formationUnitX[agent]! * spawn.width;
+    const initialY = spawn.y + this.formationUnitY[agent]! * spawn.height;
+    const first = (spawn.x - control.center.x) * rightX
+      + (spawn.y - control.center.y) * rightY;
+    const second = (spawn.x + spawn.width - control.center.x) * rightX
+      + (spawn.y - control.center.y) * rightY;
+    const third = (spawn.x - control.center.x) * rightX
+      + (spawn.y + spawn.height - control.center.y) * rightY;
+    const fourth = (spawn.x + spawn.width - control.center.x) * rightX
+      + (spawn.y + spawn.height - control.center.y) * rightY;
+    const minimum = Math.min(first, second, third, fourth);
+    const maximum = Math.max(first, second, third, fourth);
+    const initialProjection = (initialX - control.center.x) * rightX
+      + (initialY - control.center.y) * rightY;
+    const formation = clamp(
+      (initialProjection - minimum) / Math.max(maximum - minimum, 1e-9),
+      0,
+      1,
+    );
+    const targetLateral = laneOffset + (formation - 0.5) * laneWidth;
+    const currentLateral = (x - control.center.x) * rightX
+      + (y - control.center.y) * rightY;
+    const correction = clamp(
+      (targetLateral - currentLateral) / Math.max(control.approachDistance, 1e-9),
+      -0.55,
+      0.55,
+    );
+    let guidedX = this.flowDirection.x + rightX * correction;
+    let guidedY = this.flowDirection.y + rightY * correction;
+    const progress = guidedX * approachX + guidedY * approachY;
+    if (progress < 0) {
+      guidedX -= approachX * progress;
+      guidedY -= approachY * progress;
+    }
+    const length = Math.hypot(guidedX, guidedY);
+    if (length <= 1e-9) return;
+    this.flowDirection.x = guidedX / length;
+    this.flowDirection.y = guidedY / length;
+  }
+
   private rebuildArrivalSlots(): void {
     for (let i = 0; i < this.state.count; i += 1) {
+      const goal = this.flowGoals[this.agentFlow[i]!]!;
       computeArrivalSlot(
         i,
         this.config.seed,
-        this.goal,
+        goal,
         Math.max(
           0,
           this.config.goalRadius
@@ -1422,34 +2378,75 @@ export class CrowdSimulation {
     return true;
   }
 
-  private createSpawnPositions(random: SeededRandom): Vec2[] {
+  private createSpawnPositions(random: SeededRandom): SpawnPlacement[] {
     const spacing = this.config.agentRadius * 2 + Math.max(this.config.agentGap, 0.08);
-    const spawnCandidates = this.createHexCandidates(this.scenario.spawn, this.config.agentRadius, spacing)
-      .filter((position) => this.isValidPlacement(position));
-    this.shuffle(spawnCandidates, random);
-    const selected = spawnCandidates.slice(0, this.config.agentCount);
-    if (selected.length >= this.config.agentCount) return selected;
-
     const placementIndex = new PlacementIndex(this.config.agentRadius * 2 + 0.01);
-    for (const position of selected) placementIndex.add(position);
+    const selected: SpawnPlacement[] = [];
+    const counts = this.allocateFlowCounts(this.config.agentCount);
     const world: Rect = { x: 0, y: 0, width: this.config.width, height: this.config.height };
-    const overflowCandidates = this.createHexCandidates(
-      world,
-      this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN,
-      spacing,
-    ).filter((position) => this.isValidPlacement(position));
-    overflowCandidates.sort((first, second) => {
-      const distanceDifference = distanceSquaredToRect(first.x, first.y, this.scenario.spawn)
-        - distanceSquaredToRect(second.x, second.y, this.scenario.spawn);
-      return distanceDifference || first.y - second.y || first.x - second.x;
-    });
-    for (const position of overflowCandidates) {
-      if (selected.length >= this.config.agentCount) break;
-      if (!placementIndex.canAdd(position)) continue;
-      selected.push(position);
-      placementIndex.add(position);
+    for (let flow = 0; flow < this.flowSpawns.length; flow += 1) {
+      const target = counts[flow]!;
+      let placed = 0;
+      const spawn = this.flowSpawns[flow]!;
+      const spawnCandidates = this.createHexCandidates(spawn, this.config.agentRadius, spacing)
+        .filter((position) => this.isValidPlacement(position));
+      this.shuffle(spawnCandidates, random);
+      for (const position of spawnCandidates) {
+        if (placed >= target) break;
+        if (!placementIndex.canAdd(position)) continue;
+        selected.push({ ...position, flow });
+        placementIndex.add(position);
+        placed += 1;
+      }
+      if (placed >= target) continue;
+
+      const overflowCandidates = this.createHexCandidates(
+        world,
+        this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN,
+        spacing,
+      ).filter((position) => this.isValidPlacement(position));
+      overflowCandidates.sort((first, second) => {
+        const distanceDifference = distanceSquaredToRect(first.x, first.y, spawn)
+          - distanceSquaredToRect(second.x, second.y, spawn);
+        return distanceDifference || first.y - second.y || first.x - second.x;
+      });
+      for (const position of overflowCandidates) {
+        if (placed >= target) break;
+        if (!placementIndex.canAdd(position)) continue;
+        selected.push({ ...position, flow });
+        placementIndex.add(position);
+        placed += 1;
+      }
     }
     return selected;
+  }
+
+  private allocateFlowCounts(total: number): number[] {
+    const weights = this.flowWeights;
+    let weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+    if (weightSum <= 0) weightSum = weights.length;
+    const counts = new Array<number>(weights.length).fill(0);
+    const remainders = new Float64Array(weights.length);
+    let assigned = 0;
+    for (let flow = 0; flow < weights.length; flow += 1) {
+      const weight = weightSum === weights.length && weights.every((value) => value <= 0)
+        ? 1
+        : weights[flow]!;
+      const exact = total * weight / weightSum;
+      counts[flow] = Math.floor(exact);
+      remainders[flow] = exact - counts[flow]!;
+      assigned += counts[flow]!;
+    }
+    while (assigned < total) {
+      let best = 0;
+      for (let flow = 1; flow < remainders.length; flow += 1) {
+        if (remainders[flow]! > remainders[best]! + 1e-12) best = flow;
+      }
+      counts[best] = counts[best]! + 1;
+      remainders[best] = -1;
+      assigned += 1;
+    }
+    return counts;
   }
 
   private createHexCandidates(rect: Rect, padding: number, spacing: number): Vec2[] {

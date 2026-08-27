@@ -14,6 +14,7 @@ const OVERLAP_SEPARATION_RATE = 4;
 // penetration deeper than this (a genuine squeeze, e.g. against a wall)
 // becomes a hard unilaterally-executable constraint.
 const OVERLAP_HARD_DEPTH = 0.5;
+const FOLLOWER_RESPONSIBILITY = 0.5;
 
 export interface OrcaVelocityInput {
   current: AgentBuffer;
@@ -32,8 +33,21 @@ export interface OrcaVelocityInput {
    */
   separationPadding: number;
   maxSpeed: number;
+  /**
+   * When supplied, the LP is solved inside the acceleration-reachable disk
+   * centred on current velocity. The max-speed disk is represented by a fixed
+   * deterministic inscribed polygon in the same LP, so no post projection can
+   * invalidate a pairwise agreement.
+   */
+  maxAcceleration?: number;
   fixedDelta: number;
   timeHorizon: number;
+  /** Rank the K constraints by predicted closest separation instead of range. */
+  rankNeighborsByPredictedSeparation?: boolean;
+  /** Optional per-agent marker set when physical constraints outrank acceleration. */
+  accelerationRelaxed?: Uint8Array;
+  /** Allow the physical-constraint tier to leave the acceleration disk. */
+  relaxAccelerationOnInfeasible?: boolean;
   /**
    * Maximum |output - current velocity| applied when the half-plane set was
    * infeasible and the result is a least-violation repair rather than an
@@ -71,6 +85,10 @@ export interface OrcaVelocityResult {
   constraintCount: number;
   /** Agents whose half-plane set had no feasible point inside the speed disk. */
   infeasibleAgents: number;
+  /** Acceleration disk was relaxed so higher-tier physical constraints could win. */
+  accelerationRelaxedAgents: number;
+  /** Even the full speed-space half-plane set required least-violation repair. */
+  residualInfeasibleAgents: number;
 }
 
 /**
@@ -94,7 +112,10 @@ export class OrcaVelocitySolver {
   private projectedDirectionY = new Float64Array(64);
   private nearestIndices = new Int32Array(64);
   private nearestDistances = new Float64Array(64);
+  private nearestScores = new Float64Array(64);
   private lineCount = 0;
+  private diskCenterX = 0;
+  private diskCenterY = 0;
   private resultX = 0;
   private resultY = 0;
   private candidateX = 0;
@@ -103,14 +124,21 @@ export class OrcaVelocitySolver {
   private readonly result: OrcaVelocityResult = {
     constraintCount: 0,
     infeasibleAgents: 0,
+    accelerationRelaxedAgents: 0,
+    residualInfeasibleAgents: 0,
   };
 
   solve(input: OrcaVelocityInput): OrcaVelocityResult {
     this.assertCompatibleInput(input);
     this.result.constraintCount = 0;
     this.result.infeasibleAgents = 0;
+    this.result.accelerationRelaxedAgents = 0;
+    this.result.residualInfeasibleAgents = 0;
+    input.accelerationRelaxed?.fill(0, 0, input.current.count);
     const neighborCap = Math.max(1, Math.floor(input.neighborCap));
-    this.ensureCapacity(neighborCap + 4 + input.obstacles.length * 1);
+    const accelerationConstrained = input.maxAcceleration !== undefined;
+    const speedLineCount = accelerationConstrained ? 16 : 0;
+    this.ensureCapacity(neighborCap + speedLineCount + 4 + input.obstacles.length * 1);
     const staticResponseTime = Math.max(
       input.fixedDelta,
       input.staticResponseTime ?? 0.25,
@@ -134,8 +162,16 @@ export class OrcaVelocitySolver {
       }
 
       this.lineCount = 0;
+      this.diskCenterX = accelerationConstrained ? input.current.vx[agent]! : 0;
+      this.diskCenterY = accelerationConstrained ? input.current.vy[agent]! : 0;
+      if (accelerationConstrained) this.addSpeedConstraints(input.maxSpeed, speedLineCount);
       this.addStaticConstraints(input, agent, staticActivationGap, inverseStaticResponse);
-      const nearestCount = this.selectNearestNeighbors(input, agent, neighborCap);
+      const nearestCount = this.selectNearestNeighbors(
+        input,
+        agent,
+        neighborCap,
+        timeHorizon,
+      );
       // Deeply overlapping neighbors are a prefix of the distance-sorted
       // selection. Their approach-block lines are hard like the static planes:
       // each side fully blocks its own approach (responsibility 1), so
@@ -144,29 +180,55 @@ export class OrcaVelocitySolver {
       // contacts stay soft to avoid constraint-toggle jitter.
       const hardOverlapRadius = Math.max(0, physicalRadius - OVERLAP_HARD_DEPTH);
       const hardOverlapRadiusSquared = hardOverlapRadius * hardOverlapRadius;
-      let overlapOffset = 0;
-      while (
-        overlapOffset < nearestCount
-        && this.nearestDistances[overlapOffset]! <= hardOverlapRadiusSquared
-      ) {
+      const immediateRadius = physicalRadius + input.maxSpeed * input.fixedDelta * 2;
+      const immediateRadiusSquared = immediateRadius * immediateRadius;
+      for (let offset = 0; offset < nearestCount; offset += 1) {
+        if (this.nearestDistances[offset]! > hardOverlapRadiusSquared) continue;
         this.addOverlapConstraint(
           input,
           agent,
-          this.nearestIndices[overlapOffset]!,
+          this.nearestIndices[offset]!,
           physicalRadius,
           1,
         );
-        overlapOffset += 1;
       }
-      const staticLineCount = this.lineCount;
-      for (let offset = overlapOffset; offset < nearestCount; offset += 1) {
+      // The next fixed step is a higher constraint tier than the comfort
+      // horizon. Current velocity is feasible whenever the pair is not already
+      // on an unavoidable one-step collision course, and any soft long-horizon
+      // repair below is forbidden from compromising this contact guard.
+      for (let offset = 0; offset < nearestCount; offset += 1) {
+        const distanceSquared = this.nearestDistances[offset]!;
+        if (distanceSquared <= hardOverlapRadiusSquared || distanceSquared > immediateRadiusSquared) continue;
+        if (distanceSquared <= physicalRadiusSquared) {
+          this.addOverlapConstraint(
+            input,
+            agent,
+            this.nearestIndices[offset]!,
+            physicalRadius,
+            this.reciprocalResponsibility(input, agent, this.nearestIndices[offset]!),
+          );
+        } else {
+          this.addHorizonConstraint(
+            input,
+            agent,
+            this.nearestIndices[offset]!,
+            physicalRadius,
+            physicalRadius,
+            physicalRadiusSquared,
+            1 / input.fixedDelta,
+          );
+        }
+      }
+      const hardLineCount = this.lineCount;
+      for (let offset = 0; offset < nearestCount; offset += 1) {
+        if (this.nearestDistances[offset]! <= hardOverlapRadiusSquared) continue;
         if (this.nearestDistances[offset]! <= physicalRadiusSquared) {
           this.addOverlapConstraint(
             input,
             agent,
             this.nearestIndices[offset]!,
             physicalRadius,
-            0.5,
+            this.reciprocalResponsibility(input, agent, this.nearestIndices[offset]!),
           );
           continue;
         }
@@ -184,21 +246,55 @@ export class OrcaVelocitySolver {
 
       const preferredX = input.preferredVelocityX[agent]!;
       const preferredY = input.preferredVelocityY[agent]!;
+      const velocityRadius = accelerationConstrained
+        ? Math.max(0, input.maxAcceleration!) * input.fixedDelta
+        : input.maxSpeed;
       const failedLine = this.linearProgram2(
         this.lineCount,
-        input.maxSpeed,
+        velocityRadius,
         preferredX,
         preferredY,
         false,
       );
       if (failedLine < this.lineCount) {
         this.result.infeasibleAgents += 1;
+        if (
+          accelerationConstrained
+          && input.relaxAccelerationOnInfeasible === true
+          && failedLine < hardLineCount
+        ) {
+          // Constraint tiering: physical separation outranks comfort and the
+          // acceleration envelope. Retry in full speed space before allowing
+          // any dynamic line to be compromised.
+          this.diskCenterX = 0;
+          this.diskCenterY = 0;
+          const fullSpeedFailure = this.linearProgram2(
+            this.lineCount,
+            input.maxSpeed,
+            preferredX,
+            preferredY,
+            false,
+          );
+          this.result.accelerationRelaxedAgents += 1;
+          if (input.accelerationRelaxed) input.accelerationRelaxed[agent] = 1;
+          if (fullSpeedFailure >= this.lineCount) {
+            input.outputVelocityX[agent] = this.resultX;
+            input.outputVelocityY[agent] = this.resultY;
+            continue;
+          }
+          this.result.residualInfeasibleAgents += 1;
+          if (fullSpeedFailure >= hardLineCount) {
+            this.linearProgram3(this.lineCount, hardLineCount, fullSpeedFailure, input.maxSpeed);
+          }
+        } else {
+          this.result.residualInfeasibleAgents += 1;
+          if (failedLine >= hardLineCount) {
+            this.linearProgram3(this.lineCount, hardLineCount, failedLine, velocityRadius);
+          }
+        }
         // A failure inside the hard prefix (static planes + overlap blocks)
         // means even the safety system is wedged; keep the partial LP2 result
         // there instead of relaxing hard planes.
-        if (failedLine >= staticLineCount) {
-          this.linearProgram3(this.lineCount, staticLineCount, failedLine, input.maxSpeed);
-        }
         let deltaX = (this.resultX - input.current.vx[agent]!) * repairBlend;
         let deltaY = (this.resultY - input.current.vy[agent]!) * repairBlend;
         const deltaLength = Math.hypot(deltaX, deltaY);
@@ -243,6 +339,28 @@ export class OrcaVelocitySolver {
     this.projectedDirectionY = new Float64Array(capacity);
     this.nearestIndices = new Int32Array(capacity);
     this.nearestDistances = new Float64Array(capacity);
+    this.nearestScores = new Float64Array(capacity);
+  }
+
+  /**
+   * A fixed polygon strictly inside the speed circle. Vertices lie on the
+   * configured circle, so every LP result satisfies maxSpeed without a later
+   * clamp that could break a dynamic half-plane.
+   */
+  private addSpeedConstraints(maxSpeed: number, sides: number): void {
+    const bound = Math.max(0, maxSpeed) * Math.cos(Math.PI / sides);
+    for (let side = 0; side < sides; side += 1) {
+      const angle = ((side + 0.5) / sides) * Math.PI * 2;
+      const normalX = Math.cos(angle);
+      const normalY = Math.sin(angle);
+      const line = this.lineCount;
+      this.linePointX[line] = normalX * bound;
+      this.linePointY[line] = normalY * bound;
+      // v·n <= bound in the solver's det(direction, point - v) <= 0 form.
+      this.lineDirectionX[line] = -normalY;
+      this.lineDirectionY[line] = normalX;
+      this.lineCount += 1;
+    }
   }
 
   /**
@@ -302,7 +420,12 @@ export class OrcaVelocitySolver {
   }
 
   /** Deterministic K-nearest selection; ties resolve to the lower agent index. */
-  private selectNearestNeighbors(input: OrcaVelocityInput, agent: number, cap: number): number {
+  private selectNearestNeighbors(
+    input: OrcaVelocityInput,
+    agent: number,
+    cap: number,
+    timeHorizon: number,
+  ): number {
     const start = input.neighborOffsets[agent]!;
     const end = input.neighborOffsets[agent + 1]!;
     const x = input.current.x[agent]!;
@@ -314,25 +437,46 @@ export class OrcaVelocitySolver {
       const dx = input.current.x[other]! - x;
       const dy = input.current.y[other]! - y;
       const distanceSquared = dx * dx + dy * dy;
-      if (count === cap && distanceSquared >= this.nearestDistances[cap - 1]!) continue;
+      let score = distanceSquared;
+      if (input.rankNeighborsByPredictedSeparation === true) {
+        const relativeVelocityX = input.current.vx[other]! - input.current.vx[agent]!;
+        const relativeVelocityY = input.current.vy[other]! - input.current.vy[agent]!;
+        const relativeSpeedSquared = relativeVelocityX * relativeVelocityX
+          + relativeVelocityY * relativeVelocityY;
+        const closestTime = relativeSpeedSquared > EPSILON
+          ? clamp(
+            -(dx * relativeVelocityX + dy * relativeVelocityY) / relativeSpeedSquared,
+            0,
+            timeHorizon,
+          )
+          : 0;
+        const predictedX = dx + relativeVelocityX * closestTime;
+        const predictedY = dy + relativeVelocityY * closestTime;
+        // Current distance is a stable secondary influence, preventing a far
+        // crossing candidate from displacing a touching same-flow neighbor.
+        score = predictedX * predictedX + predictedY * predictedY + distanceSquared * 1e-4;
+      }
+      if (count === cap && score >= this.nearestScores[cap - 1]!) continue;
       let insert = count < cap ? count : cap - 1;
       while (
         insert > 0
         && (
-          this.nearestDistances[insert - 1]! > distanceSquared
+          this.nearestScores[insert - 1]! > score
           || (
-            this.nearestDistances[insert - 1]! === distanceSquared
+            this.nearestScores[insert - 1]! === score
             && this.nearestIndices[insert - 1]! > other
           )
         )
       ) {
         if (insert < cap) {
+          this.nearestScores[insert] = this.nearestScores[insert - 1]!;
           this.nearestDistances[insert] = this.nearestDistances[insert - 1]!;
           this.nearestIndices[insert] = this.nearestIndices[insert - 1]!;
         }
         insert -= 1;
       }
       if (insert < cap) {
+        this.nearestScores[insert] = score;
         this.nearestDistances[insert] = distanceSquared;
         this.nearestIndices[insert] = other;
       }
@@ -423,9 +567,9 @@ export class OrcaVelocitySolver {
     }
 
     const line = this.lineCount;
-    // Absolute velocity space: each side of the pair takes half the correction.
-    this.linePointX[line] = input.current.vx[agent]! + correctionX * 0.5;
-    this.linePointY[line] = input.current.vy[agent]! + correctionY * 0.5;
+    const responsibility = this.reciprocalResponsibility(input, agent, other);
+    this.linePointX[line] = input.current.vx[agent]! + correctionX * responsibility;
+    this.linePointY[line] = input.current.vy[agent]! + correctionY * responsibility;
     this.lineDirectionX[line] = directionX;
     this.lineDirectionY[line] = directionY;
     this.lineCount += 1;
@@ -474,6 +618,34 @@ export class OrcaVelocitySolver {
     this.lineCount += 1;
   }
 
+  /** Same-flow followers yield while a geometric leader keeps the stream moving. */
+  private reciprocalResponsibility(input: OrcaVelocityInput, agent: number, other: number): number {
+    const agentPreferredX = input.preferredVelocityX[agent]!;
+    const agentPreferredY = input.preferredVelocityY[agent]!;
+    const otherPreferredX = input.preferredVelocityX[other]!;
+    const otherPreferredY = input.preferredVelocityY[other]!;
+    const agentLength = Math.hypot(agentPreferredX, agentPreferredY);
+    const otherLength = Math.hypot(otherPreferredX, otherPreferredY);
+    if (agentLength <= EPSILON || otherLength <= EPSILON) return 0.5;
+    const agentHeadingX = agentPreferredX / agentLength;
+    const agentHeadingY = agentPreferredY / agentLength;
+    const otherHeadingX = otherPreferredX / otherLength;
+    const otherHeadingY = otherPreferredY / otherLength;
+    if (agentHeadingX * otherHeadingX + agentHeadingY * otherHeadingY <= 0.5) return 0.5;
+    let streamX = agentHeadingX + otherHeadingX;
+    let streamY = agentHeadingY + otherHeadingY;
+    const streamLength = Math.hypot(streamX, streamY);
+    if (streamLength <= EPSILON) return 0.5;
+    streamX /= streamLength;
+    streamY /= streamLength;
+    const otherProgress = (input.current.x[other]! - input.current.x[agent]!) * streamX
+      + (input.current.y[other]! - input.current.y[agent]!) * streamY;
+    const deadZone = input.agentRadius * 0.25;
+    if (otherProgress > deadZone) return FOLLOWER_RESPONSIBILITY;
+    if (otherProgress < -deadZone) return 1 - FOLLOWER_RESPONSIBILITY;
+    return 0.5;
+  }
+
   private linearProgram1(
     line: number,
     radius: number,
@@ -485,8 +657,11 @@ export class OrcaVelocitySolver {
     const pointY = this.linePointY[line]!;
     const directionX = this.lineDirectionX[line]!;
     const directionY = this.lineDirectionY[line]!;
-    const dot = pointX * directionX + pointY * directionY;
-    const discriminant = dot * dot + radius * radius - pointX * pointX - pointY * pointY;
+    const relativePointX = pointX - this.diskCenterX;
+    const relativePointY = pointY - this.diskCenterY;
+    const dot = relativePointX * directionX + relativePointY * directionY;
+    const discriminant = dot * dot + radius * radius
+      - relativePointX * relativePointX - relativePointY * relativePointY;
     if (discriminant < 0) return false;
     const root = Math.sqrt(discriminant);
     let left = -dot - root;
@@ -538,13 +713,15 @@ export class OrcaVelocitySolver {
     directionOptimal: boolean,
   ): number {
     if (directionOptimal) {
-      this.resultX = optimalX * radius;
-      this.resultY = optimalY * radius;
+      this.resultX = this.diskCenterX + optimalX * radius;
+      this.resultY = this.diskCenterY + optimalY * radius;
     } else {
-      const length = Math.hypot(optimalX, optimalY);
+      const relativeOptimalX = optimalX - this.diskCenterX;
+      const relativeOptimalY = optimalY - this.diskCenterY;
+      const length = Math.hypot(relativeOptimalX, relativeOptimalY);
       if (length > radius && length > EPSILON) {
-        this.resultX = optimalX * radius / length;
-        this.resultY = optimalY * radius / length;
+        this.resultX = this.diskCenterX + relativeOptimalX * radius / length;
+        this.resultY = this.diskCenterY + relativeOptimalY * radius / length;
       } else {
         this.resultX = optimalX;
         this.resultY = optimalY;

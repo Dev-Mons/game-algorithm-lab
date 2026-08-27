@@ -8,6 +8,30 @@ test('page opens with the default 1000-agent scenario', async ({ page }) => {
   await expect(page.locator('#crowd-canvas')).toBeVisible();
 });
 
+test('pipeline can be selected from the URL and control panel', async ({ page }) => {
+  await page.goto('/?paused=true&agents=120&pipeline=unified');
+  await expect(page.locator('body')).toHaveAttribute('data-pipeline', 'unified');
+  await expect(page.locator('#pipeline-select')).toHaveValue('unified');
+  const snapshot = await page.evaluate(() => window.crowdDebug.getSnapshot());
+  expect(snapshot.pipeline).toBe('unified');
+
+  await page.locator('#pipeline-select').selectOption('minimal');
+  await expect(page.locator('body')).toHaveAttribute('data-pipeline', 'minimal');
+  await expect(page.locator('body')).toHaveAttribute('data-step', '0');
+});
+
+test('multi-flow scenarios select unified and expose guidance debug controls', async ({ page }) => {
+  await page.goto('/?paused=true&agents=120');
+  await page.locator('#scenario-select').selectOption('crossing-500-500');
+  await expect(page.locator('body')).toHaveAttribute('data-pipeline', 'unified');
+  await expect(page.locator('#pipeline-select')).toHaveValue('unified');
+  await expect(page.locator('#debug-preferred')).toBeVisible();
+  await expect(page.locator('#debug-density')).toBeVisible();
+  await expect(page.locator('#debug-fallbacks')).toBeChecked();
+  const flowCount = await page.evaluate(() => window.crowdDebug.simulation().flowCount);
+  expect(flowCount).toBe(2);
+});
+
 test('run, pause, single step, and reset controls work', async ({ page }) => {
   await page.goto('/?paused=true&agents=120&seed=9');
   await expect(page.locator('body')).toHaveAttribute('data-step', '0');
