@@ -39,6 +39,8 @@ export function appTemplate(): string {
           ${metricCard('벽 반경 침투', 'metric-wall-overlap', '0')}
           ${metricCard('평균 / 최대 Δv', 'metric-velocity-delta', '0.00 / 0.00')}
           ${metricCard('Hard / Emergency stop', 'metric-hard-stop', '0 / 0')}
+          ${metricCard('양보 감속 / 완전 정지', 'metric-reservation', '0 / 0')}
+          ${metricCard('RVO 제약 / 투영 보정', 'metric-reciprocal', '0 / 0')}
           ${metricCard('Side switch / 재정지', 'metric-side-switch', '0 / 0')}
           ${metricCard('1초 인접 공동 정지', 'metric-adjacent-stop', '0')}
         </div>

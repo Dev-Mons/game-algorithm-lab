@@ -65,10 +65,16 @@ export interface StepMetrics {
   stopMoveStopCount: number;
   sideSwitchCount: number;
   longAdjacentStopCount: number;
-  collisionCorrectionCount: number;
-  collisionJacobiCorrectionCount: number;
-  collisionFallbackAgentCount: number;
-  collisionRollbackAgentCount: number;
+  /** Agents whose own proposal was shortened by front-to-back reservation. */
+  reservationLimitedCount: number;
+  /** Limited agents that yielded their complete proposed displacement. */
+  reservationStoppedCount: number;
+  /** Largest velocity reduction caused by reservation in this step. */
+  maxReservationVelocityChange: number;
+  /** Number of reciprocal velocity half-planes built in this step. */
+  reciprocalConstraintCount: number;
+  /** Agents requiring the deterministic half-plane projection repair pass. */
+  reciprocalProjectionRepairCount: number;
 }
 
 export interface NeighborIndex {

@@ -10,17 +10,6 @@ const internals = simulation as unknown as {
   preferredX: Float64Array;
   preferredY: Float64Array;
   neighborOffsets: Int32Array;
-  cachedNeighborIndices: Int32Array;
-  resolvedVelocityX: Float64Array;
-  resolvedVelocityY: Float64Array;
-  activeThisStep: Uint8Array;
-  collisionResolver: {
-    componentMemberCount: Int32Array;
-    componentParent: Int32Array;
-    componentRigid: Uint8Array;
-    proposalX: Float64Array;
-    proposalY: Float64Array;
-  };
 };
 const traceAgent = Number(
   process.argv.find((value) => value.startsWith('--agent='))?.slice('--agent='.length) ?? -1,
@@ -32,72 +21,24 @@ const contactFrames = new Uint32Array(simulation.state.count);
 let maximumContactFrames = 0;
 let maximumContactSnapshot: object | null = null;
 const contactTrace: object[] = [];
-let maximumFallbackComponentSize = 0;
-let maximumFallbackComponentStep = 0;
-let framesWithComponentFallback = 0;
-let maximumFallbackPositionCorrection = 0;
-let maximumFallbackCorrectionStep = 0;
-let maximumPredictedOverlapPairs = 0;
-let maximumPredictedOverlapStep = 0;
-const previousX = new Float64Array(simulation.state.x);
-const previousY = new Float64Array(simulation.state.y);
+let maximumReservationLimited = 0;
+let maximumReservationStopped = 0;
+let maximumReservationVelocityChange = 0;
 
 for (let step = 1; step <= steps; step += 1) {
   simulation.step();
-  if (simulation.metrics.collisionFallbackAgentCount > 0) {
-    framesWithComponentFallback += 1;
-    for (const members of internals.collisionResolver.componentMemberCount) {
-      if (members <= maximumFallbackComponentSize) continue;
-      maximumFallbackComponentSize = members;
-      maximumFallbackComponentStep = step;
-    }
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      let root = agent;
-      while (internals.collisionResolver.componentParent[root] !== root) {
-        root = internals.collisionResolver.componentParent[root]!;
-      }
-      if (internals.collisionResolver.componentRigid[root] !== 1) continue;
-      const correction = Math.hypot(
-        simulation.state.x[agent]! - internals.collisionResolver.proposalX[agent]!,
-        simulation.state.y[agent]! - internals.collisionResolver.proposalY[agent]!,
-      );
-      if (correction <= maximumFallbackPositionCorrection) continue;
-      maximumFallbackPositionCorrection = correction;
-      maximumFallbackCorrectionStep = step;
-    }
-    let predictedOverlapPairs = 0;
-    const contactRadiusSquared = (simulation.config.agentRadius * 2 + 1e-4) ** 2;
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      if (internals.activeThisStep[agent] !== 1) continue;
-      const start = internals.neighborOffsets[agent]!;
-      const end = internals.neighborOffsets[agent + 1]!;
-      for (let offset = start; offset < end; offset += 1) {
-        const other = internals.cachedNeighborIndices[offset]!;
-        if (other <= agent || internals.activeThisStep[other] !== 1) continue;
-        const dx = previousX[agent]! - previousX[other]!
-          + (internals.resolvedVelocityX[agent]! - internals.resolvedVelocityX[other]!)
-            * simulation.config.fixedDelta;
-        const dy = previousY[agent]! - previousY[other]!
-          + (internals.resolvedVelocityY[agent]! - internals.resolvedVelocityY[other]!)
-            * simulation.config.fixedDelta;
-        const currentDx = previousX[agent]! - previousX[other]!;
-        const currentDy = previousY[agent]! - previousY[other]!;
-        const currentSquared = currentDx * currentDx + currentDy * currentDy;
-        const nextSquared = dx * dx + dy * dy;
-        if (
-          nextSquared < contactRadiusSquared - 1e-10
-          && !(
-            currentSquared < contactRadiusSquared - 1e-10
-            && nextSquared > currentSquared + 1e-10
-          )
-        ) predictedOverlapPairs += 1;
-      }
-    }
-    if (predictedOverlapPairs > maximumPredictedOverlapPairs) {
-      maximumPredictedOverlapPairs = predictedOverlapPairs;
-      maximumPredictedOverlapStep = step;
-    }
-  }
+  maximumReservationLimited = Math.max(
+    maximumReservationLimited,
+    simulation.metrics.reservationLimitedCount,
+  );
+  maximumReservationStopped = Math.max(
+    maximumReservationStopped,
+    simulation.metrics.reservationStoppedCount,
+  );
+  maximumReservationVelocityChange = Math.max(
+    maximumReservationVelocityChange,
+    simulation.metrics.maxReservationVelocityChange,
+  );
   const contactDistanceSquared = (
     simulation.config.agentRadius + simulation.config.wallMargin + 0.05
   ) ** 2;
@@ -154,8 +95,6 @@ for (let step = 1; step <= steps; step += 1) {
       stalledFor: simulation.state.stalledFor[agent],
     };
   }
-  previousX.set(simulation.state.x);
-  previousY.set(simulation.state.y);
   if (simulation.metrics.backwardCount === 0) continue;
   const agents: object[] = [];
   for (let agent = 0; agent < simulation.state.count; agent += 1) {
@@ -194,8 +133,8 @@ for (let step = 1; step <= steps; step += 1) {
     events.push({
       step,
       count: simulation.metrics.backwardCount,
-      fallback: simulation.metrics.collisionFallbackAgentCount,
-      rollback: simulation.metrics.collisionRollbackAgentCount,
+      reservationLimited: simulation.metrics.reservationLimitedCount,
+      reservationStopped: simulation.metrics.reservationStoppedCount,
       agents,
     });
   }
@@ -211,13 +150,9 @@ process.stdout.write(`${JSON.stringify({
   maximumContactFrames,
   maximumContactSnapshot,
   contactTrace,
-  maximumFallbackComponentSize,
-  maximumFallbackComponentStep,
-  framesWithComponentFallback,
-  maximumFallbackPositionCorrection,
-  maximumFallbackCorrectionStep,
-  maximumPredictedOverlapPairs,
-  maximumPredictedOverlapStep,
+  maximumReservationLimited,
+  maximumReservationStopped,
+  maximumReservationVelocityChange,
   hash: simulation.stateHash(),
   events,
 }, null, 2)}\n`);

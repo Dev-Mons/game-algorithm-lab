@@ -94,10 +94,10 @@ for (const scenarioId of selectedScenarios) {
   let maximumNeighbors = 0;
   let maximumCandidateChecks = 0;
   let emergencyStops = 0;
-  let collisionCorrections = 0;
-  let collisionJacobiCorrections = 0;
-  let collisionFallbackAgents = 0;
-  let collisionRollbackAgents = 0;
+  let reservationLimitedAgents = 0;
+  let reservationStoppedAgents = 0;
+  let maximumReservationVelocityChange = 0;
+  let reciprocalProjectionRepairAgents = 0;
   let displacementSpeedSum = 0;
   let displacementSpeedSamples = 0;
   let maximumVelocityDisplacementMismatch = 0;
@@ -128,10 +128,13 @@ for (const scenarioId of selectedScenarios) {
       })}\n`);
     }
     emergencyStops += simulation.metrics.emergencyStopCount;
-    collisionCorrections += simulation.metrics.collisionCorrectionCount;
-    collisionJacobiCorrections += simulation.metrics.collisionJacobiCorrectionCount;
-    collisionFallbackAgents += simulation.metrics.collisionFallbackAgentCount;
-    collisionRollbackAgents += simulation.metrics.collisionRollbackAgentCount;
+    reservationLimitedAgents += simulation.metrics.reservationLimitedCount;
+    reservationStoppedAgents += simulation.metrics.reservationStoppedCount;
+    maximumReservationVelocityChange = Math.max(
+      maximumReservationVelocityChange,
+      simulation.metrics.maxReservationVelocityChange,
+    );
+    reciprocalProjectionRepairAgents += simulation.metrics.reciprocalProjectionRepairCount;
     let longAdjacentStops = 0;
     const stoppedThreshold = simulation.config.maxSpeed * 0.08;
     const movingThreshold = simulation.config.maxSpeed * 0.35;
@@ -293,10 +296,10 @@ for (const scenarioId of selectedScenarios) {
       maximumNeighbors,
       maximumCandidateChecks,
       emergencyStops,
-      collisionCorrections,
-      collisionJacobiCorrections,
-      collisionFallbackAgents,
-      collisionRollbackAgents,
+      reservationLimitedAgents,
+      reservationStoppedAgents,
+      maximumReservationVelocityChange: Number(maximumReservationVelocityChange.toFixed(4)),
+      reciprocalProjectionRepairAgents,
       elapsedMs: Number((performance.now() - startedAt).toFixed(1)),
       hash: simulation.stateHash(),
     });

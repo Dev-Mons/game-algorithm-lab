@@ -226,6 +226,8 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-wall-overlap').textContent = metrics.wallOverlapCount.toLocaleString();
   element<HTMLElement>('metric-velocity-delta').textContent = `${metrics.averageVelocityDelta.toFixed(2)} / ${metrics.maxVelocityDelta.toFixed(2)}`;
   element<HTMLElement>('metric-hard-stop').textContent = `${metrics.hardStopCount.toLocaleString()} / ${metrics.emergencyStopCount.toLocaleString()}`;
+  element<HTMLElement>('metric-reservation').textContent = `${metrics.reservationLimitedCount.toLocaleString()} / ${metrics.reservationStoppedCount.toLocaleString()}`;
+  element<HTMLElement>('metric-reciprocal').textContent = `${metrics.reciprocalConstraintCount.toLocaleString()} / ${metrics.reciprocalProjectionRepairCount.toLocaleString()}`;
   element<HTMLElement>('metric-side-switch').textContent = `${metrics.sideSwitchCount.toLocaleString()} / ${metrics.stopMoveStopCount.toLocaleString()}`;
   element<HTMLElement>('metric-adjacent-stop').textContent = metrics.longAdjacentStopCount.toLocaleString();
   document.body.dataset.step = String(simulation.stepCount);

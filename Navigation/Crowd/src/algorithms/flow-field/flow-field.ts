@@ -131,6 +131,24 @@ export class FlowField implements GlobalNavigator {
     return this.blocked[row * this.columns + column] === 1;
   }
 
+  /** Approximate remaining route length for deterministic movement priority. */
+  sampleCost(x: number, y: number): number {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+      return Number.POSITIVE_INFINITY;
+    }
+    const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
+    const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
+    const cell = row * this.columns + column;
+    const cost = this.costs[cell]!;
+    if (!Number.isFinite(cost)) return Number.POSITIVE_INFINITY;
+    const centerX = (column + 0.5) * this.cellSize;
+    const centerY = (row + 0.5) * this.cellSize;
+    const withinCellProgress = (x - centerX) * this.directionX[cell]!
+      + (y - centerY) * this.directionY[cell]!;
+    return cost * this.cellSize - withinCellProgress
+      + Math.hypot(this.goalX - x, this.goalY - y) * 1e-9;
+  }
+
   isReachable(column: number, row: number): boolean {
     return Number.isFinite(this.costs[row * this.columns + column]);
   }

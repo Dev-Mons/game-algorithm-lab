@@ -8,7 +8,7 @@ import {
   type SweptCircleSlideOutput,
 } from './obstacle-collision';
 import { computeArrivalSlot } from './arrival-slots';
-import { CrowdCollisionResolver } from './crowd-collision-resolver';
+import { PriorityVelocitySolver } from './priority-velocity-solver';
 import { SeededRandom } from './random';
 import type { Rect, ScenarioDefinition, SimulationConfig, StepMetrics, Vec2 } from './types';
 import { FlowField } from '../algorithms/flow-field/flow-field';
@@ -18,6 +18,7 @@ import {
   type LocalMovementOutput,
   type LocalSteeringIntent,
 } from '../algorithms/steering/local-movement-solver';
+import { ReciprocalVelocitySolver } from '../algorithms/steering/reciprocal-velocity-solver';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 
 const ZERO_METRICS: StepMetrics = {
@@ -44,10 +45,11 @@ const ZERO_METRICS: StepMetrics = {
   stopMoveStopCount: 0,
   sideSwitchCount: 0,
   longAdjacentStopCount: 0,
-  collisionCorrectionCount: 0,
-  collisionJacobiCorrectionCount: 0,
-  collisionFallbackAgentCount: 0,
-  collisionRollbackAgentCount: 0,
+  reservationLimitedCount: 0,
+  reservationStoppedCount: 0,
+  maxReservationVelocityChange: 0,
+  reciprocalConstraintCount: 0,
+  reciprocalProjectionRepairCount: 0,
 };
 
 const FLOW_LANE_STEP = 0.6180339887498949;
@@ -62,6 +64,7 @@ export class CrowdSimulation {
   readonly navigator: FlowField;
   readonly neighbors: SpatialHash;
   readonly movement = new LocalMovementSolver();
+  private readonly reciprocalVelocitySolver = new ReciprocalVelocitySolver();
   scenario: ScenarioDefinition;
   goal: Vec2;
   stepCount = 0;
@@ -95,6 +98,7 @@ export class CrowdSimulation {
   private readonly resolvedVelocityY: Float64Array;
   private readonly reconciledVelocityX: Float64Array;
   private readonly reconciledVelocityY: Float64Array;
+  private readonly routeCost: Float64Array;
   private readonly emergencyStops: Uint8Array;
   private readonly activeThisStep: Uint8Array;
   private readonly arrivalSlotX: Float64Array;
@@ -119,7 +123,7 @@ export class CrowdSimulation {
     emergencyStop: false,
   };
   private readonly movementInput: LocalMovementInput;
-  private readonly collisionResolver = new CrowdCollisionResolver();
+  private readonly priorityVelocitySolver = new PriorityVelocitySolver();
   private readonly staticIntegrator = new SweptCircleStaticIntegrator();
   private readonly staticIntegration: SweptCircleSlideOutput = {
     x: 0,
@@ -163,6 +167,7 @@ export class CrowdSimulation {
     this.resolvedVelocityY = new Float64Array(config.agentCount);
     this.reconciledVelocityX = new Float64Array(config.agentCount);
     this.reconciledVelocityY = new Float64Array(config.agentCount);
+    this.routeCost = new Float64Array(config.agentCount);
     this.emergencyStops = new Uint8Array(config.agentCount);
     this.activeThisStep = new Uint8Array(config.agentCount);
     this.arrivalSlotX = new Float64Array(config.agentCount);
@@ -350,113 +355,63 @@ export class CrowdSimulation {
       next.avoidanceHold[i] = this.movementIntent.avoidanceHold;
     }
 
-    // Phase B: four bounded intent passes reconcile speed against complete
-    // immutable snapshots. No agent observes a neighbor already updated within
-    // the same pass, so array order cannot decide a pair's result.
+    // Phase B: build a static-safe local proposal, then solve all dynamic agent
+    // constraints in velocity space. The ORCA-style solver works inside each
+    // agent's acceleration disk; no position has been integrated or corrected.
     this.resolveVelocityPass(
       current, next, obstacleLookAhead,
       this.intentVelocityX, this.intentVelocityY,
-      this.resolvedVelocityX, this.resolvedVelocityY,
-    );
-    this.resolveVelocityPass(
-      current, next, obstacleLookAhead,
-      this.resolvedVelocityX, this.resolvedVelocityY,
       this.reconciledVelocityX, this.reconciledVelocityY,
     );
-    this.resolveVelocityPass(
-      current, next, obstacleLookAhead,
-      this.reconciledVelocityX, this.reconciledVelocityY,
-      this.intentVelocityX, this.intentVelocityY,
-    );
-    this.resolveVelocityPass(
-      current, next, obstacleLookAhead,
-      this.intentVelocityX, this.intentVelocityY,
-      this.resolvedVelocityX, this.resolvedVelocityY,
-    );
-    // Phase C: integrate simultaneously to exact static times of impact, preserve
-    // tangent velocity for the remaining substep, then run a bounded positional
-    // circle-constraint pass. There is no per-agent rollback.
-    for (let i = 0; i < current.count; i += 1) {
-      if (this.activeThisStep[i] !== 1) continue;
-      const x = current.x[i]!;
-      const y = current.y[i]!;
-      let vx = this.resolvedVelocityX[i]!;
-      let vy = this.resolvedVelocityY[i]!;
-      const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
-      const preferredX = this.preferredX[i]!;
-      const preferredY = this.preferredY[i]!;
-      const reverseSpeed = vx * preferredX + vy * preferredY;
-      if (reverseSpeed < 0) {
-        vx -= preferredX * reverseSpeed;
-        vy -= preferredY * reverseSpeed;
-      }
-      this.staticIntegrator.integrate(
-        x,
-        y,
-        vx,
-        vy,
-        this.config.fixedDelta,
-        clearance,
-        this.config.width,
-        this.config.height,
-        this.scenario.obstacles,
-        4,
-        this.staticIntegration,
-      );
-      let nx = this.staticIntegration.x;
-      let ny = this.staticIntegration.y;
-      const reverseDisplacement = (nx - x) * preferredX + (ny - y) * preferredY;
-      if (reverseDisplacement < 0) {
-        const safeX = nx - preferredX * reverseDisplacement;
-        const safeY = ny - preferredY * reverseDisplacement;
-        let safe = safeX >= clearance && safeY >= clearance
-          && safeX <= this.config.width - clearance
-          && safeY <= this.config.height - clearance;
-        for (const obstacle of this.scenario.obstacles) {
-          if (circleOverlapsRect(safeX, safeY, clearance, obstacle)) safe = false;
-        }
-        nx = safe ? safeX : x;
-        ny = safe ? safeY : y;
-        if (!safe) this.emergencyStops[i] = 1;
-      }
-      // Store the fixed-step average velocity so state velocity and actual
-      // displacement remain coherent even when a contact splits the step into
-      // pre-contact and tangent subsegments.
-      vx = (nx - x) / this.config.fixedDelta;
-      vy = (ny - y) / this.config.fixedDelta;
-      const staticVelocityDelta = Math.hypot(vx - current.vx[i]!, vy - current.vy[i]!);
-      if (
-        this.staticIntegration.startedOverlapping
-        || this.staticIntegration.exhausted
-        || staticVelocityDelta > this.config.maxAcceleration * this.config.fixedDelta + 1e-9
-      ) this.emergencyStops[i] = 1;
-      next.x[i] = nx;
-      next.y[i] = ny;
-      next.vx[i] = vx;
-      next.vy[i] = vy;
-    }
+    const reciprocal = this.reciprocalVelocitySolver.solve({
+      current,
+      active: this.activeThisStep,
+      preferredVelocityX: this.reconciledVelocityX,
+      preferredVelocityY: this.reconciledVelocityY,
+      neighborOffsets: this.neighborOffsets,
+      neighborIndices: this.cachedNeighborIndices,
+      agentRadius: this.config.agentRadius,
+      separationPadding: Math.min(0.35, Math.max(0, this.config.agentGap)),
+      maxSpeed: this.config.maxSpeed,
+      maxAcceleration: this.config.maxAcceleration,
+      fixedDelta: this.config.fixedDelta,
+      timeHorizon: Math.max(2, this.config.avoidanceHorizon),
+      outputVelocityX: this.resolvedVelocityX,
+      outputVelocityY: this.resolvedVelocityY,
+    });
+    const reciprocalConstraintCount = reciprocal.constraintCount;
+    const reciprocalProjectionRepairCount = reciprocal.projectionRepairAgents;
 
-    const collision = this.collisionResolver.resolve({
+    // Phase C: apply the dynamic agreement once, then resolve exact static
+    // contacts. Re-running the reciprocal projection after a wall slide uses
+    // the same beginning-of-step velocity centre and can contradict the first
+    // agreement, producing artificial stop/go pulses at corridor entrances.
+    this.integrateStaticProposals(
       current,
       next,
-      preferredX: this.preferredX,
-      preferredY: this.preferredY,
-      agentRadius: this.config.agentRadius,
-      separationPadding: 0,
-      wallMargin: this.config.wallMargin + STATIC_CONTACT_SKIN,
-      worldWidth: this.config.width,
-      worldHeight: this.config.height,
-      obstacles: this.scenario.obstacles,
-      spatialHash: this.neighbors,
-      overlapFlags: this.overlapFlags,
-      maxIterations: 4,
-    });
-    this.candidateChecks += collision.candidateChecks;
-    this.overlapPairs = collision.remainingOverlapPairs;
+      this.resolvedVelocityX,
+      this.resolvedVelocityY,
+    );
 
-    // Positional non-penetration is the final kinematic motion authority. Keep
-    // persisted velocity equal to actual displacement so a corrected high-speed
-    // proposal cannot repeat forever as a hidden positional stop.
+    const reservation = this.priorityVelocitySolver.solve({
+      current,
+      next,
+      active: this.activeThisStep,
+      preferredDirectionX: this.preferredX,
+      preferredDirectionY: this.preferredY,
+      routeCost: this.routeCost,
+      neighborOffsets: this.neighborOffsets,
+      neighborIndices: this.cachedNeighborIndices,
+      agentRadius: this.config.agentRadius,
+      fixedDelta: this.config.fixedDelta,
+      overlapFlags: this.overlapFlags,
+    });
+    this.candidateChecks += reservation.candidateChecks;
+    this.overlapPairs = reservation.remainingOverlapPairs;
+
+    // The reserved displacement is the final kinematic motion authority. Keep
+    // persisted velocity equal to actual displacement so a yielded proposal
+    // cannot repeat next frame as hidden velocity.
     for (let i = 0; i < current.count; i += 1) {
       if (this.activeThisStep[i] !== 1) continue;
       const actualVelocityX = (next.x[i]! - current.x[i]!) / this.config.fixedDelta;
@@ -598,10 +553,11 @@ export class CrowdSimulation {
       stopMoveStopCount,
       sideSwitchCount,
       longAdjacentStopCount,
-      collisionCorrectionCount: collision.correctionCount,
-      collisionJacobiCorrectionCount: collision.jacobiCorrectionCount,
-      collisionFallbackAgentCount: collision.componentFallbackAgents,
-      collisionRollbackAgentCount: collision.rollbackAgents,
+      reservationLimitedCount: reservation.limitedAgents,
+      reservationStoppedCount: reservation.stoppedAgents,
+      maxReservationVelocityChange: reservation.maximumVelocityChange,
+      reciprocalConstraintCount,
+      reciprocalProjectionRepairCount,
     };
   }
 
@@ -746,6 +702,73 @@ export class CrowdSimulation {
     input.obstacleLookAhead = obstacleLookAhead;
   }
 
+  private integrateStaticProposals(
+    current: AgentBuffer,
+    next: AgentBuffer,
+    velocityX: Float64Array,
+    velocityY: Float64Array,
+  ): void {
+    const clearance = this.config.agentRadius + this.config.wallMargin + STATIC_CONTACT_SKIN;
+    for (let agent = 0; agent < current.count; agent += 1) {
+      if (this.activeThisStep[agent] !== 1) continue;
+      const x = current.x[agent]!;
+      const y = current.y[agent]!;
+      let vx = velocityX[agent]!;
+      let vy = velocityY[agent]!;
+      const preferredX = this.preferredX[agent]!;
+      const preferredY = this.preferredY[agent]!;
+      const reverseSpeed = vx * preferredX + vy * preferredY;
+      if (reverseSpeed < 0) {
+        vx -= preferredX * reverseSpeed;
+        vy -= preferredY * reverseSpeed;
+      }
+      this.staticIntegrator.integrate(
+        x,
+        y,
+        vx,
+        vy,
+        this.config.fixedDelta,
+        clearance,
+        this.config.width,
+        this.config.height,
+        this.scenario.obstacles,
+        4,
+        this.staticIntegration,
+      );
+      let nx = this.staticIntegration.x;
+      let ny = this.staticIntegration.y;
+      const reverseDisplacement = (nx - x) * preferredX + (ny - y) * preferredY;
+      if (reverseDisplacement < 0) {
+        const safeX = nx - preferredX * reverseDisplacement;
+        const safeY = ny - preferredY * reverseDisplacement;
+        let safe = safeX >= clearance && safeY >= clearance
+          && safeX <= this.config.width - clearance
+          && safeY <= this.config.height - clearance;
+        for (const obstacle of this.scenario.obstacles) {
+          if (circleOverlapsRect(safeX, safeY, clearance, obstacle)) safe = false;
+        }
+        nx = safe ? safeX : x;
+        ny = safe ? safeY : y;
+        if (!safe) this.emergencyStops[agent] = 1;
+      }
+      vx = (nx - x) / this.config.fixedDelta;
+      vy = (ny - y) / this.config.fixedDelta;
+      const staticVelocityDelta = Math.hypot(
+        vx - current.vx[agent]!,
+        vy - current.vy[agent]!,
+      );
+      if (
+        this.staticIntegration.startedOverlapping
+        || this.staticIntegration.exhausted
+        || staticVelocityDelta > this.config.maxAcceleration * this.config.fixedDelta + 1e-9
+      ) this.emergencyStops[agent] = 1;
+      next.x[agent] = nx;
+      next.y[agent] = ny;
+      next.vx[agent] = vx;
+      next.vy[agent] = vy;
+    }
+  }
+
   private resolveVelocityPass(
     current: AgentBuffer,
     next: AgentBuffer,
@@ -808,8 +831,10 @@ export class CrowdSimulation {
         this.plannedVelocityX[i] = 0;
         this.plannedVelocityY[i] = 0;
         this.desiredSpeed[i] = 0;
+        this.routeCost[i] = Number.POSITIVE_INFINITY;
         continue;
       }
+      this.routeCost[i] = this.navigator.sampleCost(current.x[i]!, current.y[i]!);
       this.navigator.sampleDirection(current.x[i]!, current.y[i]!, this.flowDirection);
       this.applyCorridorDispersion(i, current.x[i]!, current.y[i]!);
       const distanceToGoal = Math.sqrt(distanceSquared(current.x[i]!, current.y[i]!, this.goal.x, this.goal.y));
