@@ -2,9 +2,87 @@ import { describe, expect, it } from 'vitest';
 import { CrowdQualityTracker } from '../../src/core/crowd-quality-metrics';
 import { FlowBehaviorTracker } from '../../src/core/flow-behavior-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
+import type { ScenarioDefinition } from '../../src/core/types';
 import { getScenario } from '../../src/scenarios/scenarios';
 
 describe('CrowdField steering and quality instrumentation', () => {
+  it('updates crowd samples every step but rebuilds dynamic flow at the configured cadence', () => {
+    const simulation = new CrowdSimulation(
+      { ...DEFAULT_CONFIG, agentCount: 100, dynamicFlowRebuildInterval: 6 },
+      getScenario('open-field'),
+    );
+    const initialStaticRebuilds = simulation.navigator.staticRebuildCount;
+    const initialDynamicRebuilds = simulation.navigator.dynamicRebuildCount;
+    const rebuildSteps: number[] = [];
+    for (let step = 0; step < 20; step += 1) {
+      simulation.step();
+      if (simulation.metrics.dynamicRebuildCount > 0) rebuildSteps.push(step + 1);
+    }
+
+    expect(rebuildSteps).toEqual([7, 13, 19]);
+    expect(simulation.navigator.staticRebuildCount).toBe(initialStaticRebuilds);
+    expect(simulation.navigator.dynamicRebuildCount - initialDynamicRebuilds).toBe(3);
+    expect(simulation.metrics.dynamicRebuildIntervalSteps).toBe(6);
+    expect(simulation.metrics.wallOverlapCount).toBe(0);
+  });
+
+  it('applies the local direction policy regardless of obstacle and flow counts', () => {
+    const baseScenario: ScenarioDefinition = {
+      id: 'direction-policy',
+      name: 'Direction policy',
+      description: 'Direction-policy regression fixture.',
+      goal: { x: 115, y: 55 },
+      obstacles: [],
+      spawn: { x: 10, y: 40, width: 10, height: 10 },
+    };
+    const scenarios: ScenarioDefinition[] = [
+      baseScenario,
+      {
+        ...baseScenario,
+        id: 'direction-policy-obstacle',
+        obstacles: [{ x: 50, y: 0, width: 10, height: 10 }],
+      },
+      {
+        ...baseScenario,
+        id: 'direction-policy-multi-flow',
+        flows: [
+          { id: 'first', spawn: baseScenario.spawn, goal: baseScenario.goal },
+          { id: 'second', spawn: baseScenario.spawn, goal: baseScenario.goal },
+        ],
+      },
+    ];
+    const directY = 5 / Math.hypot(100, 5);
+
+    for (const scenario of scenarios) {
+      const simulation = new CrowdSimulation(
+        {
+          ...DEFAULT_CONFIG,
+          width: 120,
+          height: 100,
+          navCellSize: 10,
+          crowdFieldCellSize: 10,
+          contactCellSize: 10,
+          agentCount: 0,
+          dynamicFlowTargetDensity: 1,
+          dynamicFlowDensityWeight: 8,
+          dynamicFlowCostSmoothing: 1,
+          directGoalLowDensity: 0.25,
+          directGoalMinimumClearance: 0,
+        },
+        scenario,
+      );
+      for (let column = 1; column <= 9; column += 1) {
+        simulation.crowdField.density[5 * simulation.crowdField.columns + column] = 40;
+      }
+      const rebuild = simulation as unknown as { rebuildDynamicFlowFields(): void };
+      rebuild.rebuildDynamicFlowFields();
+      const direction = { x: 0, y: 0 };
+      simulation.navigator.sampleDirection(15, 50, direction);
+
+      expect(Math.abs(direction.y - directY)).toBeGreaterThan(0.1);
+    }
+  });
+
   it.each(['open-field', 'dense-spawn', 'obstacle-field'])(
     'measures 4,990/5,000/5,010 field quality in %s',
     (scenarioId) => {
@@ -60,14 +138,28 @@ describe('CrowdField steering and quality instrumentation', () => {
       secondQuality.update();
     }
 
-    expect(firstQuality.snapshot()).toEqual(secondQuality.snapshot());
+    const firstSnapshot = firstQuality.snapshot();
+    const secondSnapshot = secondQuality.snapshot();
+    const { maximumDynamicRebuildMs: firstTiming, ...firstDeterministic } = firstSnapshot;
+    const { maximumDynamicRebuildMs: secondTiming, ...secondDeterministic } = secondSnapshot;
+    expect(firstDeterministic).toEqual(secondDeterministic);
+    expect(firstTiming).toBeGreaterThanOrEqual(0);
+    expect(secondTiming).toBeGreaterThanOrEqual(0);
   });
 
   it('changes low-density Open Field goal progress by less than five percent', () => {
     const config = { ...DEFAULT_CONFIG, agentCount: 100, seed: 42 };
     const steering = new CrowdSimulation({ ...config }, getScenario('open-field'));
     const baseline = new CrowdSimulation(
-      { ...config, pressureStrength: 0, viscosityStrength: 0 },
+      {
+        ...config,
+        pressureStrength: 0,
+        viscosityStrength: 0,
+        dynamicFlowDensityWeight: 0,
+        dynamicFlowOverloadWeight: 0,
+        dynamicFlowCounterFlowWeight: 0,
+        dynamicFlowWallWeight: 0,
+      },
       getScenario('open-field'),
     );
     const steeringQuality = new CrowdQualityTracker(steering);

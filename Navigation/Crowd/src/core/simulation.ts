@@ -12,7 +12,7 @@ import type {
   StepMetrics,
   Vec2,
 } from './types';
-import { FlowField } from '../algorithms/flow-field/flow-field';
+import { FlowField, type DynamicFlowFieldOptions } from '../algorithms/flow-field/flow-field';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 
 const EPSILON = 1e-9;
@@ -44,6 +44,10 @@ const ZERO_METRICS: StepMetrics = {
   contactCorrectedAgents: 0,
   maxContactCorrection: 0,
   staticProjectionCorrections: 0,
+  dynamicRebuildCount: 0,
+  dynamicRebuildMs: 0,
+  dynamicRebuildIntervalSteps: 0,
+  dynamicRebuildAgeSteps: 0,
 };
 
 /**
@@ -84,6 +88,23 @@ export class CrowdSimulation {
   private readonly pressureGradient = { x: 0, y: 0 };
   private readonly probePressureGradient = { x: 0, y: 0 };
   private readonly averageVelocity = { x: 0, y: 0 };
+  private readonly dynamicFlowOptions: DynamicFlowFieldOptions = {
+    densityScale: 1,
+    targetDensity: 1,
+    densityWeight: 0,
+    overloadWeight: 0,
+    counterFlowWeight: 0,
+    wallWeight: 0,
+    costSmoothing: 1,
+    directionHysteresis: 0,
+    maximumSpeed: 1,
+    directGoalLowDensity: 0,
+    directGoalCounterFlow: 1,
+    directGoalMinimumClearance: 0,
+  };
+  private lastDynamicRebuildStep = 0;
+  private dynamicRebuildCountThisStep = 0;
+  private dynamicRebuildMsThisStep = 0;
 
   constructor(public config: SimulationConfig, scenario: ScenarioDefinition) {
     this.scenario = scenario;
@@ -181,9 +202,17 @@ export class CrowdSimulation {
       this.effectivePressureThreshold(),
       0,
     );
-    this.publishFieldDensity(this.state);
     this.stepCount = 0;
-    this.metrics = { ...ZERO_METRICS, activeCount: this.state.count };
+    this.rebuildDynamicFlowFields();
+    this.lastDynamicRebuildStep = 0;
+    this.dynamicRebuildCountThisStep = 0;
+    this.dynamicRebuildMsThisStep = 0;
+    this.publishFieldDensity(this.state);
+    this.metrics = {
+      ...ZERO_METRICS,
+      activeCount: this.state.count,
+      dynamicRebuildIntervalSteps: this.dynamicRebuildInterval(),
+    };
   }
 
   changeScenario(scenario: ScenarioDefinition): void {
@@ -230,8 +259,16 @@ export class CrowdSimulation {
       this.effectivePressureThreshold(),
       0,
     );
+    this.rebuildDynamicFlowFields();
+    this.lastDynamicRebuildStep = this.stepCount;
+    this.dynamicRebuildCountThisStep = 0;
+    this.dynamicRebuildMsThisStep = 0;
     this.publishFieldDensity(this.state);
-    this.metrics = { ...ZERO_METRICS, activeCount: this.state.count };
+    this.metrics = {
+      ...ZERO_METRICS,
+      activeCount: this.state.count,
+      dynamicRebuildIntervalSteps: this.dynamicRebuildInterval(),
+    };
   }
 
   step(): void {
@@ -244,6 +281,7 @@ export class CrowdSimulation {
       this.effectivePressureThreshold(),
       this.config.fixedDelta,
     );
+    this.updateDynamicFlowFields();
     this.planDesiredVelocities(current);
     const movement = this.movement.solve({
       current,
@@ -281,6 +319,10 @@ export class CrowdSimulation {
 
   get flowCount(): number {
     return this.flowGoals.length;
+  }
+
+  get navigators(): readonly FlowField[] {
+    return this.flowNavigators;
   }
 
   flowId(flow: number): string {
@@ -584,7 +626,47 @@ export class CrowdSimulation {
       contactCorrectedAgents: movement.contactCorrectedAgents,
       maxContactCorrection: movement.maxContactCorrection,
       staticProjectionCorrections: movement.staticProjectionCorrections,
+      dynamicRebuildCount: this.dynamicRebuildCountThisStep,
+      dynamicRebuildMs: this.dynamicRebuildMsThisStep,
+      dynamicRebuildIntervalSteps: this.dynamicRebuildInterval(),
+      dynamicRebuildAgeSteps: this.dynamicRebuildCountThisStep > 0
+        ? 0
+        : this.stepCount + 1 - this.lastDynamicRebuildStep,
     };
+  }
+
+  private updateDynamicFlowFields(): void {
+    this.dynamicRebuildCountThisStep = 0;
+    this.dynamicRebuildMsThisStep = 0;
+    if (this.stepCount - this.lastDynamicRebuildStep < this.dynamicRebuildInterval()) return;
+    const startedAt = performance.now();
+    this.rebuildDynamicFlowFields();
+    this.dynamicRebuildMsThisStep = performance.now() - startedAt;
+    this.dynamicRebuildCountThisStep = this.flowNavigators.length;
+    this.lastDynamicRebuildStep = this.stepCount;
+  }
+
+  private rebuildDynamicFlowFields(): void {
+    const options = this.dynamicFlowOptions;
+    options.densityScale = this.effectivePressureThreshold();
+    options.targetDensity = this.config.dynamicFlowTargetDensity;
+    options.densityWeight = this.config.dynamicFlowDensityWeight;
+    options.overloadWeight = this.config.dynamicFlowOverloadWeight;
+    options.counterFlowWeight = this.config.dynamicFlowCounterFlowWeight;
+    options.wallWeight = this.config.dynamicFlowWallWeight;
+    options.costSmoothing = this.config.dynamicFlowCostSmoothing;
+    options.directionHysteresis = this.config.dynamicFlowDirectionHysteresis;
+    options.maximumSpeed = this.config.maxSpeed;
+    options.directGoalLowDensity = this.config.directGoalLowDensity;
+    options.directGoalCounterFlow = this.config.directGoalCounterFlow;
+    options.directGoalMinimumClearance = this.config.directGoalMinimumClearance;
+    for (const navigator of this.flowNavigators) {
+      navigator.rebuildDynamic(this.crowdField, options);
+    }
+  }
+
+  private dynamicRebuildInterval(): number {
+    return Math.max(1, Math.trunc(this.config.dynamicFlowRebuildInterval));
   }
 
   private publishFieldDensity(state: AgentBuffer): void {
@@ -643,4 +725,15 @@ export const DEFAULT_CONFIG: SimulationConfig = {
   contactCompliance: 0.0002,
   contactFriction: 0.08,
   maximumContactCorrection: 1.25,
+  dynamicFlowRebuildInterval: 8,
+  dynamicFlowTargetDensity: 0.45,
+  dynamicFlowDensityWeight: 6,
+  dynamicFlowOverloadWeight: 0.35,
+  dynamicFlowCounterFlowWeight: 2.5,
+  dynamicFlowWallWeight: 0.15,
+  dynamicFlowCostSmoothing: 0.35,
+  dynamicFlowDirectionHysteresis: 0.2,
+  directGoalLowDensity: 0.15,
+  directGoalCounterFlow: 0.1,
+  directGoalMinimumClearance: 36,
 };

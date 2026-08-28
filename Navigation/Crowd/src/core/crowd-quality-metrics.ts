@@ -31,6 +31,9 @@ export interface CrowdQualitySnapshot {
   averageGoalProgress: number;
   maximumWallOverlapCount: number;
   maximumBackwardCount: number;
+  dynamicRebuilds: number;
+  maximumDynamicRebuildMs: number;
+  dynamicRebuildIntervalSteps: number;
   hash: string;
 }
 
@@ -71,6 +74,8 @@ export class CrowdQualityTracker {
   private maximumStaticProjectionDistance = 0;
   private maximumWallOverlapCount = 0;
   private maximumBackwardCount = 0;
+  private dynamicRebuilds = 0;
+  private maximumDynamicRebuildMs = 0;
   private goalProgressSum = 0;
   private goalProgressSamples = 0;
   private updates = 0;
@@ -146,6 +151,11 @@ export class CrowdQualityTracker {
     this.maximumBackwardCount = Math.max(
       this.maximumBackwardCount,
       simulation.metrics.backwardCount,
+    );
+    this.dynamicRebuilds += simulation.metrics.dynamicRebuildCount;
+    this.maximumDynamicRebuildMs = Math.max(
+      this.maximumDynamicRebuildMs,
+      simulation.metrics.dynamicRebuildMs,
     );
 
     simulation.neighbors.rebuild(state.x, state.y, state.active);
@@ -257,6 +267,9 @@ export class CrowdQualityTracker {
       averageGoalProgress: this.goalProgressSum / Math.max(1, this.goalProgressSamples),
       maximumWallOverlapCount: this.maximumWallOverlapCount,
       maximumBackwardCount: this.maximumBackwardCount,
+      dynamicRebuilds: this.dynamicRebuilds,
+      maximumDynamicRebuildMs: this.maximumDynamicRebuildMs,
+      dynamicRebuildIntervalSteps: this.simulation.metrics.dynamicRebuildIntervalSteps,
       hash: this.simulation.stateHash(),
     };
   }

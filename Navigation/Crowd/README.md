@@ -7,9 +7,11 @@
 ```text
 Command / Flow Goal
         ↓
-Static Flow Field
+Static Flow Field (blocked / clearance / terrain / base potential)
         ↓
 CrowdField (density + momentum + pressure + alignment)
+        ↓
+Dynamic Flow Field (density / overload age / counter-flow / wall cost)
         ↓
 Preferred Velocity
         ↓
@@ -26,7 +28,7 @@ Static Invalid-state Recovery
 
 역할은 겹치지 않습니다.
 
-- Flow Field는 정적 장애물을 피해 어디로 갈지만 정합니다.
+- Flow Field는 goal별 static base potential과 낮은 주기의 dynamic potential을 분리해, 정적 장애물을 피하면서 처리 용량이 남은 경로를 고릅니다.
 - CrowdField는 모든 규모에서 동일하게 밀도 압력과 같은 방향 흐름 정렬을 preferred velocity에 반영합니다.
 - 모든 규모에서 `Cij = distance(pi, pj) - contactDiameter`인 같은 XPBD 제약을 풉니다.
 - 작은 침투는 compliance와 bounded work 때문에 허용되지만, 깊은 압축은 매 fixed step 접촉 보정에 피드백됩니다.
@@ -54,7 +56,7 @@ npm run measure:quality
 
 URL 파라미터:
 
-- `scenario`: `open-field`, `obstacle-field`, `dense-spawn`, `merge-500-500`, `opposing-500-500`, `crossing-500-500`
+- `scenario`: `open-field`, `obstacle-field`, `dense-spawn`, `merge-500-500`, `opposing-500-500`, `crossing-500-500`, `different-capacity-gates`, `equal-capacity-congested-gates`, `merge-then-split`, `opposing-occupied-corridor`
 - `agents`: Agent 수, 최대 10,000 (배치 영역과 반경에 따라 실제 생성 수가 제한될 수 있음)
 - `seed`: 결정론적 배치 seed
 - `step`: 해당 fixed step까지 계산
@@ -84,8 +86,19 @@ URL 파라미터:
 - `contactCompliance`: `fixedDelta²`로 정규화되는 XPBD compliance
 - `contactFriction`: 실제 침투 접촉에만 적용되는 Coulomb-bounded 접선 감쇠
 - `maximumContactCorrection`: 한 Agent가 한 Jacobi iteration에서 받을 수 있는 위치 보정 상한
+- `dynamicFlowRebuildInterval`: dynamic potential 재계산 fixed-step 간격. 기본값은 8이며 UI에서 6~12로 조절합니다.
+- `dynamicFlowTargetDensity`, `dynamicFlowDensityWeight`: 정규화 density 초과량의 bounded quadratic cost 기준과 가중치
+- `dynamicFlowOverloadWeight`: 과밀 지속 시간(`overloadAge`) 가중치
+- `dynamicFlowCounterFlowWeight`: 각 goal의 static route direction과 반대인 평균 유속 가중치
+- `dynamicFlowWallWeight`: agent-clearance를 제외한 벽 여유의 역수 비용 가중치
+- `dynamicFlowCostSmoothing`, `dynamicFlowDirectionHysteresis`: rebuild 사이 비용 저역 통과와 near-tie 방향 유지 폭
+- `directGoalLowDensity`, `directGoalCounterFlow`, `directGoalMinimumClearance`: LOS direct-goal blend가 허용되는 국소 조건
 
 `CrowdField`는 active Agent의 density와 momentum을 4개 셀에 bilinear splat하고, 고정 1회 separable blur 뒤 pressure와 central-difference gradient를 계산합니다. 모든 Grid와 smoothing 버퍼는 생성 시 할당해 매 step 재사용합니다. 장애물 셀과 월드 경계는 no-flux stencil로 처리하므로 낮은 obstacle pressure가 Agent를 벽 안으로 끌어들이지 않습니다.
+
+각 `FlowField`는 `blocked`, `staticClearance`, `terrainCost`, `staticPotential`을 geometry/goal 변경 때만 다시 만들고, `dynamicDensityCost`, `dynamicOverloadCost`, `dynamicCounterFlowCost`, `dynamicWallCost`, smoothed `dynamicTraversalCost`, `dynamicPotential`, 최종 방향은 별도 버퍼에 둡니다. Dynamic rebuild는 고정 크기 indexed heap과 typed-array를 재사용합니다. 한 goal의 counter-flow는 그 goal의 static route direction으로 계산하므로 shared density가 다른 flow를 같은 방향으로 끌지 않습니다. 모든 장면의 LOS 방향 선택은 맵 구성과 무관하게 density·counter-flow·clearance에 따른 동일한 field/direct 연속 blend를 사용합니다.
+
+UI의 네 dynamic cost debug layer는 항별 weighted cost를 독립 표시합니다. `StepMetrics`는 rebuild가 발생한 step의 `dynamicRebuildCount`, `dynamicRebuildMs`, 설정 간격과 age를 제공하며 `measure`, `measure:flows`, `measure:quality`도 rebuild 주기와 비용을 별도로 출력합니다.
 
 ## 대규모 군중 최적화
 
@@ -110,6 +123,8 @@ URL 파라미터:
 
 로컬 Node 측정(10,000 Agent, 반지름 `1.5`, gap `0.05`, 360 step)에서 Open Field는 P50 `7.66ms` / P95 `8.86ms`로 목표(P50 `8ms` / P95 `16ms`)를 통과했습니다. Obstacle Field는 P50 `14.24ms` / P95 `20.70ms`로 목표를 통과하지 못했습니다. 같은 Obstacle 측정에서 x=660 관문 통과는 `1,039개`, 벽 침투는 `0`이었습니다. 절대 수치는 실행 환경에 따라 달라집니다.
 
+#9 구현 직전/직후 동일 로컬 명령(`--agents=10000 --radius=1.5 --gap=0.05 --steps=360`) 비교는 Open `8.51/12.97ms → 7.61/10.42ms`, Obstacle `15.32/22.44ms → 14.26/19.41ms`(P50/P95)였습니다. 최종 run의 dynamic rebuild는 실제 간격 8 step, 44회였으며 Open P50/P95 `0.79/1.39ms`, Obstacle `0.76/1.48ms`였습니다. 360 step 전체에 대한 amortized 비용은 각각 약 `0.115ms/step`, `0.111ms/step`이고 전체 측정 시간의 `1.41%`, `0.76%`였습니다. 측정 잡음을 고려해도 Obstacle P95는 기존 기록 `20.70ms`보다 악화되지 않았습니다.
+
 10,000개를 실제로 배치하려면 현재 Open Field 시작 영역 기준으로 객체 반지름을 `1.5`, 객체 간 여유를 `0.05` 정도로 낮춰야 합니다. 요청 수가 배치 영역의 물리적 수용량보다 크면 `unspawnedCount`에 생성하지 못한 수가 기록됩니다.
 
 ## 회귀 기준
@@ -123,9 +138,14 @@ URL 파라미터:
 | Dense Spawn | 60 step | 목표 진행 속도 35px/s 이상, 보고 가능한 겹침 0 |
 | Obstacle Field | 600 step | x=660 gate 처리량 25 Agent/s 이상, 도착 Agent 존재, bounded 접촉 압축·벽 침투 0 |
 | Merge / Crossing | 900 step | 양쪽 흐름 진행, crossing Jain fairness 0.9 이상 |
+| Equal Capacity Gates | 900 step | 대체 관문 사용 증가, route utilization fairness 0.95 이상 |
+| Wide / Narrow Gates | 900 step | 양쪽 관문 사용, capacity-normalized fairness 0.8 이상 |
+| Merge then Split / Opposing Corridor | 900 step | 재분기·flow별 역류 회피, 양쪽 route 진행, 벽 침투 0 |
 | 32개 완전 중첩 | 1 step | 유한 correction, iteration 상한 준수, 80% 이상 계속 이동 |
 | 10,000개 완전 중첩 | 60 step | constraint 상한 준수, occupied area 증가, 최대/P95 침투 감소 |
 | 10,000개 Obstacle Field | 360 step | constraint 상한 준수, x=660 통과 1,000개 초과, 벽 침투·정체 0 |
+
+최종 1,000 Agent route 측정에서 equal-capacity 장면은 dynamic-off `690/305`(5 미분류, fairness `0.870`)에서 dynamic-on `469/531`(미분류 0, fairness `0.996`)으로 바뀌었습니다. Wide/Narrow는 `593/407`, capacity-normalized fairness `0.976`, Merge-then-Split은 `483/517`, Opposing Occupied Corridor는 `500/500`이었고 네 장면 모두 최대 벽 침투가 0이었습니다. Low-density Open Field의 static/dynamic-off 대비 평균 goal progress 변화는 `0.01%`였습니다.
 
 `overlapPairs`는 `0.01px` 미만 침투를 접촉 수치 오차로 취급하며, solver가 보관한 bounded contact 목록의 진단값입니다. 실제 침투 깊이와 P95는 `CrowdQualityTracker`가 별도 bounded 표본으로 측정합니다. 접촉 보정량과 정적 안전 투영은 각각 `maxContactCorrection`과 `recoveredAgents`/`maxRecoveryDistance`로 분리됩니다.
 

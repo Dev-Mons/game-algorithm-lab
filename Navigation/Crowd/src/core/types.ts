@@ -37,6 +37,17 @@ export interface SimulationConfig {
   contactCompliance: number;
   contactFriction: number;
   maximumContactCorrection: number;
+  dynamicFlowRebuildInterval: number;
+  dynamicFlowTargetDensity: number;
+  dynamicFlowDensityWeight: number;
+  dynamicFlowOverloadWeight: number;
+  dynamicFlowCounterFlowWeight: number;
+  dynamicFlowWallWeight: number;
+  dynamicFlowCostSmoothing: number;
+  dynamicFlowDirectionHysteresis: number;
+  directGoalLowDensity: number;
+  directGoalCounterFlow: number;
+  directGoalMinimumClearance: number;
 }
 
 export interface ScenarioDefinition {
@@ -47,6 +58,7 @@ export interface ScenarioDefinition {
   obstacles: Rect[];
   spawn: Rect;
   flows?: readonly ScenarioFlowDefinition[];
+  routeGates?: readonly ScenarioRouteGateDefinition[];
 }
 
 export interface ScenarioFlowDefinition {
@@ -54,6 +66,12 @@ export interface ScenarioFlowDefinition {
   spawn: Rect;
   goal: Vec2;
   weight?: number;
+}
+
+export interface ScenarioRouteGateDefinition {
+  id: string;
+  region: Rect;
+  capacity?: number;
 }
 
 export interface StepMetrics {
@@ -81,6 +99,10 @@ export interface StepMetrics {
   contactCorrectedAgents: number;
   maxContactCorrection: number;
   staticProjectionCorrections: number;
+  dynamicRebuildCount: number;
+  dynamicRebuildMs: number;
+  dynamicRebuildIntervalSteps: number;
+  dynamicRebuildAgeSteps: number;
 }
 
 export interface CrowdDebugLayers {

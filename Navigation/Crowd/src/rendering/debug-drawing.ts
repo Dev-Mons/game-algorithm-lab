@@ -6,6 +6,10 @@ export interface DebugOptions {
   velocity: boolean;
   desiredVelocity: boolean;
   density: boolean;
+  dynamicDensityCost: boolean;
+  dynamicOverloadCost: boolean;
+  dynamicCounterFlowCost: boolean;
+  dynamicWallCost: boolean;
   recovery: boolean;
   neighborRadius: boolean;
   overlaps: boolean;
@@ -18,6 +22,10 @@ export const DEFAULT_DEBUG_OPTIONS: DebugOptions = {
   velocity: false,
   desiredVelocity: false,
   density: false,
+  dynamicDensityCost: false,
+  dynamicOverloadCost: false,
+  dynamicCounterFlowCost: false,
+  dynamicWallCost: false,
   recovery: true,
   neighborRadius: false,
   overlaps: false,
@@ -33,6 +41,18 @@ export function drawDebug(
   options: DebugOptions,
   alpha = 1,
 ): void {
+  if (options.dynamicDensityCost) {
+    drawFlowCost(context, simulation, simulation.navigator.dynamicDensityCost, '251, 146, 60');
+  }
+  if (options.dynamicOverloadCost) {
+    drawFlowCost(context, simulation, simulation.navigator.dynamicOverloadCost, '239, 68, 68');
+  }
+  if (options.dynamicCounterFlowCost) {
+    drawFlowCost(context, simulation, simulation.navigator.dynamicCounterFlowCost, '168, 85, 247');
+  }
+  if (options.dynamicWallCost) {
+    drawFlowCost(context, simulation, simulation.navigator.dynamicWallCost, '34, 211, 238');
+  }
   if (options.density) drawDensity(context, simulation, alpha);
   if (options.spatialGrid) drawSpatialGrid(context, simulation);
   if (options.flowField) drawFlowField(context, simulation);
@@ -41,6 +61,39 @@ export function drawDebug(
   if (options.velocity) drawVelocity(context, simulation, alpha);
   if (options.recovery) drawRecovery(context, simulation, alpha);
   if (options.overlaps || options.stalled) drawWarnings(context, simulation, options);
+}
+
+function drawFlowCost(
+  context: CanvasRenderingContext2D,
+  simulation: CrowdSimulation,
+  values: Float64Array,
+  color: string,
+): void {
+  const field = simulation.navigator;
+  let maximum = 0;
+  for (let index = 0; index < values.length; index += 1) {
+    if (field.blocked[index] === 0 && Number.isFinite(values[index])) {
+      maximum = Math.max(maximum, values[index]!);
+    }
+  }
+  if (maximum <= 1e-9) return;
+  context.save();
+  for (let row = 0; row < field.rows; row += 1) {
+    for (let column = 0; column < field.columns; column += 1) {
+      const index = row * field.columns + column;
+      const value = values[index]!;
+      if (field.blocked[index] === 1 || value <= 1e-9 || !Number.isFinite(value)) continue;
+      const intensity = Math.min(1, value / maximum);
+      context.fillStyle = `rgba(${color}, ${0.05 + intensity * 0.4})`;
+      context.fillRect(
+        column * field.cellSize,
+        row * field.cellSize,
+        field.cellSize,
+        field.cellSize,
+      );
+    }
+  }
+  context.restore();
 }
 
 function drawSpatialGrid(context: CanvasRenderingContext2D, simulation: CrowdSimulation): void {

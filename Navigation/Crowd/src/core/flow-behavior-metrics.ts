@@ -16,6 +16,8 @@ export interface FlowBehaviorSnapshot {
   recoveryRate: number;
   maximumOverlaps: number;
   maximumWallOverlaps: number;
+  dynamicRebuilds: number;
+  dynamicRebuildMs: number;
   hash: string;
 }
 
@@ -46,6 +48,8 @@ export class FlowBehaviorTracker {
   private maximumWallOverlaps = 0;
   private persistentLaneFrames = 0;
   private evaluatedLaneFrames = 0;
+  private dynamicRebuilds = 0;
+  private dynamicRebuildMs = 0;
 
   constructor(
     private readonly simulation: CrowdSimulation,
@@ -173,6 +177,8 @@ export class FlowBehaviorTracker {
       this.maximumWallOverlaps,
       simulation.metrics.wallOverlapCount,
     );
+    this.dynamicRebuilds += simulation.metrics.dynamicRebuildCount;
+    this.dynamicRebuildMs += simulation.metrics.dynamicRebuildMs;
   }
 
   snapshot(): FlowBehaviorSnapshot {
@@ -194,6 +200,8 @@ export class FlowBehaviorTracker {
       recoveryRate: this.recoveredAgentFrames / Math.max(1, this.activeAgentFrames),
       maximumOverlaps: this.maximumOverlaps,
       maximumWallOverlaps: this.maximumWallOverlaps,
+      dynamicRebuilds: this.dynamicRebuilds,
+      dynamicRebuildMs: this.dynamicRebuildMs,
       hash: this.simulation.stateHash(),
     };
   }
@@ -217,4 +225,85 @@ export function jainFairness(values: readonly number[]): number {
     sumSquared += value * value;
   }
   return sumSquared <= EPSILON ? 0 : (sum * sum) / (values.length * sumSquared);
+}
+
+export interface RouteUtilizationSnapshot {
+  steps: number;
+  routeIds: string[];
+  utilization: number[];
+  capacityNormalizedUtilization: number[];
+  routeUtilizationFairness: number;
+  capacityNormalizedFairness: number;
+  unclassifiedAgents: number;
+  maximumWallOverlaps: number;
+  dynamicRebuilds: number;
+  dynamicRebuildMs: number;
+  hash: string;
+}
+
+/** Counts each Agent once when it first enters one declared route gate. */
+export class RouteUtilizationTracker {
+  private readonly usedRoute: Int16Array;
+  private readonly utilization: Uint32Array;
+  private maximumWallOverlaps = 0;
+  private dynamicRebuilds = 0;
+  private dynamicRebuildMs = 0;
+
+  constructor(private readonly simulation: CrowdSimulation) {
+    const routes = simulation.scenario.routeGates;
+    if (!routes || routes.length < 2) {
+      throw new Error('RouteUtilizationTracker requires at least two scenario route gates.');
+    }
+    this.usedRoute = new Int16Array(simulation.state.count);
+    this.usedRoute.fill(-1);
+    this.utilization = new Uint32Array(routes.length);
+  }
+
+  update(): void {
+    const routes = this.simulation.scenario.routeGates!;
+    for (let agent = 0; agent < this.simulation.state.count; agent += 1) {
+      if (this.usedRoute[agent]! >= 0) continue;
+      const x = this.simulation.state.x[agent]!;
+      const y = this.simulation.state.y[agent]!;
+      for (let route = 0; route < routes.length; route += 1) {
+        const region = routes[route]!.region;
+        if (
+          x < region.x || y < region.y
+          || x > region.x + region.width || y > region.y + region.height
+        ) continue;
+        this.usedRoute[agent] = route;
+        this.utilization[route] = this.utilization[route]! + 1;
+        break;
+      }
+    }
+    this.maximumWallOverlaps = Math.max(
+      this.maximumWallOverlaps,
+      this.simulation.metrics.wallOverlapCount,
+    );
+    this.dynamicRebuilds += this.simulation.metrics.dynamicRebuildCount;
+    this.dynamicRebuildMs += this.simulation.metrics.dynamicRebuildMs;
+  }
+
+  snapshot(): RouteUtilizationSnapshot {
+    const routes = this.simulation.scenario.routeGates!;
+    const utilization = Array.from(this.utilization);
+    const normalized = utilization.map(
+      (value, index) => value / Math.max(EPSILON, routes[index]!.capacity ?? 1),
+    );
+    let classified = 0;
+    for (const value of utilization) classified += value;
+    return {
+      steps: this.simulation.stepCount,
+      routeIds: routes.map((route) => route.id),
+      utilization,
+      capacityNormalizedUtilization: normalized,
+      routeUtilizationFairness: jainFairness(utilization),
+      capacityNormalizedFairness: jainFairness(normalized),
+      unclassifiedAgents: this.simulation.state.count - classified,
+      maximumWallOverlaps: this.maximumWallOverlaps,
+      dynamicRebuilds: this.dynamicRebuilds,
+      dynamicRebuildMs: this.dynamicRebuildMs,
+      hash: this.simulation.stateHash(),
+    };
+  }
 }

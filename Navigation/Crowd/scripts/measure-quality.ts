@@ -237,7 +237,15 @@ function measureLowDensity(seedValue: number): {
   const config = { ...DEFAULT_CONFIG, seed: seedValue, agentCount: 100 };
   const steering = new CrowdSimulation({ ...config }, getScenario('open-field'));
   const baseline = new CrowdSimulation(
-    { ...config, pressureStrength: 0, viscosityStrength: 0 },
+    {
+      ...config,
+      pressureStrength: 0,
+      viscosityStrength: 0,
+      dynamicFlowDensityWeight: 0,
+      dynamicFlowOverloadWeight: 0,
+      dynamicFlowCounterFlowWeight: 0,
+      dynamicFlowWallWeight: 0,
+    },
     getScenario('open-field'),
   );
   const steeringTracker = new CrowdQualityTracker(steering);

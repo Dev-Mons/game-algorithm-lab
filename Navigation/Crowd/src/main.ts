@@ -152,11 +152,23 @@ function initializeControls(): void {
   bindRange('agent-gap', 'agentGap');
   bindRange('avoidance-horizon', 'avoidanceHorizon');
   bindRange('goal-radius', 'goalRadius', true);
+  bindRange('dynamic-rebuild-interval', 'dynamicFlowRebuildInterval');
+  bindRange('dynamic-target-density', 'dynamicFlowTargetDensity');
+  bindRange('dynamic-density-weight', 'dynamicFlowDensityWeight');
+  bindRange('dynamic-overload-weight', 'dynamicFlowOverloadWeight');
+  bindRange('dynamic-counter-weight', 'dynamicFlowCounterFlowWeight');
+  bindRange('dynamic-wall-weight', 'dynamicFlowWallWeight');
+  bindRange('dynamic-cost-smoothing', 'dynamicFlowCostSmoothing');
+  bindRange('dynamic-direction-hysteresis', 'dynamicFlowDirectionHysteresis');
   bindToggle('debug-flow', 'flowField');
   bindToggle('debug-grid', 'spatialGrid');
   bindToggle('debug-velocity', 'velocity');
   bindToggle('debug-desired', 'desiredVelocity');
   bindToggle('debug-density', 'density');
+  bindToggle('debug-dynamic-density', 'dynamicDensityCost');
+  bindToggle('debug-dynamic-overload', 'dynamicOverloadCost');
+  bindToggle('debug-dynamic-counter', 'dynamicCounterFlowCost');
+  bindToggle('debug-dynamic-wall', 'dynamicWallCost');
   bindToggle('debug-recovery', 'recovery');
   bindToggle('debug-neighbors', 'neighborRadius');
   bindToggle('debug-overlaps', 'overlaps');
@@ -247,6 +259,9 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-wall-overlap').textContent = metrics.wallOverlapCount.toLocaleString();
   element<HTMLElement>('metric-velocity-delta').textContent = `${metrics.averageVelocityDelta.toFixed(2)} / ${metrics.maxVelocityDelta.toFixed(2)}`;
   element<HTMLElement>('metric-acceleration').textContent = `${metrics.averageAcceleration.toFixed(1)} / ${metrics.maxAcceleration.toFixed(1)}`;
+  element<HTMLElement>('metric-dynamic-rebuild').textContent = metrics.dynamicRebuildCount > 0
+    ? `${metrics.dynamicRebuildMs.toFixed(2)} ms / ${metrics.dynamicRebuildCount} flow`
+    : `age ${metrics.dynamicRebuildAgeSteps} / ${metrics.dynamicRebuildIntervalSteps} step`;
   document.body.dataset.step = String(simulation.stepCount);
   document.body.dataset.agents = String(simulation.config.agentCount);
   document.body.dataset.paused = String(!running && !fastForwarding);

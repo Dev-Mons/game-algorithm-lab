@@ -39,6 +39,12 @@ for (const scenarioId of scenarioIds) {
   let maximumContactCorrection = 0;
   let maximumStaticProjectionCorrections = 0;
   let gateCrossings = 0;
+  let dynamicRebuilds = 0;
+  let dynamicRebuildTotalMs = 0;
+  const dynamicRebuildDurations: number[] = [];
+  let previousDynamicRebuildStep = -1;
+  let dynamicRebuildIntervalSum = 0;
+  let dynamicRebuildIntervals = 0;
   const previousX = new Float64Array(simulation.state.x);
 
   for (let step = 0; step < steps; step += 1) {
@@ -69,6 +75,16 @@ for (const scenarioId of scenarioIds) {
       maximumRecoveryDistance,
       simulation.metrics.maxRecoveryDistance,
     );
+    if (simulation.metrics.dynamicRebuildCount > 0) {
+      dynamicRebuilds += simulation.metrics.dynamicRebuildCount;
+      dynamicRebuildTotalMs += simulation.metrics.dynamicRebuildMs;
+      dynamicRebuildDurations.push(simulation.metrics.dynamicRebuildMs);
+      if (previousDynamicRebuildStep >= 0) {
+        dynamicRebuildIntervalSum += step - previousDynamicRebuildStep;
+        dynamicRebuildIntervals += 1;
+      }
+      previousDynamicRebuildStep = step;
+    }
     for (let agent = 0; agent < simulation.state.count; agent += 1) {
       if (previousX[agent]! < 660 && simulation.state.x[agent]! >= 660) gateCrossings += 1;
       previousX[agent] = simulation.state.x[agent]!;
@@ -83,6 +99,7 @@ for (const scenarioId of scenarioIds) {
   }
   averageGoalProgress /= Math.max(1, simulation.metrics.activeCount);
   durations.sort((first, second) => first - second);
+  dynamicRebuildDurations.sort((first, second) => first - second);
   const fieldDurations: number[] = [];
   const benchmarkField = new CrowdField(
     simulation.config.width,
@@ -114,6 +131,14 @@ for (const scenarioId of scenarioIds) {
     stepMsMax: round(durations.at(-1) ?? 0),
     crowdFieldStepMsP50: round(percentile(fieldDurations, 0.5)),
     crowdFieldStepMsP95: round(percentile(fieldDurations, 0.95)),
+    dynamicRebuildIntervalConfigured: simulation.config.dynamicFlowRebuildInterval,
+    dynamicRebuildIntervalObserved: round(
+      dynamicRebuildIntervalSum / Math.max(1, dynamicRebuildIntervals),
+    ),
+    dynamicRebuilds,
+    dynamicRebuildTotalMs: round(dynamicRebuildTotalMs),
+    dynamicRebuildMsP50: round(percentile(dynamicRebuildDurations, 0.5)),
+    dynamicRebuildMsP95: round(percentile(dynamicRebuildDurations, 0.95)),
     active: simulation.metrics.activeCount,
     arrived: simulation.metrics.arrivedCount,
     arrivalRate: round(simulation.metrics.arrivalRate),

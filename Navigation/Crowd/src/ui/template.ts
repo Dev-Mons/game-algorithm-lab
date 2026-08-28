@@ -37,6 +37,7 @@ export function appTemplate(): string {
           ${metricCard('벽 반경 침투', 'metric-wall-overlap', '0')}
           ${metricCard('평균 / 최대 Δv', 'metric-velocity-delta', '0.00 / 0.00')}
           ${metricCard('평균 / 최대 가속도', 'metric-acceleration', '0.0 / 0.0')}
+          ${metricCard('Dynamic rebuild', 'metric-dynamic-rebuild', 'age 0 / 8 step')}
         </div>
       </section>
       <aside class="controls-panel">
@@ -67,11 +68,26 @@ export function appTemplate(): string {
             ${toggle('Desired 속도', 'debug-desired', false)}
             ${toggle('실제 속도', 'debug-velocity', false)}
             ${toggle('국소 밀도', 'debug-density', false)}
+            ${toggle('Dynamic density cost', 'debug-dynamic-density', false)}
+            ${toggle('Dynamic overload cost', 'debug-dynamic-overload', false)}
+            ${toggle('Dynamic counter-flow cost', 'debug-dynamic-counter', false)}
+            ${toggle('Dynamic wall cost', 'debug-dynamic-wall', false)}
             ${toggle('겹침 복구', 'debug-recovery', true)}
             ${toggle('이웃 탐색 반경', 'debug-neighbors', false)}
             ${toggle('겹친 객체', 'debug-overlaps', false)}
             ${toggle('정체 객체', 'debug-stalled', true)}
           </div>
+        </section>
+        <section class="control-section">
+          <h2>Dynamic Flow Field</h2>
+          ${rangeControl('Rebuild fixed step', 'dynamic-rebuild-interval', 6, 12, 1, 8)}
+          ${rangeControl('Target density', 'dynamic-target-density', 0.1, 1.5, 0.05, 0.45)}
+          ${rangeControl('Density weight', 'dynamic-density-weight', 0, 20, 0.5, 6)}
+          ${rangeControl('Overload age weight', 'dynamic-overload-weight', 0, 2, 0.05, 0.35)}
+          ${rangeControl('Counter-flow weight', 'dynamic-counter-weight', 0, 8, 0.25, 2.5)}
+          ${rangeControl('Wall clearance weight', 'dynamic-wall-weight', 0, 2, 0.05, 0.15)}
+          ${rangeControl('Cost smoothing', 'dynamic-cost-smoothing', 0.05, 1, 0.05, 0.35)}
+          ${rangeControl('Direction hysteresis', 'dynamic-direction-hysteresis', 0, 2, 0.05, 0.2)}
         </section>
         <footer class="core-note"><span>CORE</span> Fixed 60 Hz · Flow Field · One Local Solver</footer>
       </aside>

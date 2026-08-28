@@ -65,6 +65,78 @@ export const SCENARIOS: readonly ScenarioDefinition[] = [
       { id: 'southbound', spawn: { x: 500, y: 35, width: 200, height: 300 }, goal: { x: 600, y: 685 } },
     ],
   },
+  {
+    id: 'different-capacity-gates',
+    name: 'Wide + Narrow Gates',
+    description: '폭이 다른 두 관문에서 정적 길이와 동적 처리 용량의 균형을 확인합니다.',
+    goal: { x: 1100, y: 360 },
+    obstacles: [
+      { x: 520, y: 0, width: 48, height: 120 },
+      { x: 520, y: 280, width: 48, height: 160 },
+      { x: 520, y: 520, width: 48, height: 200 },
+    ],
+    spawn: { x: 70, y: 145, width: 320, height: 430 },
+    routeGates: [
+      { id: 'wide', region: { x: 515, y: 120, width: 58, height: 160 }, capacity: 2 },
+      { id: 'narrow', region: { x: 515, y: 440, width: 58, height: 80 }, capacity: 1 },
+    ],
+  },
+  {
+    id: 'equal-capacity-congested-gates',
+    name: 'Equal Gates + Early Congestion',
+    description: '같은 폭의 두 관문 중 시작점에 가까운 관문이 먼저 혼잡해질 때 분산을 확인합니다.',
+    goal: { x: 1100, y: 360 },
+    obstacles: [
+      { x: 520, y: 0, width: 48, height: 144 },
+      { x: 520, y: 264, width: 48, height: 192 },
+      { x: 520, y: 576, width: 48, height: 144 },
+    ],
+    spawn: { x: 70, y: 115, width: 320, height: 360 },
+    routeGates: [
+      { id: 'upper', region: { x: 515, y: 144, width: 58, height: 120 }, capacity: 1 },
+      { id: 'lower', region: { x: 515, y: 456, width: 58, height: 120 }, capacity: 1 },
+    ],
+  },
+  {
+    id: 'merge-then-split',
+    name: 'Merge then Split',
+    description: '두 흐름이 중앙 관문에서 합류한 뒤 두 출구로 다시 분기합니다.',
+    goal: { x: 1120, y: 360 },
+    obstacles: [
+      { x: 360, y: 0, width: 48, height: 300 },
+      { x: 360, y: 420, width: 48, height: 300 },
+      { x: 720, y: 240, width: 48, height: 240 },
+    ],
+    spawn: { x: 60, y: 80, width: 260, height: 560 },
+    flows: [
+      { id: 'upper-merge', spawn: { x: 60, y: 80, width: 260, height: 220 }, goal: { x: 1120, y: 360 } },
+      { id: 'lower-merge', spawn: { x: 60, y: 420, width: 260, height: 220 }, goal: { x: 1120, y: 360 } },
+    ],
+    routeGates: [
+      { id: 'upper-split', region: { x: 715, y: 80, width: 58, height: 160 }, capacity: 1 },
+      { id: 'lower-split', region: { x: 715, y: 480, width: 58, height: 160 }, capacity: 1 },
+    ],
+  },
+  {
+    id: 'opposing-occupied-corridor',
+    name: 'Opposing Occupied Corridor',
+    description: '두 관문 중 하나를 반대 흐름이 점유할 때 flow별 counter-flow 비용과 우회를 확인합니다.',
+    goal: { x: 1110, y: 210 },
+    obstacles: [
+      { x: 520, y: 0, width: 48, height: 144 },
+      { x: 520, y: 264, width: 48, height: 192 },
+      { x: 520, y: 576, width: 48, height: 144 },
+    ],
+    spawn: { x: 60, y: 120, width: 300, height: 260 },
+    flows: [
+      { id: 'eastbound', spawn: { x: 60, y: 120, width: 300, height: 260 }, goal: { x: 1110, y: 210 } },
+      { id: 'westbound', spawn: { x: 840, y: 150, width: 300, height: 360 }, goal: { x: 90, y: 520 } },
+    ],
+    routeGates: [
+      { id: 'upper', region: { x: 515, y: 144, width: 58, height: 120 }, capacity: 1 },
+      { id: 'lower', region: { x: 515, y: 456, width: 58, height: 120 }, capacity: 1 },
+    ],
+  },
 ];
 
 export function getScenario(id: string): ScenarioDefinition {
