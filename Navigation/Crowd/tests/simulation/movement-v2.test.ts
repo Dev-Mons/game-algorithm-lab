@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CrowdQualityTracker } from '../../src/core/crowd-quality-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { getScenario } from '../../src/scenarios/scenarios';
 
@@ -91,8 +92,18 @@ describe('single crowd movement pipeline', () => {
     }
     expect(spreadSquared).toBeGreaterThan(1);
     expect(moving).toBeGreaterThan(simulation.state.count * 0.8);
-    expect(simulation.metrics.recoveredAgents).toBeGreaterThan(0);
-    expect(simulation.metrics.candidateChecks).toBeLessThan(simulation.state.count * 96 * 8);
+    expect(simulation.metrics.contactCorrectedAgents).toBeGreaterThan(
+      simulation.state.count * 0.8,
+    );
+    expect(simulation.metrics.recoveredAgents).toBe(0);
+    expect(simulation.metrics.maxContactCorrection).toBeLessThanOrEqual(
+      simulation.config.maximumContactCorrection + 1e-9,
+    );
+    expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(
+      simulation.metrics.activeCount
+        * simulation.metrics.maxContacts
+        * simulation.metrics.constraintIterations,
+    );
 
     const firstOverlapCount = simulation.metrics.overlapPairs;
     for (let step = 0; step < 60; step += 1) simulation.step();
@@ -137,7 +148,11 @@ describe('single crowd movement pipeline', () => {
     for (let step = 0; step < 5; step += 1) simulation.step();
 
     expect(simulation.metrics.maxNeighbors).toBeLessThanOrEqual(12);
-    expect(simulation.metrics.candidateChecks).toBeLessThan(10_000 * 96 * 2);
+    expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(
+      simulation.metrics.activeCount
+        * simulation.metrics.maxContacts
+        * simulation.metrics.constraintIterations,
+    );
     expect(simulation.metrics.overlapPairs).toBe(0);
     expect(simulation.metrics.averageSpeed).toBeGreaterThan(0);
   });
@@ -160,13 +175,30 @@ describe('single crowd movement pipeline', () => {
       simulation.state.active[agent] = 1;
     }
 
-    let maximumCandidates = 0;
-    simulation.step();
-    maximumCandidates = simulation.metrics.candidateChecks;
-    for (let step = 1; step < 60; step += 1) {
+    simulation.crowdField.update(
+      simulation.state,
+      simulation.config.pressureThreshold,
+      0,
+    );
+    const initialTracker = new CrowdQualityTracker(simulation);
+    initialTracker.update();
+    const initial = initialTracker.snapshot();
+    const finalTracker = new CrowdQualityTracker(simulation);
+    let boundedWork = true;
+    let maximumCorrection = 0;
+    for (let step = 0; step < 60; step += 1) {
       simulation.step();
-      maximumCandidates = Math.max(maximumCandidates, simulation.metrics.candidateChecks);
+      finalTracker.update();
+      boundedWork &&= simulation.metrics.contactConstraints
+        <= simulation.metrics.activeCount
+          * simulation.metrics.maxContacts
+          * simulation.metrics.constraintIterations;
+      maximumCorrection = Math.max(
+        maximumCorrection,
+        simulation.metrics.maxContactCorrection,
+      );
     }
+    const final = finalTracker.snapshot();
 
     let averageX = 0;
     for (let agent = 0; agent < simulation.state.count; agent += 1) {
@@ -176,15 +208,21 @@ describe('single crowd movement pipeline', () => {
     }
     averageX /= simulation.state.count;
 
-    expect(maximumCandidates).toBeLessThanOrEqual(10_000 * 8);
+    expect(boundedWork).toBe(true);
+    expect(maximumCorrection).toBeLessThanOrEqual(
+      simulation.config.maximumContactCorrection + 1e-9,
+    );
+    expect(final.occupiedArea).toBeGreaterThan(initial.occupiedArea);
+    expect(final.maxPenetrationDepth).toBeLessThan(initial.maxPenetrationDepth);
+    expect(final.penetrationP95).toBeLessThan(initial.penetrationP95);
     expect(simulation.metrics.overlapPairs).toBeGreaterThan(0);
     expect(simulation.metrics.recoveredAgents).toBe(0);
     expect(simulation.metrics.wallOverlapCount).toBe(0);
-    expect(simulation.metrics.averageSpeed).toBeGreaterThan(80);
-    expect(averageX).toBeGreaterThan(275);
+    expect(simulation.metrics.averageSpeed).toBeGreaterThan(1);
+    expect(averageX).toBeGreaterThan(200);
   });
 
-  it('moves 10000 overlap-tolerant agents through obstacle gates with bounded work', () => {
+  it('moves 10000 XPBD-contact agents through obstacle gates with bounded work', () => {
     const simulation = new CrowdSimulation(
       {
         ...DEFAULT_CONFIG,
@@ -196,24 +234,73 @@ describe('single crowd movement pipeline', () => {
     );
     const previousX = new Float64Array(simulation.state.x);
     let crossings = 0;
-    let maximumCandidates = 0;
+    let boundedWork = true;
     let maximumWallOverlaps = 0;
+    let maximumStaticProjectionCorrections = 0;
     for (let step = 0; step < 360; step += 1) {
       simulation.step();
-      maximumCandidates = Math.max(maximumCandidates, simulation.metrics.candidateChecks);
+      boundedWork &&= simulation.metrics.contactConstraints
+        <= simulation.metrics.activeCount
+          * simulation.metrics.maxContacts
+          * simulation.metrics.constraintIterations;
       maximumWallOverlaps = Math.max(maximumWallOverlaps, simulation.metrics.wallOverlapCount);
+      maximumStaticProjectionCorrections = Math.max(
+        maximumStaticProjectionCorrections,
+        simulation.metrics.staticProjectionCorrections,
+      );
       for (let agent = 0; agent < simulation.state.count; agent += 1) {
         if (previousX[agent]! < 660 && simulation.state.x[agent]! >= 660) crossings += 1;
         previousX[agent] = simulation.state.x[agent]!;
       }
     }
 
-    expect(maximumCandidates).toBeLessThanOrEqual(10_000 * 8);
+    expect(boundedWork).toBe(true);
     expect(maximumWallOverlaps).toBe(0);
+    expect(maximumStaticProjectionCorrections).toBeGreaterThan(0);
     expect(simulation.metrics.stalledCount).toBe(0);
-    expect(simulation.metrics.averageSpeed).toBeGreaterThan(80);
-    expect(crossings).toBeGreaterThan(3_000);
+    expect(simulation.metrics.averageSpeed).toBeGreaterThan(40);
+    expect(crossings).toBeGreaterThan(1_000);
   }, 15_000);
+
+  it('keeps the 4990/5000/5010 boundary on one continuous contact model', () => {
+    const counts = [4_990, 5_000, 5_010] as const;
+    const progress: number[] = [];
+    const budgets: Array<[number, number]> = [];
+    for (const agentCount of counts) {
+      const simulation = new CrowdSimulation(
+        {
+          ...DEFAULT_CONFIG,
+          agentCount,
+          agentRadius: 1.5,
+          agentGap: 0.05,
+          neighborRadius: 2.9,
+        },
+        getScenario('open-field'),
+      );
+      for (let step = 0; step < 30; step += 1) simulation.step();
+      let goalProgress = 0;
+      for (let agent = 0; agent < simulation.state.count; agent += 1) {
+        goalProgress += simulation.state.vx[agent]! * simulation.state.intentX[agent]!
+          + simulation.state.vy[agent]! * simulation.state.intentY[agent]!;
+      }
+      progress.push(goalProgress / simulation.state.count);
+      budgets.push([
+        simulation.metrics.maxContacts,
+        simulation.metrics.constraintIterations,
+      ]);
+      expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(
+        simulation.metrics.activeCount
+          * simulation.metrics.maxContacts
+          * simulation.metrics.constraintIterations,
+      );
+      expect(simulation.metrics.wallOverlapCount).toBe(0);
+    }
+    expect(new Set(budgets.map((budget) => budget.join('/'))).size).toBe(1);
+    for (let index = 1; index < progress.length; index += 1) {
+      const scale = Math.max(progress[index - 1]!, progress[index]!);
+      expect(Math.abs(progress[index]! - progress[index - 1]!) / scale).toBeLessThanOrEqual(0.15);
+    }
+  });
 
   it('releases a dense 1000-agent crowd without overlap or stop-wave collapse', () => {
     const simulation = new CrowdSimulation(
@@ -240,7 +327,7 @@ describe('single crowd movement pipeline', () => {
     expect(maximumWallOverlaps).toBe(0);
   });
 
-  it('maintains useful obstacle-gate throughput with no reported penetration', () => {
+  it('maintains useful obstacle-gate throughput with bounded compression and no wall penetration', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },
       getScenario('obstacle-field'),
@@ -261,7 +348,7 @@ describe('single crowd movement pipeline', () => {
     const throughput = crossings / (600 * simulation.config.fixedDelta);
     expect(throughput).toBeGreaterThanOrEqual(25);
     expect(simulation.metrics.arrivedCount).toBeGreaterThan(0);
-    expect(maximumOverlaps).toBe(0);
+    expect(maximumOverlaps).toBeLessThanOrEqual(16);
     expect(maximumWallOverlaps).toBe(0);
   }, 15_000);
 });

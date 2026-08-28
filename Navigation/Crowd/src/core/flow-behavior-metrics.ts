@@ -8,7 +8,9 @@ export interface FlowBehaviorSnapshot {
   crossings: number[];
   arrived: number[];
   crossingFairness: number;
+  routeUtilizationFairness: number;
   arrivalFairness: number;
+  lanePersistence: number;
   maximumStarvationSteps: number[];
   minimumRollingThroughputPerSecond: number;
   recoveryRate: number;
@@ -30,6 +32,7 @@ export class FlowBehaviorTracker {
   private readonly centerY: Float64Array;
   private readonly previousPlane: Float64Array;
   private readonly previousActive: Uint8Array;
+  private readonly initialLaneSign: Int8Array;
   private readonly rollingCrossings: Uint32Array;
   private rollingIndex = 0;
   private rollingSamples = 0;
@@ -41,6 +44,8 @@ export class FlowBehaviorTracker {
   private recoveredAgentFrames = 0;
   private maximumOverlaps = 0;
   private maximumWallOverlaps = 0;
+  private persistentLaneFrames = 0;
+  private evaluatedLaneFrames = 0;
 
   constructor(
     private readonly simulation: CrowdSimulation,
@@ -63,6 +68,7 @@ export class FlowBehaviorTracker {
     this.centerY = new Float64Array(flowCount);
     this.previousPlane = new Float64Array(simulation.state.count);
     this.previousActive = new Uint8Array(simulation.state.active);
+    this.initialLaneSign = new Int8Array(simulation.state.count);
     this.rollingCrossings = new Uint32Array(Math.max(1, rollingWindowSteps));
 
     for (let flow = 0; flow < flowCount; flow += 1) {
@@ -87,6 +93,11 @@ export class FlowBehaviorTracker {
         simulation.state.x[agent]!,
         simulation.state.y[agent]!,
       );
+      this.initialLaneSign[agent] = this.lateral(
+        flow,
+        simulation.state.x[agent]!,
+        simulation.state.y[agent]!,
+      ) >= 0 ? 1 : -1;
     }
   }
 
@@ -110,6 +121,19 @@ export class FlowBehaviorTracker {
         this.arrived[flow] = this.arrived[flow]! + 1;
       }
       this.previousActive[agent] = active ? 1 : 0;
+      if (active) {
+        const lateral = this.lateral(
+          flow,
+          simulation.state.x[agent]!,
+          simulation.state.y[agent]!,
+        );
+        if (Math.abs(lateral) > simulation.config.agentRadius) {
+          this.evaluatedLaneFrames += 1;
+          if ((lateral >= 0 ? 1 : -1) === this.initialLaneSign[agent]!) {
+            this.persistentLaneFrames += 1;
+          }
+        }
+      }
     }
 
     const evicted = this.rollingCrossings[this.rollingIndex]!;
@@ -160,7 +184,9 @@ export class FlowBehaviorTracker {
       crossings,
       arrived,
       crossingFairness: jainFairness(crossings),
+      routeUtilizationFairness: jainFairness(crossings),
       arrivalFairness: jainFairness(arrived),
+      lanePersistence: this.persistentLaneFrames / Math.max(1, this.evaluatedLaneFrames),
       maximumStarvationSteps: Array.from(this.maximumStarvationSteps),
       minimumRollingThroughputPerSecond: Number.isFinite(this.minimumRollingThroughput)
         ? this.minimumRollingThroughput
@@ -175,6 +201,11 @@ export class FlowBehaviorTracker {
   private plane(flow: number, x: number, y: number): number {
     return (x - this.centerX[flow]!) * this.directionX[flow]!
       + (y - this.centerY[flow]!) * this.directionY[flow]!;
+  }
+
+  private lateral(flow: number, x: number, y: number): number {
+    return -(x - this.centerX[flow]!) * this.directionY[flow]!
+      + (y - this.centerY[flow]!) * this.directionX[flow]!;
   }
 }
 

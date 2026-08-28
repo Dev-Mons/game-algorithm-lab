@@ -13,6 +13,7 @@
     "measure": "vite-node scripts/measure.ts",
     "measure:long": "vite-node scripts/measure.ts --long",
     "measure:flows": "vite-node scripts/measure-flow-behavior.ts",
+    "measure:quality": "vite-node scripts/measure-quality.ts",
     "verify": "npm run typecheck && npm run test:run && npm run build"
   },
   "devDependencies": {

@@ -13,7 +13,9 @@ export interface Rect {
 export interface SimulationConfig {
   width: number;
   height: number;
-  cellSize: number;
+  navCellSize: number;
+  crowdFieldCellSize: number;
+  contactCellSize: number;
   agentCount: number;
   seed: number;
   maxSpeed: number;
@@ -27,6 +29,14 @@ export interface SimulationConfig {
   fixedDelta: number;
   arrivalSlowRadius: number;
   stallSeconds: number;
+  pressureStrength: number;
+  pressureThreshold: number;
+  maximumPressureAcceleration: number;
+  viscosityStrength: number;
+  minimumForwardSpeedRatio: number;
+  contactCompliance: number;
+  contactFriction: number;
+  maximumContactCorrection: number;
 }
 
 export interface ScenarioDefinition {
@@ -64,6 +74,13 @@ export interface StepMetrics {
   maxVelocityDelta: number;
   averageAcceleration: number;
   maxAcceleration: number;
+  contactChecks: number;
+  contactConstraints: number;
+  constraintIterations: number;
+  maxContacts: number;
+  contactCorrectedAgents: number;
+  maxContactCorrection: number;
+  staticProjectionCorrections: number;
 }
 
 export interface CrowdDebugLayers {

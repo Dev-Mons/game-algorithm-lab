@@ -1,4 +1,5 @@
 import { CrowdSimulation, DEFAULT_CONFIG } from '../src/core/simulation';
+import { CrowdField } from '../src/core/crowd-field';
 import { getScenario } from '../src/scenarios/scenarios';
 
 const longRun = process.argv.includes('--long');
@@ -6,6 +7,8 @@ const scenarioArgument = argument('scenario');
 const requestedSteps = Number(argument('steps'));
 const seed = Math.trunc(Number(argument('seed') ?? 42));
 const agentCount = Math.max(1, Math.trunc(Number(argument('agents') ?? 1000)));
+const agentRadius = Math.max(0.1, Number(argument('radius') ?? DEFAULT_CONFIG.agentRadius));
+const agentGap = Math.max(0, Number(argument('gap') ?? DEFAULT_CONFIG.agentGap));
 const defaults = longRun
   ? { 'open-field': 1800, 'dense-spawn': 1800, 'obstacle-field': 3600 }
   : { 'open-field': 600, 'dense-spawn': 60, 'obstacle-field': 600 };
@@ -16,7 +19,7 @@ const records: object[] = [];
 
 for (const scenarioId of scenarioIds) {
   const simulation = new CrowdSimulation(
-    { ...DEFAULT_CONFIG, seed, agentCount },
+    { ...DEFAULT_CONFIG, seed, agentCount, agentRadius, agentGap },
     getScenario(scenarioId),
   );
   const steps = Number.isFinite(requestedSteps) && requestedSteps > 0
@@ -32,6 +35,9 @@ for (const scenarioId of scenarioIds) {
   let maximumCandidates = 0;
   let maximumAcceleration = 0;
   let maximumRecoveryDistance = 0;
+  let maximumContactConstraints = 0;
+  let maximumContactCorrection = 0;
+  let maximumStaticProjectionCorrections = 0;
   let gateCrossings = 0;
   const previousX = new Float64Array(simulation.state.x);
 
@@ -47,6 +53,18 @@ for (const scenarioId of scenarioIds) {
     maximumStalled = Math.max(maximumStalled, simulation.metrics.stalledCount);
     maximumCandidates = Math.max(maximumCandidates, simulation.metrics.candidateChecks);
     maximumAcceleration = Math.max(maximumAcceleration, simulation.metrics.maxAcceleration);
+    maximumContactConstraints = Math.max(
+      maximumContactConstraints,
+      simulation.metrics.contactConstraints,
+    );
+    maximumContactCorrection = Math.max(
+      maximumContactCorrection,
+      simulation.metrics.maxContactCorrection,
+    );
+    maximumStaticProjectionCorrections = Math.max(
+      maximumStaticProjectionCorrections,
+      simulation.metrics.staticProjectionCorrections,
+    );
     maximumRecoveryDistance = Math.max(
       maximumRecoveryDistance,
       simulation.metrics.maxRecoveryDistance,
@@ -65,6 +83,26 @@ for (const scenarioId of scenarioIds) {
   }
   averageGoalProgress /= Math.max(1, simulation.metrics.activeCount);
   durations.sort((first, second) => first - second);
+  const fieldDurations: number[] = [];
+  const benchmarkField = new CrowdField(
+    simulation.config.width,
+    simulation.config.height,
+    simulation.config.crowdFieldCellSize,
+  );
+  benchmarkField.setObstacles(
+    simulation.scenario.obstacles,
+    simulation.config.agentRadius + simulation.config.wallMargin,
+  );
+  for (let sample = 0; sample < 30; sample += 1) {
+    const startedAt = performance.now();
+    benchmarkField.update(
+      simulation.state,
+      simulation.config.pressureThreshold,
+      simulation.config.fixedDelta,
+    );
+    fieldDurations.push(performance.now() - startedAt);
+  }
+  fieldDurations.sort((first, second) => first - second);
   records.push({
     scenario: scenarioId,
     seed,
@@ -74,6 +112,8 @@ for (const scenarioId of scenarioIds) {
     stepMsP50: round(percentile(durations, 0.5)),
     stepMsP95: round(percentile(durations, 0.95)),
     stepMsMax: round(durations.at(-1) ?? 0),
+    crowdFieldStepMsP50: round(percentile(fieldDurations, 0.5)),
+    crowdFieldStepMsP95: round(percentile(fieldDurations, 0.95)),
     active: simulation.metrics.activeCount,
     arrived: simulation.metrics.arrivedCount,
     arrivalRate: round(simulation.metrics.arrivalRate),
@@ -87,6 +127,11 @@ for (const scenarioId of scenarioIds) {
     maximumBackward,
     maximumStalled,
     maximumCandidates,
+    maximumContactConstraints,
+    maxContacts: simulation.metrics.maxContacts,
+    constraintIterations: simulation.metrics.constraintIterations,
+    maximumContactCorrection: round(maximumContactCorrection),
+    maximumStaticProjectionCorrections,
     maximumAcceleration: round(maximumAcceleration),
     hash: simulation.stateHash(),
   });

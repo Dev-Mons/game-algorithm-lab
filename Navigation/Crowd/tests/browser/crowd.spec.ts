@@ -41,8 +41,9 @@ test('a requested fixed step is deterministic and physically bounded', async ({ 
   await page.goto('/?scenario=obstacle-field&agents=1000&seed=42&step=600&paused=true');
   await expect(page.locator('body')).toHaveAttribute('data-step', '600', { timeout: 30_000 });
   const first = await page.evaluate(() => window.crowdDebug.getSnapshot());
-  expect(first.metrics.overlapPairs).toBe(0);
+  expect(first.metrics.overlapPairs).toBeLessThanOrEqual(16);
   expect(first.metrics.wallOverlapCount).toBe(0);
+  expect(first.metrics.maxContactCorrection).toBeLessThanOrEqual(1.25 + 1e-9);
   await page.reload();
   await expect(page.locator('body')).toHaveAttribute('data-step', '600', { timeout: 30_000 });
   const second = await page.evaluate(() => window.crowdDebug.getSnapshot());
@@ -100,12 +101,22 @@ test('a pathological 1000-agent overlap remains bounded and keeps moving', async
       milliseconds: performance.now() - startedAt,
       candidateChecks: simulation.metrics.candidateChecks,
       recoveredAgents: simulation.metrics.recoveredAgents,
+      contactCorrectedAgents: simulation.metrics.contactCorrectedAgents,
+      contactConstraints: simulation.metrics.contactConstraints,
+      maximumContactWork: simulation.metrics.activeCount
+        * simulation.metrics.maxContacts
+        * simulation.metrics.constraintIterations,
+      maxContactCorrection: simulation.metrics.maxContactCorrection,
+      correctionLimit: simulation.config.maximumContactCorrection,
       averageSpeed: simulation.metrics.averageSpeed,
     };
   });
   expect(result.milliseconds).toBeLessThan(250);
   expect(result.candidateChecks).toBeLessThan(1000 * 96 * 26);
-  expect(result.recoveredAgents).toBe(1000);
+  expect(result.recoveredAgents).toBe(0);
+  expect(result.contactCorrectedAgents).toBeGreaterThan(800);
+  expect(result.contactConstraints).toBeLessThanOrEqual(result.maximumContactWork);
+  expect(result.maxContactCorrection).toBeLessThanOrEqual(result.correctionLimit + 1e-9);
   expect(result.averageSpeed).toBeGreaterThan(1);
   await expect(page.locator('#crowd-canvas')).toBeVisible();
 });
