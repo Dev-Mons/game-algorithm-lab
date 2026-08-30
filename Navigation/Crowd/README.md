@@ -96,7 +96,7 @@ URL 파라미터:
 
 `CrowdField`는 active Agent의 density와 momentum을 4개 셀에 bilinear splat하고, 고정 1회 separable blur 뒤 pressure와 central-difference gradient를 계산합니다. 모든 Grid와 smoothing 버퍼는 생성 시 할당해 매 step 재사용합니다. 장애물 셀과 월드 경계는 no-flux stencil로 처리하므로 낮은 obstacle pressure가 Agent를 벽 안으로 끌어들이지 않습니다.
 
-각 `FlowField`는 `blocked`, `staticClearance`, `terrainCost`, `staticPotential`을 geometry/goal 변경 때만 다시 만들고, `dynamicDensityCost`, `dynamicOverloadCost`, `dynamicCounterFlowCost`, `dynamicWallCost`, smoothed `dynamicTraversalCost`, `dynamicPotential`, 최종 방향은 별도 버퍼에 둡니다. Dynamic rebuild는 고정 크기 indexed heap과 typed-array를 재사용합니다. 한 goal의 counter-flow는 그 goal의 static route direction으로 계산하므로 shared density가 다른 flow를 같은 방향으로 끌지 않습니다. 모든 장면의 LOS 방향 선택은 맵 구성과 무관하게 density·counter-flow·clearance에 따른 동일한 field/direct 연속 blend를 사용합니다.
+각 `FlowField`는 `blocked`, `staticClearance`, `terrainCost`, `staticPotential`을 geometry/goal 변경 때만 다시 만들고, `dynamicDensityCost`, `dynamicOverloadCost`, `dynamicCounterFlowCost`, `dynamicWallCost`, smoothed `dynamicTraversalCost`, `dynamicPotential`, 최종 방향은 별도 버퍼에 둡니다. Dynamic rebuild는 고정 크기 indexed heap과 typed-array를 재사용합니다. 동적 방향은 정적 포텐셜을 낮추는 후보 사이에서 혼잡 비용을 비교하며, 고밀도 셀일수록 정적 최대 진행량을 보존해 자기 군집의 뒤쪽으로 빠져나가는 큰 우회를 막습니다. 한 goal의 counter-flow는 그 goal의 static route direction으로 계산하므로 shared density가 다른 flow를 같은 방향으로 끌지 않습니다. 모든 장면의 LOS 방향 선택은 맵 구성과 무관하게 density·counter-flow·clearance에 따른 동일한 field/direct 연속 blend를 사용합니다.
 
 UI의 네 dynamic cost debug layer는 항별 weighted cost를 독립 표시합니다. `StepMetrics`는 rebuild가 발생한 step의 `dynamicRebuildCount`, `dynamicRebuildMs`, 설정 간격과 age를 제공하며 `measure`, `measure:flows`, `measure:quality`도 rebuild 주기와 비용을 별도로 출력합니다.
 

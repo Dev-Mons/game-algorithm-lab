@@ -26,7 +26,40 @@ describe('CrowdField steering and quality instrumentation', () => {
     expect(simulation.metrics.wallOverlapCount).toBe(0);
   });
 
-  it('applies the local direction policy regardless of obstacle and flow counts', () => {
+  it('moves a dense merge crowd into the shared gate without curling behind its spawn', () => {
+    const simulation = new CrowdSimulation(
+      { ...DEFAULT_CONFIG, agentCount: 5_000, seed: 42 },
+      getScenario('merge-then-split'),
+    );
+    const initialX = new Float64Array(simulation.state.x);
+    const initialY = new Float64Array(simulation.state.y);
+    let maximumWallOverlaps = 0;
+    for (let step = 0; step < 60; step += 1) {
+      simulation.step();
+      maximumWallOverlaps = Math.max(
+        maximumWallOverlaps,
+        simulation.metrics.wallOverlapCount,
+      );
+    }
+
+    let backwardAgents = 0;
+    let outwardAgents = 0;
+    for (let agent = 0; agent < simulation.state.count; agent += 1) {
+      if (simulation.state.x[agent]! <= initialX[agent]!) backwardAgents += 1;
+      const upperFlow = simulation.agentFlow[agent] === 0;
+      if (upperFlow
+        ? simulation.state.y[agent]! <= initialY[agent]!
+        : simulation.state.y[agent]! >= initialY[agent]!
+      ) outwardAgents += 1;
+    }
+
+    expect(simulation.state.count).toBe(2_776);
+    expect(backwardAgents).toBe(0);
+    expect(outwardAgents).toBe(0);
+    expect(maximumWallOverlaps).toBe(0);
+  });
+
+  it('bounds dense detours with the same progress policy regardless of obstacle and flow counts', () => {
     const baseScenario: ScenarioDefinition = {
       id: 'direction-policy',
       name: 'Direction policy',
@@ -47,7 +80,11 @@ describe('CrowdField steering and quality instrumentation', () => {
         id: 'direction-policy-multi-flow',
         flows: [
           { id: 'first', spawn: baseScenario.spawn, goal: baseScenario.goal },
-          { id: 'second', spawn: baseScenario.spawn, goal: baseScenario.goal },
+          {
+            id: 'second',
+            spawn: { x: 100, y: 40, width: 10, height: 10 },
+            goal: { x: 5, y: 55 },
+          },
         ],
       },
     ];
@@ -71,15 +108,19 @@ describe('CrowdField steering and quality instrumentation', () => {
         },
         scenario,
       );
-      for (let column = 1; column <= 9; column += 1) {
-        simulation.crowdField.density[5 * simulation.crowdField.columns + column] = 40;
+      for (let row = 2; row <= 7; row += 1) {
+        for (let column = 1; column <= 9; column += 1) {
+          simulation.crowdField.density[row * simulation.crowdField.columns + column] = 40;
+        }
       }
       const rebuild = simulation as unknown as { rebuildDynamicFlowFields(): void };
       rebuild.rebuildDynamicFlowFields();
       const direction = { x: 0, y: 0 };
       simulation.navigator.sampleDirection(15, 50, direction);
 
-      expect(Math.abs(direction.y - directY)).toBeGreaterThan(0.1);
+      expect(Math.abs(direction.y - directY)).toBeGreaterThan(0.005);
+      expect(direction.x).toBeGreaterThan(0);
+      expectSharedProgressPolicy(simulation);
     }
   });
 
@@ -267,6 +308,61 @@ describe('CrowdField steering and quality instrumentation', () => {
     expect(result.maximumWallOverlaps).toBe(0);
   });
 });
+
+function expectSharedProgressPolicy(simulation: CrowdSimulation): void {
+  for (let flow = 0; flow < simulation.navigators.length; flow += 1) {
+    const navigator = simulation.navigators[flow]!;
+    const goal = simulation.goals[flow]!;
+    let denseCells = 0;
+    for (let row = 0; row < navigator.rows; row += 1) {
+      for (let column = 0; column < navigator.columns; column += 1) {
+        const cell = row * navigator.columns + column;
+        const directionX = navigator.directionX[cell]!;
+        const directionY = navigator.directionY[cell]!;
+        if (
+          navigator.blocked[cell] === 1
+          || cell === navigator.goalCell
+          || (directionX === 0 && directionY === 0)
+        ) continue;
+
+        const dx = Math.round(directionX);
+        const dy = Math.round(directionY);
+        const next = (row + dy) * navigator.columns + column + dx;
+        const candidateDrop = navigator.staticPotential[cell]!
+          - navigator.staticPotential[next]!;
+        expect(candidateDrop).toBeGreaterThan(0);
+
+        const centerX = (column + 0.5) * navigator.cellSize;
+        const centerY = (row + 0.5) * navigator.cellSize;
+        const goalX = goal.x - centerX;
+        const goalY = goal.y - centerY;
+        const goalLength = Math.hypot(goalX, goalY);
+        if (goalLength > 1e-9) {
+          const staticGoalProgress = (
+            navigator.staticDirectionX[cell]! * goalX
+            + navigator.staticDirectionY[cell]! * goalY
+          ) / goalLength;
+          const candidateGoalProgress = (
+            directionX * goalX + directionY * goalY
+          ) / goalLength;
+          expect(candidateGoalProgress + 1e-9).toBeGreaterThanOrEqual(
+            Math.min(0, staticGoalProgress),
+          );
+        }
+
+        if (navigator.densityRatio[cell]! < 2) continue;
+        denseCells += 1;
+        const staticColumn = column + Math.round(navigator.staticDirectionX[cell]!);
+        const staticRow = row + Math.round(navigator.staticDirectionY[cell]!);
+        const staticNext = staticRow * navigator.columns + staticColumn;
+        const referenceDrop = navigator.staticPotential[cell]!
+          - navigator.staticPotential[staticNext]!;
+        expect(candidateDrop + 1e-9).toBeGreaterThanOrEqual(referenceDrop);
+      }
+    }
+    expect(denseCells).toBeGreaterThan(0);
+  }
+}
 
 function overlapAt(simulation: CrowdSimulation, x: number, y: number): void {
   for (let agent = 0; agent < simulation.state.count; agent += 1) {

@@ -180,7 +180,36 @@ describe('Reverse Dijkstra Flow Field', () => {
     }
     field.rebuildDynamic(crowd, dynamicOptions({ densityWeight: 8, costSmoothing: 1 }));
     field.sampleDirection(15, 50, direction);
-    expect(Math.abs(direction.y - directY)).toBeGreaterThan(0.1);
+    expect(Math.abs(direction.y - directY)).toBeGreaterThan(0.005);
+    expect(direction.x).toBeGreaterThan(0);
+  });
+
+  it('does not escape a dense crowd through the rear of the static route', () => {
+    const field = new FlowField(120, 100, 10);
+    const crowd = new CrowdField(120, 100, 10);
+    field.rebuild({ x: 115, y: 55 }, []);
+    for (let row = 2; row <= 7; row += 1) {
+      for (let column = 2; column <= 9; column += 1) {
+        crowd.density[row * crowd.columns + column] = 5;
+      }
+    }
+    crowd.averageVelocityX.fill(-100);
+    field.rebuildDynamic(crowd, dynamicOptions({
+      densityWeight: 12,
+      counterFlowWeight: 2,
+      costSmoothing: 1,
+    }));
+
+    const cell = 5 * field.columns + 2;
+    const nextColumn = 2 + Math.round(field.directionX[cell]!);
+    const nextRow = 5 + Math.round(field.directionY[cell]!);
+    const next = nextRow * field.columns + nextColumn;
+    const direction = { x: 0, y: 0 };
+    field.sampleDirection(25, 55, direction);
+
+    expect(field.directionX[cell]).toBeGreaterThan(0);
+    expect(field.staticPotential[next]).toBeLessThan(field.staticPotential[cell]!);
+    expect(direction.x).toBeGreaterThan(0);
   });
 });
 

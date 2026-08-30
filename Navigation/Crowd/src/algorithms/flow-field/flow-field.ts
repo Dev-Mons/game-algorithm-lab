@@ -5,6 +5,10 @@ import type { GlobalNavigator, Rect, Vec2 } from '../../core/types';
 
 const EPSILON = 1e-9;
 const DIRECT_GOAL_DENSITY_FALLOFF = 0.1;
+// Density is normalized by the pressure threshold. Once it exceeds the routing
+// target by this span, congestion avoidance must keep the full obstacle-aware
+// static progress instead of escaping through the crowd's rear.
+const STATIC_PROGRESS_DENSITY_SPAN = 0.875;
 const OFFSETS = [
   [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
   [-1, -1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [1, 1, Math.SQRT2],
@@ -146,6 +150,11 @@ export class FlowField implements GlobalNavigator {
   private directGoalLowDensity = 0.35;
   private directGoalCounterFlow = 0.1;
   private directGoalMinimumClearance = 0;
+  private readonly directGoalDirectionX: Float64Array;
+  private readonly directGoalDirectionY: Float64Array;
+  private readonly minimumDirectGoalProgress: Float64Array;
+  private readonly staticProgressDrop: Float64Array;
+  private readonly minimumDynamicStaticDrop: Float64Array;
 
   constructor(public readonly width: number, public readonly height: number, public readonly cellSize: number) {
     this.columns = Math.ceil(width / cellSize);
@@ -168,6 +177,11 @@ export class FlowField implements GlobalNavigator {
     this.dynamicPotential = new Float64Array(this.cellCount);
     this.directionX = new Float64Array(this.cellCount);
     this.directionY = new Float64Array(this.cellCount);
+    this.directGoalDirectionX = new Float64Array(this.cellCount);
+    this.directGoalDirectionY = new Float64Array(this.cellCount);
+    this.minimumDirectGoalProgress = new Float64Array(this.cellCount);
+    this.staticProgressDrop = new Float64Array(this.cellCount);
+    this.minimumDynamicStaticDrop = new Float64Array(this.cellCount);
     this.costs = this.dynamicPotential;
     this.heap = new IndexedMinHeap(this.cellCount);
   }
@@ -190,6 +204,7 @@ export class FlowField implements GlobalNavigator {
     this.computeStaticTraversal();
     this.computePotential(this.terrainCost, this.staticPotential);
     this.computeDirections(this.staticPotential, this.staticDirectionX, this.staticDirectionY, 0, false);
+    this.computeProgressReferences();
     this.resetDynamicToStatic();
     this.staticRebuildCount += 1;
   }
@@ -216,6 +231,7 @@ export class FlowField implements GlobalNavigator {
           this.dynamicWallCost[index] = 0;
           this.dynamicCostTarget[index] = Number.POSITIVE_INFINITY;
           this.dynamicTraversalCost[index] = Number.POSITIVE_INFINITY;
+          this.minimumDynamicStaticDrop[index] = 0;
           continue;
         }
         const x = Math.min(this.width - EPSILON, (column + 0.5) * this.cellSize);
@@ -245,6 +261,12 @@ export class FlowField implements GlobalNavigator {
         this.dynamicOverloadCost[index] = overloadCost;
         this.dynamicCounterFlowCost[index] = counterFlowCost;
         this.dynamicWallCost[index] = wallCost;
+        const denseBlend = clamp(
+          (density - this.targetDensity) / STATIC_PROGRESS_DENSITY_SPAN,
+          0,
+          1,
+        );
+        this.minimumDynamicStaticDrop[index] = this.staticProgressDrop[index]! * denseBlend;
         this.dynamicCostTarget[index] = target;
         this.dynamicTraversalCost[index] = this.hasDynamicSample
           ? this.dynamicTraversalCost[index]! + (target - this.dynamicTraversalCost[index]!) * smoothing
@@ -252,12 +274,16 @@ export class FlowField implements GlobalNavigator {
       }
     }
     this.computePotential(this.dynamicTraversalCost, this.dynamicPotential);
+    // A dense footprint can make the cheapest unconstrained route leave through
+    // the rear of its own crowd. Keep dynamic choices on an obstacle-safe,
+    // statically progressing route while still comparing their crowd costs.
     this.computeDirections(
       this.dynamicPotential,
       this.directionX,
       this.directionY,
       Math.max(0, options.directionHysteresis),
       this.hasDynamicSample,
+      true,
     );
     this.hasDynamicSample = true;
     this.dynamicRebuildCount += 1;
@@ -394,6 +420,7 @@ export class FlowField implements GlobalNavigator {
     this.dynamicPotential.set(this.staticPotential);
     this.directionX.set(this.staticDirectionX);
     this.directionY.set(this.staticDirectionY);
+    this.minimumDynamicStaticDrop.fill(0);
     this.hasDynamicSample = false;
   }
 
@@ -422,10 +449,10 @@ export class FlowField implements GlobalNavigator {
     const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
     const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
     const cell = row * this.columns + column;
-    let bestCost = this.dynamicPotential[cell]!;
+    let bestCost = Number.POSITIVE_INFINITY;
     let bestX = 0;
     let bestY = 0;
-    for (const [dx, dy] of OFFSETS) {
+    for (const [dx, dy, movementCost] of OFFSETS) {
       const nextColumn = column + dx;
       const nextRow = row + dy;
       if (
@@ -433,7 +460,11 @@ export class FlowField implements GlobalNavigator {
         || nextColumn >= this.columns || nextRow >= this.rows
       ) continue;
       const next = nextRow * this.columns + nextColumn;
-      if (this.blocked[next] === 1 || this.dynamicPotential[next]! >= bestCost) continue;
+      if (
+        this.blocked[next] === 1
+        || !this.preservesStaticProgress(cell, next, dx, dy, movementCost)
+        || this.dynamicPotential[next]! >= bestCost
+      ) continue;
       if (dx !== 0 && dy !== 0 && !this.diagonalIsOpen(column, row, nextColumn, nextRow)) continue;
       const scale = dx !== 0 && dy !== 0 ? Math.SQRT1_2 : 1;
       const directionX = dx * scale;
@@ -533,6 +564,7 @@ export class FlowField implements GlobalNavigator {
     outputY: Float64Array,
     hysteresis: number,
     retainPrevious: boolean,
+    preserveStaticProgress = false,
   ): void {
     for (let row = 0; row < this.rows; row += 1) {
       for (let column = 0; column < this.columns; column += 1) {
@@ -544,16 +576,24 @@ export class FlowField implements GlobalNavigator {
           outputY[cell] = 0;
           continue;
         }
-        let bestCost = potential[cell]!;
+        let bestCost = preserveStaticProgress
+          ? Number.POSITIVE_INFINITY
+          : potential[cell]!;
         let bestX = 0;
         let bestY = 0;
-        for (const [dx, dy] of OFFSETS) {
+        for (const [dx, dy, movementCost] of OFFSETS) {
           const nx = column + dx;
           const ny = row + dy;
           if (nx < 0 || ny < 0 || nx >= this.columns || ny >= this.rows) continue;
           const next = ny * this.columns + nx;
           if (this.blocked[next] === 1) continue;
           if (dx !== 0 && dy !== 0 && !this.diagonalIsOpen(column, row, nx, ny)) continue;
+          if (
+            preserveStaticProgress
+            && !this.preservesStaticProgress(cell, next, dx, dy, movementCost)
+          ) {
+            continue;
+          }
           if (potential[next]! < bestCost) {
             bestCost = potential[next]!;
             bestX = dx;
@@ -571,7 +611,15 @@ export class FlowField implements GlobalNavigator {
             const previousCost = potential[previousCell]!;
             if (
               this.blocked[previousCell] === 0
-              && previousCost < potential[cell]!
+              && (!preserveStaticProgress
+                || this.preservesStaticProgress(
+                  cell,
+                  previousCell,
+                  Math.round(previousX),
+                  Math.round(previousY),
+                  previousX !== 0 && previousY !== 0 ? Math.SQRT2 : 1,
+                ))
+              && (preserveStaticProgress || previousCost < potential[cell]!)
               && previousCost <= bestCost + hysteresis
             ) {
               outputX[cell] = previousX;
@@ -590,6 +638,75 @@ export class FlowField implements GlobalNavigator {
   private diagonalIsOpen(column: number, row: number, nextColumn: number, nextRow: number): boolean {
     return this.blocked[row * this.columns + nextColumn] === 0
       && this.blocked[nextRow * this.columns + column] === 0;
+  }
+
+  private computeProgressReferences(): void {
+    for (let row = 0; row < this.rows; row += 1) {
+      const centerY = Math.min(this.height - EPSILON, (row + 0.5) * this.cellSize);
+      for (let column = 0; column < this.columns; column += 1) {
+        const cell = row * this.columns + column;
+        const centerX = Math.min(this.width - EPSILON, (column + 0.5) * this.cellSize);
+        const goalX = this.goalX - centerX;
+        const goalY = this.goalY - centerY;
+        const goalLength = Math.hypot(goalX, goalY);
+        if (goalLength > EPSILON) {
+          this.directGoalDirectionX[cell] = goalX / goalLength;
+          this.directGoalDirectionY[cell] = goalY / goalLength;
+          this.minimumDirectGoalProgress[cell] = Math.min(0,
+            this.staticDirectionX[cell]! * this.directGoalDirectionX[cell]!
+              + this.staticDirectionY[cell]! * this.directGoalDirectionY[cell]!,
+          );
+        } else {
+          this.directGoalDirectionX[cell] = 0;
+          this.directGoalDirectionY[cell] = 0;
+          this.minimumDirectGoalProgress[cell] = -1;
+        }
+
+        if (
+          this.blocked[cell] === 1
+          || !Number.isFinite(this.staticPotential[cell])
+          || cell === this.goalCell
+        ) {
+          this.staticProgressDrop[cell] = 0;
+          continue;
+        }
+        const staticColumn = column + Math.round(this.staticDirectionX[cell]!);
+        const staticRow = row + Math.round(this.staticDirectionY[cell]!);
+        if (
+          staticColumn < 0 || staticRow < 0
+          || staticColumn >= this.columns || staticRow >= this.rows
+        ) {
+          this.staticProgressDrop[cell] = 0;
+          continue;
+        }
+        const staticNext = staticRow * this.columns + staticColumn;
+        this.staticProgressDrop[cell] = Math.max(
+          0,
+          this.staticPotential[cell]! - this.staticPotential[staticNext]!,
+        );
+      }
+    }
+  }
+
+  private preservesStaticProgress(
+    cell: number,
+    next: number,
+    dx: number,
+    dy: number,
+    movementCost: number,
+  ): boolean {
+    const currentPotential = this.staticPotential[cell]!;
+    const candidateDrop = currentPotential - this.staticPotential[next]!;
+    if (
+      candidateDrop <= EPSILON
+      || candidateDrop + EPSILON < this.minimumDynamicStaticDrop[cell]!
+    ) return false;
+
+    const candidateGoalProgress = (
+      dx * this.directGoalDirectionX[cell]!
+      + dy * this.directGoalDirectionY[cell]!
+    ) / movementCost;
+    return candidateGoalProgress + EPSILON >= this.minimumDirectGoalProgress[cell]!;
   }
 
   private sampleStencil(
