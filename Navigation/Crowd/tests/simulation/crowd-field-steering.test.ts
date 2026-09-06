@@ -3,13 +3,13 @@ import { CrowdQualityTracker } from '../../src/core/crowd-quality-metrics';
 import { FlowBehaviorTracker } from '../../src/core/flow-behavior-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import type { ScenarioDefinition } from '../../src/core/types';
-import { getScenario } from '../../src/scenarios/scenarios';
+import { getTestScenario } from '../fixtures/navigation-scenarios';
 
 describe('CrowdField steering and quality instrumentation', () => {
   it('updates crowd samples every step but rebuilds dynamic flow at the configured cadence', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 100, dynamicFlowRebuildInterval: 6 },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
     const initialStaticRebuilds = simulation.navigator.staticRebuildCount;
     const initialDynamicRebuilds = simulation.navigator.dynamicRebuildCount;
@@ -29,7 +29,7 @@ describe('CrowdField steering and quality instrumentation', () => {
   it('moves a dense merge crowd into the shared gate without curling behind its spawn', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 5_000, seed: 42 },
-      getScenario('merge-then-split'),
+      getTestScenario('merge-then-split'),
     );
     const initialX = new Float64Array(simulation.state.x);
     const initialY = new Float64Array(simulation.state.y);
@@ -136,7 +136,7 @@ describe('CrowdField steering and quality instrumentation', () => {
             agentGap: 0.05,
             neighborRadius: 2.9,
           },
-          getScenario(scenarioId),
+          getTestScenario(scenarioId),
         );
         expect(simulation.state.count).toBe(agentCount);
         const quality = new CrowdQualityTracker(simulation);
@@ -168,8 +168,8 @@ describe('CrowdField steering and quality instrumentation', () => {
 
   it('calculates the same bounded quality snapshot for the same replay', () => {
     const config = { ...DEFAULT_CONFIG, agentCount: 250, seed: 31415 };
-    const first = new CrowdSimulation({ ...config }, getScenario('dense-spawn'));
-    const second = new CrowdSimulation({ ...config }, getScenario('dense-spawn'));
+    const first = new CrowdSimulation({ ...config }, getTestScenario('dense-spawn'));
+    const second = new CrowdSimulation({ ...config }, getTestScenario('dense-spawn'));
     const firstQuality = new CrowdQualityTracker(first);
     const secondQuality = new CrowdQualityTracker(second);
     for (let step = 0; step < 90; step += 1) {
@@ -190,18 +190,18 @@ describe('CrowdField steering and quality instrumentation', () => {
 
   it('changes low-density Open Field goal progress by less than five percent', () => {
     const config = { ...DEFAULT_CONFIG, agentCount: 100, seed: 42 };
-    const steering = new CrowdSimulation({ ...config }, getScenario('open-field'));
+    const steering = new CrowdSimulation({ ...config }, getTestScenario('open-field'));
     const baseline = new CrowdSimulation(
       {
         ...config,
-        pressureStrength: 0,
-        viscosityStrength: 0,
+        crowdPressureIterations: 0,
+        crowdVelocityBlend: 0,
         dynamicFlowDensityWeight: 0,
         dynamicFlowOverloadWeight: 0,
         dynamicFlowCounterFlowWeight: 0,
         dynamicFlowWallWeight: 0,
       },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
     const steeringQuality = new CrowdQualityTracker(steering);
     const baselineQuality = new CrowdQualityTracker(baseline);
@@ -226,10 +226,10 @@ describe('CrowdField steering and quality instrumentation', () => {
       agentRadius: 1.5,
       agentGap: 0.05,
     };
-    const steering = new CrowdSimulation({ ...config }, getScenario('open-field'));
+    const steering = new CrowdSimulation({ ...config }, getTestScenario('open-field'));
     const baseline = new CrowdSimulation(
-      { ...config, pressureStrength: 0, viscosityStrength: 0 },
-      getScenario('open-field'),
+      { ...config, crowdPressureIterations: 0, crowdVelocityBlend: 0 },
+      getTestScenario('open-field'),
     );
     overlapAt(steering, 200, 360);
     overlapAt(baseline, 200, 360);
@@ -267,10 +267,10 @@ describe('CrowdField steering and quality instrumentation', () => {
       agentRadius: 1.5,
       agentGap: 0.05,
     };
-    const steering = new CrowdSimulation({ ...config }, getScenario('dense-spawn'));
+    const steering = new CrowdSimulation({ ...config }, getTestScenario('dense-spawn'));
     const baseline = new CrowdSimulation(
-      { ...config, pressureStrength: 0, viscosityStrength: 0 },
-      getScenario('dense-spawn'),
+      { ...config, crowdPressureIterations: 0, crowdVelocityBlend: 0 },
+      getTestScenario('dense-spawn'),
     );
     const steeringQuality = new CrowdQualityTracker(steering);
     const baselineQuality = new CrowdQualityTracker(baseline);
@@ -292,7 +292,7 @@ describe('CrowdField steering and quality instrumentation', () => {
   it('does not average opposing flows into a global stop', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 600, seed: 42 },
-      getScenario('opposing-500-500'),
+      getTestScenario('opposing-500-500'),
     );
     const behavior = new FlowBehaviorTracker(simulation, 180);
     for (let step = 0; step < 600; step += 1) {

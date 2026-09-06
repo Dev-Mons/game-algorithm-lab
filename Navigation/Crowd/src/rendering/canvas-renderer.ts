@@ -51,16 +51,26 @@ export class CanvasRenderer implements Renderer {
       context.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     }
 
+    context.fillStyle = 'rgba(239, 68, 68, 0.10)';
+    context.strokeStyle = '#ef4444';
+    context.lineWidth = 2;
+    const spawns = simulation.scenario.flows?.map((flow) => flow.spawn)
+      ?? [simulation.scenario.spawn];
+    for (const spawn of spawns) {
+      context.fillRect(spawn.x, spawn.y, spawn.width, spawn.height);
+      context.strokeRect(spawn.x, spawn.y, spawn.width, spawn.height);
+    }
+
     const pulse = 3 + Math.sin(simulation.stepCount * 0.05) * 2;
     for (const goal of simulation.goals) {
-      context.fillStyle = 'rgba(45, 212, 191, 0.08)';
-      context.strokeStyle = '#2dd4bf';
+      context.fillStyle = 'rgba(14, 165, 233, 0.12)';
+      context.strokeStyle = '#0ea5e9';
       context.lineWidth = 2;
       context.beginPath();
       context.arc(goal.x, goal.y, simulation.config.goalRadius + pulse, 0, Math.PI * 2);
       context.fill();
       context.stroke();
-      context.fillStyle = '#5eead4';
+      context.fillStyle = '#38bdf8';
       context.beginPath();
       context.arc(goal.x, goal.y, 4, 0, Math.PI * 2);
       context.fill();

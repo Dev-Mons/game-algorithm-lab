@@ -1,16 +1,10 @@
 import { FlowBehaviorTracker, RouteUtilizationTracker } from '../src/core/flow-behavior-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../src/core/simulation';
-import { getScenario } from '../src/scenarios/scenarios';
+import { getScenario, SCENARIOS } from '../src/scenarios/scenarios';
 
-const scenarios: readonly string[] = [
-  'merge-500-500',
-  'opposing-500-500',
-  'crossing-500-500',
-  'different-capacity-gates',
-  'equal-capacity-congested-gates',
-  'merge-then-split',
-  'opposing-occupied-corridor',
-];
+const scenarios = SCENARIOS
+  .filter((scenario) => (scenario.routeGates?.length ?? 0) >= 2 || (scenario.flows?.length ?? 0) >= 2)
+  .map((scenario) => scenario.id);
 const selectedScenario = argument('scenario');
 const selected = scenarios.filter((scenario) => !selectedScenario || scenario === selectedScenario);
 const seed = Math.trunc(Number(argument('seed') ?? 42));

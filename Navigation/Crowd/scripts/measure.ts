@@ -1,6 +1,6 @@
 import { CrowdSimulation, DEFAULT_CONFIG } from '../src/core/simulation';
 import { CrowdField } from '../src/core/crowd-field';
-import { getScenario } from '../src/scenarios/scenarios';
+import { getScenario, SCENARIOS } from '../src/scenarios/scenarios';
 
 const longRun = process.argv.includes('--long');
 const scenarioArgument = argument('scenario');
@@ -9,12 +9,9 @@ const seed = Math.trunc(Number(argument('seed') ?? 42));
 const agentCount = Math.max(1, Math.trunc(Number(argument('agents') ?? 1000)));
 const agentRadius = Math.max(0.1, Number(argument('radius') ?? DEFAULT_CONFIG.agentRadius));
 const agentGap = Math.max(0, Number(argument('gap') ?? DEFAULT_CONFIG.agentGap));
-const defaults = longRun
-  ? { 'open-field': 1800, 'dense-spawn': 1800, 'obstacle-field': 3600 }
-  : { 'open-field': 600, 'dense-spawn': 60, 'obstacle-field': 600 };
-const scenarioIds = (scenarioArgument
-  ? [scenarioArgument]
-  : Object.keys(defaults)) as Array<keyof typeof defaults>;
+const scenarioIds = SCENARIOS
+  .filter((scenario) => !scenarioArgument || scenario.id === scenarioArgument)
+  .map((scenario) => scenario.id);
 const records: object[] = [];
 
 for (const scenarioId of scenarioIds) {
@@ -24,7 +21,7 @@ for (const scenarioId of scenarioIds) {
   );
   const steps = Number.isFinite(requestedSteps) && requestedSteps > 0
     ? Math.trunc(requestedSteps)
-    : defaults[scenarioId] ?? 600;
+    : (longRun ? 1800 : 600);
   const durations: number[] = [];
   let activeAgentFrames = 0;
   let recoveredAgentFrames = 0;

@@ -1,13 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { CrowdQualityTracker } from '../../src/core/crowd-quality-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
-import { getScenario } from '../../src/scenarios/scenarios';
+import { getTestScenario } from '../fixtures/navigation-scenarios';
 
 describe('single crowd movement pipeline', () => {
+  it('keeps identical bounded contact budgets across former population tier boundaries', () => {
+    const budgets = new Set<string>();
+    for (const agentCount of [999, 1000, 1001, 3999, 4000, 4001, 10000]) {
+      const simulation = new CrowdSimulation({...DEFAULT_CONFIG,agentCount,
+        agentRadius:1.5,agentGap:.05},getTestScenario('open-field'));
+      simulation.step();
+      const m = simulation.metrics;
+      budgets.add(`${m.maxContacts}/${m.constraintIterations}`);
+      expect(m.candidateChecks).toBeLessThanOrEqual(agentCount * 24);
+      expect(m.contactConstraints).toBeLessThanOrEqual(agentCount * 8);
+      expect(m.wallOverlapCount).toBe(0);
+    }
+    expect(budgets.size).toBe(1);
+  });
   it('replays the same seed and configuration deterministically', () => {
     const config = { ...DEFAULT_CONFIG, agentCount: 250, seed: 98765 };
-    const first = new CrowdSimulation({ ...config }, getScenario('dense-spawn'));
-    const second = new CrowdSimulation({ ...config }, getScenario('dense-spawn'));
+    const first = new CrowdSimulation({ ...config }, getTestScenario('dense-spawn'));
+    const second = new CrowdSimulation({ ...config }, getTestScenario('dense-spawn'));
     for (let step = 0; step < 180; step += 1) {
       first.step();
       second.step();
@@ -18,7 +32,7 @@ describe('single crowd movement pipeline', () => {
   it.each(['open-field', 'obstacle-field', 'dense-spawn'])(
     'spawns 1000 non-overlapping agents in %s',
     (scenarioId) => {
-      const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG }, getScenario(scenarioId));
+      const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG }, getTestScenario(scenarioId));
       const diameterSquared = (simulation.config.agentRadius * 2) ** 2;
       let minimumSquared = Number.POSITIVE_INFINITY;
       for (let agent = 0; agent < simulation.state.count; agent += 1) {
@@ -37,7 +51,7 @@ describe('single crowd movement pipeline', () => {
   it('turns command intent immediately and removes momentum toward the old goal', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 200 },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
     for (let step = 0; step < 120; step += 1) simulation.step();
     const oldGoalX = simulation.goal.x;
@@ -70,7 +84,7 @@ describe('single crowd movement pipeline', () => {
   it('separates an invalid coincident cluster without stopping the group', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 32 },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
     for (let agent = 0; agent < simulation.state.count; agent += 1) {
       simulation.state.x[agent] = 200;
@@ -114,7 +128,7 @@ describe('single crowd movement pipeline', () => {
   it('keeps a 1000-agent hot path finite and spatially bounded', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000 },
-      getScenario('obstacle-field'),
+      getTestScenario('obstacle-field'),
     );
     let maximumCandidates = 0;
     for (let step = 0; step < 240; step += 1) {
@@ -140,7 +154,7 @@ describe('single crowd movement pipeline', () => {
         agentRadius: 1.5,
         agentGap: 0.05,
       },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
 
     expect(simulation.state.count).toBe(10_000);
@@ -165,7 +179,7 @@ describe('single crowd movement pipeline', () => {
         agentRadius: 1.5,
         agentGap: 0.05,
       },
-      getScenario('open-field'),
+      getTestScenario('open-field'),
     );
     for (let agent = 0; agent < simulation.state.count; agent += 1) {
       simulation.state.x[agent] = 200;
@@ -230,7 +244,7 @@ describe('single crowd movement pipeline', () => {
         agentRadius: 1.5,
         agentGap: 0.05,
       },
-      getScenario('obstacle-field'),
+      getTestScenario('obstacle-field'),
     );
     const previousX = new Float64Array(simulation.state.x);
     let crossings = 0;
@@ -275,7 +289,7 @@ describe('single crowd movement pipeline', () => {
           agentGap: 0.05,
           neighborRadius: 2.9,
         },
-        getScenario('open-field'),
+        getTestScenario('open-field'),
       );
       for (let step = 0; step < 30; step += 1) simulation.step();
       let goalProgress = 0;
@@ -305,7 +319,7 @@ describe('single crowd movement pipeline', () => {
   it('releases a dense 1000-agent crowd without overlap or stop-wave collapse', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },
-      getScenario('dense-spawn'),
+      getTestScenario('dense-spawn'),
     );
     let recoveredAgentFrames = 0;
     let maximumOverlaps = 0;
@@ -330,7 +344,7 @@ describe('single crowd movement pipeline', () => {
   it('maintains useful obstacle-gate throughput with bounded compression and no wall penetration', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },
-      getScenario('obstacle-field'),
+      getTestScenario('obstacle-field'),
     );
     const previousX = new Float64Array(simulation.state.x);
     let crossings = 0;

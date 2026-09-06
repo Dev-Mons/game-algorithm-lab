@@ -2,7 +2,9 @@ import './ui/styles.css';
 import { FixedClock } from './core/fixed-clock';
 import { RuntimeMetrics } from './core/metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from './core/simulation';
-import type { SimulationConfig, StepMetrics } from './core/types';
+import type { ScenarioDefinition, SimulationConfig, StepMetrics } from './core/types';
+import { MapEditor } from './editor/map-editor';
+import { loadMaps, scenarioFromMap } from './editor/map-document';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DEFAULT_DEBUG_OPTIONS } from './rendering/debug-drawing';
 import { getScenario } from './scenarios/scenarios';
@@ -30,7 +32,16 @@ if (!root) throw new Error('Missing #app root.');
 root.innerHTML = appTemplate();
 
 const params = new URLSearchParams(location.search);
-const initialScenario = getScenario(params.get('scenario') ?? 'open-field');
+const customScenarios = new Map<string, ScenarioDefinition>();
+try {
+  for (const saved of loadMaps(localStorage)) registerCustomMap(scenarioFromMap(saved.map, saved.id));
+} catch {
+  const status = element('map-library-status');
+  status.hidden = false;
+  status.textContent = '브라우저의 저장된 맵을 읽을 수 없습니다. 기본 시나리오는 계속 사용할 수 있습니다.';
+}
+const initialId = params.get('scenario') ?? 'open-field';
+const initialScenario = customScenarios.get(initialId) ?? getScenario(initialId);
 const requestedAgents = parseInteger(params.get('agents'), DEFAULT_CONFIG.agentCount, 1, 10_000);
 const requestedSeed = parseInteger(params.get('seed'), DEFAULT_CONFIG.seed, -2147483648, 2147483647);
 const targetStep = parseInteger(params.get('step'), 0, 0, 1_000_000);
@@ -39,6 +50,8 @@ const config: SimulationConfig = {
   ...DEFAULT_CONFIG,
   agentCount: requestedAgents,
   seed: requestedSeed,
+  agentRadius: parseNumber(params.get('radius'), DEFAULT_CONFIG.agentRadius, 1.5, 8),
+  agentGap: parseNumber(params.get('gap'), DEFAULT_CONFIG.agentGap, 0, 3),
 };
 let simulation = new CrowdSimulation(config, initialScenario);
 let running = !requestedPaused;
@@ -48,6 +61,22 @@ const clock = new FixedClock(config.fixedDelta);
 const runtimeMetrics = new RuntimeMetrics();
 const canvas = element<HTMLCanvasElement>('crowd-canvas');
 const renderer = new CanvasRenderer(canvas, () => simulation, DEFAULT_DEBUG_OPTIONS);
+const editor = new MapEditor({
+  config: () => config,
+  apply: (scenario, message) => {
+    registerCustomMap(scenario);
+    rebuildSimulation(scenario);
+    running = true;
+    clock.reset(performance.now() / 1000);
+    updateRunState();
+    const status = element('map-library-status');
+    status.hidden = false;
+    status.classList.remove('error');
+    status.textContent = `맵을 적용했습니다. ${message}`;
+  },
+  saved: registerCustomMap,
+  close: () => updateRunState(),
+});
 let lastMetricsUpdate = 0;
 
 initializeControls();
@@ -92,7 +121,7 @@ function frame(now: number): void {
     clock.reset(seconds);
     alpha = 1;
   }
-  renderer.render(alpha);
+  if (!editor.active) renderer.render(alpha);
   if (now - lastMetricsUpdate > 120) {
     updateMetrics();
     lastMetricsUpdate = now;
@@ -131,7 +160,15 @@ function initializeControls(): void {
     timeScale = Number((event.currentTarget as HTMLSelectElement).value);
   });
   scenarioSelect.addEventListener('change', () => {
-    rebuildSimulation(getScenario(scenarioSelect.value));
+    rebuildSimulation(customScenarios.get(scenarioSelect.value) ?? getScenario(scenarioSelect.value));
+  });
+  element('map-edit').addEventListener('click', () => {
+    running = false;
+    fastForwarding = false;
+    window.crowdDebug.ready = true;
+    editor.open({ ...simulation.scenario, goal: { ...simulation.goal } });
+    updateRunState();
+    updateMetrics();
   });
   element<HTMLInputElement>('agent-count').addEventListener('change', (event) => {
     config.agentCount = Math.max(
@@ -150,7 +187,7 @@ function initializeControls(): void {
   bindRange('agent-radius', 'agentRadius', true);
   bindRange('neighbor-radius', 'neighborRadius', true);
   bindRange('agent-gap', 'agentGap');
-  bindRange('avoidance-horizon', 'avoidanceHorizon');
+  bindRange('pressure-relaxation', 'crowdPressureRelaxationTime');
   bindRange('goal-radius', 'goalRadius', true);
   bindRange('dynamic-rebuild-interval', 'dynamicFlowRebuildInterval');
   bindRange('dynamic-target-density', 'dynamicFlowTargetDensity');
@@ -175,6 +212,7 @@ function initializeControls(): void {
   bindToggle('debug-stalled', 'stalled');
 
   canvas.addEventListener('click', (event) => {
+    if (editor.active) return;
     const bounds = canvas.getBoundingClientRect();
     simulation.setGoal(
       ((event.clientX - bounds.left) / bounds.width) * simulation.config.width,
@@ -191,6 +229,8 @@ type NumericConfigKey = {
 function bindRange(id: string, key: NumericConfigKey, rebuild = false): void {
   const input = element<HTMLInputElement>(id);
   const output = element<HTMLOutputElement>(`${id}-output`);
+  input.value = String(config[key]);
+  output.value = input.value;
   input.addEventListener('input', () => {
     output.value = input.value;
     if (!rebuild) simulation.config[key] = Number(input.value);
@@ -213,6 +253,7 @@ function rebuildSimulation(scenario: ReturnType<typeof getScenario>): void {
   runtimeMetrics.reset();
   fastForwarding = false;
   window.crowdDebug.ready = true;
+  element<HTMLSelectElement>('scenario-select').value = scenario.id;
   updateScenarioText();
   updateMetrics();
   renderer.render(0);
@@ -275,5 +316,21 @@ function element<T extends HTMLElement>(id: string): T {
 
 function parseInteger(value: string | null, fallback: number, min: number, max: number): number {
   const parsed = value === null ? Number.NaN : Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? Math.max(min, Math.min(max, parsed)) : fallback;
+}
+
+function registerCustomMap(scenario: ScenarioDefinition): void {
+  customScenarios.set(scenario.id, scenario);
+  const select = element<HTMLSelectElement>('scenario-select');
+  let option = Array.from(select.options).find((entry) => entry.value === scenario.id);
+  if (!option) {
+    option = new Option('', scenario.id);
+    select.add(option);
+  }
+  option.textContent = `내 맵 · ${scenario.name}`;
+}
+
+function parseNumber(value: string | null, fallback: number, min: number, max: number): number {
+  const parsed = value === null ? Number.NaN : Number.parseFloat(value);
   return Number.isFinite(parsed) ? Math.max(min, Math.min(max, parsed)) : fallback;
 }

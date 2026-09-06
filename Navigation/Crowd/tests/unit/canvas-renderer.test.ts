@@ -128,7 +128,8 @@ describe('CanvasRenderer', () => {
     expect(simulation.state.count).toBe(6_000);
     expect(putImageData).toHaveBeenCalledTimes(1);
     expect(drawImage).toHaveBeenCalledTimes(1);
-    expect(fillRect).toHaveBeenCalledTimes(1 + 1_000);
+    // Background, spawn area, then the bounded overlap markers.
+    expect(fillRect).toHaveBeenCalledTimes(2 + 1_000);
     const image = putImageData.mock.calls[0]![0] as ImageData;
     expect(image.data.some((value, index) => index % 4 === 3 && value > 0)).toBe(true);
   });

@@ -1,12 +1,14 @@
 import type { CrowdSimulation } from './simulation';
+import { CrowdContinuityTracker } from './crowd-continuity-metrics';
 
 const EPSILON = 1e-9;
 const HISTOGRAM_BINS = 512;
 const MAX_DENSITY_SAMPLE = 10_000;
 const MAX_JERK_SAMPLE = 100_000;
+const MAX_EXTENDED_JERK_SAMPLE = 10_000_000;
 const PENETRATION_QUERY_LIMIT = 16;
 
-export interface CrowdQualitySnapshot {
+export interface CrowdQualitySnapshot extends ReturnType<CrowdContinuityTracker['snapshot']> {
   steps: number;
   maxPenetrationDepth: number;
   penetrationP95: number;
@@ -17,6 +19,8 @@ export interface CrowdQualitySnapshot {
   velocityCoherence: number;
   angularVelocityP95: number;
   jerkP95: number;
+  jerkExtendedP95: number;
+  jerkClippedFraction: number;
   overloadedCellCount: number;
   maximumOverloadedCellLifetime: number;
   contactChecks: number;
@@ -45,10 +49,13 @@ export interface CrowdQualitySnapshot {
  * scan or per-step Agent-sized allocation is performed.
  */
 export class CrowdQualityTracker {
+  private readonly continuity: CrowdContinuityTracker;
   private readonly densityHistogram = new Uint32Array(HISTOGRAM_BINS);
   private readonly penetrationHistogram = new Uint32Array(HISTOGRAM_BINS);
   private readonly angularVelocityHistogram = new Uint32Array(HISTOGRAM_BINS);
   private readonly jerkHistogram = new Uint32Array(HISTOGRAM_BINS);
+  private readonly extendedJerkHistogram = new Uint32Array(HISTOGRAM_BINS);
+  private clippedJerkSamples = 0;
   private readonly previousAccelerationX: Float64Array;
   private readonly previousAccelerationY: Float64Array;
   private readonly candidates = new Int32Array(PENETRATION_QUERY_LIMIT);
@@ -81,6 +88,7 @@ export class CrowdQualityTracker {
   private updates = 0;
 
   constructor(private readonly simulation: CrowdSimulation) {
+    this.continuity = new CrowdContinuityTracker(simulation);
     this.previousAccelerationX = new Float64Array(simulation.state.count);
     this.previousAccelerationY = new Float64Array(simulation.state.count);
   }
@@ -98,6 +106,7 @@ export class CrowdQualityTracker {
     this.penetrationSamples = 0;
     this.maximumPenetration = 0;
     this.updates += 1;
+    if (this.updates % 10 === 0) this.continuity.update();
 
     this.maximumOccupiedArea = Math.max(
       this.maximumOccupiedArea,
@@ -200,6 +209,8 @@ export class CrowdQualityTracker {
         accelerationY - this.previousAccelerationY[agent]!,
       ) * inverseDelta;
       this.addLogSample(this.jerkHistogram, jerk, MAX_JERK_SAMPLE);
+      this.addLogSample(this.extendedJerkHistogram, jerk, MAX_EXTENDED_JERK_SAMPLE);
+      if (jerk >= MAX_JERK_SAMPLE) this.clippedJerkSamples++;
       this.jerkSamples += 1;
       this.previousAccelerationX[agent] = accelerationX;
       this.previousAccelerationY[agent] = accelerationY;
@@ -231,6 +242,7 @@ export class CrowdQualityTracker {
   snapshot(): CrowdQualitySnapshot {
     const field = this.simulation.crowdField;
     return {
+      ...this.continuity.snapshot(),
       steps: this.updates,
       maxPenetrationDepth: this.maximumPenetration,
       penetrationP95: this.linearPercentile(
@@ -253,6 +265,8 @@ export class CrowdQualityTracker {
         Math.PI / Math.max(EPSILON, this.simulation.config.fixedDelta),
       ),
       jerkP95: this.logPercentile(this.jerkHistogram, this.jerkSamples, MAX_JERK_SAMPLE),
+      jerkExtendedP95: this.logPercentile(this.extendedJerkHistogram, this.jerkSamples, MAX_EXTENDED_JERK_SAMPLE),
+      jerkClippedFraction: this.clippedJerkSamples / Math.max(1, this.jerkSamples),
       overloadedCellCount: this.maximumOverloadedCells,
       maximumOverloadedCellLifetime: this.maximumOverloadedCellLifetime,
       contactChecks: this.maximumContactChecks,

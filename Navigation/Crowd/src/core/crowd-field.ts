@@ -9,9 +9,10 @@ const OCCUPIED_DENSITY = 0.01;
  * Reusable low-resolution Eulerian crowd field.
  *
  * Coordinates outside the world are clamped to the nearest field sample.
- * Blocked cells never receive deposits. Blur and gradient stencils use the
+ * Blocked cells never receive deposits. Blur stencils use the
  * current cell value for blocked/out-of-bounds neighbours (a no-flux rule), so
- * an obstacle cannot create an artificial low-pressure attraction.
+ * an obstacle cannot leak mass into blocked cells. Physical pressure and
+ * corrected transport velocities belong exclusively to CrowdFlowSolver.
  */
 export class CrowdField {
   readonly columns: number;
@@ -22,9 +23,6 @@ export class CrowdField {
   readonly momentumY: Float64Array;
   readonly averageVelocityX: Float64Array;
   readonly averageVelocityY: Float64Array;
-  readonly pressure: Float64Array;
-  readonly gradientX: Float64Array;
-  readonly gradientY: Float64Array;
   readonly counterFlow: Float64Array;
   readonly overloadAge: Float64Array;
   readonly blocked: Uint8Array;
@@ -56,9 +54,6 @@ export class CrowdField {
     this.momentumY = new Float64Array(this.cellCount);
     this.averageVelocityX = new Float64Array(this.cellCount);
     this.averageVelocityY = new Float64Array(this.cellCount);
-    this.pressure = new Float64Array(this.cellCount);
-    this.gradientX = new Float64Array(this.cellCount);
-    this.gradientY = new Float64Array(this.cellCount);
     this.counterFlow = new Float64Array(this.cellCount);
     this.overloadAge = new Float64Array(this.cellCount);
     this.blocked = new Uint8Array(this.cellCount);
@@ -115,16 +110,10 @@ export class CrowdField {
     this.blurHorizontal();
     this.blurVertical();
     this.finishCells(Math.max(EPSILON, pressureThreshold), Math.max(0, fixedDelta));
-    this.computeGradients();
   }
 
   sampleDensity(x: number, y: number): number {
     return this.sample(this.density, x, y);
-  }
-
-  samplePressureGradient(x: number, y: number, out: Vec2): void {
-    out.x = this.sample(this.gradientX, x, y);
-    out.y = this.sample(this.gradientY, x, y);
   }
 
   sampleAverageVelocity(x: number, y: number, out: Vec2): void {
@@ -154,9 +143,6 @@ export class CrowdField {
     this.momentumY.fill(0);
     this.averageVelocityX.fill(0);
     this.averageVelocityY.fill(0);
-    this.pressure.fill(0);
-    this.gradientX.fill(0);
-    this.gradientY.fill(0);
     this.counterFlow.fill(0);
     this.desiredX.fill(0);
     this.desiredY.fill(0);
@@ -306,8 +292,6 @@ export class CrowdField {
             ) / desiredLength)
           : 0;
       }
-      const excessRatio = Math.max(0, density / pressureThreshold - 1);
-      this.pressure[index] = excessRatio * excessRatio;
       if (density > pressureThreshold) {
         this.overloadAge[index] = this.overloadAge[index]! + fixedDelta;
         this.overloadedCellCount += 1;
@@ -315,28 +299,6 @@ export class CrowdField {
         this.overloadAge[index] = 0;
       }
       this.maximumOverloadAge = Math.max(this.maximumOverloadAge, this.overloadAge[index]!);
-    }
-  }
-
-  private computeGradients(): void {
-    const inverseSpan = 1 / (2 * this.cellSize);
-    for (let row = 0; row < this.rows; row += 1) {
-      for (let column = 0; column < this.columns; column += 1) {
-        const index = row * this.columns + column;
-        if (this.blocked[index] === 1) continue;
-        const left = column > 0 && this.blocked[index - 1] === 0 ? index - 1 : index;
-        const right = column + 1 < this.columns && this.blocked[index + 1] === 0
-          ? index + 1
-          : index;
-        const up = row > 0 && this.blocked[index - this.columns] === 0
-          ? index - this.columns
-          : index;
-        const down = row + 1 < this.rows && this.blocked[index + this.columns] === 0
-          ? index + this.columns
-          : index;
-        this.gradientX[index] = (this.pressure[right]! - this.pressure[left]!) * inverseSpan;
-        this.gradientY[index] = (this.pressure[down]! - this.pressure[up]!) * inverseSpan;
-      }
     }
   }
 

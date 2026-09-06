@@ -3,28 +3,39 @@ import type { NeighborIndex } from '../../core/types';
 export class SpatialHash implements NeighborIndex {
   readonly columns: number;
   readonly rows: number;
-  readonly heads: Int32Array;
-  readonly next: Int32Array;
+  readonly cellStart: Int32Array;
+  readonly agentIndices: Int32Array;
+  private readonly cursor: Int32Array;
   readonly populations: Int32Array;
 
   constructor(width: number, height: number, public readonly cellSize: number, capacity: number) {
     this.columns = Math.ceil(width / cellSize);
     this.rows = Math.ceil(height / cellSize);
-    this.heads = new Int32Array(this.columns * this.rows);
+    this.cellStart = new Int32Array(this.columns * this.rows + 1);
+    this.cursor = new Int32Array(this.columns * this.rows);
     this.populations = new Int32Array(this.columns * this.rows);
-    this.next = new Int32Array(capacity);
+    this.agentIndices = new Int32Array(capacity);
   }
 
   rebuild(x: Float64Array, y: Float64Array, active: Uint8Array): void {
-    this.heads.fill(-1);
     this.populations.fill(0);
-    this.next.fill(-1);
-    for (let i = 0; i < x.length; i += 1) {
+    for (let i = 0; i < x.length; i++) {
       if (active[i] !== 1) continue;
       const cell = this.cellIndex(x[i]!, y[i]!);
-      this.next[i] = this.heads[cell]!;
-      this.heads[cell] = i;
       this.populations[cell] = this.populations[cell]! + 1;
+    }
+    this.cellStart[0] = 0;
+    for (let cell = 0; cell < this.populations.length; cell++) {
+      this.cellStart[cell + 1] = this.cellStart[cell]! + this.populations[cell]!;
+      this.cursor[cell] = this.cellStart[cell]!;
+    }
+    // Stable descending IDs preserve the existing deterministic query order.
+    // GPU mapping: count, exclusive scan, stable scatter / radix sort.
+    for (let i = x.length - 1; i >= 0; i--) {
+      if (active[i] !== 1) continue;
+      const cell = this.cellIndex(x[i]!, y[i]!);
+      this.agentIndices[this.cursor[cell]!] = i;
+      this.cursor[cell] = this.cursor[cell]! + 1;
     }
   }
 
@@ -61,10 +72,9 @@ export class SpatialHash implements NeighborIndex {
     const maxRow = Math.min(this.rows - 1, Math.floor((y + radius) / this.cellSize));
     for (let row = minRow; row <= maxRow; row += 1) {
       for (let column = minColumn; column <= maxColumn; column += 1) {
-        let index = this.heads[row * this.columns + column]!;
-        while (index !== -1) {
-          visit(index);
-          index = this.next[index]!;
+        const cell = row * this.columns + column;
+        for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+          visit(this.agentIndices[slot]!);
         }
       }
     }
@@ -147,43 +157,35 @@ export class SpatialHash implements NeighborIndex {
       const bottom = centerRow + ring;
       if (top >= minRow) {
         for (let column = Math.max(left, minColumn); column <= Math.min(right, maxColumn); column += 1) {
-          let index = this.heads[top * this.columns + column]!;
-          while (index !== -1) {
-            output[count] = index;
-            count += 1;
+          const cell = top * this.columns + column;
+          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+            output[count++] = this.agentIndices[slot]!;
             if (count === limit) return count;
-            index = this.next[index]!;
           }
         }
       }
       if (bottom !== top && bottom <= maxRow) {
         for (let column = Math.max(left, minColumn); column <= Math.min(right, maxColumn); column += 1) {
-          let index = this.heads[bottom * this.columns + column]!;
-          while (index !== -1) {
-            output[count] = index;
-            count += 1;
+          const cell = bottom * this.columns + column;
+          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+            output[count++] = this.agentIndices[slot]!;
             if (count === limit) return count;
-            index = this.next[index]!;
           }
         }
       }
       for (let row = Math.max(top + 1, minRow); row <= Math.min(bottom - 1, maxRow); row += 1) {
         if (left >= minColumn) {
-          let index = this.heads[row * this.columns + left]!;
-          while (index !== -1) {
-            output[count] = index;
-            count += 1;
+          const cell = row * this.columns + left;
+          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+            output[count++] = this.agentIndices[slot]!;
             if (count === limit) return count;
-            index = this.next[index]!;
           }
         }
         if (right !== left && right <= maxColumn) {
-          let index = this.heads[row * this.columns + right]!;
-          while (index !== -1) {
-            output[count] = index;
-            count += 1;
+          const cell = row * this.columns + right;
+          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+            output[count++] = this.agentIndices[slot]!;
             if (count === limit) return count;
-            index = this.next[index]!;
           }
         }
       }
@@ -196,10 +198,9 @@ export class SpatialHash implements NeighborIndex {
     row: number,
     visit: (index: number) => boolean,
   ): boolean {
-    let index = this.heads[row * this.columns + column]!;
-    while (index !== -1) {
-      if (!visit(index)) return false;
-      index = this.next[index]!;
+    const cell = row * this.columns + column;
+    for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
+      if (!visit(this.agentIndices[slot]!)) return false;
     }
     return true;
   }

@@ -12,21 +12,9 @@ import type { Rect } from './types';
 const EPSILON = 1e-9;
 const REPORTABLE_PENETRATION = 0.01;
 const CONTACT_QUERY_PADDING = 0.001;
-export const MAX_CONTACTS_PER_AGENT = 16;
-const SMALL_CROWD_LIMIT = 1_000;
-// Keep the 4,990/5,000/5,010 acceptance window on one quality tier. This is
-// only a bounded-work setting; every tier executes the same contact equation.
-const MEDIUM_CROWD_LIMIT = 4_000;
-const SMALL_MAX_CONTACTS = 16;
-const MEDIUM_MAX_CONTACTS = 12;
-const LARGE_MAX_CONTACTS = 8;
-const SMALL_CONSTRAINT_ITERATIONS = 3;
-const MEDIUM_CONSTRAINT_ITERATIONS = 2;
-const LARGE_CONSTRAINT_ITERATIONS = 1;
-const SMALL_QUERY_LIMIT = 96;
-const MEDIUM_QUERY_LIMIT = 32;
-const LARGE_QUERY_LIMIT = 8;
-const MAX_CONTACT_QUERY_VISITS = SMALL_QUERY_LIMIT;
+export const MAX_CONTACTS_PER_AGENT = 8;
+export const CONTACT_ITERATIONS = 1;
+export const MAX_CONTACT_QUERY_VISITS = 24;
 
 export interface CrowdMovementInput {
   current: AgentBuffer;
@@ -72,7 +60,7 @@ export interface CrowdMovementResult {
  * The sole dynamic movement authority.
  *
  * Every population uses the same predicted-position XPBD circle constraint.
- * Population tiers change only the fixed contact/query/iteration budgets.
+ * Contact/query/iteration budgets are identical at every population.
  * Jacobi corrections are accumulated in reusable SoA buffers and published
  * simultaneously before the existing swept static collision path runs.
  */
@@ -92,10 +80,9 @@ export class CrowdMovementSolver {
   private contactCorrected = new Uint8Array(0);
   private iterationCorrected = new Uint8Array(0);
   private readonly queryCandidates = new Int32Array(MAX_CONTACT_QUERY_VISITS);
-  private maxContacts = LARGE_MAX_CONTACTS;
-  private constraintIterationLimit = LARGE_CONSTRAINT_ITERATIONS;
-  private queryLimit = LARGE_QUERY_LIMIT;
-  private complianceScale = 1;
+  private readonly maxContacts = MAX_CONTACTS_PER_AGENT;
+  private readonly constraintIterationLimit = CONTACT_ITERATIONS;
+  private readonly queryLimit = MAX_CONTACT_QUERY_VISITS;
   private pairNormalX = 1;
   private pairNormalY = 0;
   private readonly integrator = new SweptCircleStaticIntegrator();
@@ -135,7 +122,6 @@ export class CrowdMovementSolver {
   solve(input: CrowdMovementInput): CrowdMovementResult {
     const count = input.current.count;
     this.ensureCapacity(count);
-    this.configureQualityTier(count);
     this.reset(input);
     this.predictPositions(input);
 
@@ -154,27 +140,6 @@ export class CrowdMovementSolver {
   /** Kept as a stable lifecycle hook; this solver has no cross-step recovery mode. */
   resetRecoveryState(): void {
     // XPBD lambdas deliberately live for one fixed step only.
-  }
-
-  private configureQualityTier(population: number): void {
-    if (population <= SMALL_CROWD_LIMIT) {
-      this.maxContacts = SMALL_MAX_CONTACTS;
-      this.constraintIterationLimit = SMALL_CONSTRAINT_ITERATIONS;
-      this.queryLimit = SMALL_QUERY_LIMIT;
-      this.complianceScale = 0.05;
-      return;
-    }
-    if (population <= MEDIUM_CROWD_LIMIT) {
-      this.maxContacts = MEDIUM_MAX_CONTACTS;
-      this.constraintIterationLimit = MEDIUM_CONSTRAINT_ITERATIONS;
-      this.queryLimit = MEDIUM_QUERY_LIMIT;
-      this.complianceScale = 0.5;
-      return;
-    }
-    this.maxContacts = LARGE_MAX_CONTACTS;
-    this.constraintIterationLimit = LARGE_CONSTRAINT_ITERATIONS;
-    this.queryLimit = LARGE_QUERY_LIMIT;
-    this.complianceScale = 1;
   }
 
   private reset(input: CrowdMovementInput): void {
@@ -312,12 +277,11 @@ export class CrowdMovementSolver {
   }
 
   private solveContactConstraints(input: CrowdMovementInput): void {
-    if (this.result.contactChecks === 0 || this.constraintIterationLimit === 0) return;
+    if (this.result.contactChecks === 0) return;
     const count = input.current.count;
     const diameter = input.agentRadius * 2 + Math.max(0, input.agentGap);
     const inverseDeltaSquared = 1 / Math.max(EPSILON, input.fixedDelta * input.fixedDelta);
     const alpha = Math.max(0, input.contactCompliance)
-      * this.complianceScale
       * inverseDeltaSquared;
     const friction = clamp(input.contactFriction, 0, 1);
     const correctionLimit = Math.max(0, input.maximumContactCorrection);
@@ -374,7 +338,7 @@ export class CrowdMovementSolver {
 
           // Contact friction acts only on an active penetrating pair and is
           // Coulomb-bounded by the normal correction. Same-flow alignment is
-          // left to CrowdField viscosity.
+          // left to directional grid momentum transport.
           if (friction > 0 && deltaLambda > 0) {
             const tangentX = -normalY;
             const tangentY = normalX;

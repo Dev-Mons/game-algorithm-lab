@@ -1,183 +1,180 @@
 # Crowd Navigation Lab
 
-최대 10,000개 원형 Agent의 결정론적 2D 군중 이동 실험입니다. 모든 동적 이동은 하나의 `CrowdMovementSolver`와 하나의 predicted-position 접촉 공식이 담당하며, 군중 규모에 따라 접촉 후보 수와 반복 횟수만 조절합니다.
-
-## 이동 구조
+결정론적 2D 군중 이동 실험입니다. 군중의 흐름은 방향별 Grid 속도가 만들고,
+원형 접촉과 exact static sweep은 물리적 안전을 담당합니다. 모든 population과
+시나리오가 같은 방향 선택 정책과 같은 접촉 예산을 사용합니다.
 
 ```text
-Command / Flow Goal
-        ↓
-Static Flow Field (blocked / clearance / terrain / base potential)
-        ↓
-CrowdField (density + momentum + pressure + alignment)
-        ↓
-Dynamic Flow Field (density / overload age / counter-flow / wall cost)
-        ↓
-Preferred Velocity
-        ↓
-CrowdMovementSolver
-├─ acceleration-limited predicted positions
-├─ contact-only Spatial Hash
-├─ bounded XPBD/Jacobi circle contacts
-└─ bounded tangential contact damping
-        ↓
-Static Broad Phase → Exact Swept Static Integration when needed
-        ↓
-Static Invalid-state Recovery
+Goal / Command
+    ↓
+CrowdField: mass / momentum scatter + conservative blur
+    ↓
+FlowField: shared local navigation policy / periodic route costs
+    ↓
+CrowdFlowSolver: 8 heading channels, desired velocity + momentum
+    ↓
+Shared density-capacity pressure: 8 projected Jacobi passes
+    ↓
+Corrected grid velocity → gather (retain dilute navigation detail)
+    ↓
+Acceleration-limited prediction
+    ↓
+Compact contact grid → at most 24 candidates / 8 pairs / 1 Jacobi pass
+    ↓
+Exact swept circle / static integration
 ```
 
-역할은 겹치지 않습니다.
+선택 근거, 동일 머신 before/after, 한계와 UE5 Compute Shader 설계는
+[개선 보고서](docs/fluid-crowd-report.md), 후보 비교는
+[설계 결정](docs/fluid-crowd-design.md)에 기록합니다.
 
-- Flow Field는 goal별 static base potential과 낮은 주기의 dynamic potential을 분리해, 정적 장애물을 피하면서 처리 용량이 남은 경로를 고릅니다.
-- CrowdField는 모든 규모에서 동일하게 밀도 압력과 같은 방향 흐름 정렬을 preferred velocity에 반영합니다.
-- 모든 규모에서 `Cij = distance(pi, pj) - contactDiameter`인 같은 XPBD 제약을 풉니다.
-- 작은 침투는 compliance와 bounded work 때문에 허용되지만, 깊은 압축은 매 fixed step 접촉 보정에 피드백됩니다.
-- Jacobi iteration 중에는 위치를 즉시 덮어쓰지 않고 Agent별 correction을 모아 동시에 적용합니다.
-- 정적 sweep과 투영은 규모와 관계없이 벽 통과를 막습니다.
+실행 시나리오는 평지와 아래 세 가지 컨셉입니다. 빨간 사각형은 초기 생성 영역,
+파란 원은 목적지입니다. 생성은 초기화 때 한 번 이루어지며, 객체 수는 모든 생성 영역의 합계입니다.
 
-목표를 반대로 바꾸면 기존 속도의 새 목표 방향 성분만 남기고 반대 성분은 명령 프레임에서 제거합니다. 렌더링 heading은 물리 속도와 분리되어 새 intent를 즉시 표시하며, 다음 fixed step부터 새 방향으로 이동합니다.
+| 시나리오 | URL ID | 관찰할 동작 |
+|---|---|---|
+| Open Field | `open-field` | 장애물이 없는 기본 이동 |
+| 연속 코너 | `winding-corners` | 세 장벽을 아래→위→아래로 우회하는 연속 코너 이동 |
+| 깔때기와 우회로 | `funnel-bypass` | 폭 288→72로 줄어드는 상단 길과 폭 168의 하단 길 사이의 혼잡 분산 |
+| 네 생성 지점 합류 | `four-way-merge` | 네 입구에서 같은 수로 출발해 우측 하단의 한 목적지에 합류 |
 
-## 실행
+깔때기는 기존 사각형 충돌 지형으로 계단식 경사를 구성합니다. 경로는 공통 FlowField가
+현재 혼잡 비용으로 선택하며, 특정 인원 수를 기준으로 강제 우회시키지 않습니다.
+`routeGates`는 경로 이용량을 측정하는 영역이고 이동을 지시하는 중간 목적지가 아닙니다.
+
+새 시나리오는 `src/scenarios/scenarios.ts`의 `SCENARIOS`에 추가하면 선택 목록과
+측정 대상에 반영됩니다. 기존 제거된 시나리오는 `tests/fixtures/navigation-scenarios.ts`에
+엔진 회귀 테스트 전용으로 보존합니다.
+
+## 맵 에디터
+
+시뮬레이션 아래 **맵 편집**을 누르면 현재 시나리오를 복사해 편집합니다.
+기본 시나리오는 바뀌지 않으며, 편집 중에는 시뮬레이션이 일시정지됩니다.
+
+1. **장애물 그리기 / 생성 영역 그리기**를 선택하고 캔버스를 드래그합니다.
+2. **목적지 배치**를 선택하고 공통 목적지를 클릭합니다.
+3. **선택 / 이동**으로 물체를 드래그하거나 우측 아래 노란 손잡이로 크기를 바꿉니다.
+   오른쪽 목록에서 물체를 선택하면 X·Y·가로·세로를 숫자로 입력할 수도 있습니다.
+4. **적용하고 실행**으로 처음부터 시뮬레이션합니다. 생성 영역·벽 겹침과 현재 객체 크기에서의
+   통로 연결을 검사합니다. 생성 공간이 부족하면 실제로 생성할 수 있는 인원을 표시합니다.
+5. **브라우저 저장**을 누르면 새로고침 후에도 시나리오 목록의 **내 맵**에서 다시 선택할 수 있습니다.
+   적용만 한 맵은 현재 세션에만 남습니다. **JSON 내보내기 / 가져오기**로 파일을 보관하거나 다른 브라우저로 옮깁니다.
+
+12px 스냅을 끄면 1px 단위로 배치할 수 있습니다. 선택한 물체는 방향키로 이동하고,
+Shift+방향키로 1px 이동합니다. Delete는 선택 삭제, Ctrl+Z / Ctrl+Shift+Z는 실행 취소 / 다시 실행입니다.
+빈 맵으로 시작하거나 JSON을 불러온 작업도 실행 취소할 수 있습니다. **편집 취소**는 적용되지 않은
+편집을 버리고 기존 시뮬레이션으로 돌아갑니다. 이미 브라우저에 저장한 내용은 유지됩니다.
+
+첫 버전은 1200×720 크기, 사각형 장애물 최대 256개, 생성 영역 1~16개, 공통 목적지 하나를 지원합니다.
+객체 수는 모든 생성 영역의 합계이며 동일 비율로 분배합니다. 브라우저 저장은 현재 사이트 주소의
+로컬 저장소를 사용하며 최대 30개입니다. 다른 포트·브라우저에서는 JSON으로 가져와야 합니다.
+에디터는 맵 데이터만 만들고 기존 FlowField와 접촉 솔버를 그대로 사용합니다.
+콘솔 측정 스크립트는 코드에 등록된 시나리오를 대상으로 하며 브라우저 저장 맵을 자동으로 읽지 않습니다.
+
+## 실행과 검증
 
 ```bash
 npm install
 npm run dev
-```
-
-검증과 측정:
-
-```bash
 npm run verify
 npm run test:e2e
 npm run measure
 npm run measure:flows
+npm run measure -- --scenario=winding-corners --steps=2400
+npm run measure:flows -- --scenario=funnel-bypass --steps=1800
+npm run measure:flows -- --scenario=funnel-bypass --steps=1800 --dynamic=false
+npm run measure:flows -- --scenario=four-way-merge --steps=1500
 npm run measure:quality
+npm run measure -- --agents=10000 --radius=1.5 --gap=0.05 --steps=360
+npm run measure:fluid -- --output=artifacts/fluid-crowd/after-fluid.json
 ```
 
-URL 파라미터:
+`measure:fluid`는 등록된 시나리오의 1,000-Agent/900-step 품질과
+10,000-Agent 요청/360-step 품질을 기록합니다. `--scenario`, `--agents`, `--steps`,
+`--output`으로 범위를 지정할 수 있습니다. 진단은 simulation 타이밍 밖에서 실행합니다.
 
-- `scenario`: `open-field`, `obstacle-field`, `dense-spawn`, `merge-500-500`, `opposing-500-500`, `crossing-500-500`, `different-capacity-gates`, `equal-capacity-congested-gates`, `merge-then-split`, `opposing-occupied-corridor`
-- `agents`: Agent 수, 최대 10,000 (배치 영역과 반경에 따라 실제 생성 수가 제한될 수 있음)
-- `seed`: 결정론적 배치 seed
-- `step`: 해당 fixed step까지 계산
-- `paused=true`: 일시정지 상태로 시작
-
-예시:
+URL 파라미터: `scenario`, `agents`, `seed`, `radius`, `gap`, `step`, `paused=true`.
 
 ```text
-/?scenario=obstacle-field&agents=1000&seed=42&step=600&paused=true
+/?scenario=open-field&agents=10000&radius=1.5&gap=0.05&seed=42&step=360&paused=true
 ```
 
-## 핵심 설정
+요청 population이 spawn의 물리적 수용량보다 크면 `unspawnedCount`를 기록합니다.
+측정에는 요청 수와 실제 수를 모두 기록합니다.
 
-- `navCellSize`: 정적 Flow Field 해상도
-- `crowdFieldCellSize`: 밀도·운동량·압력 Grid 해상도
-- `contactCellSize`: Agent 접촉 후보용 Spatial Hash 해상도
-- `maxSpeed`: 물리 속도 상한
-- `maxAcceleration`: 목표 속도 변화 상한. 충돌·정적 안전과 invalid recovery는 이 선호보다 우선합니다.
-- `agentRadius`, `agentGap`: 물리 반경과 접촉 안전 여유
-- `neighborRadius`: 밀도·정렬을 계산하는 국소 반경
-- `avoidanceHorizon`: pressure steering look-ahead 상한
-- `goalRadius`, `arrivalSlowRadius`: 도착 판정과 감속 범위
-- `fixedDelta`: 기본 `1 / 60`초
-- `pressureStrength`, `pressureThreshold`, `maximumPressureAcceleration`: 과밀 압력 반응과 상한
-- `viscosityStrength`: 같은 방향의 셀 평균 속도에 대한 약한 정렬
-- `minimumForwardSpeedRatio`: pressure 중에도 보존할 최소 목표 진행 비율
-- `contactCompliance`: `fixedDelta²`로 정규화되는 XPBD compliance
-- `contactFriction`: 실제 침투 접촉에만 적용되는 Coulomb-bounded 접선 감쇠
-- `maximumContactCorrection`: 한 Agent가 한 Jacobi iteration에서 받을 수 있는 위치 보정 상한
-- `dynamicFlowRebuildInterval`: dynamic potential 재계산 fixed-step 간격. 기본값은 8이며 UI에서 6~12로 조절합니다.
-- `dynamicFlowTargetDensity`, `dynamicFlowDensityWeight`: 정규화 density 초과량의 bounded quadratic cost 기준과 가중치
-- `dynamicFlowOverloadWeight`: 과밀 지속 시간(`overloadAge`) 가중치
-- `dynamicFlowCounterFlowWeight`: 각 goal의 static route direction과 반대인 평균 유속 가중치
-- `dynamicFlowWallWeight`: agent-clearance를 제외한 벽 여유의 역수 비용 가중치
-- `dynamicFlowCostSmoothing`, `dynamicFlowDirectionHysteresis`: rebuild 사이 비용 저역 통과와 near-tie 방향 유지 폭
-- `directGoalLowDensity`, `directGoalCounterFlow`, `directGoalMinimumClearance`: LOS direct-goal blend가 허용되는 국소 조건
+## 역할과 파라미터
 
-`CrowdField`는 active Agent의 density와 momentum을 4개 셀에 bilinear splat하고, 고정 1회 separable blur 뒤 pressure와 central-difference gradient를 계산합니다. 모든 Grid와 smoothing 버퍼는 생성 시 할당해 매 step 재사용합니다. 장애물 셀과 월드 경계는 no-flux stencil로 처리하므로 낮은 obstacle pressure가 Agent를 벽 안으로 끌어들이지 않습니다.
+- **Navigation**: 정적 장애물과 목표, 저주기 혼잡 비용으로 경로를 고릅니다.
+  LOS direct-goal은 공통 `FlowField` 경로에서 density/counter-flow/clearance로
+  연속 blend합니다. 시나리오 ID·장애물 수·flow 수로 알고리즘을 바꾸지 않습니다.
+- **Crowd dynamics**: Agent의 desired velocity와 실제 momentum을 방향별로
+  bilinear scatter합니다. 8개 heading channel에 각 Agent가 인접한 두 각도
+  가중치로 기여하므로 역방향 속도가 하나의 평균으로 상쇄되지 않습니다.
+  공유 압력은 목표 밀도 초과와 예측 mass-flux divergence로 계산합니다.
+  음의 압력·cohesion·Agent별 pressure probe는 없습니다.
+- **Contact**: 후보 24, pair 8, iteration 1의 고정 예산입니다. population별
+  contact/compliance 단계는 제거했습니다. 완전 중첩 입력에서도 작업량은 유계입니다.
+  동일 위치 normal은 결정론적이며, symmetric Jacobi correction을 동시 publish합니다.
+- **Static collision**: 접촉 publish 후 정적 투영, current→predicted exact sweep,
+  월드/장애물 안전 검사를 유지합니다. Grid는 exact static safety를 대체하지 않습니다.
 
-각 `FlowField`는 `blocked`, `staticClearance`, `terrainCost`, `staticPotential`을 geometry/goal 변경 때만 다시 만들고, `dynamicDensityCost`, `dynamicOverloadCost`, `dynamicCounterFlowCost`, `dynamicWallCost`, smoothed `dynamicTraversalCost`, `dynamicPotential`, 최종 방향은 별도 버퍼에 둡니다. Dynamic rebuild는 고정 크기 indexed heap과 typed-array를 재사용합니다. 동적 방향은 정적 포텐셜을 낮추는 후보 사이에서 혼잡 비용을 비교하며, 고밀도 셀일수록 정적 최대 진행량을 보존해 자기 군집의 뒤쪽으로 빠져나가는 큰 우회를 막습니다. 한 goal의 counter-flow는 그 goal의 static route direction으로 계산하므로 shared density가 다른 flow를 같은 방향으로 끌지 않습니다. 모든 장면의 LOS 방향 선택은 맵 구성과 무관하게 density·counter-flow·clearance에 따른 동일한 field/direct 연속 blend를 사용합니다.
+| 설정 | 의미 |
+|---|---|
+| `navCellSize` | 정적/동적 경로 Grid 해상도 |
+| `crowdFieldCellSize` | density와 velocity Grid 해상도 |
+| `pressureThreshold` | radius 3.2/cell 24 기준 목표 셀 질량; 반경²과 셀 면적으로 정규화 |
+| `crowdPressureIterations` | 모든 셀에 동일하게 실행하는 압력 반복, 기본 8 |
+| `crowdPressureRelaxationTime` | 압축 초과량과 예측 mass transport를 평가할 시간, 기본 .25초 |
+| `crowdVelocityBlend` | 밀집 셀의 실제 운동량 비중, 기본 .68; 나머지는 navigation velocity |
+| `maxAcceleration` | Agent 속도 변화 상한, static/contact 안전은 우선 |
+| `contactCompliance` | 모든 population에 같은 XPBD compliance, 기본 .00001 |
+| `maximumContactCorrection` | Agent당 한 step의 접촉 위치 보정 상한, 기본 1.25px |
+| `contactCellSize` | 접촉 Grid 최대 셀 크기; 실제 크기는 contact diameter 이하 |
+| `dynamicFlowRebuildInterval` | 경로 혼잡 비용 갱신 간격, 기본 8 step |
 
-UI의 네 dynamic cost debug layer는 항별 weighted cost를 독립 표시합니다. `StepMetrics`는 rebuild가 발생한 step의 `dynamicRebuildCount`, `dynamicRebuildMs`, 설정 간격과 age를 제공하며 `measure`, `measure:flows`, `measure:quality`도 rebuild 주기와 비용을 별도로 출력합니다.
+`dynamicFlow*` 비용은 대체 경로 선택에만 쓰입니다. 물리적인 압력·속도 보정은
+`CrowdFlowSolver`가 담당합니다. Agent steering에서 같은 force를 다시 더하지 않습니다.
+`neighborRadius`는 기존 이웃 반경 디버그 표시용이며 movement neighbor budget을 바꾸지 않습니다.
 
-## 대규모 군중 최적화
+## 품질 진단
 
-접촉 후보 Grid는 정적 Flow Field와 CrowdField에서 분리되어 있으며 predicted position으로 매 step 한 번 rebuild합니다. 각 Agent는 고정 크기 SoA에 가까운 후보만 보관하고, contact lambda는 그 fixed step의 Jacobi 반복 동안 유지됩니다.
+기존 jerk, penetration, gate throughput, fairness, wall overlap 지표를 유지합니다.
+추가 진단은 `CrowdQualityTracker`에서 10 step마다 수집됩니다.
 
-| Agent 수 | maxContacts | Jacobi iterations | compliance scale |
-|---:|---:|---:|---:|
-| 1~1,000 | 16 | 3 | 0.05 |
-| 1,001~4,000 | 12 | 2 | 0.5 |
-| 4,001~10,000 | 8 | 1 | 1.0 |
+- 같은 flow의 bounded 최근접 거리 P50/P95/variance 및 표본 coverage.
+- 내부 셀 밀도의 squared coefficient of variation (`densityVariance`).
+- 네 축으로 3셀 이내 군중에 둘러싸인 내부 empty cell 비율 (`interiorVoidFraction`).
+  월드 외부·정상 군중 외부·정적 장애물 너머는 제외합니다.
+- 같은 flow의 근접 속도 차이 RMS (`sameFlowVelocityRms`, 낮을수록 좋음).
+- 기존 100,000 상한 jerk와 함께 10,000,000 범위의 `jerkExtendedP95`,
+  기존 상한을 넘는 비율 `jerkClippedFraction`.
 
-4,990/5,000/5,010은 같은 품질 단계에 있어 5,000에서 물리나 작업량이 전환되지 않습니다. 모든 단계가 같은 XPBD 식, 결정론적 동일 위치 normal, Jacobi publish, 정적 sweep을 사용합니다.
-
-- `contactConstraints <= activeAgents × maxContacts × constraintIterations`를 매 step 계측합니다.
-- 한 iteration의 correction은 `maximumContactCorrection`으로 clamp하고 비유한 값은 적용하지 않습니다.
-- 접선 감쇠는 normal correction과 목표 진행의 5% 상한에 묶이며, 같은 흐름 정렬은 계속 CrowdField viscosity만 담당합니다.
-- 접촉 correction을 publish한 직후 정적 투영하고, 마지막에는 current→predicted exact swept-circle 적분을 적용합니다.
-- `recoveredAgents`와 `maxRecoveryDistance`는 접촉 보정이 아니라 정적 안전 투영만 뜻합니다.
-- 벽과 닿을 가능성이 없는 이동은 AABB broad phase에서 바로 적분합니다.
-
-렌더링도 5,000개부터 개별 사각형이나 `drawImage`를 반복하지 않습니다. 작은 원형 stamp를 투명 픽셀 레이어에 래스터화한 뒤 한 번만 합성해, 반지름 `1.5`에서도 깨진 사각 점처럼 보이는 현상을 줄이면서 draw call을 고정합니다. heading과 겹침/정체 경고는 각각 최대 1,000개만 표시하고, 대규모 모드에서 정상 상태인 겹침 경고는 기본으로 끕니다.
-
-로컬 Node 측정(10,000 Agent, 반지름 `1.5`, gap `0.05`, 360 step)에서 Open Field는 P50 `7.66ms` / P95 `8.86ms`로 목표(P50 `8ms` / P95 `16ms`)를 통과했습니다. Obstacle Field는 P50 `14.24ms` / P95 `20.70ms`로 목표를 통과하지 못했습니다. 같은 Obstacle 측정에서 x=660 관문 통과는 `1,039개`, 벽 침투는 `0`이었습니다. 절대 수치는 실행 환경에 따라 달라집니다.
-
-#9 구현 직전/직후 동일 로컬 명령(`--agents=10000 --radius=1.5 --gap=0.05 --steps=360`) 비교는 Open `8.51/12.97ms → 7.61/10.42ms`, Obstacle `15.32/22.44ms → 14.26/19.41ms`(P50/P95)였습니다. 최종 run의 dynamic rebuild는 실제 간격 8 step, 44회였으며 Open P50/P95 `0.79/1.39ms`, Obstacle `0.76/1.48ms`였습니다. 360 step 전체에 대한 amortized 비용은 각각 약 `0.115ms/step`, `0.111ms/step`이고 전체 측정 시간의 `1.41%`, `0.76%`였습니다. 측정 잡음을 고려해도 Obstacle P95는 기존 기록 `20.70ms`보다 악화되지 않았습니다.
-
-10,000개를 실제로 배치하려면 현재 Open Field 시작 영역 기준으로 객체 반지름을 `1.5`, 객체 간 여유를 `0.05` 정도로 낮춰야 합니다. 요청 수가 배치 영역의 물리적 수용량보다 크면 `unspawnedCount`에 생성하지 못한 수가 기록됩니다.
-
-## 회귀 기준
-
-고정 조건은 1,000 Agent, seed 42, 60 Hz입니다. 저장된 결과는 `baselines/baseline-movement-v2.json`에 있습니다.
-
-4,990/5,000/5,010 품질 결과와 완전 중첩·저밀도·다중 흐름 결과는 `baselines/baseline-crowd-quality.json`에 저장합니다. `measure:quality`는 평균 목표 진행, 관문 처리량, 점유 면적, density P95, jerk P95, 최대 침투, step P50/P95가 인접 규모에서 15% 넘게 바뀌면 실패합니다. 세 규모의 timing은 JIT·scheduler 편향을 줄이기 위해 interleave합니다.
-
-| 시나리오 | 구간 | 핵심 결과 |
-|---|---:|---|
-| Dense Spawn | 60 step | 목표 진행 속도 35px/s 이상, 보고 가능한 겹침 0 |
-| Obstacle Field | 600 step | x=660 gate 처리량 25 Agent/s 이상, 도착 Agent 존재, bounded 접촉 압축·벽 침투 0 |
-| Merge / Crossing | 900 step | 양쪽 흐름 진행, crossing Jain fairness 0.9 이상 |
-| Equal Capacity Gates | 900 step | 대체 관문 사용 증가, route utilization fairness 0.95 이상 |
-| Wide / Narrow Gates | 900 step | 양쪽 관문 사용, capacity-normalized fairness 0.8 이상 |
-| Merge then Split / Opposing Corridor | 900 step | 재분기·flow별 역류 회피, 양쪽 route 진행, 벽 침투 0 |
-| 32개 완전 중첩 | 1 step | 유한 correction, iteration 상한 준수, 80% 이상 계속 이동 |
-| 10,000개 완전 중첩 | 60 step | constraint 상한 준수, occupied area 증가, 최대/P95 침투 감소 |
-| 10,000개 Obstacle Field | 360 step | constraint 상한 준수, x=660 통과 1,000개 초과, 벽 침투·정체 0 |
-
-최종 1,000 Agent route 측정에서 equal-capacity 장면은 dynamic-off `690/305`(5 미분류, fairness `0.870`)에서 dynamic-on `469/531`(미분류 0, fairness `0.996`)으로 바뀌었습니다. Wide/Narrow는 `593/407`, capacity-normalized fairness `0.976`, Merge-then-Split은 `483/517`, Opposing Occupied Corridor는 `500/500`이었고 네 장면 모두 최대 벽 침투가 0이었습니다. Low-density Open Field의 static/dynamic-off 대비 평균 goal progress 변화는 `0.01%`였습니다.
-
-`overlapPairs`는 `0.01px` 미만 침투를 접촉 수치 오차로 취급하며, solver가 보관한 bounded contact 목록의 진단값입니다. 실제 침투 깊이와 P95는 `CrowdQualityTracker`가 별도 bounded 표본으로 측정합니다. 접촉 보정량과 정적 안전 투영은 각각 `maxContactCorrection`과 `recoveredAgents`/`maxRecoveryDistance`로 분리됩니다.
-
-## 디버그와 결정론
-
-UI에서 Flow Field, Spatial Hash, desired/final velocity, density, recovery, overlap, stall을 켤 수 있습니다. 브라우저 콘솔에서는 다음 API를 제공합니다.
-
-```ts
-window.crowdDebug.getSnapshot();
-window.crowdDebug.simulation();
-```
-
-같은 scenario/config/seed와 동일한 명령 순서는 같은 `stateHash()`를 만듭니다. hot path의 Agent·이웃·제약 저장소는 초기화 시 할당하고 step 중에는 재사용합니다.
+거리/속도 진단은 Agent당 최대 256 후보, 반경 4 diameter로 유계입니다.
+`truncatedQueryFraction`이 높으면 정확한 최근접 분포가 아닌 표본 추정입니다.
+Void 지표는 작은 내부 구멍을 위한 local proxy이며 임의 크기/모양의 구멍 검출기는 아닙니다.
+`maxPenetrationDepth`는 마지막 step의 bounded 표본 최대이고, `measure:fluid`의
+`maximumPenetration`은 실행 전체의 그 최대값입니다. `overlapPairs`도 전체 쌍 수가 아닙니다.
 
 ## 주요 파일
 
 ```text
-src/core/simulation.ts                 fixed-step orchestration and desired velocity
-src/core/crowd-field.ts                reusable density/momentum/pressure Grid
-src/core/crowd-quality-metrics.ts      bounded deterministic quality histograms
-src/core/crowd-movement-solver.ts      bounded XPBD/Jacobi contact and static safety
-src/core/spawn-layout.ts               deterministic non-overlapping placement
-src/algorithms/flow-field/flow-field.ts
-src/algorithms/spatial-hash/spatial-hash.ts
-src/core/obstacle-collision.ts         exact swept circle/static integration
-tests/simulation/movement-v2.test.ts   reversal, overlap, 1,000/10,000-Agent acceptance
+src/core/simulation.ts                  공통 navigation과 pass orchestration
+src/core/crowd-field.ts                 shared density / momentum / overload
+src/core/crowd-flow-solver.ts           directional grid velocity / capacity pressure
+src/core/crowd-movement-solver.ts       bounded residual XPBD / static safety
+src/algorithms/spatial-hash/spatial-hash.ts  count / prefix sum / contiguous indices
+src/core/crowd-continuity-metrics.ts    spacing / interior density / void / velocity RMS
+src/core/crowd-quality-metrics.ts       기존+새 품질 진단
+scripts/measure-fluid.ts                동일 조건 비교와 pass profiling / ablation
 ```
+
+브라우저에서 `window.crowdDebug.getSnapshot()`과 `.simulation()`을 사용할 수 있습니다.
+같은 config/seed/명령 순서는 같은 `stateHash()`를 만듭니다. Float64 CPU 결정론이
+GPU floating-point atomic 결정론이나 CPU/GPU bit equality를 뜻하지는 않습니다.
 
 ## 범위와 한계
 
-- 사람 보행 연구용 모델이나 rigid formation 시스템이 아닙니다.
-- 다중 흐름은 시나리오별 신호·lane·token 없이 동일한 국소 규칙을 사용하므로 도착 시점은 흐름별로 달라질 수 있습니다.
-- 대규모 접촉은 bounded 후보와 compliance를 사용하므로 완전 비압축 rigid-body 해법이 아닙니다.
-- `overlapPairs`와 겹침 색상은 bounded contact 표본이므로 전체 물리 쌍 수를 의미하지 않습니다.
-- 복구나 정적 안전 투영이 발생한 Agent는 순간 가속도 선호를 넘을 수 있으므로 recovery 지표와 함께 해석해야 합니다.
+압력은 고정 횟수·셀 중심 속도·속도 상한을 사용하는 밀도 용량 근사입니다.
+완전 비압축 물 solver, exact pair packing, 임의 장애물 형상에 대한 Grid 해상도
+독립성은 보장하지 않습니다. 접촉은 완전 중첩과 강한 대향 흐름에서 여전히 중요합니다.
+10k CPU 실측과 GPU mapping 설계를 제공하며, 100k GPU 실측을 주장하지 않습니다.

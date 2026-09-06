@@ -1,5 +1,6 @@
 import { AgentBuffer } from './agent-state';
 import { CrowdField } from './crowd-field';
+import { CrowdFlowSolver } from './crowd-flow-solver';
 import { clamp, distanceSquared } from './math';
 import { distanceSquaredToRect } from './obstacle-collision';
 import { CrowdMovementSolver, type CrowdMovementResult } from './crowd-movement-solver';
@@ -16,8 +17,6 @@ import { FlowField, type DynamicFlowFieldOptions } from '../algorithms/flow-fiel
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 
 const EPSILON = 1e-9;
-const DENSE_CROWD_THRESHOLD = 2_000;
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
 const ZERO_METRICS: StepMetrics = {
   activeCount: 0,
@@ -52,7 +51,7 @@ const ZERO_METRICS: StepMetrics = {
 
 /**
  * Deterministic crowd simulation with one movement authority:
- * navigation -> desired velocity -> scale-appropriate local solve -> static sweep.
+ * navigation -> grid transport -> bounded residual contacts -> static sweep.
  */
 export class CrowdSimulation {
   state: AgentBuffer;
@@ -62,6 +61,7 @@ export class CrowdSimulation {
   readonly contactGrid: SpatialHash;
   readonly neighbors: SpatialHash;
   readonly crowdField: CrowdField;
+  readonly crowdFlow: CrowdFlowSolver;
   scenario: ScenarioDefinition;
   goal: Vec2;
   readonly agentFlow: Uint16Array;
@@ -81,13 +81,8 @@ export class CrowdSimulation {
   private readonly solvedVelocityY: Float64Array;
   private readonly density: Float64Array;
   private readonly recovery: Uint8Array;
-  private readonly pressureProbeX: Float64Array;
-  private readonly pressureProbeY: Float64Array;
   private readonly movement = new CrowdMovementSolver();
   private readonly direction = { x: 1, y: 0 };
-  private readonly pressureGradient = { x: 0, y: 0 };
-  private readonly probePressureGradient = { x: 0, y: 0 };
-  private readonly averageVelocity = { x: 0, y: 0 };
   private readonly dynamicFlowOptions: DynamicFlowFieldOptions = {
     densityScale: 1,
     targetDensity: 1,
@@ -118,13 +113,9 @@ export class CrowdSimulation {
       config.height,
       config.crowdFieldCellSize,
     );
+    this.crowdFlow = new CrowdFlowSolver(this.crowdField);
     const contactDiameter = config.agentRadius * 2 + Math.max(0, config.agentGap);
-    const spatialCellSize = config.agentCount > DENSE_CROWD_THRESHOLD
-      ? Math.min(
-          config.contactCellSize,
-          Math.max(1, contactDiameter * 2),
-        )
-      : config.contactCellSize;
+    const spatialCellSize = Math.min(config.contactCellSize, Math.max(1, contactDiameter));
     this.contactGrid = new SpatialHash(
       config.width,
       config.height,
@@ -141,13 +132,6 @@ export class CrowdSimulation {
     this.solvedVelocityY = new Float64Array(config.agentCount);
     this.density = new Float64Array(config.agentCount);
     this.recovery = new Uint8Array(config.agentCount);
-    this.pressureProbeX = new Float64Array(config.agentCount);
-    this.pressureProbeY = new Float64Array(config.agentCount);
-    for (let agent = 0; agent < config.agentCount; agent += 1) {
-      const angle = agent * GOLDEN_ANGLE;
-      this.pressureProbeX[agent] = Math.cos(angle);
-      this.pressureProbeY[agent] = Math.sin(angle);
-    }
     this.overlapFlags = new Uint8Array(config.agentCount);
     this.debugLayers = {
       desiredVelocityX: this.desiredVelocityX,
@@ -283,6 +267,15 @@ export class CrowdSimulation {
     );
     this.updateDynamicFlowFields();
     this.planDesiredVelocities(current);
+    this.crowdFlow.solve(current, this.desiredVelocityX, this.desiredVelocityY, {
+      targetDensity: this.effectivePressureThreshold(),
+      pressureIterations: this.config.crowdPressureIterations,
+      pressureRelaxationTime: this.config.crowdPressureRelaxationTime,
+      velocityBlend: this.config.crowdVelocityBlend,
+      maximumAcceleration: this.config.maxAcceleration,
+      maximumSpeed: this.config.maxSpeed,
+      fixedDelta: this.config.fixedDelta,
+    });
     const movement = this.movement.solve({
       current,
       next,
@@ -399,15 +392,12 @@ export class CrowdSimulation {
     }
     this.flowNavigators = navigators;
     this.crowdField.setObstacles(this.scenario.obstacles, clearance);
+    this.crowdFlow.setObstacles(this.scenario.obstacles, clearance);
   }
 
   private planDesiredVelocities(current: AgentBuffer): void {
     const slowSpan = Math.max(EPSILON, this.config.arrivalSlowRadius - this.config.goalRadius);
     const pressureThreshold = this.effectivePressureThreshold();
-    const steeringHorizon = Math.min(
-      0.25,
-      Math.max(this.config.fixedDelta, this.config.avoidanceHorizon * 0.5),
-    );
     for (let agent = 0; agent < current.count; agent += 1) {
       if (current.active[agent] !== 1) {
         this.desiredVelocityX[agent] = 0;
@@ -432,93 +422,12 @@ export class CrowdSimulation {
       );
       const positionX = current.x[agent]!;
       const positionY = current.y[agent]!;
-      const currentVelocityX = current.vx[agent]!;
-      const currentVelocityY = current.vy[agent]!;
       const density = this.crowdField.sampleDensity(positionX, positionY);
       this.density[agent] = density / pressureThreshold;
 
-      let desiredX = this.direction.x * speed;
-      let desiredY = this.direction.y * speed;
-
-      const probeWeight = clamp(density / pressureThreshold - 2, 0, 1);
-      this.crowdField.samplePressureGradient(positionX, positionY, this.pressureGradient);
-      if (probeWeight > 0) {
-        const probeDistance = this.config.crowdFieldCellSize * 0.35 * probeWeight;
-        this.crowdField.samplePressureGradient(
-          positionX + this.pressureProbeX[agent]! * probeDistance,
-          positionY + this.pressureProbeY[agent]! * probeDistance,
-          this.probePressureGradient,
-        );
-        this.pressureGradient.x += (
-          this.probePressureGradient.x - this.pressureGradient.x
-        ) * probeWeight;
-        this.pressureGradient.y += (
-          this.probePressureGradient.y - this.pressureGradient.y
-        ) * probeWeight;
-      }
-      const pressureLength = Math.hypot(this.pressureGradient.x, this.pressureGradient.y);
-      if (pressureLength > EPSILON) {
-        const pressureAcceleration = Math.min(
-          this.config.maximumPressureAcceleration,
-          pressureLength * this.config.pressureStrength,
-        );
-        const pressureX = -this.pressureGradient.x / pressureLength;
-        const pressureY = -this.pressureGradient.y / pressureLength;
-        if (this.isPressureDirectionSafe(positionX, positionY, pressureX, pressureY)) {
-          desiredX += pressureX * pressureAcceleration * steeringHorizon;
-          desiredY += pressureY * pressureAcceleration * steeringHorizon;
-        }
-      }
-
-      this.crowdField.sampleAverageVelocity(positionX, positionY, this.averageVelocity);
-      const coFlow = clamp((
-        this.averageVelocity.x * this.direction.x
-        + this.averageVelocity.y * this.direction.y
-      ) / Math.max(EPSILON, this.config.maxSpeed), 0, 1);
-      desiredX += (
-        this.averageVelocity.x - currentVelocityX
-      ) * this.config.viscosityStrength * coFlow * steeringHorizon;
-      desiredY += (
-        this.averageVelocity.y - currentVelocityY
-      ) * this.config.viscosityStrength * coFlow * steeringHorizon;
-      const minimumForward = speed * clamp(this.config.minimumForwardSpeedRatio, 0, 1);
-      const forward = desiredX * this.direction.x + desiredY * this.direction.y;
-      if (forward < minimumForward) {
-        desiredX += this.direction.x * (minimumForward - forward);
-        desiredY += this.direction.y * (minimumForward - forward);
-      }
-      const desiredSpeed = Math.hypot(desiredX, desiredY);
-      if (desiredSpeed > this.config.maxSpeed && desiredSpeed > EPSILON) {
-        const scale = this.config.maxSpeed / desiredSpeed;
-        desiredX *= scale;
-        desiredY *= scale;
-      }
-      this.desiredVelocityX[agent] = desiredX;
-      this.desiredVelocityY[agent] = desiredY;
+      this.desiredVelocityX[agent] = this.direction.x * speed;
+      this.desiredVelocityY[agent] = this.direction.y * speed;
     }
-  }
-
-  private isPressureDirectionSafe(
-    x: number,
-    y: number,
-    directionX: number,
-    directionY: number,
-  ): boolean {
-    const clearance = this.config.agentRadius + this.config.wallMargin;
-    const lookAhead = Math.max(this.config.agentRadius * 2, this.config.crowdFieldCellSize * 0.35);
-    const targetX = x + directionX * lookAhead;
-    const targetY = y + directionY * lookAhead;
-    if (
-      targetX < clearance
-      || targetY < clearance
-      || targetX > this.config.width - clearance
-      || targetY > this.config.height - clearance
-    ) return false;
-    const clearanceSquared = clearance * clearance;
-    for (const obstacle of this.scenario.obstacles) {
-      if (distanceSquaredToRect(targetX, targetY, obstacle) < clearanceSquared) return false;
-    }
-    return true;
   }
 
   private deactivateArrivals(state: AgentBuffer): void {
@@ -712,17 +621,15 @@ export const DEFAULT_CONFIG: SimulationConfig = {
   neighborRadius: 28,
   agentGap: 0.4,
   wallMargin: 0.35,
-  avoidanceHorizon: 0.5,
+  crowdPressureRelaxationTime: 0.25,
   goalRadius: 58,
   fixedDelta: 1 / 60,
   arrivalSlowRadius: 90,
   stallSeconds: 2.5,
-  pressureStrength: 1200,
+  crowdPressureIterations: 8,
   pressureThreshold: 8,
-  maximumPressureAcceleration: 100,
-  viscosityStrength: 1.5,
-  minimumForwardSpeedRatio: 0.15,
-  contactCompliance: 0.0002,
+  crowdVelocityBlend: 0.68,
+  contactCompliance: 0.00001,
   contactFriction: 0.08,
   maximumContactCorrection: 1.25,
   dynamicFlowRebuildInterval: 8,

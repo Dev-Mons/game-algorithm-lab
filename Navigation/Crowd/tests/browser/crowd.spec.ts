@@ -1,5 +1,34 @@
 import { expect, test } from '@playwright/test';
 
+for (const agents of [1000, 10000]) {
+  const scenario = 'open-field';
+  test(`grid transport visual replay: ${scenario}, ${agents} agents`, async ({page}, testInfo) => {
+    const large = agents === 10000;
+    await page.goto(`/?scenario=${scenario}&agents=${large ? 10000 : 1000}`
+      + `${large ? '&radius=1.5&gap=0.05' : ''}&seed=42&step=240&paused=true`);
+    await expect(page.locator('body')).toHaveAttribute('data-step','240');
+    if (large) await expect(page.locator('#agent-radius')).toHaveValue('1.5');
+    await page.locator('#crowd-canvas').screenshot({path:testInfo.outputPath(`${scenario}-240.png`)});
+    const samples = await page.evaluate(() => {
+      const s = window.crowdDebug.simulation();
+      const result = [];
+      for (let i=0;i<120;i++) {
+        s.step();
+        result.push({walls:s.metrics.wallOverlapCount, candidates:s.metrics.candidateChecks,
+          constraints:s.metrics.contactConstraints, count:s.state.count});
+      }
+      return result;
+    });
+    for (const sample of samples) {
+      expect(sample.walls).toBe(0);
+      expect(sample.candidates).toBeLessThanOrEqual(sample.count*24);
+      expect(sample.constraints).toBeLessThanOrEqual(sample.count*8);
+    }
+    await expect(page.locator('body')).toHaveAttribute('data-step','360');
+    await page.locator('#crowd-canvas').screenshot({path:testInfo.outputPath(`${scenario}-360.png`)});
+  });
+}
+
 test('page opens with the default 1000-agent scenario', async ({ page }) => {
   await page.goto('/?paused=true');
   await expect(page).toHaveTitle(/Crowd Navigation Lab/);
@@ -10,15 +39,16 @@ test('page opens with the default 1000-agent scenario', async ({ page }) => {
   await expect(page.locator('#debug-recovery')).toBeChecked();
 });
 
-test('multi-flow scenarios expose independent goals without a pipeline switch', async ({ page }) => {
-  await page.goto('/?paused=true&agents=120');
-  await page.locator('#scenario-select').selectOption('crossing-500-500');
+test('the flat and three concept scenarios are available; removed URLs fall back to flat', async ({ page }) => {
+  await page.goto('/?scenario=obstacle-field&paused=true&agents=120');
+  await expect(page.locator('#scenario-select option')).toHaveCount(4);
+  await expect(page.locator('#scenario-select')).toHaveValue('open-field');
   const result = await page.evaluate(() => ({
+    id: window.crowdDebug.simulation().scenario.id,
+    obstacles: window.crowdDebug.simulation().scenario.obstacles,
     flowCount: window.crowdDebug.simulation().flowCount,
-    goals: window.crowdDebug.simulation().goals.map((goal) => ({ ...goal })),
   }));
-  expect(result.flowCount).toBe(2);
-  expect(result.goals[0]).not.toEqual(result.goals[1]);
+  expect(result).toEqual({ id: 'open-field', obstacles: [], flowCount: 1 });
   await expect(page.locator('#pipeline-select')).toHaveCount(0);
 });
 
@@ -38,7 +68,7 @@ test('run, pause, single step, and reset controls work', async ({ page }) => {
 });
 
 test('a requested fixed step is deterministic and physically bounded', async ({ page }, testInfo) => {
-  await page.goto('/?scenario=obstacle-field&agents=1000&seed=42&step=600&paused=true');
+  await page.goto('/?scenario=open-field&agents=1000&seed=42&step=600&paused=true');
   await expect(page.locator('body')).toHaveAttribute('data-step', '600', { timeout: 30_000 });
   const first = await page.evaluate(() => window.crowdDebug.getSnapshot());
   expect(first.metrics.overlapPairs).toBeLessThanOrEqual(16);
@@ -48,7 +78,7 @@ test('a requested fixed step is deterministic and physically bounded', async ({ 
   await expect(page.locator('body')).toHaveAttribute('data-step', '600', { timeout: 30_000 });
   const second = await page.evaluate(() => window.crowdDebug.getSnapshot());
   expect(second.hash).toBe(first.hash);
-  await page.screenshot({ path: testInfo.outputPath('movement-v2-obstacle-field.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('movement-v2-open-field.png'), fullPage: true });
 });
 
 test('reversing the goal changes intent immediately and moves on the next step', async ({ page }) => {
@@ -120,3 +150,27 @@ test('a pathological 1000-agent overlap remains bounded and keeps moving', async
   expect(result.averageSpeed).toBeGreaterThan(1);
   await expect(page.locator('#crowd-canvas')).toBeVisible();
 });
+
+for (const [id, name, flows] of [
+  ['winding-corners', '연속 코너', 1],
+  ['funnel-bypass', '깔때기와 우회로', 1],
+  ['four-way-merge', '네 생성 지점 합류', 4],
+] as const) {
+  test(`concept scenario selection and replay: ${id}`, async ({ page }, testInfo) => {
+    await page.goto('/?paused=true');
+    await page.locator('#scenario-select').selectOption(id);
+    await expect(page.locator('#scenario-badge')).toHaveText(name);
+    const initial = await page.evaluate(() => ({
+      id: window.crowdDebug.simulation().scenario.id,
+      count: window.crowdDebug.simulation().state.count,
+      flows: window.crowdDebug.simulation().flowCount,
+    }));
+    expect(initial).toEqual({ id, count: 1000, flows });
+    await page.locator('#crowd-canvas').screenshot({ path: testInfo.outputPath(`${id}-initial.png`) });
+    await page.goto(`/?scenario=${id}&agents=1000&seed=42&step=600&paused=true`);
+    await expect(page.locator('body')).toHaveAttribute('data-step', '600');
+    const snapshot = await page.evaluate(() => window.crowdDebug.getSnapshot());
+    expect(snapshot.metrics.wallOverlapCount).toBe(0);
+    await page.locator('#crowd-canvas').screenshot({ path: testInfo.outputPath(`${id}-600.png`) });
+  });
+}

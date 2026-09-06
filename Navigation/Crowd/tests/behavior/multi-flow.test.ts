@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FlowBehaviorTracker, RouteUtilizationTracker } from '../../src/core/flow-behavior-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
-import { getScenario } from '../../src/scenarios/scenarios';
+import { getTestScenario } from '../fixtures/navigation-scenarios';
 
 describe('generic multi-flow scenarios', () => {
   it.each(['merge-500-500', 'crossing-500-500'])(
@@ -9,7 +9,7 @@ describe('generic multi-flow scenarios', () => {
     (scenarioId) => {
       const simulation = new CrowdSimulation(
         { ...DEFAULT_CONFIG, agentCount: 400, seed: 42 },
-        getScenario(scenarioId),
+        getTestScenario(scenarioId),
       );
       const tracker = new FlowBehaviorTracker(simulation, 180);
       for (let step = 0; step < 900; step += 1) {
@@ -28,8 +28,8 @@ describe('generic multi-flow scenarios', () => {
 
   it('replays independent flow goals with the same state hash', () => {
     const config = { ...DEFAULT_CONFIG, agentCount: 200, seed: 73 };
-    const first = new CrowdSimulation({ ...config }, getScenario('crossing-500-500'));
-    const second = new CrowdSimulation({ ...config }, getScenario('crossing-500-500'));
+    const first = new CrowdSimulation({ ...config }, getTestScenario('crossing-500-500'));
+    const second = new CrowdSimulation({ ...config }, getTestScenario('crossing-500-500'));
     for (let step = 0; step < 360; step += 1) {
       first.step();
       second.step();
@@ -38,7 +38,7 @@ describe('generic multi-flow scenarios', () => {
   });
 
   it('increases alternate-gate use after the initially favored equal gate becomes congested', () => {
-    const scenario = getScenario('equal-capacity-congested-gates');
+    const scenario = getTestScenario('equal-capacity-congested-gates');
     const dynamic = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },
       scenario,
@@ -79,7 +79,7 @@ describe('generic multi-flow scenarios', () => {
   ] as const)('uses both declared routes without wall penetration in %s', (scenarioId, fairness) => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 400, seed: 42 },
-      getScenario(scenarioId),
+      getTestScenario(scenarioId),
     );
     const routes = new RouteUtilizationTracker(simulation);
     for (let step = 0; step < 900; step += 1) {

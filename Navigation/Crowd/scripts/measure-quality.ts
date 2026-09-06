@@ -3,16 +3,17 @@ import { resolve } from 'node:path';
 import { CrowdQualityTracker, type CrowdQualitySnapshot } from '../src/core/crowd-quality-metrics';
 import { FlowBehaviorTracker } from '../src/core/flow-behavior-metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../src/core/simulation';
-import { getScenario } from '../src/scenarios/scenarios';
+import { getScenario, SCENARIOS } from '../src/scenarios/scenarios';
 
 const BOUNDARY_COUNTS = [4_990, 5_000, 5_010] as const;
-const SCENARIOS = ['open-field', 'dense-spawn', 'obstacle-field'] as const;
 const CONTINUITY_LIMIT = 0.15;
 const seed = Math.trunc(Number(argument('seed') ?? 42));
 const steps = Math.max(1, Math.trunc(Number(argument('steps') ?? 120)));
 const timingWarmupSteps = Math.min(10, Math.max(0, Math.floor(steps / 4)));
 const selectedScenario = argument('scenario');
-const scenarios = SCENARIOS.filter((scenario) => !selectedScenario || scenario === selectedScenario);
+const scenarios = SCENARIOS
+  .filter((scenario) => !selectedScenario || scenario.id === selectedScenario)
+  .map((scenario) => scenario.id);
 const records: QualityRecord[] = [];
 
 for (const scenarioId of scenarios) {
@@ -93,17 +94,18 @@ for (const scenarioId of scenarios) {
 const violations = continuityViolations(records);
 const completeOverlap = measureCompleteOverlap(seed);
 const lowDensity = measureLowDensity(seed);
-const flowBehavior = ['opposing-500-500', 'crossing-500-500'].map((scenarioId) => {
+const flowBehavior = SCENARIOS.filter((scenario) => (scenario.flows?.length ?? 0) >= 2
+  && (!selectedScenario || scenario.id === selectedScenario)).map((scenario) => {
   const simulation = new CrowdSimulation(
     { ...DEFAULT_CONFIG, agentCount: 600, seed },
-    getScenario(scenarioId),
+    scenario,
   );
   const tracker = new FlowBehaviorTracker(simulation, 180);
   for (let step = 0; step < 600; step += 1) {
     simulation.step();
     tracker.update();
   }
-  return { scenario: scenarioId, ...tracker.snapshot() };
+  return { scenario: scenario.id, ...tracker.snapshot() };
 });
 
 const result = roundObject({
@@ -239,8 +241,8 @@ function measureLowDensity(seedValue: number): {
   const baseline = new CrowdSimulation(
     {
       ...config,
-      pressureStrength: 0,
-      viscosityStrength: 0,
+      crowdPressureIterations: 0,
+      crowdVelocityBlend: 0,
       dynamicFlowDensityWeight: 0,
       dynamicFlowOverloadWeight: 0,
       dynamicFlowCounterFlowWeight: 0,
