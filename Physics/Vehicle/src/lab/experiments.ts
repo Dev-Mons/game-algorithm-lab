@@ -1,9 +1,10 @@
 import { presetConfig, type VehicleConfig } from '../physics/config';
 import { Terrain, type CourseId } from '../physics/terrain';
 import { Vehicle, FIXED_DT, neutralInput, type DriverInput } from '../physics/vehicle';
+import { MANUAL_CONTROLS } from './keyboard-input';
 export type ExperimentId = 'manual' | 'acceleration' | 'braking' | 'circle' | 'slalom' | 'drop' | 'jump' | 'bumps';
 export const experiments: Record<ExperimentId, { name: string; duration: number; course: CourseId; description: string }> = {
-  manual: { name: '직접 운전', duration: 0, course: 'playground', description: 'W / S 가속·후진 · A / D 조향 · Space 제동 · Shift 핸드브레이크' },
+  manual: { name: '직접 운전', duration: 0, course: 'playground', description: MANUAL_CONTROLS },
   acceleration: { name: '직진 가속', duration: 15, course: 'flat', description: '15초 동안 전속 가속. 출력 곡선과 최고속도를 확인합니다.' },
   braking: { name: '제동 거리', duration: 12, course: 'flat', description: '정지 상태에서 6초 가속 후 제동합니다.' },
   circle: { name: '원선회', duration: 16, course: 'flat', description: '일정한 가속과 조향으로 선회 궤적을 비교합니다.' },

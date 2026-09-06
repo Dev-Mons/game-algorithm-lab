@@ -5,6 +5,7 @@ import { FIXED_DT, type DriverInput } from './physics/vehicle';
 import { Vec3 } from './physics/math';
 import { createExperiment, csv, experimentInput, experiments, telemetry, type ExperimentId, type Telemetry } from './lab/experiments';
 import { FixedClock } from './lab/clock';
+import { keyboardDriverInput, MANUAL_CONTROLS } from './lab/keyboard-input';
 import { VehicleView } from './view/scene';
 import { drawCurve, drawTelemetry, type Metric } from './view/charts';
 import { FrictionEditor, RollEditor } from './view/speed-curve-editor';
@@ -31,7 +32,7 @@ $('#app').innerHTML = `
 <div class="stage"><div id="scene"></div><div class="stage-top"><span class="stage-tag" id="mode-label">직접 운전</span><span class="surface-label" id="course-label">자유 시험장</span><button id="camera-reset" title="카메라 위치 초기화" aria-label="카메라 위치 초기화">↗</button></div>
 <div class="stage-help">드래그로 회전 <span>·</span> 스크롤로 확대</div>
 <div class="speedometer"><div><span id="speed">0</span><small>km/h</small></div><div class="speedometer-bottom"><b id="gear">N</b><span id="contact-status">접지 확인 중</span></div></div>
-<div class="input-overlay"><span id="key-left">A</span><span id="key-up">W</span><span id="key-down">S</span><span id="key-right">D</span><span id="key-brake">BRAKE</span></div>
+<div class="input-overlay"><span id="key-left">A</span><span id="key-up">W</span><span id="key-down">S</span><span id="key-right">D</span><span id="key-brake">HANDBRAKE</span></div>
 <div class="stage-bottom"><label><input type="checkbox" id="forces" checked> 힘 벡터</label><label><input type="checkbox" id="trail" checked> 주행 궤적</label><div class="legend"><span class="green">서스펜션</span><span class="red">접지</span><span class="blue">구동 / 제동</span></div><select id="camera" aria-label="카메라"><option value="orbit">오비트 뷰</option><option value="chase">추적 뷰</option><option value="top">탑 뷰</option></select></div>
 </div>
 <div class="transport"><div class="transport-actions"><button id="pause" class="primary">Ⅱ 일시정지</button><button id="step" title="1/120초 진행">한 스텝</button><button id="reset">↺ 초기화</button><button id="replay" disabled>입력 재생</button></div><div class="time"><span id="time">00:00.00</span><small id="step-count">0 steps</small></div><select id="timescale" aria-label="재생 속도"><option value="1">1× 실시간</option><option value="0.25">0.25× 느리게</option><option value="0.1">0.1× 느리게</option></select></div>
@@ -107,14 +108,11 @@ function reset(id: ExperimentId = experiment, nextCourse: CourseId = course) {
   if (view) view.setTerrain(car.terrain);
   $<HTMLSelectElement>('#course').value = course; $<HTMLSelectElement>('#experiment').value = id;
   $('#course-label').textContent = courses[course].name; $('#mode-label').textContent = experiments[id].name;
-  $('#experiment-hint').textContent = experiments[id].description; $('#result').textContent = id === 'manual' ? 'W / S 가속·후진 · A / D 조향 · Space 제동 · Shift 핸드브레이크' : experiments[id].description;
+  $('#experiment-hint').textContent = experiments[id].description; $('#result').textContent = id === 'manual' ? MANUAL_CONTROLS : experiments[id].description;
   updateUI();
 }
 function keyboardInput(): DriverInput {
-  const held = (...names: string[]) => names.some(name => keys.has(name));
-  return { throttle: Number(held('KeyW', 'ArrowUp')) - Number(held('KeyS', 'ArrowDown')),
-    steer: Number(held('KeyD', 'ArrowRight')) - Number(held('KeyA', 'ArrowLeft')),
-    brake: Number(held('Space')), handbrake: held('ShiftLeft', 'ShiftRight') };
+  return keyboardDriverInput(keys, car.forwardSpeed);
 }
 function tick() {
   if (replayInputs && replayIndex >= replayInputs.length) { paused = true; updatePause(); return; }
@@ -153,19 +151,20 @@ function updateUI() {
     $(`#load-${w.name}`).textContent = w.grounded ? w.load.toFixed(0) : 'AIR';
     $(`#bar-${w.name}`).style.width = `${Math.min(100, w.load / (config.mass * 9.81 / 2) * 100)}%`;
   }
-  for (const [key, on] of [['left', car.input.steer < 0], ['right', car.input.steer > 0], ['up', car.input.throttle > 0], ['down', car.input.throttle < 0], ['brake', car.input.brake > 0 || car.input.handbrake]] as const) $(`#key-${key}`).classList.toggle('pressed', on);
+  for (const [key, on] of [['left', car.input.steer < 0], ['right', car.input.steer > 0], ['up', car.input.throttle > 0], ['down', car.input.throttle < 0 || car.input.brake > 0], ['brake', car.input.handbrake]] as const) $(`#key-${key}`).classList.toggle('pressed', on);
   $<HTMLButtonElement>('#replay').disabled = !recording.length;
   drawTelemetry($('#telemetry-chart'), rows, baseline, metric);
 }
 function download(name: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type })), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-$('#pause').addEventListener('click', () => { paused = !paused; clock.reset(); updatePause(); });
+$('#pause').addEventListener('click', () => { paused = !paused; clock.reset(); updatePause(); if (!paused) view?.renderer.domElement.focus(); });
 $('#step').addEventListener('click', () => { paused = true; clock.reset(); tick(); updatePause(); updateUI(); });
 $('#reset').addEventListener('click', () => reset());
 $('#run').addEventListener('click', () => {
   const id = $<HTMLSelectElement>('#experiment').value as ExperimentId;
   reset(id, id === 'manual' ? course : experiments[id].course); paused = false; updatePause();
+  view?.renderer.domElement.focus();
 });
 $('#experiment').addEventListener('change', () => { $('#experiment-hint').textContent = experiments[$<HTMLSelectElement>('#experiment').value as ExperimentId].description; });
 $('#course').addEventListener('change', () => reset('manual', $<HTMLSelectElement>('#course').value as CourseId));
@@ -205,7 +204,7 @@ const drivingKeys = new Set(['KeyW', 'KeyS', 'KeyA', 'KeyD', 'ArrowUp', 'ArrowDo
 window.addEventListener('keydown', event => {
   const target = event.target as HTMLElement;
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName) || target.closest('[role="slider"]') || target.isContentEditable || (target.tagName === 'BUTTON' && event.code === 'Space')) return;
-  if (drivingKeys.has(event.code)) { event.preventDefault(); keys.add(event.code); }
+  if (drivingKeys.has(event.code)) { event.preventDefault(); keys.add(event.code); if (target.tagName === 'BUTTON') view?.renderer.domElement.focus(); }
   if (event.code === 'KeyR' && !event.repeat) reset();
   if (event.code === 'KeyP' && !event.repeat) { paused = !paused; clock.reset(); updatePause(); }
 });
@@ -213,7 +212,7 @@ window.addEventListener('keyup', event => keys.delete(event.code));
 window.addEventListener('blur', () => keys.clear());
 document.addEventListener('visibilitychange', () => { keys.clear(); clock.reset(); lastFrame = performance.now(); });
 // Test bridge is read-only: browser tests exercise actual UI/keyboard commands.
-Object.defineProperty(window, '__vehicleLab', { value: { snapshot: () => car.snapshot(), get wheelPoses() { return view?.inspectWheels(); }, get paused() { return paused; }, get config() { return { ...car.config }; }, get rows() { return rows.map(r => ({ ...r })); }, get replaying() { return replayInputs !== null; } } });
+Object.defineProperty(window, '__vehicleLab', { value: { snapshot: () => car.snapshot(), get input() { return { ...car.input }; }, get wheelPoses() { return view?.inspectWheels(); }, get paused() { return paused; }, get config() { return { ...car.config }; }, get rows() { return rows.map(r => ({ ...r })); }, get replaying() { return replayInputs !== null; } } });
 syncSettings(); syncPresetIdentity(); reset('manual', course); updatePause();
 function frame(now: number) {
   const dt = Math.max(0, (now - lastFrame) / 1000); lastFrame = now;

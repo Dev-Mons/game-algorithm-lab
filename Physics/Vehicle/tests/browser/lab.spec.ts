@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-interface Snapshot { step: number; speed: number; position: { x: number; y: number; z: number }; grounded: number; orientation: object; velocity: object; momentum: object }
+interface Snapshot { step: number; speed: number; forwardSpeed: number; position: { x: number; y: number; z: number }; grounded: number; orientation: object; velocity: object; momentum: object }
 const snapshot = (page: Page) => page.evaluate(() => (window as unknown as { __vehicleLab: { snapshot(): Snapshot } }).__vehicleLab.snapshot());
 test('A and D steer the rendered front wheels left and right from behind the car', async ({ page }) => {
   for (const [key, side] of [['a', -1], ['d', 1]] as const) {
@@ -27,13 +27,20 @@ test('renders the 3D lab and offers precise pause, step, and reset', async ({ pa
   await page.screenshot({ path: 'artifacts/vehicle-desktop.png', fullPage: true });
   expect(errors).toEqual([]);
 });
-test('drives from keyboard and brakes before precise stepping', async ({ page }) => {
+test('S brakes then reverses and Space applies the side brake', async ({ page }) => {
   await page.goto('/?paused=true&course=flat');
   await page.getByRole('button', { name: '▶ 계속하기', exact: true }).click();
-  await page.locator('#scene canvas').focus(); await page.keyboard.down('w');
-  await expect.poll(async () => (await snapshot(page)).speed).toBeGreaterThan(2);
-  await page.keyboard.up('w'); await page.keyboard.down('Space');
-  await expect.poll(async () => (await snapshot(page)).speed).toBeLessThan(0.2);
+  await expect(page.locator('#scene canvas')).toBeFocused(); await page.keyboard.down('w');
+  await expect.poll(async () => (await snapshot(page)).speed).toBeGreaterThan(5);
+  await page.keyboard.up('w'); await page.keyboard.down('s');
+  const input = () => page.evaluate(() => (window as unknown as { __vehicleLab: { input: { brake: number; handbrake: boolean; throttle: number } } }).__vehicleLab.input);
+  await expect.poll(async () => (await input()).brake).toBe(1);
+  expect((await input()).throttle).toBe(0);
+  await expect.poll(async () => (await snapshot(page)).forwardSpeed).toBeLessThan(-1);
+  await page.keyboard.up('s'); await page.keyboard.down('Space');
+  await expect.poll(async () => (await input()).handbrake).toBe(true);
+  expect((await input()).brake).toBe(0);
+  await expect(page.locator('#key-brake')).toHaveClass('pressed');
   await page.keyboard.up('Space');
   await page.getByRole('button', { name: 'Ⅱ 일시정지', exact: true }).click();
   const paused = await snapshot(page);
