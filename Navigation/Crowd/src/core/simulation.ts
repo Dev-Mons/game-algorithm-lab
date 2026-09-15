@@ -1,4 +1,5 @@
 import { AgentBuffer } from './agent-state';
+import { largeAgentPercent, largeAgentScale } from './agent-size';
 import { CrowdField } from './crowd-field';
 import { CrowdFlowSolver } from './crowd-flow-solver';
 import { clamp, distanceSquared } from './math';
@@ -65,6 +66,10 @@ export class CrowdSimulation {
   scenario: ScenarioDefinition;
   goal: Vec2;
   readonly agentFlow: Uint16Array;
+  readonly agentRadii: Float64Array;
+  readonly agentAreaWeights: Float64Array;
+  largeAgentCount = 0;
+  maxAgentRadius = 0;
   stepCount = 0;
   metrics: StepMetrics = { ...ZERO_METRICS };
   overlapFlags: Uint8Array;
@@ -73,6 +78,7 @@ export class CrowdSimulation {
 
   private flowDefinitions: readonly ScenarioFlowDefinition[] = [];
   private flowNavigators: FlowField[] = [];
+  private largeFlowNavigators: FlowField[] = [];
   private flowGoals: Vec2[] = [];
   private flowIds: string[] = [];
   private readonly desiredVelocityX: Float64Array;
@@ -126,6 +132,8 @@ export class CrowdSimulation {
     // instrumentation. Movement uses this grid only for circle contacts.
     this.neighbors = this.contactGrid;
     this.agentFlow = new Uint16Array(config.agentCount);
+    this.agentRadii = new Float64Array(config.agentCount);
+    this.agentAreaWeights = new Float64Array(config.agentCount);
     this.desiredVelocityX = new Float64Array(config.agentCount);
     this.desiredVelocityY = new Float64Array(config.agentCount);
     this.solvedVelocityX = new Float64Array(config.agentCount);
@@ -148,11 +156,17 @@ export class CrowdSimulation {
     if (this.config.agentCount > this.agentFlow.length) {
       throw new RangeError('Increasing agentCount requires constructing a new CrowdSimulation.');
     }
+    this.config.largeAgentPercent = largeAgentPercent(this.config.largeAgentPercent);
+    this.config.largeAgentScale = largeAgentScale(this.config.largeAgentScale);
+    this.maxAgentRadius = Math.round(this.config.agentCount * this.config.largeAgentPercent / 100) > 0
+      ? this.config.agentRadius * this.config.largeAgentScale : this.config.agentRadius;
     this.configureFlows();
     const positions = createSpawnLayout({
       count: this.config.agentCount,
       seed: this.config.seed,
       agentRadius: this.config.agentRadius,
+      largeAgentPercent: this.config.largeAgentPercent,
+      largeAgentScale: this.config.largeAgentScale,
       agentGap: this.config.agentGap,
       wallMargin: this.config.wallMargin,
       worldWidth: this.config.width,
@@ -166,9 +180,15 @@ export class CrowdSimulation {
     this.nextState = new AgentBuffer(positions.length);
     this.overlapFlags = new Uint8Array(positions.length);
     this.agentFlow.fill(0);
+    this.agentRadii.fill(this.config.agentRadius);
+    this.agentAreaWeights.fill(1);
+    this.largeAgentCount = 0;
     for (let agent = 0; agent < positions.length; agent += 1) {
       const position = positions[agent]!;
       this.agentFlow[agent] = position.flow;
+      this.agentRadii[agent] = position.radius;
+      this.agentAreaWeights[agent] = (position.radius / this.config.agentRadius) ** 2;
+      if (position.radius > this.config.agentRadius) this.largeAgentCount += 1;
       this.state.x[agent] = position.x;
       this.state.y[agent] = position.y;
       this.state.active[agent] = 1;
@@ -185,6 +205,7 @@ export class CrowdSimulation {
       this.state,
       this.effectivePressureThreshold(),
       0,
+      this.agentAreaWeights,
     );
     this.stepCount = 0;
     this.rebuildDynamicFlowFields();
@@ -221,6 +242,9 @@ export class CrowdSimulation {
         this.scenario.obstacles,
         clearance,
       );
+      this.largeFlowNavigators[flow]?.rebuild(
+        this.flowGoals[flow]!, this.scenario.obstacles, this.maxAgentRadius + this.config.wallMargin,
+      );
     }
     for (let agent = 0; agent < this.state.count; agent += 1) {
       this.state.active[agent] = 1;
@@ -242,6 +266,7 @@ export class CrowdSimulation {
       this.state,
       this.effectivePressureThreshold(),
       0,
+      this.agentAreaWeights,
     );
     this.rebuildDynamicFlowFields();
     this.lastDynamicRebuildStep = this.stepCount;
@@ -264,6 +289,7 @@ export class CrowdSimulation {
       current,
       this.effectivePressureThreshold(),
       this.config.fixedDelta,
+      this.agentAreaWeights,
     );
     this.updateDynamicFlowFields();
     this.planDesiredVelocities(current);
@@ -275,6 +301,7 @@ export class CrowdSimulation {
       maximumAcceleration: this.config.maxAcceleration,
       maximumSpeed: this.config.maxSpeed,
       fixedDelta: this.config.fixedDelta,
+      areaWeights: this.agentAreaWeights,
     });
     const movement = this.movement.solve({
       current,
@@ -287,6 +314,8 @@ export class CrowdSimulation {
       recovery: this.recovery,
       overlapFlags: this.overlapFlags,
       agentRadius: this.config.agentRadius,
+      agentRadii: this.agentRadii,
+      maxAgentRadius: this.maxAgentRadius,
       agentGap: this.config.agentGap,
       maxSpeed: this.config.maxSpeed,
       maxAcceleration: this.config.maxAcceleration,
@@ -334,15 +363,12 @@ export class CrowdSimulation {
 
   sampleNavigationDirection(agent: number, x: number, y: number, out: Vec2): boolean {
     const flow = this.agentFlow[agent] ?? 0;
-    const navigator = this.flowNavigators[flow] ?? this.navigator;
-    if (navigator.sampleDirection(x, y, out)) return true;
-    const goal = this.flowGoals[flow] ?? this.goal;
-    const dx = goal.x - x;
-    const dy = goal.y - y;
-    const length = Math.hypot(dx, dy);
-    out.x = length > EPSILON ? dx / length : 0;
-    out.y = length > EPSILON ? dy / length : 0;
-    return length > EPSILON;
+    // Body size changes clearance data, never the shared direction policy.
+    const navigator = (this.agentRadii[agent]! > this.config.agentRadius
+      ? this.largeFlowNavigators[flow] : this.flowNavigators[flow]) ?? this.navigator;
+    // FlowField alone decides whether a direct-goal contribution is safe.
+    // A failed sample must never turn into an unchecked direction through a wall.
+    return navigator.sampleDirection(x, y, out);
   }
 
   stateHash(): string {
@@ -366,6 +392,7 @@ export class CrowdSimulation {
       mix(Math.round(this.state.intentX[agent]! * 1_000_000));
       mix(Math.round(this.state.intentY[agent]! * 1_000_000));
       mix(this.agentFlow[agent]!);
+      mix(Math.round(this.agentRadii[agent]! * 1000));
     }
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
@@ -391,6 +418,12 @@ export class CrowdSimulation {
       navigators[flow] = navigator;
     }
     this.flowNavigators = navigators;
+    this.largeFlowNavigators = this.maxAgentRadius > this.config.agentRadius
+      ? this.flowGoals.map((goal) => {
+          const navigator = new FlowField(this.config.width, this.config.height, this.config.navCellSize);
+          navigator.rebuild(goal, this.scenario.obstacles, this.maxAgentRadius + this.config.wallMargin);
+          return navigator;
+        }) : [];
     this.crowdField.setObstacles(this.scenario.obstacles, clearance);
     this.crowdFlow.setObstacles(this.scenario.obstacles, clearance);
   }
@@ -471,10 +504,10 @@ export class CrowdSimulation {
     let maximumVelocityDelta = 0;
     let accelerationSum = 0;
     let maximumAcceleration = 0;
-    const wallClearance = this.config.agentRadius + this.config.wallMargin;
-    const wallClearanceSquared = wallClearance * wallClearance;
     for (let agent = 0; agent < next.count; agent += 1) {
       if (next.active[agent] !== 1) continue;
+      const wallClearance = this.agentRadii[agent]! + this.config.wallMargin;
+      const wallClearanceSquared = wallClearance * wallClearance;
       activeCount += 1;
       const speed = Math.hypot(next.vx[agent]!, next.vy[agent]!);
       speedSum += speed;
@@ -551,7 +584,7 @@ export class CrowdSimulation {
     const startedAt = performance.now();
     this.rebuildDynamicFlowFields();
     this.dynamicRebuildMsThisStep = performance.now() - startedAt;
-    this.dynamicRebuildCountThisStep = this.flowNavigators.length;
+    this.dynamicRebuildCountThisStep = this.flowNavigators.length + this.largeFlowNavigators.length;
     this.lastDynamicRebuildStep = this.stepCount;
   }
 
@@ -570,6 +603,9 @@ export class CrowdSimulation {
     options.directGoalCounterFlow = this.config.directGoalCounterFlow;
     options.directGoalMinimumClearance = this.config.directGoalMinimumClearance;
     for (const navigator of this.flowNavigators) {
+      navigator.rebuildDynamic(this.crowdField, options);
+    }
+    for (const navigator of this.largeFlowNavigators) {
       navigator.rebuildDynamic(this.crowdField, options);
     }
   }
@@ -618,6 +654,8 @@ export const DEFAULT_CONFIG: SimulationConfig = {
   maxSpeed: 86,
   maxAcceleration: 210,
   agentRadius: 3.2,
+  largeAgentPercent: 0,
+  largeAgentScale: 2,
   neighborRadius: 28,
   agentGap: 0.4,
   wallMargin: 0.35,

@@ -99,7 +99,7 @@ export class CrowdQualityTracker {
     const previous = simulation.previousState;
     const field = simulation.crowdField;
     const inverseDelta = 1 / Math.max(EPSILON, simulation.config.fixedDelta);
-    const diameter = simulation.config.agentRadius * 2;
+    const diameter = simulation.maxAgentRadius * 2;
     this.densityHistogram.fill(0);
     this.penetrationHistogram.fill(0);
     this.densitySamples = 0;
@@ -221,7 +221,7 @@ export class CrowdQualityTracker {
       const candidateCount = simulation.neighbors.queryCandidates(
         state.x[agent]!,
         state.y[agent]!,
-        diameter + 0.001,
+        simulation.agentRadii[agent]! + simulation.maxAgentRadius + 0.001,
         this.candidates,
         PENETRATION_QUERY_LIMIT,
       );
@@ -230,7 +230,7 @@ export class CrowdQualityTracker {
         if (other <= agent || state.active[other] !== 1) continue;
         const dx = state.x[other]! - state.x[agent]!;
         const dy = state.y[other]! - state.y[agent]!;
-        const penetration = diameter - Math.hypot(dx, dy);
+        const penetration = simulation.agentRadii[agent]! + simulation.agentRadii[other]! - Math.hypot(dx, dy);
         if (penetration <= 0) continue;
         this.maximumPenetration = Math.max(this.maximumPenetration, penetration);
         this.addLinearSample(this.penetrationHistogram, penetration, diameter);
@@ -248,7 +248,7 @@ export class CrowdQualityTracker {
       penetrationP95: this.linearPercentile(
         this.penetrationHistogram,
         this.penetrationSamples,
-        this.simulation.config.agentRadius * 2,
+        this.simulation.maxAgentRadius * 2,
       ),
       occupiedArea: field.occupiedCellCount * field.cellSize * field.cellSize,
       occupiedCellCount: field.occupiedCellCount,

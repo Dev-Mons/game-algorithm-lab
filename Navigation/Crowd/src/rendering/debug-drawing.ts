@@ -211,10 +211,10 @@ function drawDensity(
   alpha: number,
 ): void {
   const density = simulation.debugLayers.density;
-  const radius = simulation.config.agentRadius * 2.4;
   context.save();
   for (let agent = 0; agent < simulation.state.count; agent += 1) {
     if (simulation.state.active[agent] !== 1 || density[agent]! <= 0.02) continue;
+    const radius = simulation.agentRadii[agent]! * 2.4;
     const normalized = Math.min(1, Math.max(0, density[agent]!));
     context.fillStyle = `rgba(251, ${Math.round(191 - normalized * 120)}, 36, ${0.05 + normalized * 0.2})`;
     context.beginPath();
@@ -239,7 +239,7 @@ function drawRecovery(
     context.arc(
       renderX(simulation, agent, alpha),
       renderY(simulation, agent, alpha),
-      simulation.config.agentRadius + 4,
+      simulation.agentRadii[agent]! + 4,
       0,
       Math.PI * 2,
     );
@@ -253,15 +253,14 @@ function drawWarnings(
   simulation: CrowdSimulation,
   options: DebugOptions,
 ): void {
-  const radius = simulation.config.agentRadius + 2.2;
   context.save();
   if (simulation.state.count >= FAST_WARNING_THRESHOLD) {
     // Thousands of individual arc+stroke calls can cost more than the entire
     // scalable movement step. A representative point sample keeps the warning
     // layer useful without making intentional overlap a rendering bottleneck.
     const stride = Math.max(1, Math.ceil(simulation.state.count / MAX_WARNING_MARKERS));
-    const size = Math.max(2, simulation.config.agentRadius * 2);
     for (let agent = 0; agent < simulation.state.count; agent += stride) {
+      const size = Math.max(2, simulation.agentRadii[agent]! * 2);
       const overlapping = options.overlaps && simulation.overlapFlags[agent] === 1;
       const stalled = options.stalled
         && simulation.state.active[agent] === 1
@@ -287,7 +286,7 @@ function drawWarnings(
     if (!overlapping && !stalled) continue;
     context.strokeStyle = overlapping ? '#fb7185' : '#fbbf24';
     context.beginPath();
-    context.arc(simulation.state.x[agent]!, simulation.state.y[agent]!, radius, 0, Math.PI * 2);
+    context.arc(simulation.state.x[agent]!, simulation.state.y[agent]!, simulation.agentRadii[agent]! + 2.2, 0, Math.PI * 2);
     context.stroke();
   }
   context.restore();

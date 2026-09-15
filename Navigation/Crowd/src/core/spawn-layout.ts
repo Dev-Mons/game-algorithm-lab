@@ -1,15 +1,19 @@
 import { distanceSquaredToRect } from './obstacle-collision';
 import { SeededRandom } from './random';
+import { largeAgentPercent, largeAgentScale } from './agent-size';
 import type { Rect, ScenarioFlowDefinition, Vec2 } from './types';
 
 export interface SpawnPoint extends Vec2 {
   flow: number;
+  radius: number;
 }
 
 export interface SpawnLayoutInput {
   count: number;
   seed: number;
   agentRadius: number;
+  largeAgentPercent?: number;
+  largeAgentScale?: number;
   agentGap: number;
   wallMargin: number;
   worldWidth: number;
@@ -18,25 +22,60 @@ export interface SpawnLayoutInput {
   flows: readonly ScenarioFlowDefinition[];
 }
 
-/** Deterministic non-overlapping hex layout. No retry loop or movement policy. */
+/** Deterministic non-overlapping placement; retries occur only at creation. */
 export function createSpawnLayout(input: SpawnLayoutInput): SpawnPoint[] {
+  const scale = largeAgentScale(input.largeAgentScale);
+  const fraction = scale > 1 ? largeAgentPercent(input.largeAgentPercent) / 100 : 0;
+  const initial = placePopulation(input, scale, fraction);
+  if (fraction === 0 || initial.length === input.count) return initial;
+  // Find a population that fits with the requested ratio intact. This bounded
+  // search avoids silently replacing unplaceable large bodies with small ones.
+  let lower = 0;
+  let upper = input.count - 1;
+  let best: SpawnPoint[] = [];
+  while (lower <= upper) {
+    const count = Math.floor((lower + upper) / 2);
+    const points = placePopulation({ ...input, count }, scale, fraction);
+    if (points.length === count) {
+      best = points;
+      lower = count + 1;
+    } else upper = count - 1;
+  }
+  return best;
+}
+
+function placePopulation(input: SpawnLayoutInput, scale: number, fraction: number): SpawnPoint[] {
   const random = new SeededRandom(input.seed);
   const spacing = input.agentRadius * 2 + Math.max(0.05, input.agentGap);
-  const minimumDistance = input.agentRadius * 2 + 0.001;
-  const index = new PlacementIndex(minimumDistance);
+  const largeRadius = input.agentRadius * scale;
+  const index = new PlacementIndex((fraction > 0 ? largeRadius : input.agentRadius) * 2 + 0.001);
   const result: SpawnPoint[] = [];
   const counts = allocateCounts(input.count, input.flows);
 
+  let assigned = 0;
   for (let flow = 0; flow < input.flows.length; flow += 1) {
-    const candidates = hexCandidates(input.flows[flow]!.spawn, input.agentRadius, spacing);
+    const spawn = input.flows[flow]!.spawn;
+    const candidates = hexCandidates(spawn, input.agentRadius, spacing);
     shuffle(candidates, random);
+    const largeCount = Math.round((assigned + counts[flow]!) * fraction)
+      - Math.round(assigned * fraction);
+    assigned += counts[flow]!;
     let placed = 0;
-    for (const candidate of candidates) {
-      if (placed >= counts[flow]!) break;
-      if (!isValid(candidate, input) || !index.canAdd(candidate)) continue;
-      result.push({ ...candidate, flow });
-      index.add(candidate);
-      placed += 1;
+    // Reserve the larger footprints first, scattered by the seeded shuffle.
+    // Smaller circles fill the remaining space without enlarging every slot.
+    for (const radius of largeCount > 0 ? [largeRadius, input.agentRadius] : [input.agentRadius]) {
+      const target = radius === largeRadius && largeCount > 0
+        ? largeCount : placed + counts[flow]! - largeCount;
+      for (const candidate of candidates) {
+        if (placed >= target) break;
+        const point = { ...candidate, flow, radius };
+        if (point.x < spawn.x + radius || point.x > spawn.x + spawn.width - radius + 1e-9
+          || point.y < spawn.y + radius || point.y > spawn.y + spawn.height - radius + 1e-9) continue;
+        if (!isValid(point, input) || !index.canAdd(point)) continue;
+        result.push(point);
+        index.add(point);
+        placed += 1;
+      }
     }
   }
   return result;
@@ -74,8 +113,8 @@ function hexCandidates(rect: Rect, radius: number, spacing: number): Vec2[] {
   return points;
 }
 
-function isValid(point: Vec2, input: SpawnLayoutInput): boolean {
-  const clearance = input.agentRadius + input.wallMargin;
+function isValid(point: SpawnPoint, input: SpawnLayoutInput): boolean {
+  const clearance = point.radius + input.wallMargin;
   if (
     point.x < clearance
     || point.y < clearance
@@ -96,19 +135,19 @@ function shuffle<T>(values: T[], random: SeededRandom): void {
 }
 
 class PlacementIndex {
-  private readonly buckets = new Map<number, Vec2[]>();
+  private readonly buckets = new Map<number, SpawnPoint[]>();
 
   constructor(private readonly minimumDistance: number) {}
 
-  canAdd(point: Vec2): boolean {
+  canAdd(point: SpawnPoint): boolean {
     const column = Math.floor(point.x / this.minimumDistance);
     const row = Math.floor(point.y / this.minimumDistance);
-    const minimumSquared = this.minimumDistance * this.minimumDistance;
     for (let y = row - 1; y <= row + 1; y += 1) {
       for (let x = column - 1; x <= column + 1; x += 1) {
         const bucket = this.buckets.get(this.key(x, y));
         if (!bucket) continue;
         for (const other of bucket) {
+          const minimumSquared = (point.radius + other.radius + 0.001) ** 2;
           const dx = point.x - other.x;
           const dy = point.y - other.y;
           if (dx * dx + dy * dy < minimumSquared - 1e-9) return false;
@@ -118,7 +157,7 @@ class PlacementIndex {
     return true;
   }
 
-  add(point: Vec2): void {
+  add(point: SpawnPoint): void {
     const key = this.key(
       Math.floor(point.x / this.minimumDistance),
       Math.floor(point.y / this.minimumDistance),

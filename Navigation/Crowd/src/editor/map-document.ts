@@ -96,6 +96,7 @@ export function validateMap(map: MapDocument, config: SimulationConfig): string 
   if (navigation.blocked[goalCell]) throw new Error('목적지 주변의 공간이 너무 좁습니다. 넓은 곳으로 옮겨주세요.');
   const points = createSpawnLayout({
     count: config.agentCount, seed: config.seed, agentRadius: config.agentRadius, agentGap: config.agentGap,
+    largeAgentPercent: config.largeAgentPercent, largeAgentScale: config.largeAgentScale,
     wallMargin: config.wallMargin, worldWidth: config.width, worldHeight: config.height,
     obstacles: valid.obstacles, flows: scenario.flows!,
   });
@@ -104,9 +105,16 @@ export function validateMap(map: MapDocument, config: SimulationConfig): string 
   if (represented.size < Math.min(config.agentCount, valid.spawns.length)) {
     throw new Error('일부 생성 영역에 유닛이 들어갈 공간이 없습니다. 영역을 넓혀주세요.');
   }
+  const sizeNavigation = new Map<number, FlowField>([[config.agentRadius, navigation]]);
   for (const point of points) {
-    const cell = Math.floor(point.y / config.navCellSize) * navigation.columns + Math.floor(point.x / config.navCellSize);
-    if (!Number.isFinite(navigation.staticPotential[cell])) {
+    let navigator = sizeNavigation.get(point.radius);
+    if (!navigator) {
+      navigator = new FlowField(config.width, config.height, config.navCellSize);
+      navigator.rebuild(valid.goal, valid.obstacles, point.radius + config.wallMargin);
+      sizeNavigation.set(point.radius, navigator);
+    }
+    const cell = Math.floor(point.y / config.navCellSize) * navigator.columns + Math.floor(point.x / config.navCellSize);
+    if (!Number.isFinite(navigator.staticPotential[cell])) {
       throw new Error(`생성 영역 ${point.flow + 1}에서 목적지로 갈 수 없습니다. 벽을 열거나 통로를 넓혀주세요.`);
     }
   }

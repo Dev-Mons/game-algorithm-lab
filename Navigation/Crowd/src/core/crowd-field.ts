@@ -94,7 +94,7 @@ export class CrowdField {
     this.maximumOverloadAge = 0;
   }
 
-  update(state: AgentBuffer, pressureThreshold: number, fixedDelta: number): void {
+  update(state: AgentBuffer, pressureThreshold: number, fixedDelta: number, areaWeights?: Float64Array): void {
     this.clearDynamicBuffers();
     for (let agent = 0; agent < state.count; agent += 1) {
       if (state.active[agent] !== 1) continue;
@@ -105,6 +105,7 @@ export class CrowdField {
         state.vy[agent]!,
         state.intentX[agent]!,
         state.intentY[agent]!,
+        areaWeights?.[agent] ?? 1,
       );
     }
     this.blurHorizontal();
@@ -160,6 +161,7 @@ export class CrowdField {
     velocityY: number,
     intentX: number,
     intentY: number,
+    areaWeight: number,
   ): void {
     const gridX = clamp(x / this.cellSize - 0.5, 0, this.columns - 1);
     const gridY = clamp(y / this.cellSize - 0.5, 0, this.rows - 1);
@@ -182,7 +184,7 @@ export class CrowdField {
       + (this.blocked[index01] === 0 ? weight01 : 0)
       + (this.blocked[index11] === 0 ? weight11 : 0);
     if (availableWeight <= EPSILON) return;
-    const inverseWeight = 1 / availableWeight;
+    const inverseWeight = areaWeight / availableWeight;
     this.addDeposit(index00, weight00 * inverseWeight, velocityX, velocityY, intentX, intentY);
     this.addDeposit(index10, weight10 * inverseWeight, velocityX, velocityY, intentX, intentY);
     this.addDeposit(index01, weight01 * inverseWeight, velocityX, velocityY, intentX, intentY);

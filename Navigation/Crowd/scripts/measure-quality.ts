@@ -23,6 +23,8 @@ for (const scenarioId of scenarios) {
         ...DEFAULT_CONFIG,
         seed,
         agentCount: requestedAgents,
+        largeAgentPercent: Number(argument('large-percent') ?? DEFAULT_CONFIG.largeAgentPercent),
+        largeAgentScale: Number(argument('large-scale') ?? DEFAULT_CONFIG.largeAgentScale),
         agentRadius: 1.5,
         agentGap: 0.05,
         neighborRadius: 2.9,

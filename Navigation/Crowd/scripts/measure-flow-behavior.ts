@@ -19,6 +19,8 @@ for (const scenarioId of selected) {
       ...DEFAULT_CONFIG,
       agentCount: agents,
       seed,
+      largeAgentPercent: Number(argument('large-percent') ?? DEFAULT_CONFIG.largeAgentPercent),
+      largeAgentScale: Number(argument('large-scale') ?? DEFAULT_CONFIG.largeAgentScale),
       ...(dynamicEnabled ? {} : {
         dynamicFlowDensityWeight: 0,
         dynamicFlowOverloadWeight: 0,
@@ -40,6 +42,8 @@ for (const scenarioId of selected) {
     scenario: scenarioId,
     seed,
     dynamicEnabled,
+    largeAgents: simulation.largeAgentCount,
+    largeAgentScale: simulation.config.largeAgentScale,
     ...tracker.snapshot(),
     elapsedMs: Number((performance.now() - startedAt).toFixed(1)),
   });

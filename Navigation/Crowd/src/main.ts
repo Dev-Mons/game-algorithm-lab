@@ -51,6 +51,8 @@ const config: SimulationConfig = {
   agentCount: requestedAgents,
   seed: requestedSeed,
   agentRadius: parseNumber(params.get('radius'), DEFAULT_CONFIG.agentRadius, 1.5, 8),
+  largeAgentPercent: parseNumber(params.get('largePercent'), DEFAULT_CONFIG.largeAgentPercent, 0, 100),
+  largeAgentScale: parseNumber(params.get('largeScale'), DEFAULT_CONFIG.largeAgentScale, 1, 4),
   agentGap: parseNumber(params.get('gap'), DEFAULT_CONFIG.agentGap, 0, 3),
 };
 let simulation = new CrowdSimulation(config, initialScenario);
@@ -185,6 +187,8 @@ function initializeControls(): void {
   bindRange('max-speed', 'maxSpeed');
   bindRange('max-acceleration', 'maxAcceleration');
   bindRange('agent-radius', 'agentRadius', true);
+  bindRange('large-agent-percent', 'largeAgentPercent', true);
+  bindRange('large-agent-scale', 'largeAgentScale', true);
   bindRange('neighbor-radius', 'neighborRadius', true);
   bindRange('agent-gap', 'agentGap');
   bindRange('pressure-relaxation', 'crowdPressureRelaxationTime');
@@ -286,6 +290,10 @@ function updateMetrics(): void {
   const metrics = simulation.metrics;
   element<HTMLElement>('step-label').textContent = `Step ${simulation.stepCount.toLocaleString()}`;
   element<HTMLElement>('hash-badge').textContent = `Hash ${simulation.stateHash()}`;
+  element<HTMLElement>('agent-size-summary').textContent =
+    `생성 ${simulation.state.count.toLocaleString()}명 · 큰 객체 ${simulation.largeAgentCount.toLocaleString()}명`
+    + ` · 반지름 ${config.agentRadius.toFixed(1)} → ${(config.agentRadius * config.largeAgentScale).toFixed(1)}`
+    + (simulation.unspawnedCount > 0 ? ` · 공간 부족 ${simulation.unspawnedCount.toLocaleString()}명` : '');
   element<HTMLElement>('metric-fps').textContent = runtimeMetrics.fps.toFixed(1);
   element<HTMLElement>('metric-step-time').textContent = `${runtimeMetrics.averageStepMs.toFixed(2)} / ${runtimeMetrics.maxStepMs.toFixed(2)} ms`;
   element<HTMLElement>('metric-active').textContent = metrics.activeCount.toLocaleString();

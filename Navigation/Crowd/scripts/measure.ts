@@ -9,6 +9,8 @@ const seed = Math.trunc(Number(argument('seed') ?? 42));
 const agentCount = Math.max(1, Math.trunc(Number(argument('agents') ?? 1000)));
 const agentRadius = Math.max(0.1, Number(argument('radius') ?? DEFAULT_CONFIG.agentRadius));
 const agentGap = Math.max(0, Number(argument('gap') ?? DEFAULT_CONFIG.agentGap));
+const largeAgentPercent = Number(argument('large-percent') ?? DEFAULT_CONFIG.largeAgentPercent);
+const largeAgentScale = Number(argument('large-scale') ?? DEFAULT_CONFIG.largeAgentScale);
 const scenarioIds = SCENARIOS
   .filter((scenario) => !scenarioArgument || scenario.id === scenarioArgument)
   .map((scenario) => scenario.id);
@@ -16,7 +18,7 @@ const records: object[] = [];
 
 for (const scenarioId of scenarioIds) {
   const simulation = new CrowdSimulation(
-    { ...DEFAULT_CONFIG, seed, agentCount, agentRadius, agentGap },
+    { ...DEFAULT_CONFIG, seed, agentCount, agentRadius, agentGap, largeAgentPercent, largeAgentScale },
     getScenario(scenarioId),
   );
   const steps = Number.isFinite(requestedSteps) && requestedSteps > 0
@@ -113,6 +115,7 @@ for (const scenarioId of scenarioIds) {
       simulation.state,
       simulation.config.pressureThreshold,
       simulation.config.fixedDelta,
+      simulation.agentAreaWeights,
     );
     fieldDurations.push(performance.now() - startedAt);
   }
@@ -121,6 +124,8 @@ for (const scenarioId of scenarioIds) {
     scenario: scenarioId,
     seed,
     agents: simulation.state.count,
+    largeAgents: simulation.largeAgentCount,
+    largeAgentScale: simulation.config.largeAgentScale,
     steps,
     elapsedMs: round(durations.reduce((sum, value) => sum + value, 0)),
     stepMsP50: round(percentile(durations, 0.5)),

@@ -481,6 +481,35 @@ export class FlowField implements GlobalNavigator {
     }
     out.x = bestX;
     out.y = bestY;
+    if (!Number.isFinite(bestCost)) this.sampleLocalEscapeDirection(x, y, column, row, lookAhead, out);
+  }
+
+  private sampleLocalEscapeDirection(
+    x: number, y: number, column: number, row: number, lookAhead: number, out: Vec2,
+  ): void {
+    let bestCost = Number.POSITIVE_INFINITY;
+    // A displaced body may have to step sideways before it can descend the
+    // field again. Connect its actual position to reachable local cell centers,
+    // including its own center, instead of applying a center's arrow at a wall.
+    // This is a bounded 3x3 query recomputed at every sample, with no stored target.
+    for (let ny = Math.max(0, row - 1); ny <= Math.min(this.rows - 1, row + 1); ny++) {
+      for (let nx = Math.max(0, column - 1); nx <= Math.min(this.columns - 1, column + 1); nx++) {
+        const cell = ny * this.columns + nx;
+        if (this.blocked[cell] === 1 || !Number.isFinite(this.dynamicPotential[cell])) continue;
+        const dx = (nx + 0.5) * this.cellSize - x;
+        const dy = (ny + 0.5) * this.cellSize - y;
+        const distance = Math.hypot(dx, dy);
+        if (distance <= EPSILON) continue;
+        const cost = this.dynamicPotential[cell]!
+          + distance / this.cellSize * this.dynamicTraversalCost[cell]!;
+        if (cost >= bestCost) continue;
+        const scale = Math.max(1, lookAhead / distance);
+        if (!this.isSegmentSafe(x, y, x + dx * scale, y + dy * scale)) continue;
+        bestCost = cost;
+        out.x = dx / distance;
+        out.y = dy / distance;
+      }
+    }
   }
 
   private rasterizeObstacle(rect: Rect): void {

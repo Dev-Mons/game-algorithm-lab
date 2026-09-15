@@ -15,6 +15,7 @@ export interface CrowdFlowOptions {
   maximumAcceleration: number;
   maximumSpeed: number;
   fixedDelta: number;
+  areaWeights?: Float64Array;
 }
 
 /**
@@ -97,13 +98,13 @@ export class CrowdFlowSolver {
 
   solve(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
-    this.scatter(state, desiredX, desiredY);
+    this.scatter(state, desiredX, desiredY, options.areaWeights);
     this.buildVelocities(options);
     this.project(options);
     this.gather(state, desiredX, desiredY, options);
   }
 
-  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array): void {
+  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array): void {
     this.mass.fill(0);
     this.momentumX.fill(0);
     this.momentumY.fill(0);
@@ -118,7 +119,7 @@ export class CrowdFlowSolver {
         const offset = ((this.channel + side) % FLOW_CHANNELS) * cells;
         const angularWeight = side === 0 ? 1 - this.channelFraction : this.channelFraction;
         for (let corner = 0; corner < 4; corner++) {
-          const weight = this.weights[corner]! * angularWeight;
+          const weight = this.weights[corner]! * angularWeight * (areaWeights?.[a] ?? 1);
           const i = this.cells[corner]! + offset;
           this.mass[i] = this.mass[i]! + weight;
           this.momentumX[i] = this.momentumX[i]! + state.vx[a]! * weight;

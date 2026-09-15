@@ -21,6 +21,8 @@ export interface SimulationConfig {
   maxSpeed: number;
   maxAcceleration: number;
   agentRadius: number;
+  largeAgentPercent: number;
+  largeAgentScale: number;
   neighborRadius: number;
   agentGap: number;
   wallMargin: number;

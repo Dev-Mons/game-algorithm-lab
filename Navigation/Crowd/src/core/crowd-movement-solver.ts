@@ -27,6 +27,8 @@ export interface CrowdMovementInput {
   recovery: Uint8Array;
   overlapFlags: Uint8Array;
   agentRadius: number;
+  agentRadii?: Float64Array;
+  maxAgentRadius?: number;
   agentGap: number;
   maxSpeed: number;
   maxAcceleration: number;
@@ -206,8 +208,8 @@ export class CrowdMovementSolver {
       ) {
         velocityX = 0;
         velocityY = 0;
-        predictedX = Number.isFinite(startX) ? startX : input.wallClearance;
-        predictedY = Number.isFinite(startY) ? startY : input.wallClearance;
+        predictedX = Number.isFinite(startX) ? startX : this.wallClearance(input, agent);
+        predictedY = Number.isFinite(startY) ? startY : this.wallClearance(input, agent);
       }
       this.velocityX[agent] = velocityX;
       this.velocityY[agent] = velocityY;
@@ -217,11 +219,11 @@ export class CrowdMovementSolver {
   }
 
   private buildContactConstraints(input: CrowdMovementInput): void {
-    const contactDistance = input.agentRadius * 2 + Math.max(0, input.agentGap);
-    const queryRadius = contactDistance + CONTACT_QUERY_PADDING;
-    const queryRadiusSquared = queryRadius * queryRadius;
     for (let agent = 0; agent < input.current.count; agent += 1) {
       if (input.current.active[agent] !== 1) continue;
+      const radius = this.radius(input, agent);
+      const queryRadius = radius + (input.maxAgentRadius ?? input.agentRadius)
+        + Math.max(0, input.agentGap) + CONTACT_QUERY_PADDING;
       const candidateCount = input.index.queryCandidates(
         this.predictedX[agent]!,
         this.predictedY[agent]!,
@@ -238,8 +240,11 @@ export class CrowdMovementSolver {
         const dx = this.predictedX[other]! - this.predictedX[agent]!;
         const dy = this.predictedY[other]! - this.predictedY[agent]!;
         const distanceSquared = dx * dx + dy * dy;
-        if (distanceSquared > queryRadiusSquared) continue;
-        this.insertNearestContact(agent, other, distanceSquared);
+        const contactDistance = radius + this.radius(input, other) + Math.max(0, input.agentGap);
+        if (distanceSquared > (contactDistance + CONTACT_QUERY_PADDING) ** 2) continue;
+        // Surface distance makes a touching large body compete fairly with
+        // nearby small centers under the same fixed contact budget.
+        this.insertNearestContact(agent, other, distanceSquared / (contactDistance * contactDistance));
       }
       const count = this.contactCount[agent]!;
       this.result.contactChecks += count;
@@ -279,13 +284,11 @@ export class CrowdMovementSolver {
   private solveContactConstraints(input: CrowdMovementInput): void {
     if (this.result.contactChecks === 0) return;
     const count = input.current.count;
-    const diameter = input.agentRadius * 2 + Math.max(0, input.agentGap);
     const inverseDeltaSquared = 1 / Math.max(EPSILON, input.fixedDelta * input.fixedDelta);
     const alpha = Math.max(0, input.contactCompliance)
       * inverseDeltaSquared;
     const friction = clamp(input.contactFriction, 0, 1);
     const correctionLimit = Math.max(0, input.maximumContactCorrection);
-    const lambdaLimit = Math.max(diameter, correctionLimit * 2);
 
     for (let iteration = 0; iteration < this.constraintIterationLimit; iteration += 1) {
       this.correctionX.fill(0, 0, count);
@@ -302,6 +305,8 @@ export class CrowdMovementSolver {
           const lambdaIndex = base + contact;
           const other = this.contactNeighborIndices[lambdaIndex]!;
           if (input.current.active[other] !== 1) continue;
+          const diameter = this.radius(input, agent) + this.radius(input, other) + Math.max(0, input.agentGap);
+          const lambdaLimit = Math.max(diameter, correctionLimit * 2);
           const dx = this.predictedX[other]! - this.predictedX[agent]!;
           const dy = this.predictedY[other]! - this.predictedY[agent]!;
           const distanceSquared = dx * dx + dy * dy;
@@ -415,6 +420,7 @@ export class CrowdMovementSolver {
         input,
         originalX,
         originalY,
+        this.wallClearance(input, agent),
       );
       if (!projected) continue;
       const movement = Math.hypot(
@@ -442,7 +448,8 @@ export class CrowdMovementSolver {
       }
       const velocityX = (targetX - startX) * inverseDelta;
       const velocityY = (targetY - startY) * inverseDelta;
-      if (this.canIntegrateDirectly(input, startX, startY, targetX, targetY)) {
+      const clearance = this.wallClearance(input, agent);
+      if (this.canIntegrateDirectly(input, startX, startY, targetX, targetY, clearance)) {
         input.next.x[agent] = targetX;
         input.next.y[agent] = targetY;
         continue;
@@ -453,7 +460,7 @@ export class CrowdMovementSolver {
         velocityX,
         velocityY,
         input.fixedDelta,
-        input.wallClearance,
+        clearance,
         input.worldWidth,
         input.worldHeight,
         input.obstacles,
@@ -469,7 +476,7 @@ export class CrowdMovementSolver {
   private projectNextOutsideStatics(input: CrowdMovementInput, agent: number): void {
     const originalX = input.next.x[agent]!;
     const originalY = input.next.y[agent]!;
-    const projected = this.projectOutsideStatics(input, originalX, originalY);
+    const projected = this.projectOutsideStatics(input, originalX, originalY, this.wallClearance(input, agent));
     if (!projected) return;
     const movement = Math.hypot(
       this.projection.x - originalX,
@@ -484,20 +491,21 @@ export class CrowdMovementSolver {
     input: CrowdMovementInput,
     inputX: number,
     inputY: number,
+    clearance: number,
   ): boolean {
-    let x = clamp(inputX, input.wallClearance, input.worldWidth - input.wallClearance);
-    let y = clamp(inputY, input.wallClearance, input.worldHeight - input.wallClearance);
+    let x = clamp(inputX, clearance, input.worldWidth - clearance);
+    let y = clamp(inputY, clearance, input.worldHeight - clearance);
     for (const obstacle of input.obstacles) {
       if (
-        x <= obstacle.x - input.wallClearance
-        || x >= obstacle.x + obstacle.width + input.wallClearance
-        || y <= obstacle.y - input.wallClearance
-        || y >= obstacle.y + obstacle.height + input.wallClearance
+        x <= obstacle.x - clearance
+        || x >= obstacle.x + obstacle.width + clearance
+        || y <= obstacle.y - clearance
+        || y >= obstacle.y + obstacle.height + clearance
       ) continue;
       if (!projectCircleOutsideRectWithinBounds(
         x,
         y,
-        input.wallClearance,
+        clearance,
         obstacle,
         input.worldWidth,
         input.worldHeight,
@@ -530,6 +538,7 @@ export class CrowdMovementSolver {
     startY: number,
     targetX: number,
     targetY: number,
+    clearance: number,
   ): boolean {
     if (
       !Number.isFinite(startX)
@@ -537,7 +546,6 @@ export class CrowdMovementSolver {
       || !Number.isFinite(targetX)
       || !Number.isFinite(targetY)
     ) return false;
-    const clearance = input.wallClearance;
     if (
       startX < clearance
       || startY < clearance
@@ -566,8 +574,6 @@ export class CrowdMovementSolver {
   }
 
   private countBoundedOverlaps(input: CrowdMovementInput): void {
-    const reportableDiameter = input.agentRadius * 2 - REPORTABLE_PENETRATION;
-    const reportableDiameterSquared = reportableDiameter * reportableDiameter;
     let overlaps = 0;
     for (let agent = 0; agent < input.current.count; agent += 1) {
       if (input.current.active[agent] !== 1) continue;
@@ -576,6 +582,8 @@ export class CrowdMovementSolver {
       for (let contact = 0; contact < count; contact += 1) {
         const other = this.contactNeighborIndices[base + contact]!;
         if (input.current.active[other] !== 1) continue;
+        const reportableDiameterSquared = (this.radius(input, agent) + this.radius(input, other)
+          - REPORTABLE_PENETRATION) ** 2;
         const dx = input.next.x[other]! - input.next.x[agent]!;
         const dy = input.next.y[other]! - input.next.y[agent]!;
         if (dx * dx + dy * dy >= reportableDiameterSquared - EPSILON) continue;
@@ -640,6 +648,14 @@ export class CrowdMovementSolver {
     const orientation = first === lower ? 1 : -1;
     this.pairNormalX = Math.cos(angle) * orientation;
     this.pairNormalY = Math.sin(angle) * orientation;
+  }
+
+  private radius(input: CrowdMovementInput, agent: number): number {
+    return input.agentRadii?.[agent] ?? input.agentRadius;
+  }
+
+  private wallClearance(input: CrowdMovementInput, agent: number): number {
+    return input.wallClearance + (this.radius(input, agent) - input.agentRadius);
   }
 
   private ensureCapacity(count: number): void {

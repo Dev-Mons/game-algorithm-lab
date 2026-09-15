@@ -96,6 +96,10 @@ export function appTemplate(): string {
           ${rangeControl('최대 속도', 'max-speed', 20, 180, 1, 86)}
           ${rangeControl('최대 가속도', 'max-acceleration', 40, 500, 5, 210)}
           ${rangeControl('객체 반지름', 'agent-radius', 1.5, 8, 0.1, 3.2)}
+          ${rangeControl('큰 객체 비율 (%)', 'large-agent-percent', 0, 100, 1, 0)}
+          ${rangeControl('큰 객체 크기 배율 (×)', 'large-agent-scale', 1, 4, 0.1, 2)}
+          <p class="description">예: 5% · 2× → 일부 객체만 두 배 크기로 섞입니다. 노란색이 큰 객체이며, 조절을 마치면 다시 배치됩니다.</p>
+          <p id="agent-size-summary" class="editor-status" role="status" aria-live="polite"></p>
           ${rangeControl('회피 탐색 거리', 'neighbor-radius', 8, 60, 1, 28)}
           ${rangeControl('객체 간 여유', 'agent-gap', 0, 3, 0.1, 0.4)}
           ${rangeControl('밀도 압축 완화 시간', 'pressure-relaxation', 0.1, 0.5, 0.05, 0.25)}
