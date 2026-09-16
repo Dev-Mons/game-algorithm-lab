@@ -1,0 +1,1 @@
+[{"seed":0,"text":"A","expected":65},{"seed":0,"text":"AB","expected":2211},{"seed":4294967295,"text":"A","expected":32}]

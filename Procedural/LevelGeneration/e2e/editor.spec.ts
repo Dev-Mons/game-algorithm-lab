@@ -1,0 +1,138 @@
+import { expect, test } from "@playwright/test";
+import { readFile, mkdir, writeFile } from "node:fs/promises";
+import os from "node:os";
+import { createDocument, loadDocument, profileData } from "../src/core/document";
+import { generate } from "../src/core/generate";
+
+test("edit stepped volume, inspect overhang, save/reload, display invariance and errors", async ({
+  page,
+}, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await expect(page.locator("#status")).toHaveText("OK");
+  await page.locator(".inspect-details summary").first().click();
+  await page.locator(".layers summary").click();
+  await page.locator("#fixture").selectOption("single");
+  await page.locator("#profile").selectOption("variants");
+  async function importGrid(grid: number[][]) {
+    await page.locator("#file").setInputFiles({ name: "edit.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(createDocument(grid, 42, "variants"))) });
+  }
+  await importGrid([[0,0,0],[1,0,0],[1,1,0]]);
+  await expect(page.locator("#face option")).toHaveCount(14);
+  await page.locator("#face").selectOption("0,0,0|PY");
+  await expect(page.locator("#inspector")).toContainText("TERRACE");
+  await page
+    .locator("summary")
+    .filter({ hasText: "선택 Trace · 전체 근거" })
+    .click();
+  const trace = await page.locator("#trace").textContent();
+  expect(JSON.parse(trace!).selection.ruleId).toBe("role.terrace");
+  await importGrid([[0,0,0],[1,0,0],[1,1,0],[2,1,0]]);
+  await page.locator("#face").selectOption("2,1,0|NY");
+  await expect(page.locator("#inspector")).toContainText("overhang");
+  await page.getByRole("button", { name: "↥ 하부", exact: true }).click();
+  await page.getByLabel("표시용 기준면 높이", { exact: true }).fill("-4");
+  await page.getByLabel("표시용 기준면 높이", { exact: true }).press("Tab");
+  await page.locator("#layer-voxels").check();
+  await page.locator("#layer-surfaces").check();
+  await page.locator("#layer-normals").check();
+  async function save(name: string) {
+    const downloadPromise = page.waitForEvent("download");
+    await page.locator("#save").click();
+    const download = await downloadPromise;
+    const path = testInfo.outputPath(name);
+    await download.saveAs(path);
+    return { path, text: await readFile(path, "utf8") };
+  }
+  const saved = await save("city.json"),
+    input = loadDocument(saved.text);
+  const expected = generate(input.grid, {
+    seed: input.seed,
+    ...profileData(input.catalog.id),
+  });
+  expect(expected.status).toBe("ok");
+  expect(expected.cells).toHaveLength(4);
+  await page.locator("#new").click();
+  await expect(page.locator("#face option")).toHaveCount(0);
+  await page.locator("#file").setInputFiles(saved.path);
+  await expect(page.locator("#status")).toHaveText("OK");
+  await expect(page.locator("#face option")).toHaveCount(
+    expected.surfaces.length,
+  );
+  const restored = await save("restored.json");
+  expect(restored.text).toBe(saved.text);
+  await page.locator("#face").selectOption("2,1,0|NY");
+  expect(JSON.parse((await page.locator("#trace").textContent())!)).toEqual(
+    expected.traces.find((t) => t.faceId === "2,1,0|NY"),
+  );
+  await page.getByRole("button", { name: "↓ 상부", exact: true }).click();
+  await page.locator("#layer-placements").uncheck();
+  expect((await save("display-changed.json")).text).toBe(saved.text);
+  const invalid = JSON.parse(saved.text);
+  invalid.grid.push([32,0,0]);
+  await page.locator("#file").setInputFiles({ name: "too-wide.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(invalid)) });
+  await expect(page.locator("#status")).toHaveText("ERROR");
+  await expect(page.locator("#error")).toContainText("32 cells");
+  await expect(page.locator("#save")).toBeDisabled();
+  await expect(page.locator("#face option")).toHaveCount(0);
+  await page.locator("#retry").click();
+  await expect(page.locator("#status")).toHaveText("OK");
+  await page.locator("#file").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from('{"schemaVersion":999}'),
+  });
+  await expect(page.locator("#error")).toContainText("Unknown schema");
+  await page.locator("#fixture").selectOption("vertexContact");
+  await expect(page.locator("#status")).toHaveText("DEGRADED");
+  await expect(page.locator("#diagnostics")).toContainText(
+    "NON_MANIFOLD_VERTEX",
+  );
+  await expect(page.locator("#face option")).toHaveCount(12);
+  expect(errors).toEqual([]);
+});
+
+test("@measure CPU full regeneration baseline", async ({ page }) => {
+  test.setTimeout(300_000);
+  await page.goto("/");
+  await page.locator(".inspect-details summary").first().click();
+  await page.locator("#measure").click();
+  await expect(page.locator("#save-measure")).toBeVisible({ timeout: 270_000 });
+  const report = JSON.parse(
+    (await page.locator("#measure-report").textContent())!,
+  );
+  expect(report.environment.buildMode).toBe("production");
+  expect(report.rows).toHaveLength(75);
+  expect(
+    report.rows.every(
+      (r: any) => r.samples.length === 50 && r.counters.fallbackCount === 0,
+    ),
+  ).toBe(true);
+  report.host = {
+    cpu: os.cpus()[0]?.model,
+    logicalCpus: os.cpus().length,
+    platform: os.platform(),
+    release: os.release(),
+    architecture: os.arch(),
+    node: process.version,
+  };
+  await mkdir("benchmarks", { recursive: true });
+  await writeFile(
+    "benchmarks/latest.json",
+    JSON.stringify(report, null, 2) + "\n",
+  );
+  console.log(
+    JSON.stringify(
+      report.rows.map((r: any) => ({
+        name: `${r.input.catalog.id}/${r.name}`,
+        cells: r.counters.occupiedCells,
+        faces: r.counters.surfaceCount,
+        ...r.timings,
+      })),
+      null,
+      2,
+    ),
+  );
+  await expect(page.locator("#status")).toHaveText("OK");
+});
