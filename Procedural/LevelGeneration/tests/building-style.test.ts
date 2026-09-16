@@ -355,7 +355,7 @@ it("preserves both original v4 style-v1 goldens with their embedded definitions"
           input,
           output: generate(input.grid, documentOptions(input)),
         }),
-      ).toBe(text);
+      ).toBe(canonicalJSON(expected));
     }
 });
 it.each(["shop", "office"] as const)(
