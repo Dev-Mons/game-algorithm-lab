@@ -1,3 +1,4 @@
+import { VegetationGeometryLibrary } from "./vegetation-geometry";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import {
@@ -43,6 +44,7 @@ export class Viewer {
   };
   private plane = new THREE.PlaneGeometry(1, 1);
   private cube = new THREE.BoxGeometry(1, 1, 1);
+  private vegetation = new VegetationGeometryLibrary();
   private assets = new PanelAssets();
   private crafted = new CraftedGeometryLibrary();
   private groundPlane = new THREE.Mesh(
@@ -294,7 +296,8 @@ export class Viewer {
     for (const p of result.scenePlacements ?? []) {
       let material = this.sceneMaterials.get(p.color);
       if (!material) { material = new THREE.MeshStandardMaterial({color:p.color, roughness:.8}); this.sceneMaterials.set(p.color,material); }
-      const mesh = new THREE.InstancedMesh(this.cube, material, 1);
+      const vegetationGeometry = p.kind === "object" ? this.vegetation.get(p.asset) : undefined;
+      const mesh = new THREE.InstancedMesh(vegetationGeometry ?? this.cube, vegetationGeometry ? this.vegetation.material : material, 1);
       const matrix = new THREE.Matrix4().compose(new THREE.Vector3(...p.center).add(this.displayOrigin), new THREE.Quaternion(), new THREE.Vector3(...p.size));
       mesh.setMatrixAt(0,matrix); mesh.castShadow = true; mesh.receiveShadow = true;
       mesh.userData.scenePlacement = p;
@@ -563,6 +566,7 @@ export class Viewer {
     this.regionMaterial.dispose();
     this.assets.dispose();
     this.crafted.dispose();
+    this.vegetation.dispose();
     this.sceneMaterials.forEach(m => m.dispose());
     this.groundPlane.geometry.dispose();
     this.groundPlane.material.dispose();

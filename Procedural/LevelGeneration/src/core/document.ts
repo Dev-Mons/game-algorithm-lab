@@ -255,6 +255,10 @@ export function loadDocument(text: string): GenerationDocument {
     raw.style.version !== 1
   )
     throw new Error("Unknown catalog, rule or style version.");
+  // Preserve saved scenes from before the misc -> facility category rename.
+  if (raw.sceneInputs?.version === 1 && Array.isArray(raw.sceneInputs.objects))
+    for (const input of raw.sceneInputs.objects)
+      if (input?.category === "misc") input.category = "facility";
   // Only registered immutable metadata is accepted under each ID/version.
   const expected = createDocument(
     raw.grid,

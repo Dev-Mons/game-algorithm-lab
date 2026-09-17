@@ -1,5 +1,5 @@
 import { add, BASES, cellId, DIRECTIONS, normalizeGrid, type Direction, type Vec3 } from "./analysis";
-export type ObjectCategory = "lighting" | "vegetation" | "misc";
+export type ObjectCategory = "lighting" | "vegetation" | "facility";
 export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction }
 export interface SceneInputs { version: 1; roads: Vec3[]; objects: ObjectInput[] }
 export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building"; asset: string; center: Vec3; size: Vec3; color: string; context: string }
@@ -27,7 +27,7 @@ export function validateSceneInputs(grid: Vec3[], inputs: SceneInputs): SceneInp
   const roads = normalizeGrid(inputs.roads), occupied = new Set(grid.map(cellId)), used = new Set(roads.map(cellId)), ids = new Set<string>();
   if (roads.some(c => c[1] !== 0 || occupied.has(cellId(c)))) throw new Error("도로는 비어 있는 지면에만 설치할 수 있습니다.");
   const objects = inputs.objects.map(input => {
-    if (!input || !["lighting","vegetation","misc"].includes(input.category) || !DIRECTIONS.includes(input.direction) || typeof input.id !== "string" || ids.has(input.id) || Object.keys(input).some(k => !["id","category","cells","direction"].includes(k))) throw new Error("Invalid object input.");
+    if (!input || !["lighting","vegetation","facility"].includes(input.category) || !DIRECTIONS.includes(input.direction) || typeof input.id !== "string" || ids.has(input.id) || Object.keys(input).some(k => !["id","category","cells","direction"].includes(k))) throw new Error("Invalid object input.");
     const cells = normalizeGrid(input.cells);
     if (!cells.length || cells.some(c => used.has(cellId(c)))) throw new Error("오브젝트 입력이 겹치거나 비어 있습니다.");
     const volume = [0,1,2].reduce((n,a) => n*(Math.max(...cells.map(c=>c[a]))-Math.min(...cells.map(c=>c[a]))+1),1);
@@ -54,15 +54,30 @@ function dimensions(input: ObjectInput, context: ObjectContext) {
 export const OBJECT_CATEGORY_RULES: ObjectCategoryRule[] = [
   { category: "vegetation", generate(input, context) {
     const { min, size, center, placement } = dimensions(input, context);
-    if (size[1] === 1) return [placement(context === "median" ? "median-planter" : context === "roof" ? "roof-planter" : "shrub", "#79a66b", [center[0],min[1]+.3,center[2]], [size[0]*.8,.6,size[2]*.8])];
-    return Array.from({length:size[1]},(_,i) => placement(i===0 ? "tree-bottom" : i===size[1]-1 ? "tree-top" : `tree-middle-${i}`, i===0 ? "#886348" : "#62905c", [center[0],min[1]+i+.5,center[2]], i===0 ? [.22,1,.22] : [size[0]*.85,1,size[2]*.85]));
+    if (size[1] === 1) return [placement(context === "median" ? "median-planter" : context === "roof" ? "roof-planter" : "shrub", "#79a66b", [center[0],min[1]+.5,center[2]], [size[0],1,size[2]])];
+    return Array.from({length:size[1]},(_,i) => {
+      const asset = i === 0 ? "tree-bottom" : i === size[1]-1 ? "tree-top" : "tree-middle";
+      const tile = placement(asset, i === 0 ? "#886348" : "#62905c", [center[0],min[1]+i+.5,center[2]], [size[0],1,size[2]]);
+      // Repeated middle tiles share one asset but retain distinct instance IDs.
+      return {...tile, id:`${tile.id}:layer-${i}`};
+    });
   } },
   { category: "lighting", generate(input, context) {
-    const { min, size, center, placement } = dimensions(input, context);
+    const { min, size, placement } = dimensions(input, context);
     const asset = context === "wall" ? "wall-lamp" : context === "roadside" || context === "median" ? "street-lamp" : context === "roof" ? "roof-beacon" : "bollard";
-    return [placement(`${asset}-post`, "#4a5960", [center[0],min[1]+size[1]*.4,center[2]], [.12,size[1]*.8,.12]), placement(asset, "#ffe4a0", [center[0],min[1]+size[1]*.85,center[2]], [.4,.25,.4])];
+    // A lighting area places a fixture in every supported column (or wall cell),
+    // rather than consuming the entire region for one fixed-size central lamp.
+    const bases = input.direction === "PY" ? input.cells.filter(c => c[1] === min[1]) : input.cells;
+    return bases.flatMap(cell => {
+      const height = input.direction === "PY" ? size[1] : 1;
+      const at: Vec3 = [cell[0]+.5,cell[1],cell[2]+.5];
+      return [
+        placement(`${asset}-post`, "#4a5960", [at[0],at[1]+height*.4,at[2]], [.12,height*.8,.12]),
+        placement(asset, "#ffe4a0", [at[0],at[1]+height*.85,at[2]], [.4,.25,.4]),
+      ].map(p => ({...p, id: bases.length === 1 ? p.id : `${p.id}:${cellId(cell)}`}));
+    });
   } },
-  { category: "misc", generate(input, context) {
+  { category: "facility", generate(input, context) {
     const { size, center, placement } = dimensions(input, context);
     return [placement(context === "roof" ? size[0]*size[2]>=2 ? "water-tank" : "air-conditioner" : size[1]>1 ? "antenna-tower" : context === "roadside" ? "street-cabinet" : "utility-box", "#a9bbc0", center, size.map(n=>n*.8) as Vec3)];
   } },

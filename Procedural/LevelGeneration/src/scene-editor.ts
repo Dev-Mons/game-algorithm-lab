@@ -2,36 +2,244 @@ import { add, BASES, cellId, normalizeGrid, type Vec3 } from "./core/analysis";
 import { replaceSceneInputs, type GenerationDocument } from "./core/document";
 import type { ObjectInput, ObjectCategory } from "./core/scene-inputs";
 import type { SurfaceSelection } from "./surface-edit";
-export function editObjects(document: GenerationDocument, selection: SurfaceSelection, category: ObjectCategory, height: number, mode: "add" | "remove") {
-  if (!Number.isInteger(height) || height < 1 || height > 8) throw new Error("오브젝트 높이는 1~8칸입니다.");
-  const inputs = document.sceneInputs ?? { version: 1 as const, roads: [], objects: [] };
-  const bases = normalizeGrid(selection.cells.map(c => add(c, BASES[selection.direction].n)));
-  if (!bases.length) throw new Error("설치 영역을 선택하세요.");
-  const h = category === "vegetation" && bases.length > 1 && selection.direction === "PY" ? Math.max(3, height) : height;
-  const cells = normalizeGrid(bases.flatMap(c => Array.from({length:h},(_,i) => add(c,[0,i,0]))));
-  const ids = new Set(cells.map(cellId));
-  const objects = mode === "add" ? carveObjects(inputs.objects, ids) : inputs.objects.filter(o => !o.cells.some(c => ids.has(cellId(c))));
-  if (mode === "add") objects.push({ id: `object:${cellId(bases[0])}:${selection.direction}`, cells, direction: selection.direction, category });
-  return replaceSceneInputs(document, { ...inputs, objects, roads: mode === "add" ? inputs.roads.filter(c => !ids.has(cellId(c))) : inputs.roads });
+// Keep each fragment rectangular and supported along its original installation
+// direction. Splitting along vertical runs allows partial roof-height edits.
+function objectFragments(
+  cells: Vec3[],
+  category: ObjectCategory,
+  direction: ObjectInput["direction"],
+): ObjectInput[] {
+  if (!cells.length) return [];
+  const axis = BASES[direction].n.findIndex((n) => n !== 0);
+  const [u, v] = [0, 1, 2].filter((a) => a !== axis);
+  const columns = new Map<string, Vec3[]>();
+  for (const cell of normalizeGrid(cells)) {
+    const key = `${cell[u]},${cell[v]}`;
+    const column = columns.get(key) ?? [];
+    column.push(cell);
+    columns.set(key, column);
+  }
+  const bands = new Map<
+    string,
+    { lo: number; hi: number; points: Map<string, Vec3> }
+  >();
+  for (const column of columns.values()) {
+    column.sort((a, b) => a[axis] - b[axis]);
+    let first = 0;
+    for (let i = 1; i <= column.length; i++) {
+      if (i < column.length && column[i][axis] === column[i - 1][axis] + 1)
+        continue;
+      const lo = column[first][axis],
+        hi = column[i - 1][axis],
+        key = `${lo}:${hi}`;
+      const band = bands.get(key) ?? {
+        lo,
+        hi,
+        points: new Map<string, Vec3>(),
+      };
+      band.points.set(`${column[first][u]},${column[first][v]}`, column[first]);
+      bands.set(key, band);
+      first = i;
+    }
+  }
+  const fragments: ObjectInput[] = [];
+  for (const { lo, hi, points } of bands.values()) {
+    while (points.size) {
+      const root = [...points.values()].sort(
+        (a, b) => a[u] - b[u] || a[v] - b[v],
+      )[0];
+      const left = root[u],
+        bottom = root[v];
+      let right = left,
+        top = bottom;
+      while (points.has(`${right + 1},${bottom}`)) right++;
+      while (
+        Array.from({ length: right - left + 1 }, (_, i) =>
+          points.has(`${left + i},${top + 1}`),
+        ).every(Boolean)
+      )
+        top++;
+      const fragment: Vec3[] = [];
+      for (let a = left; a <= right; a++)
+        for (let b = bottom; b <= top; b++) {
+          points.delete(`${a},${b}`);
+          for (let n = lo; n <= hi; n++) {
+            const cell: Vec3 = [0, 0, 0];
+            cell[axis] = n;
+            cell[u] = a;
+            cell[v] = b;
+            fragment.push(cell);
+          }
+        }
+      const normalized = normalizeGrid(fragment);
+      fragments.push({
+        id: `object:${category}:${direction}:${cellId(normalized[0])}`,
+        category,
+        direction,
+        cells: normalized,
+      });
+    }
+  }
+  return fragments;
+}
+export function editObjects(
+  document: GenerationDocument,
+  selection: SurfaceSelection,
+  category: ObjectCategory,
+  mode: "add" | "remove",
+) {
+  const inputs = document.sceneInputs ?? {
+    version: 1 as const,
+    roads: [],
+    objects: [],
+  };
+  const normal = BASES[selection.direction].n;
+  const targets = normalizeGrid(
+    mode === "add"
+      ? selection.cells.map((c) => add(c, normal))
+      : selection.cells,
+  );
+  const owners = new Map(
+    inputs.objects.flatMap((o) => o.cells.map((c) => [cellId(c), o] as const)),
+  );
+  if (
+    !targets.length ||
+    targets.some((c) => owners.has(cellId(c)) !== (mode === "remove"))
+  )
+    return { document, selection, changed: false };
+  const affected = new Set<ObjectInput>();
+  const additions = new Map<ObjectInput["direction"], Vec3[]>();
+  if (mode === "add") {
+    for (const cell of targets) {
+      const behind = add(cell, normal.map((n) => -n) as Vec3),
+        owner = owners.get(cellId(behind));
+      if (owner && owner.category !== category)
+        throw new Error(
+          "다른 카테고리 위에는 쌓을 수 없습니다. 같은 카테고리를 선택하세요.",
+        );
+      if (owner) affected.add(owner);
+      const direction = owner?.direction ?? selection.direction;
+      const list = additions.get(direction) ?? [];
+      list.push(cell);
+      additions.set(direction, list);
+    }
+  } else for (const cell of targets) affected.add(owners.get(cellId(cell))!);
+  const removed = new Set(targets.map(cellId));
+  const groups = new Map<
+    string,
+    {
+      category: ObjectCategory;
+      direction: ObjectInput["direction"];
+      cells: Vec3[];
+    }
+  >();
+  const group = (
+    category: ObjectCategory,
+    direction: ObjectInput["direction"],
+  ) => {
+    const key = `${category}:${direction}`;
+    let value = groups.get(key);
+    if (!value) {
+      value = { category, direction, cells: [] };
+      groups.set(key, value);
+    }
+    return value;
+  };
+  for (const object of affected)
+    group(object.category, object.direction).cells.push(
+      ...object.cells.filter(
+        (c) => mode !== "remove" || !removed.has(cellId(c)),
+      ),
+    );
+  for (const [direction, cells] of additions)
+    group(category, direction).cells.push(...cells);
+  const objects = inputs.objects.filter((o) => !affected.has(o));
+  const usedIds = new Set(objects.map((o) => o.id));
+  for (const value of groups.values())
+    for (const fragment of objectFragments(
+      value.cells,
+      value.category,
+      value.direction,
+    )) {
+      const baseId = fragment.id;
+      for (let i = 1; usedIds.has(fragment.id); i++)
+        fragment.id = `${baseId}:${i}`;
+      usedIds.add(fragment.id);
+      objects.push(fragment);
+    }
+  const next = replaceSceneInputs(document, {
+    ...inputs,
+    objects,
+    roads:
+      mode === "add"
+        ? inputs.roads.filter((c) => !removed.has(cellId(c)))
+        : inputs.roads,
+  });
+  const offset = normal.map((n) => n * (mode === "add" ? 1 : -1)) as Vec3;
+  return {
+    document: next,
+    selection: {
+      direction: selection.direction,
+      cells: selection.cells.map((c) => add(c, offset)),
+    },
+    changed: true,
+  };
 }
 
 // Keep unaffected columns when a road/object cuts through an existing area.
 // Removing a column's support also removes its dependent upper modules.
-function carveObjects(objects: ObjectInput[], overwritten: Set<string>): ObjectInput[] {
-  return objects.flatMap(o => {
-    if (!o.cells.some(c => overwritten.has(cellId(c)))) return [o];
-    const cells = o.cells.filter(c => !overwritten.has(cellId(c)) && !o.cells.some(b => b[0]===c[0] && b[2]===c[2] && b[1]<c[1] && overwritten.has(cellId(b))));
+function carveObjects(
+  objects: ObjectInput[],
+  overwritten: Set<string>,
+): ObjectInput[] {
+  return objects.flatMap((o) => {
+    if (!o.cells.some((c) => overwritten.has(cellId(c)))) return [o];
+    const cells = o.cells.filter(
+      (c) =>
+        !overwritten.has(cellId(c)) &&
+        !o.cells.some(
+          (b) =>
+            b[0] === c[0] &&
+            b[2] === c[2] &&
+            b[1] < c[1] &&
+            overwritten.has(cellId(b)),
+        ),
+    );
     const columns = new Map<string, Vec3[]>();
-    for(const c of cells) { const key=`${c[0]},${c[2]}`; const list=columns.get(key)??[]; list.push(c); columns.set(key,list); }
-    return [...columns.values()].map(cells => ({...o, cells, id:`object:${o.category}:${o.direction}:${cellId(cells[0])}`}));
+    for (const c of cells) {
+      const key = `${c[0]},${c[2]}`;
+      const list = columns.get(key) ?? [];
+      list.push(c);
+      columns.set(key, list);
+    }
+    return [...columns.values()].map((cells) => ({
+      ...o,
+      cells,
+      id: `object:${o.category}:${o.direction}:${cellId(cells[0])}`,
+    }));
   });
 }
-export function editRoads(document: GenerationDocument, selection: SurfaceSelection, mode: "add" | "remove") {
-  if (selection.direction !== "PY" || selection.cells.some(c => c[1] !== -1)) throw new Error("도로는 지면 Y=0에서만 설치/제거할 수 있습니다.");
-  const cells = normalizeGrid(selection.cells.map(c => add(c,[0,1,0])));
+export function editRoads(
+  document: GenerationDocument,
+  selection: SurfaceSelection,
+  mode: "add" | "remove",
+) {
+  if (selection.direction !== "PY" || selection.cells.some((c) => c[1] !== -1))
+    throw new Error("도로는 지면 Y=0에서만 설치/제거할 수 있습니다.");
+  const cells = normalizeGrid(selection.cells.map((c) => add(c, [0, 1, 0])));
   const ids = new Set(cells.map(cellId));
-  const inputs = document.sceneInputs ?? {version:1 as const,roads:[],objects:[]};
-  return replaceSceneInputs(document, {...inputs,
-    roads: mode === "add" ? normalizeGrid([...inputs.roads,...cells]) : inputs.roads.filter(c=>!ids.has(cellId(c))),
-    objects: mode === "add" ? carveObjects(inputs.objects,ids) : inputs.objects });
+  const inputs = document.sceneInputs ?? {
+    version: 1 as const,
+    roads: [],
+    objects: [],
+  };
+  return replaceSceneInputs(document, {
+    ...inputs,
+    roads:
+      mode === "add"
+        ? normalizeGrid([...inputs.roads, ...cells])
+        : inputs.roads.filter((c) => !ids.has(cellId(c))),
+    objects:
+      mode === "add" ? carveObjects(inputs.objects, ids) : inputs.objects,
+  });
 }

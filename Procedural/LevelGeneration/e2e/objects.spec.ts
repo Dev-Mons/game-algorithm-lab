@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { createDocument } from "../src/core/document";
-test("object mode installs modular vegetation without voxels, removes, restores and persists", async ({page}) => {
+test("object mode installs modular vegetation without voxels, removes, restores and persists", async ({page}, info) => {
   const errors: string[] = []; page.on("pageerror",e=>errors.push(e.message));
   await page.goto("/");
   await page.locator("#file").setInputFiles({name:"empty.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(createDocument([],42,"shop")))});
@@ -16,13 +16,31 @@ test("object mode installs modular vegetation without voxels, removes, restores 
   await expect(canvas).toHaveAttribute("data-scene-assets","");
   await page.keyboard.press("Control+Shift+z");
   await expect(canvas).toHaveAttribute("data-scene-assets","shrub");
-  await page.locator("#object-height").fill("3"); await click();
-  await expect(canvas).toHaveAttribute("data-scene-assets",/tree-bottom,tree-middle-1,tree-top/);
+  await expect(page.locator("#object-height")).toHaveCount(0);
+  await page.locator('[data-camera="top"]').click();
+  await click();
+  await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-top");
+  await click();
+  await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-middle,tree-top");
+  await click();
+  await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-middle,tree-middle,tree-top");
+  await page.locator('[data-camera="iso"]').click();
+  await page.screenshot({path:info.outputPath("four-layer-tree.png")});
   const downloadPromise=page.waitForEvent("download"); await page.locator("#save").click();
   const download=await downloadPromise; const path=await download.path();
   await page.locator("#new").click(); await page.locator("#file").setInputFiles(path!);
   await expect(canvas).toHaveAttribute("data-scene-assets",/tree-top/);
-  await page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2,{button:"right"});
+  await page.locator('[data-camera="top"]').click();
+  const remove=()=>page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2,{button:"right"});
+  await remove();
+  await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-middle,tree-top");
+  await remove();
+  await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-top");
+  await remove();
+  await expect(canvas).toHaveAttribute("data-scene-assets","shrub");
+  await remove();
   await expect(canvas).toHaveAttribute("data-scene-assets","");
+  await click();
+  await expect(canvas).toHaveAttribute("data-scene-assets","shrub");
   expect(errors).toEqual([]);
 });

@@ -25,7 +25,7 @@ it.each([1,2,3])("preserves %i-cell widths across corners and intersections with
 it("last input owns cells, updates road topology/object context, preserves unrelated cells and history",()=>{
   let doc=editRoads(createDocument([],42,"shop"),selection(rect(0,0,3,5)),"add");
   const roads=doc;
-  doc=editObjects(doc,selection([[1,0,2]]),"vegetation",1,"add");
+  doc=editObjects(doc,selection([[1,0,2]]),"vegetation","add").document;
   expect(doc.sceneInputs?.roads).toHaveLength(14);
   expect(generateDocument(doc).scenePlacements?.some(p=>p.asset==="median-planter"&&p.context==="median")).toBe(true);
   const history=new DocumentHistory(roads);history.commit(doc);
@@ -34,7 +34,7 @@ it("last input owns cells, updates road topology/object context, preserves unrel
   const restored=editRoads(doc,selection([[1,0,2]]),"add");
   expect(restored.sceneInputs?.roads).toHaveLength(15);expect(restored.sceneInputs?.objects).toHaveLength(0);
   expect(generateDocument(restored).scenePlacements).toEqual(generateDocument(roads).scenePlacements);
-  const objects=editObjects(createDocument([]),selection(rect(0,0,3,1)),"misc",1,"add");
+  const objects=editObjects(createDocument([]),selection(rect(0,0,3,1)),"facility","add").document;
   const cut=editRoads(objects,selection([[1,0,0]]),"add");
   expect(cut.sceneInputs?.objects.flatMap(o=>o.cells)).toEqual([[0,0,0],[2,0,0]]);
   expect(cut.grid).toEqual([]);
