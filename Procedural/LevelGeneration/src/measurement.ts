@@ -1,3 +1,4 @@
+import { generateDocument, documentCatalog } from "./core/generate-document";
 import {
   analyzeVolume,
   selectTiles,
@@ -28,14 +29,14 @@ export function measuredGeneration(
   const start = performance.now();
   const analysis = analyzeVolume(document.grid, options.rolePolicy),
     analyzed = performance.now();
-  const result = assembleModules(
+  const result = document.buildings?.length ? generateDocument(document) : assembleModules(
       selectTiles(analysis, {
         ...options,
       }),
       options,
     ),
     selected = performance.now();
-  viewer.sync(result, document.catalog.tiles);
+  viewer.sync(result, documentCatalog(document));
   const synced = performance.now();
   return {
     result,

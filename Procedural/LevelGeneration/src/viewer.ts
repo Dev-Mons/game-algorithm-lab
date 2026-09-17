@@ -86,6 +86,7 @@ export class Viewer {
     color: "#f7dd83",
     depthTest: false,
   });
+  private buildingSelection = new THREE.Group();
   private selection = new THREE.LineLoop(
     new THREE.BufferGeometry(),
     this.selectedMaterial,
@@ -131,7 +132,7 @@ export class Viewer {
     this.groundPlane.visible = false;
     this.scene.add(this.model, this.grid, this.groundPlane);
     Object.values(this.groups).forEach((g) => this.model.add(g));
-    this.model.add(this.selection);
+    this.model.add(this.selection, this.buildingSelection);
     this.selection.visible = false;
     this.selection.renderOrder = 10;
     this.groups.voxels.visible = false;
@@ -224,7 +225,7 @@ export class Viewer {
         faceId,
         module?.kind === "attachment" ? module.moduleId : undefined,
       );
-    }
+    } else this.onSelect("");
   }
   clearEditSelection() {
     this.interaction.clear();
@@ -245,6 +246,7 @@ export class Viewer {
   clear() {
     Object.values(this.groups).forEach((g) => this.clearGroup(g));
     this.selection.visible = false;
+    this.clearGroup(this.buildingSelection);
     this.result = undefined;
   }
   sync(result: GenerationResult, catalog: Tile[]) {
@@ -459,6 +461,18 @@ export class Viewer {
       ),
       material,
     );
+  }
+  selectBuilding(componentId?: string) {
+    this.clearGroup(this.buildingSelection);
+    this.renderer.domElement.dataset.buildingId = componentId ?? "";
+    if (!componentId) return;
+    const points = this.result?.surfaces.filter(s => s.componentId === componentId).flatMap(s => {
+      const corners = faceCorners(s.cell, s.direction);
+      return corners.flatMap((c,i) => [...c, ...corners[(i+1)%4]]);
+    }) ?? [];
+    const lines = this.lines(points, this.selectedMaterial);
+    lines.renderOrder = 15;
+    this.buildingSelection.add(lines);
   }
   select(faceId: string) {
     const face = this.result?.surfaces.find((s) => s.faceId === faceId);

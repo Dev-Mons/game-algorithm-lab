@@ -1,3 +1,4 @@
+import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./buildings";
 import {
   SHOP_STYLE,
   OFFICE_STYLE,
@@ -133,6 +134,7 @@ export function createDocument(
   seed = 0,
   profile: Profile = "reference",
   definition?: BuildingStyle,
+  buildings?: BuildingMetadata[],
 ) {
   const options = profileData(profile);
   if (definition && !options.architecture)
@@ -164,6 +166,7 @@ export function createDocument(
           ? "architecture-v1"
           : "shell-v1",
     ...(architecture ? { buildingDefinition: architecture } : {}),
+    ...(buildings?.length ? { buildings: validateBuildings(normalizeGrid(grid), buildings) } : {}),
     grid: normalizeGrid(grid),
     seed,
     catalog: {
@@ -254,6 +257,7 @@ export function loadDocument(text: string): GenerationDocument {
     raw.seed,
     raw.catalog.id,
     raw.buildingDefinition,
+    raw.buildings,
   );
   if (!Number.isInteger(raw.seed))
     throw new Error("Document must include an explicit integer seed.");
@@ -284,6 +288,7 @@ export function replaceGrid(
     document.seed,
     document.catalog.id,
     document.buildingDefinition,
+    inheritBuildings(document.grid, grid, document.buildings ?? []),
   );
 }
 
@@ -295,4 +300,9 @@ export function documentOptions(document: GenerationDocument) {
       ? { architecture: document.buildingDefinition }
       : {}),
   };
+}
+
+export function setBuildingTheme(document: GenerationDocument, componentId: string, theme: BuildingStyle) {
+  return createDocument(document.grid, document.seed, document.catalog.id, document.buildingDefinition,
+    [...(document.buildings ?? []).filter(b => b.componentId !== componentId), { componentId, theme }]);
 }

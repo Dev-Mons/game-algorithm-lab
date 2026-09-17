@@ -1,3 +1,5 @@
+import { setBuildingTheme } from "./core/document";
+import { SHOP_STYLE, OFFICE_STYLE } from "./core/building-style";
 import "./style.css";
 import { type Vec3, type GenerationResult } from "./core/generate";
 import {
@@ -64,7 +66,7 @@ export const el = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 export const viewer = new Viewer(
   el("viewport"),
-  selectFace,
+  selectBuildingFace,
   editSelection,
   (message, active) => {
     el("selection-status").textContent = message;
@@ -83,6 +85,24 @@ export let currentDocument = createDocument(
 );
 const history = new DocumentHistory(currentDocument);
 export let currentResult: GenerationResult;
+let selectedBuilding: string | undefined;
+function selectBuildingFace(id: string, attachmentId?: string) {
+  selectFace(id, attachmentId);
+  selectedBuilding = currentResult?.surfaces.find(s => s.faceId === id)?.componentId;
+  refreshBuildingSelection();
+}
+function refreshBuildingSelection() {
+  if (!currentResult?.surfaces.some(s => s.componentId === selectedBuilding)) selectedBuilding = undefined;
+  const panel = el("building-selection");
+  if (!panel) return;
+  panel.hidden = !selectedBuilding;
+  viewer.selectBuilding(selectedBuilding);
+  if (selectedBuilding) {
+    el("building-id").textContent = `건물 ${selectedBuilding}`;
+    el<HTMLSelectElement>("building-theme").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.theme?.id ?? currentDocument.buildingDefinition?.id ?? "";
+  }
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") { selectedBuilding = undefined; refreshBuildingSelection(); } });
 let valid = true;
 let busy = false;
 export function showError(error: unknown) {
@@ -257,6 +277,7 @@ export function regenerate(fit = false) {
   try {
     const { result, timings } = measuredGeneration(currentDocument, viewer);
     showResult(result);
+    refreshBuildingSelection();
     el("timings").innerHTML =
       `CPU 전체 <strong>${timings.total.toFixed(2)} ms</strong><br>분석 ${timings.analysis.toFixed(2)} · 선택 ${timings.selection.toFixed(2)} · 표시 동기화 ${timings.rendererSync.toFixed(2)} ms<br>탐색 범위 ${result.counters.paddedCells} cells · Rule 평가 ${result.counters.ruleEvaluations}회${result.regions ? `<br>표면 영역 ${result.regions.length}개 · 출입구 ${result.placements.filter((p) => p.ruleId === "facade.entry" || p.ruleId === "building.entrance").length}개` : ""}`;
     if (fit) {
@@ -345,12 +366,17 @@ viewer.setGroundVisible(true);
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
   <div class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 후 블록 추가</span></p><p><b>오른쪽 드래그</b><span>영역 선택 후 블록 제거</span></p><p><b>선택 중 좌 / 우 클릭</b><span>같은 영역 한 층 추가 / 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select></div>
   <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="crafted-hip">입체 · 우진각</option><option value="crafted-gable">입체 · 박공</option><option value="crafted-flat">입체 · 평지붕</option><option value="village">마을 건축 v2</option><option value="reference">기본 패널 v1</option><option value="variants">2종 변형 v1</option></select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 드래그하세요.
 실행 취소 Ctrl+Z · 다시 실행 Ctrl+Shift+Z</p>`;
 el("benchmark-slot").innerHTML =
   '<button id="measure" class="wide-button">생성 성능 측정 ↗</button><p id="measure-status" role="status" class="edit-note"></p><button id="save-measure" class="wide-button" hidden>측정 JSON 저장</button><pre id="measure-report" hidden></pre>';
+el("building-theme").addEventListener("change", () => {
+  if (!selectedBuilding) return;
+  acceptDocument(setBuildingTheme(currentDocument, selectedBuilding, el<HTMLSelectElement>("building-theme").value === "office" ? OFFICE_STYLE : SHOP_STYLE));
+});
 function inputSettings() {
   return {
     seed: el<HTMLInputElement>("seed").valueAsNumber,
@@ -369,6 +395,7 @@ function applyGrid(grid: Vec3[], fit = false) {
         profile === currentDocument.catalog.id
           ? currentDocument.buildingDefinition
           : undefined,
+        replaceGrid(currentDocument, grid).buildings,
       ),
       fit,
     );
