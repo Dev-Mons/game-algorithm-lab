@@ -6,6 +6,7 @@ interface Context {
   result?: GenerationResult;
   origin: THREE.Vector3;
   surfaces: THREE.Group;
+  objects: THREE.Group;
 }
 interface Gesture {
   pointer: number;
@@ -18,6 +19,7 @@ interface Gesture {
 }
 
 export class SurfaceInteraction {
+  mode: "building" | "object" | "road" = "building";
   private selection?: SurfaceSelection;
   private gesture?: Gesture;
   private ray = new THREE.Raycaster();
@@ -66,7 +68,7 @@ export class SurfaceInteraction {
       if (g.dragged && g.start && inside) this.preview(e, g);
       this.cancelGesture();
       if (!inside) { this.draw(this.selection); return; }
-      const chosen = g.dragged ? g.preview : this.selection;
+      const chosen = g.dragged ? g.preview : this.mode !== "building" ? g.start : this.selection;
       if (chosen) {
         this.selection = this.commit(chosen, g.button === 2 ? "remove" : "add") ?? this.selection;
         this.draw(this.selection);
@@ -88,11 +90,19 @@ export class SurfaceInteraction {
     this.ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2), this.camera);
   }
   private pick(e: PointerEvent): SurfaceSelection | undefined {
-    const { result, origin, surfaces } = this.context();
+    const { result, origin, surfaces, objects } = this.context();
     if (!result) return;
     this.setRay(e);
     surfaces.updateMatrixWorld(true);
-    const hit = this.ray.intersectObjects(surfaces.children, false)[0];
+    objects.updateMatrixWorld(true);
+    const hit = this.ray.intersectObjects([...surfaces.children, ...(this.mode === "object" ? objects.children : [])], false)[0];
+    const input = hit?.object.userData.scenePlacement?.input;
+    if (input) {
+      const normal = BASES[input.direction as keyof typeof BASES].n;
+      const own = new Set(input.cells.map(cellId));
+      const cells = (input.cells as Vec3[]).map(c => c.map((v,a) => v-normal[a]) as Vec3).filter(c => !own.has(cellId(c)));
+      return { direction: input.direction, cells };
+    }
     if (hit?.instanceId !== undefined) {
       const face = result.surfaces[hit.instanceId];
       return { direction: face.direction, cells: [face.cell] };

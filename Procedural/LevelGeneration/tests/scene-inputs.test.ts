@@ -1,0 +1,38 @@
+import { expect, it } from "vitest";
+import { createDocument, exportDocument, loadDocument, replaceSceneInputs } from "../src/core/document";
+import { generateDocument } from "../src/core/generate-document";
+import { editObjects } from "../src/scene-editor";
+import { DocumentHistory } from "../src/editor";
+import { objectContext, type ObjectInput } from "../src/core/scene-inputs";
+const ground = { direction: "PY" as const, cells: [[0,-1,0] as [number,number,number]] };
+it("keeps object inputs outside building coverage and generates shrub / modular tree deterministically", () => {
+  const doc = createDocument([],42,"shop");
+  const shrub = editObjects(doc,ground,"vegetation",1,"add");
+  expect(shrub.grid).toEqual([]);
+  expect(generateDocument(shrub).scenePlacements?.map(p=>p.asset)).toEqual(["shrub"]);
+  const tree = editObjects(shrub,ground,"vegetation",3,"add");
+  expect(generateDocument(tree).scenePlacements?.map(p=>p.asset)).toEqual(["tree-bottom","tree-middle-1","tree-top"]);
+  expect(generateDocument(loadDocument(exportDocument(tree)))).toEqual(generateDocument(tree));
+  const history = new DocumentHistory(shrub); history.commit(tree);
+  expect(history.undo()).toEqual(shrub); expect(history.redo()).toEqual(tree);
+  const removed = editObjects(tree,ground,"vegetation",1,"remove");
+  expect(removed.sceneInputs?.objects).toEqual([]);
+});
+it("uses roof, wall, ground and roadside context without asset selection", () => {
+  const input: ObjectInput = {id:"a",category:"lighting",cells:[[0,0,0]],direction:"PY"};
+  expect(objectContext(input,[],[[1,0,0]])).toBe("roadside");
+  const groundLight = editObjects(createDocument([]),ground,"lighting",1,"add");
+  const roadLight = replaceSceneInputs(groundLight,{...groundLight.sceneInputs!,roads:[[1,0,0]]});
+  expect(generateDocument(groundLight).scenePlacements?.at(-1)?.asset).toBe("bollard");
+  expect(generateDocument(roadLight).scenePlacements?.at(-1)?.asset).toBe("street-lamp");
+  const doc = createDocument([[0,0,0]],42,"shop");
+  const roof = editObjects(doc,{direction:"PY",cells:[[0,0,0]]},"misc",1,"add");
+  expect(generateDocument(roof).scenePlacements?.[0].asset).toBe("air-conditioner");
+  const wall = editObjects(doc,{direction:"PX",cells:[[0,0,0]]},"lighting",1,"add");
+  expect(generateDocument(wall).scenePlacements?.at(-1)?.asset).toBe("wall-lamp");
+  expect(generateDocument(roof).placements).toEqual(generateDocument(doc).placements);
+  expect(() => editObjects(doc,{direction:"PX",cells:[[0,0,0]]},"vegetation",1,"add")).toThrow();
+  expect(() => editObjects(doc,{direction:"NY",cells:[[0,0,0]]},"lighting",1,"add")).toThrow();
+  expect(() => editObjects(doc,{direction:"PY",cells:[[2,2,0]]},"misc",1,"add")).toThrow();
+  expect(doc.sceneInputs).toBeUndefined();
+});

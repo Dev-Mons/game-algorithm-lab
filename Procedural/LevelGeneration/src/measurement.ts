@@ -29,7 +29,7 @@ export function measuredGeneration(
   const start = performance.now();
   const analysis = analyzeVolume(document.grid, options.rolePolicy),
     analyzed = performance.now();
-  const result = document.buildings?.length ? generateDocument(document) : assembleModules(
+  const result = (document.buildings?.length || document.sceneInputs) ? generateDocument(document) : assembleModules(
       selectTiles(analysis, {
         ...options,
       }),

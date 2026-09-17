@@ -1,3 +1,4 @@
+import { validateSceneInputs, type SceneInputs } from "./scene-inputs";
 import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./buildings";
 import {
   SHOP_STYLE,
@@ -135,6 +136,7 @@ export function createDocument(
   profile: Profile = "reference",
   definition?: BuildingStyle,
   buildings?: BuildingMetadata[],
+  sceneInputs?: SceneInputs,
 ) {
   const options = profileData(profile);
   if (definition && !options.architecture)
@@ -166,6 +168,7 @@ export function createDocument(
           ? "architecture-v1"
           : "shell-v1",
     ...(architecture ? { buildingDefinition: architecture } : {}),
+    ...(sceneInputs ? { sceneInputs: validateSceneInputs(normalizeGrid(grid), sceneInputs) } : {}),
     ...(buildings?.length ? { buildings: validateBuildings(normalizeGrid(grid), buildings) } : {}),
     grid: normalizeGrid(grid),
     seed,
@@ -258,6 +261,7 @@ export function loadDocument(text: string): GenerationDocument {
     raw.catalog.id,
     raw.buildingDefinition,
     raw.buildings,
+    raw.sceneInputs,
   );
   if (!Number.isInteger(raw.seed))
     throw new Error("Document must include an explicit integer seed.");
@@ -289,6 +293,7 @@ export function replaceGrid(
     document.catalog.id,
     document.buildingDefinition,
     inheritBuildings(document.grid, grid, document.buildings ?? []),
+    document.sceneInputs,
   );
 }
 
@@ -304,5 +309,9 @@ export function documentOptions(document: GenerationDocument) {
 
 export function setBuildingTheme(document: GenerationDocument, componentId: string, theme: BuildingStyle) {
   return createDocument(document.grid, document.seed, document.catalog.id, document.buildingDefinition,
-    [...(document.buildings ?? []).filter(b => b.componentId !== componentId), { componentId, theme }]);
+    [...(document.buildings ?? []).filter(b => b.componentId !== componentId), { ...document.buildings?.find(b => b.componentId === componentId), componentId, theme }], document.sceneInputs);
+}
+
+export function replaceSceneInputs(document: GenerationDocument, sceneInputs: SceneInputs) {
+  return createDocument(document.grid, document.seed, document.catalog.id, document.buildingDefinition, document.buildings, sceneInputs);
 }

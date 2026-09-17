@@ -1,3 +1,5 @@
+import { editObjects } from "./scene-editor";
+import type { ObjectCategory } from "./core/scene-inputs";
 import { setBuildingTheme } from "./core/document";
 import { SHOP_STYLE, OFFICE_STYLE } from "./core/building-style";
 import "./style.css";
@@ -365,6 +367,8 @@ el<HTMLInputElement>("ground-visible").addEventListener("change", () =>
 viewer.setGroundVisible(true);
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
+  <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option></select>
+  <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="misc">기타</option></select><label for="object-height">높이 (Cell)</label><input id="object-height" type="number" min="1" max="8" value="1"><p class="edit-note">클릭/드래그로 설치 · 우클릭/우드래그로 제거. 넓은 식생 영역은 최소 3단 나무로 구성합니다.</p></div>
   <div class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 후 블록 추가</span></p><p><b>오른쪽 드래그</b><span>영역 선택 후 블록 제거</span></p><p><b>선택 중 좌 / 우 클릭</b><span>같은 영역 한 층 추가 / 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
   <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select></div>
   <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="crafted-hip">입체 · 우진각</option><option value="crafted-gable">입체 · 박공</option><option value="crafted-flat">입체 · 평지붕</option><option value="village">마을 건축 v2</option><option value="reference">기본 패널 v1</option><option value="variants">2종 변형 v1</option></select></label></div>
@@ -373,6 +377,12 @@ el("editor-slot").innerHTML = `
 실행 취소 Ctrl+Z · 다시 실행 Ctrl+Shift+Z</p>`;
 el("benchmark-slot").innerHTML =
   '<button id="measure" class="wide-button">생성 성능 측정 ↗</button><p id="measure-status" role="status" class="edit-note"></p><button id="save-measure" class="wide-button" hidden>측정 JSON 저장</button><pre id="measure-report" hidden></pre>';
+el("edit-mode").addEventListener("change", () => {
+  const mode = el<HTMLSelectElement>("edit-mode").value as "building" | "object";
+  viewer.setEditMode(mode);
+  selectedBuilding = undefined; refreshBuildingSelection();
+  el("object-tools").hidden = mode !== "object";
+});
 el("building-theme").addEventListener("change", () => {
   if (!selectedBuilding) return;
   acceptDocument(setBuildingTheme(currentDocument, selectedBuilding, el<HTMLSelectElement>("building-theme").value === "office" ? OFFICE_STYLE : SHOP_STYLE));
@@ -383,7 +393,7 @@ function inputSettings() {
     profile: el<HTMLSelectElement>("profile").value as Profile,
   };
 }
-function applyGrid(grid: Vec3[], fit = false) {
+function applyGrid(grid: Vec3[], fit = false, resetScene = false) {
   if (busy) return;
   try {
     const { seed, profile } = inputSettings();
@@ -395,7 +405,8 @@ function applyGrid(grid: Vec3[], fit = false) {
         profile === currentDocument.catalog.id
           ? currentDocument.buildingDefinition
           : undefined,
-        replaceGrid(currentDocument, grid).buildings,
+        resetScene ? undefined : replaceGrid(currentDocument, grid).buildings,
+        resetScene ? undefined : currentDocument.sceneInputs,
       ),
       fit,
     );
@@ -408,6 +419,14 @@ function applyGrid(grid: Vec3[], fit = false) {
 function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
   if (busy || !valid) return undefined;
   try {
+    if (el<HTMLSelectElement>("edit-mode").value === "object") {
+      const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, el<HTMLInputElement>("object-height").valueAsNumber, mode);
+      if (acceptDocument(next, false, true)) {
+        el("edit-note").textContent = `오브젝트 ${mode === "add" ? "설치" : "제거"} 완료 · 건물 부피 유지`;
+        return selection;
+      }
+      return undefined;
+    }
     const next = stepSurface(currentDocument.grid, selection, mode);
     if (!next.changed) {
       el("edit-note").textContent =
@@ -430,7 +449,7 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
     return undefined;
   }
 }
-el("new").addEventListener("click", () => applyGrid([], true));
+el("new").addEventListener("click", () => applyGrid([], true, true));
 el("city-generate").addEventListener("click", () => {
   try {
     const city = generateCity({
@@ -444,7 +463,7 @@ el("city-generate").addEventListener("click", () => {
         | "grid"
         | "courtyard",
     });
-    applyGrid(city.cells, true);
+    applyGrid(city.cells, true, true);
     el("scene-name").textContent =
       `Generated city · ${city.lots.length} buildings`;
     el("edit-note").textContent =

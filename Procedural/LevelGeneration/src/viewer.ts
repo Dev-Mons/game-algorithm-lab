@@ -86,6 +86,8 @@ export class Viewer {
     color: "#f7dd83",
     depthTest: false,
   });
+  private scenePlacements = new THREE.Group();
+  private sceneMaterials = new Map<string, THREE.MeshStandardMaterial>();
   private buildingSelection = new THREE.Group();
   private selection = new THREE.LineLoop(
     new THREE.BufferGeometry(),
@@ -132,7 +134,7 @@ export class Viewer {
     this.groundPlane.visible = false;
     this.scene.add(this.model, this.grid, this.groundPlane);
     Object.values(this.groups).forEach((g) => this.model.add(g));
-    this.model.add(this.selection, this.buildingSelection);
+    this.model.add(this.selection, this.buildingSelection, this.scenePlacements);
     this.selection.visible = false;
     this.selection.renderOrder = 10;
     this.groups.voxels.visible = false;
@@ -163,6 +165,7 @@ export class Viewer {
         result: this.result,
         origin: this.displayOrigin,
         surfaces: this.groups.surfaces,
+        objects: this.scenePlacements,
       }),
       onEdit,
       (e) => this.inspect(e),
@@ -227,6 +230,10 @@ export class Viewer {
       );
     } else this.onSelect("");
   }
+  setEditMode(mode: "building" | "object" | "road") {
+    this.interaction.clear();
+    this.interaction.mode = mode;
+  }
   clearEditSelection() {
     this.interaction.clear();
   }
@@ -247,6 +254,7 @@ export class Viewer {
     Object.values(this.groups).forEach((g) => this.clearGroup(g));
     this.selection.visible = false;
     this.clearGroup(this.buildingSelection);
+    this.clearGroup(this.scenePlacements);
     this.result = undefined;
   }
   sync(result: GenerationResult, catalog: Tile[]) {
@@ -256,6 +264,10 @@ export class Viewer {
     for (const c of result.cells) {
       bounds.expandByPoint(new THREE.Vector3(...c));
       bounds.expandByPoint(new THREE.Vector3(c[0] + 1, c[1] + 1, c[2] + 1));
+    }
+    for (const p of result.scenePlacements ?? []) {
+      bounds.expandByPoint(new THREE.Vector3(...p.center.map((v,a) => v-p.size[a]/2) as Vec3));
+      bounds.expandByPoint(new THREE.Vector3(...p.center.map((v,a) => v+p.size[a]/2) as Vec3));
     }
     const center = bounds.isEmpty()
       ? new THREE.Vector3()
@@ -273,6 +285,16 @@ export class Viewer {
       2,
       bounds.isEmpty() ? 2 : bounds.getSize(new THREE.Vector3()).length() / 2,
     );
+    for (const p of result.scenePlacements ?? []) {
+      let material = this.sceneMaterials.get(p.color);
+      if (!material) { material = new THREE.MeshStandardMaterial({color:p.color, roughness:.8}); this.sceneMaterials.set(p.color,material); }
+      const mesh = new THREE.InstancedMesh(this.cube, material, 1);
+      const matrix = new THREE.Matrix4().compose(new THREE.Vector3(...p.center).add(this.displayOrigin), new THREE.Quaternion(), new THREE.Vector3(...p.size));
+      mesh.setMatrixAt(0,matrix); mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.userData.scenePlacement = p;
+      this.scenePlacements.add(mesh);
+    }
+    this.renderer.domElement.dataset.sceneAssets = (result.scenePlacements ?? []).map(p => p.asset).join(",");
     const count = result.surfaces.length;
     if (!count) return;
     const surfaces = new THREE.InstancedMesh(
@@ -534,6 +556,7 @@ export class Viewer {
     this.regionMaterial.dispose();
     this.assets.dispose();
     this.crafted.dispose();
+    this.sceneMaterials.forEach(m => m.dispose());
     this.groundPlane.geometry.dispose();
     this.groundPlane.material.dispose();
     this.renderer.dispose();

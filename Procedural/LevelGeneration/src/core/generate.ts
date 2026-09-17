@@ -1,3 +1,4 @@
+import type { ScenePlacement } from "./scene-inputs";
 import { analyzeVolume } from "./regions";
 import { selectTiles, type SelectionOptions } from "./selection";
 import { assembleModules } from "./modules";
@@ -12,4 +13,4 @@ export function generate(input: unknown, options: SelectionOptions = {}) {
     options,
   );
 }
-export type GenerationResult = ReturnType<typeof generate>;
+export type GenerationResult = ReturnType<typeof generate> & { scenePlacements?: ScenePlacement[] };

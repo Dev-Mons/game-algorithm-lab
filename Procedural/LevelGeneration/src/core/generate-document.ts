@@ -1,9 +1,14 @@
+import { objectPlacements } from "./scene-inputs";
 import { analyzeVolume, assembleModules, generate, selectTiles, type GenerationResult } from "./generate";
 import { documentOptions, profileData, type GenerationDocument } from "./document";
 
 const componentCache = new Map<string, GenerationResult>();
 // Component selection uses the shared whole-volume analysis, preserving exterior/adjacency semantics.
 export function generateDocument(document: GenerationDocument): GenerationResult {
+  const result = generateBuildings(document);
+  return document.sceneInputs ? { ...result, scenePlacements: objectPlacements(document.grid, document.sceneInputs) } : result;
+}
+function generateBuildings(document: GenerationDocument): GenerationResult {
   const options = documentOptions(document);
   if (!document.buildings?.length) return generate(document.grid, options);
   const analysis = analyzeVolume(document.grid, "region-context-v1");
