@@ -95,7 +95,7 @@ export class SurfaceInteraction {
     this.setRay(e);
     surfaces.updateMatrixWorld(true);
     objects.updateMatrixWorld(true);
-    const hit = this.ray.intersectObjects([...surfaces.children, ...(this.mode === "object" ? objects.children.filter(o => o.userData.scenePlacement?.kind === "object") : [])], false)[0];
+    const hit = this.ray.intersectObjects([...surfaces.children, ...(this.mode === "object" && objects.visible ? objects.children.filter(o => o.userData.scenePlacement?.kind === "object") : [])], false)[0];
     const input = hit?.object.userData.scenePlacement?.input;
     if (input) {
       const normal = BASES[input.direction as keyof typeof BASES].n;

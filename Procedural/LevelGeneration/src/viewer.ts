@@ -186,6 +186,7 @@ export class Viewer {
       this.camera,
     );
     const targets = [
+      ...(this.scenePlacements.visible ? this.scenePlacements.children.filter(o => o.userData.scenePlacement?.kind === "building") : []),
       ...(this.groups.placements.visible
         ? this.groups.placements.children
         : []),
@@ -195,7 +196,12 @@ export class Viewer {
     const hit = this.raycaster.intersectObjects(targets, false)[0];
     if (hit?.instanceId !== undefined && this.result) {
       const module = hit.object.userData.module;
-      let faceId = hit.object.userData.faceIds[hit.instanceId];
+      let faceId = hit.object.userData.faceIds?.[hit.instanceId];
+      if (hit.object.userData.scenePlacement?.kind === "building") {
+        const componentId = hit.object.userData.scenePlacement.componentId;
+        faceId = this.result.surfaces.find(s => s.componentId === componentId)?.faceId;
+      }
+      if (!faceId) return;
       if (module?.kind === "structure") {
         const point = hit.point.clone().sub(this.displayOrigin);
         if (module.assetKey.startsWith("roof."))
@@ -514,6 +520,7 @@ export class Viewer {
   }
   setLayer(layer: Layer, visible: boolean) {
     this.groups[layer].visible = visible;
+    if (layer === "placements") this.scenePlacements.visible = visible;
   }
   setGround(y: number) {
     this.ground = y;

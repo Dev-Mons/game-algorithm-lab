@@ -1,6 +1,7 @@
+import { buildingRules } from "./core/building-rules";
 import { editObjects, editRoads } from "./scene-editor";
 import type { ObjectCategory } from "./core/scene-inputs";
-import { setBuildingTheme } from "./core/document";
+import { setBuildingTheme, setBuildingRule } from "./core/document";
 import { SHOP_STYLE, OFFICE_STYLE } from "./core/building-style";
 import "./style.css";
 import { type Vec3, type GenerationResult } from "./core/generate";
@@ -100,6 +101,7 @@ function refreshBuildingSelection() {
   panel.hidden = !selectedBuilding;
   viewer.selectBuilding(selectedBuilding);
   if (selectedBuilding) {
+    el<HTMLSelectElement>("building-rule").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.rule?.id ?? "standard";
     el("building-id").textContent = `건물 ${selectedBuilding}`;
     el<HTMLSelectElement>("building-theme").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.theme?.id ?? currentDocument.buildingDefinition?.id ?? "";
   }
@@ -138,7 +140,7 @@ export function showResult(result: GenerationResult) {
   el("status").textContent = result.status.toUpperCase();
   el("status").className = `status ${result.status}`;
   el("stats").innerHTML =
-    `<div><strong>${result.cells.length}</strong><span>점유 셀</span></div><div><strong>${result.surfaces.length}</strong><span>외부 표면</span></div><div><strong>${result.placements.length + (result.counters.moduleCount ?? 0)}</strong><span>구조 모듈</span></div><div><strong>${result.counters.componentCount}</strong><span>독립 성분</span></div>`;
+    `<div><strong>${result.cells.length}</strong><span>점유 셀</span></div><div><strong>${result.surfaces.length}</strong><span>외부 표면</span></div><div><strong>${result.placements.length + (result.counters.moduleCount ?? 0) + (result.scenePlacements?.filter(p => p.kind === "building").length ?? 0)}</strong><span>구조 모듈</span></div><div><strong>${result.counters.componentCount}</strong><span>독립 성분</span></div>`;
   faceSelect.replaceChildren(
     ...result.surfaces.map(
       (s) => new Option(`${s.faceId} · ${s.role}`, s.faceId),
@@ -180,7 +182,7 @@ export function showResult(result: GenerationResult) {
     }
   } else
     diagnostics.innerHTML =
-      '<p class="all-clear">✓ 외피 누락·중복 0 · fallback 0</p>';
+      result.scenePlacements?.some(p=>p.kind==="building") ? '<p class="all-clear">✓ 등록된 생성 규칙으로 구조 생성 완료</p>' : '<p class="all-clear">✓ 외피 누락·중복 0 · fallback 0</p>';
 }
 export function selectFace(id: string, attachmentId?: string) {
   const trace = currentResult?.traces.find((t) => t.faceId === id);
@@ -195,6 +197,7 @@ export function selectFace(id: string, attachmentId?: string) {
     currentResult?.modules?.find(
       (m) => m.kind === "structure" && m.faceIds.includes(id),
     );
+  const custom = currentResult?.scenePlacements?.find(p => p.kind === "building" && p.componentId === trace?.componentId);
   const p =
     (!attachment
       ? currentResult?.placements.find((t) => t.faceId === id)
@@ -206,7 +209,7 @@ export function selectFace(id: string, attachmentId?: string) {
           position2: module.position2,
           orientationId: module.orientationId,
         }
-      : undefined);
+      : custom ? {tileId:custom.asset,ruleId:custom.context,position2:custom.center.map(n=>n*2),orientationId:"PY"} : undefined);
   if (!trace || !p) return;
   faceSelect.value = id;
   const attachmentSelect = el<HTMLSelectElement>("attachment");
@@ -370,7 +373,7 @@ el("editor-slot").innerHTML = `
   <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option></select><p id="road-tools" class="edit-note" hidden>지면을 드래그해 도로 길이와 폭을 지정하세요. 좌클릭 설치 · 우클릭 제거. 연결과 차선은 자동으로 바뀝니다.</p>
   <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="misc">기타</option></select><label for="object-height">높이 (Cell)</label><input id="object-height" type="number" min="1" max="8" value="1"><p class="edit-note">클릭/드래그로 설치 · 우클릭/우드래그로 제거. 넓은 식생 영역은 최소 3단 나무로 구성합니다.</p></div>
   <div class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 후 블록 추가</span></p><p><b>오른쪽 드래그</b><span>영역 선택 후 블록 제거</span></p><p><b>선택 중 좌 / 우 클릭</b><span>같은 영역 한 층 추가 / 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
-  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
   <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="crafted-hip">입체 · 우진각</option><option value="crafted-gable">입체 · 박공</option><option value="crafted-flat">입체 · 평지붕</option><option value="village">마을 건축 v2</option><option value="reference">기본 패널 v1</option><option value="variants">2종 변형 v1</option></select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 드래그하세요.
@@ -383,6 +386,12 @@ el("edit-mode").addEventListener("change", () => {
   selectedBuilding = undefined; refreshBuildingSelection();
   el("object-tools").hidden = mode !== "object";
   el("road-tools").hidden = mode !== "road";
+});
+for (const rule of buildingRules()) el<HTMLSelectElement>("building-rule").add(new Option(rule.label,rule.id));
+el("building-rule").addEventListener("change", () => {
+  if (!selectedBuilding) return;
+  try { acceptDocument(setBuildingRule(currentDocument, selectedBuilding, el<HTMLSelectElement>("building-rule").value)); }
+  catch(error) { el("edit-note").textContent = error instanceof Error ? error.message : String(error); }
 });
 el("building-theme").addEventListener("change", () => {
   if (!selectedBuilding) return;

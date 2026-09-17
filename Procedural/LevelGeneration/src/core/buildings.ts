@@ -1,7 +1,8 @@
+import { resolveBuildingRule, type BuildingRuleReference } from "./building-rules";
 import { add, BASES, cellId, compareCells, DIRECTIONS, normalizeGrid, type Vec3 } from "./analysis";
 import { validateBuildingStyle, type BuildingStyle } from "./building-style";
 
-export interface BuildingMetadata { componentId: string; theme?: BuildingStyle }
+export interface BuildingMetadata { componentId: string; theme?: BuildingStyle; rule?: BuildingRuleReference }
 export function buildingComponents(input: Vec3[]) {
   const cells = normalizeGrid(input), remaining = new Set(cells.map(cellId));
   const result: { id: string; cells: Vec3[] }[] = [];
@@ -22,8 +23,9 @@ export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[]) {
   for (const entry of metadata) {
     if (!entry || !ids.has(entry.componentId) || seen.has(entry.componentId)) throw new Error("Invalid building component.");
     seen.add(entry.componentId);
-    if (entry.theme) validateBuildingStyle(entry.theme);
-    if (Object.keys(entry).some(k => !["componentId", "theme"].includes(k))) throw new Error("Unknown building metadata.");
+    if (entry.theme !== undefined) validateBuildingStyle(entry.theme);
+    if (entry.rule !== undefined) resolveBuildingRule(entry.rule);
+    if (Object.keys(entry).some(k => !["componentId", "theme", "rule"].includes(k))) throw new Error("Unknown building metadata.");
   }
   return JSON.parse(JSON.stringify(metadata)).sort((a: BuildingMetadata, b: BuildingMetadata) => a.componentId.localeCompare(b.componentId)) as BuildingMetadata[];
 }

@@ -2,7 +2,7 @@ import { add, BASES, cellId, DIRECTIONS, normalizeGrid, type Direction, type Vec
 export type ObjectCategory = "lighting" | "vegetation" | "misc";
 export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction }
 export interface SceneInputs { version: 1; roads: Vec3[]; objects: ObjectInput[] }
-export interface ScenePlacement { input?: ObjectInput; id: string; kind: "object" | "road" | "building"; asset: string; center: Vec3; size: Vec3; color: string; context: string }
+export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building"; asset: string; center: Vec3; size: Vec3; color: string; context: string }
 export type ObjectContext = "ground" | "roof" | "wall" | "roadside" | "median";
 const horizontal: Vec3[] = [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]];
 export function objectContext(input: ObjectInput, grid: Vec3[], roads: Vec3[]): ObjectContext {

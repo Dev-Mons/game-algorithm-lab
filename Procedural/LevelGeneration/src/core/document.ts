@@ -1,3 +1,4 @@
+import { ruleReference, type RuleData } from "./building-rules";
 import { validateSceneInputs, type SceneInputs } from "./scene-inputs";
 import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./buildings";
 import {
@@ -314,4 +315,10 @@ export function setBuildingTheme(document: GenerationDocument, componentId: stri
 
 export function replaceSceneInputs(document: GenerationDocument, sceneInputs: SceneInputs) {
   return createDocument(document.grid, document.seed, document.catalog.id, document.buildingDefinition, document.buildings, sceneInputs);
+}
+
+export function setBuildingRule(document: GenerationDocument, componentId: string, ruleId: string, metadata: RuleData = {}) {
+  const previous = document.buildings?.find(b => b.componentId === componentId);
+  return createDocument(document.grid, document.seed, document.catalog.id, document.buildingDefinition,
+    [...(document.buildings ?? []).filter(b => b.componentId !== componentId), { ...previous, componentId, rule: ruleReference(ruleId, metadata) }], document.sceneInputs);
 }
