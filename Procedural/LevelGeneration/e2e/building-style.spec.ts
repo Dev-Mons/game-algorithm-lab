@@ -27,7 +27,8 @@ test('current custom band settings, direct edit, JSON and Undo/Redo preserve rea
   await expect(page.locator('#facade-info')).toContainText('층 base');expect(JSON.parse((await page.locator('#trace').textContent())!).selection.tileId).toContain('base-head');
   const before=await save(page);await page.locator('[data-camera="top"]').click();
   const canvas=page.locator('canvas'),b=(await canvas.boundingBox())!,x=b.x+b.width/2+10,y=b.y+b.height/2+10;
-  await page.mouse.move(x,y);await page.mouse.down({button:'right'});await page.mouse.move(x+8,y+8,{steps:4});await page.mouse.up({button:'right'});
+  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+8,y+8,{steps:4});await page.mouse.up();
+  await page.keyboard.press('q');
   const after=await save(page);expect(after.document.grid).toHaveLength(before.document.grid.length-1);expect(after.document.buildingDefinition).toEqual(custom);
   const result=generateDocument(after.document);validateAssembly(result.surfaces.map(s=>s.faceId),result.placements,result.modules!);
   await canvas.focus();await page.keyboard.press('Control+z');expect((await save(page)).text).toBe(before.text);
