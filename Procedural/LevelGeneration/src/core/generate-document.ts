@@ -1,3 +1,4 @@
+import { roadPlacements } from "./roads";
 import { objectPlacements } from "./scene-inputs";
 import { analyzeVolume, assembleModules, generate, selectTiles, type GenerationResult } from "./generate";
 import { documentOptions, profileData, type GenerationDocument } from "./document";
@@ -6,7 +7,7 @@ const componentCache = new Map<string, GenerationResult>();
 // Component selection uses the shared whole-volume analysis, preserving exterior/adjacency semantics.
 export function generateDocument(document: GenerationDocument): GenerationResult {
   const result = generateBuildings(document);
-  return document.sceneInputs ? { ...result, scenePlacements: objectPlacements(document.grid, document.sceneInputs) } : result;
+  return document.sceneInputs ? { ...result, scenePlacements: [...roadPlacements(document.sceneInputs.roads), ...objectPlacements(document.grid, document.sceneInputs)] } : result;
 }
 function generateBuildings(document: GenerationDocument): GenerationResult {
   const options = documentOptions(document);
