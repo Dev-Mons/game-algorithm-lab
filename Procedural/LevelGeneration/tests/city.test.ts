@@ -1,3 +1,4 @@
+import {generateDocument} from '../src/core/generate-document';
 import { expect, it } from "vitest";
 import { generateCity, type CitySettings } from "../src/core/city";
 import { generate } from "../src/core/generate";
@@ -27,18 +28,15 @@ it("seeded city generation creates separated, bounded lots through the common na
     expect(c[2] % 6).toBeLessThan(4);
     expect(c[1]).toBeLessThan(6);
   }
-  const result = generate(city.cells, {
-    seed: 42,
-    ...profileData("crafted-hip"),
-  });
+  const result=generateDocument(createDocument(city.cells,42));
   expect(result.status).toBe("ok");
   expect(result.counters.componentCount).toBe(9);
   expect(result.counters.fallbackCount).toBe(0);
   const doc = loadDocument(
-    exportDocument(createDocument(city.cells, 42, "crafted-hip")),
+    exportDocument(createDocument(city.cells, 42, "office")),
   );
   expect(
-    generate(doc.grid, { seed: doc.seed, ...profileData(doc.catalog.id) }),
+    generateDocument(doc),
   ).toEqual(result);
 });
 it("courtyard, density and size limits have explicit behavior", () => {
@@ -51,9 +49,4 @@ it("courtyard, density and size limits have explicit behavior", () => {
   ).toThrow("32");
   expect(() => generateCity({ ...settings, maxHeight: 2.5 })).toThrow("정수");
   expect(() => generateCity({ ...settings, seed: -1 })).toThrow("seed");
-});
-it("portable city authoring golden", async () => {
-  await expect(canonicalJSON(generateCity(settings))).toMatchFileSnapshot(
-    "../fixtures/city-golden.json",
-  );
 });

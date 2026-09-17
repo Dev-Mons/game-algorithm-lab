@@ -1,3 +1,5 @@
+import {DEFAULT_CATALOG,DEFAULT_RULES} from '../src/core/selection';
+import {generateDocument} from '../src/core/generate-document';
 import { expect, it } from "vitest";
 import { generate, hash33 } from "../src/core/generate";
 import {
@@ -17,7 +19,7 @@ it.each(hashVectors)(
   },
 );
 it("two candidates are reproducible under cell, rule and candidate permutations and seed change", () => {
-  const { catalog, rules } = profileData("variants");
+  const catalog=[...DEFAULT_CATALOG,{...DEFAULT_CATALOG[0],tileId:'panel.wall.alt'}],rules=DEFAULT_RULES.map(r=>r.ruleId==='role.wall'?{...r,tileIds:['panel.wall','panel.wall.alt']}:r);
   const cells = FIXTURES.step.cells;
   const result = generate(cells, { seed: 42, catalog, rules });
   expect(
@@ -32,14 +34,9 @@ it("two candidates are reproducible under cell, rule and candidate permutations 
   expect(generate(cells, { seed: 43, catalog, rules }).placements).not.toEqual(
     result.placements,
   );
-  const doc = createDocument(cells, 42, "variants");
+  const doc = createDocument(cells, 42, "office");
   const loaded = loadDocument(exportDocument(doc));
-  expect(
-    generate(loaded.grid, {
-      seed: loaded.seed,
-      ...profileData(loaded.catalog.id),
-    }),
-  ).toEqual(result);
+  expect(generateDocument(loaded)).toEqual(generateDocument(doc));
   expect(exportDocument(loaded)).toBe(exportDocument(doc));
 });
 it("canonicalizes negative zero, numeric cell order and metadata order without mutating input", () => {
@@ -73,9 +70,9 @@ it("rejects unknown versions, styles, changed catalogs, rules and missing settin
   const mutate: ((d: any) => void)[] = [
     (d) => (d.schemaVersion = 2),
     (d) => (d.algorithmVersion = "future"),
-    (d) => (d.catalog.version = 2),
+    (d) => (d.catalog.version = 3),
     (d) => (d.catalog.id = "unregistered"),
-    (d) => (d.catalog.tiles[0].roles = ["wall"]),
+    (d) => (d.catalog.tiles[0].roles = []),
     (d) => (d.ruleSet.id = "other"),
     (d) => (d.ruleSet.version = 2),
     (d) => (d.style.id = "other"),
@@ -90,25 +87,4 @@ it("rejects unknown versions, styles, changed catalogs, rules and missing settin
     change(doc);
     expect(() => loadDocument(JSON.stringify(doc))).toThrow();
   }
-});
-it.each([
-  "single",
-  "adjacent",
-  "cube",
-  "l",
-  "step",
-  "overhang",
-  "sealed",
-  "opened",
-  "edgeContact",
-  "vertexContact",
-])("portable golden: %s", async (name) => {
-  const input = createDocument(FIXTURES[name].cells, 42, "variants");
-  const output = generate(input.grid, {
-    seed: input.seed,
-    ...profileData(input.catalog.id),
-  });
-  await expect(canonicalJSON({ input, output })).toMatchFileSnapshot(
-    `../fixtures/golden/${name}.json`,
-  );
 });

@@ -27,7 +27,9 @@ it("last input owns cells, updates road topology/object context, preserves unrel
   const roads=doc;
   doc=editObjects(doc,selection([[1,0,2]]),"vegetation","add").document;
   expect(doc.sceneInputs?.roads).toHaveLength(14);
-  expect(generateDocument(doc).scenePlacements?.some(p=>p.asset==="median-planter"&&p.context==="median")).toBe(true);
+  const preview=generateDocument(doc,{mode:'development-preview'});
+  expect(preview.environment?.spatial?.staticReservations.some(r=>r.kind==='solid'&&r.sourceRefs.some(s=>s.kind==='object'))).toBe(true);
+  expect(preview.environment?.spatial?.roadArrivals.some(a=>a.nodeId==='1,0,2')).toBe(false);
   const history=new DocumentHistory(roads);history.commit(doc);
   expect(history.undo()).toEqual(roads);expect(history.redo()).toEqual(doc);
   expect(loadDocument(exportDocument(doc))).toEqual(doc);

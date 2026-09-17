@@ -1,560 +1,118 @@
-import { FACADE_ASSETS, type FacadeAssetKey } from "./facade-assets";
-import type { Direction } from "./analysis";
-
-export type LevelRole = "ground" | "middle" | "top";
-export type FacadeKind = "front" | "side";
+import {ASSET_ROWS,type AssetRow,type BandedFacadeKey} from "./banded-facade-assets";
+import { FACADE_ASSETS, type FacadeAssetKey } from './facade-assets';
+import type { Direction } from './analysis';
+import { BUILDING_USES, type BuildingUse } from './environment-contract';
+import { exactKeys, cloneJSON } from './canonical';
+export type VerticalBand = 'base' | 'body' | 'crown';
+export type FacadeKind = 'front' | 'side';
 export interface BuildingModule {
-  id: string;
-  assetId: FacadeAssetKey;
-  semantic: "wall" | "window" | "entrance" | "pier" | "corner" | "trim";
-  width: number;
-  height: number;
-  directions: Direction[];
-  connection?: { family: string; part: "single" | "left" | "middle" | "right" };
+  id:string; assetId:FacadeAssetKey; semantic:'wall'|'window'|'entrance'|'pier'|'corner'|'trim';
+  width:number; height:number; directions:Direction[];
+  connection?:{family:string;part:'single'|'left'|'middle'|'right'};
+  rowAssets?:Record<AssetRow,FacadeAssetKey>;
 }
 export interface FacadePattern {
-  id: string;
-  start: string[];
-  repeat: string[];
-  end: string[];
-  minRepeat: number;
-  maxRepeat: number;
-  roles: LevelRole[];
-  facades: FacadeKind[];
-  minWidth: number;
-  priority: number;
-  remainder: string;
+  id:string;start:string[];repeat:string[];end:string[];minRepeat:number;maxRepeat:number;
+  roles:VerticalBand[];facades:FacadeKind[];minWidth:number;priority:number;remainder:string;
 }
-export interface LevelDefinition {
-  role: LevelRole;
-  count: number | "remaining";
-  moduleSet: string[];
-  patterns: string[];
-  // Levels sharing this key use one pattern ID and horizontal anchor per region.
-  align?: string;
+export interface BandPolicy {
+  baseRatioPermille:Record<BuildingUse,number>;crownRatioPermille:number;maxBaseCells:number;maxCrownCells:number;
+  baseCountOverride?:number;crownCountOverride?:number;
 }
+export interface BandDefinition {moduleSet:string[];fallback:string}
+export interface AlignedFamily {id:string;periodCells:number;patterns:Record<VerticalBand,string[]>;priority:number}
 export interface BuildingStyle {
-  id: string;
-  version: number;
-  label: string;
-  modules: BuildingModule[];
-  patterns: FacadePattern[];
-  levels: LevelDefinition[];
-  singleStorey: LevelRole;
-  fallback: string;
-  entrance: string;
-  entranceLayout?: "single-center" | "centered-parity";
-  corner: { module: string; minRunWidth: number };
-  topTrim: string;
-  frontOrder: Direction[];
-  groundY: 0;
+  format:'banded-facade-v1';id:string;version:number;label:string;
+  bandPolicy:BandPolicy;bands:Record<VerticalBand,BandDefinition>;alignedFamilies:AlignedFamily[];
+  modules:BuildingModule[];patterns:FacadePattern[];fallback:string;entrance:string;entrancePair:[string,string];
+  corner:{module:string;minRunWidth:number};topTrim:string;frontOrder:Direction[];groundY:0;
 }
-const walls: Direction[] = ["PX", "NX", "PZ", "NZ"];
-const m = (
-  id: string,
-  assetId: FacadeAssetKey,
-  semantic: BuildingModule["semantic"],
-  connection?: BuildingModule["connection"],
-): BuildingModule => ({
-  id,
-  assetId,
-  semantic,
-  width: 1,
-  height: 1,
-  directions: [...walls],
-  ...(connection ? { connection } : {}),
-});
-const moduleFamily = (family: "window" | "shop" | "office") =>
-  ["single", "left", "right"].map((part) =>
-    m(
-      `${family}-${part}`,
-      `facade.${family}-${part}` as FacadeAssetKey,
-      "window",
-      { family, part: part as "single" | "left" | "right" },
-    ),
-  );
-const modules = [
-  m("wall", "facade.wall", "wall"),
-  ...moduleFamily("window"),
-  ...moduleFamily("shop"),
-  ...moduleFamily("office"),
-  m("entry", "facade.shop-entry", "entrance"),
-  m("lobby", "facade.lobby-entry", "entrance"),
-  m("pier", "facade.pier", "pier"),
-  m("office-pier", "facade.office-pier", "pier"),
-  m("corner", "facade.corner", "corner"),
-  m("cornice", "facade.cornice", "trim"),
-  m("cap", "facade.cap", "trim"),
-];
-function pattern(
-  id: string,
-  repeat: string[],
-  roles: LevelRole[],
-  priority: number,
-  remainder: string,
-  start: string[] = [],
-  end: string[] = [],
-  facades: FacadeKind[] = ["front", "side"],
-): FacadePattern {
-  return {
-    id,
-    repeat,
-    roles,
-    priority,
-    remainder,
-    start,
-    end,
-    facades,
-    minRepeat: 1,
-    maxRepeat: 32,
-    minWidth: 1,
-  };
-}
-function style(
-  id: string,
-  label: string,
-  patterns: FacadePattern[],
-  ground: string[],
-  upper: string[],
-  entrance: string,
-  corner: string,
-  trim: string,
-): BuildingStyle {
-  const moduleSet = (ids: string[]) => [
-    ...new Set([
-      "wall",
-      entrance,
-      corner,
-      trim,
-      ...patterns
-        .filter((p) => ids.includes(p.id))
-        .flatMap((p) => [...p.start, ...p.repeat, ...p.end, p.remainder]),
-    ]),
-  ];
-  return {
-    id,
-    version: 1,
-    label,
-    modules: JSON.parse(JSON.stringify(modules)) as BuildingModule[],
-    patterns,
-    levels: [
-      {
-        role: "ground",
-        count: 1,
-        moduleSet: moduleSet(ground),
-        patterns: ground,
-      },
-      {
-        role: "middle",
-        count: "remaining",
-        moduleSet: moduleSet(upper),
-        patterns: upper,
-        align: "upper",
-      },
-      {
-        role: "top",
-        count: 1,
-        moduleSet: moduleSet(upper),
-        patterns: upper,
-        align: "upper",
-      },
-    ],
-    singleStorey: "ground",
-    fallback: "wall",
-    entrance,
-    corner: { module: corner, minRunWidth: 4 },
-    topTrim: trim,
-    frontOrder: ["PZ", "PX", "NZ", "NX"],
-    groundY: 0,
-  };
-}
-export const SHOP_STYLE_V1 = style(
-  "shop",
-  "상가형 · 프로젝트 예시",
-  [
-    pattern(
-      "shopfront",
-      ["shop-left", "shop-right"],
-      ["ground"],
-      100,
-      "shop-single",
-      [],
-      [],
-      ["front"],
-    ),
-    pattern(
-      "ground-side",
-      ["window-single", "pier"],
-      ["ground"],
-      70,
-      "window-single",
-      [],
-      [],
-      ["side"],
-    ),
-    pattern(
-      "shop-rhythm",
-      ["window-left", "window-right", "pier"],
-      ["middle", "top"],
-      100,
-      "window-single",
-    ),
-    pattern(
-      "shop-framed",
-      ["window-left", "window-right"],
-      ["middle", "top"],
-      80,
-      "window-single",
-      ["pier"],
-      ["pier"],
-    ),
-    pattern(
-      "shop-pair",
-      ["window-left", "window-right"],
-      ["middle", "top"],
-      50,
-      "window-single",
-    ),
-  ],
-  ["shopfront", "ground-side"],
-  ["shop-rhythm", "shop-framed", "shop-pair"],
-  "entry",
-  "corner",
-  "cornice",
-);
-export const OFFICE_STYLE_V1 = style(
-  "office",
-  "업무형 · 프로젝트 예시",
-  [
-    pattern(
-      "lobby-glazing",
-      ["office-left", "office-right"],
-      ["ground"],
-      100,
-      "office-single",
-      [],
-      [],
-      ["front"],
-    ),
-    pattern(
-      "office-ground-side",
-      ["office-single"],
-      ["ground"],
-      70,
-      "office-single",
-      [],
-      [],
-      ["side"],
-    ),
-    pattern(
-      "office-pairs",
-      ["office-left", "office-right"],
-      ["middle", "top"],
-      100,
-      "office-single",
-    ),
-    pattern(
-      "office-bays",
-      [
-        "office-left",
-        "office-right",
-        "office-left",
-        "office-right",
-        "office-pier",
-      ],
-      ["middle", "top"],
-      80,
-      "office-single",
-    ),
-  ],
-  ["lobby-glazing", "office-ground-side"],
-  ["office-pairs", "office-bays"],
-  "lobby",
-  "office-pier",
-  "cap",
-);
-
-// V2 keeps the two ends distinct and fills the middle symmetrically.
-// The facade interpreter reserves end columns first, so these patterns describe
-// only the interior: OO…OO for even widths, OX…OXO for odd widths.
-function symmetricStyle(
-  base: BuildingStyle,
-  window: "window" | "office",
-  storefront: "shop" | "office",
-  pier: string,
-): BuildingStyle {
-  const pair = (
-    id: string,
-    family: string,
-    roles: LevelRole[],
-    facades: FacadeKind[],
-  ) =>
-    pattern(
-      id,
-      [`${family}-left`, `${family}-right`],
-      roles,
-      100,
-      `${family}-single`,
-      [],
-      [],
-      facades,
-    );
-  const alternating = (
-    id: string,
-    family: string,
-    roles: LevelRole[],
-    facades: FacadeKind[],
-  ) =>
-    pattern(
-      id,
-      [`${family}-single`, pier],
-      roles,
-      90,
-      `${family}-single`,
-      [],
-      [`${family}-single`],
-      facades,
-    );
-  const front = `${base.id}-ground-pairs`,
-    frontOdd = `${base.id}-ground-alternate`;
-  const side = `${base.id}-side-pairs`,
-    sideOdd = `${base.id}-side-alternate`;
-  const upper = base.id === "shop" ? "shop-pair" : "office-pairs";
-  const upperOdd = `${base.id}-alternate`;
-  const result = style(
-    base.id,
-    base.label,
-    [
-      pair(front, storefront, ["ground"], ["front"]),
-      alternating(frontOdd, storefront, ["ground"], ["front"]),
-      pair(side, window, ["ground"], ["side"]),
-      alternating(sideOdd, window, ["ground"], ["side"]),
-      pair(upper, window, ["middle", "top"], ["front", "side"]),
-      alternating(upperOdd, window, ["middle", "top"], ["front", "side"]),
-    ],
-    [front, frontOdd, side, sideOdd],
-    [upper, upperOdd],
-    base.entrance,
-    base.corner.module,
-    base.topTrim,
-  );
-  result.version = 2;
-  result.corner.minRunWidth = 3;
-  return result;
-}
-export const SHOP_STYLE_V2 = symmetricStyle(
-  SHOP_STYLE_V1,
-  "window",
-  "shop",
-  "pier",
-);
-export const OFFICE_STYLE_V2 = symmetricStyle(
-  OFFICE_STYLE_V1,
-  "office",
-  "office",
-  "office-pier",
-);
-// Optional policy preserves the embedded v1/v2 definitions without migration.
-export const SHOP_STYLE: BuildingStyle = {
-  ...SHOP_STYLE_V2,
-  version: 3,
-  entranceLayout: "centered-parity",
-};
-export const OFFICE_STYLE: BuildingStyle = {
-  ...OFFICE_STYLE_V2,
-  version: 3,
-  entranceLayout: "centered-parity",
-};
-
-export function validateBuildingStyle(style: BuildingStyle) {
-  const fail = () => {
-    throw new Error("Invalid building style definition or unsupported rule.");
-  };
-  const id = (s: unknown) =>
-    typeof s === "string" && /^[a-zA-Z0-9_.:-]+$/.test(s);
-  if (
-    !style ||
-    !id(style.id) ||
-    !Number.isSafeInteger(style.version) ||
-    style.version < 1 ||
-    typeof style.label !== "string" ||
-    style.label.length > 120 ||
-    style.groundY !== 0 ||
-    (style.entranceLayout !== undefined &&
-      !["single-center", "centered-parity"].includes(style.entranceLayout)) ||
-    !Array.isArray(style.modules) ||
-    !Array.isArray(style.patterns) ||
-    !Array.isArray(style.levels) ||
-    style.modules.length > 100 ||
-    style.patterns.length > 100
-  )
-    fail();
-  const defs = new Map<string, BuildingModule>();
-  for (const mod of style.modules) {
-    if (
-      !mod ||
-      !id(mod.id) ||
-      defs.has(mod.id) ||
-      !Object.hasOwn(FACADE_ASSETS, mod.assetId) ||
-      mod.width !== 1 ||
-      mod.height !== 1 ||
-      !["wall", "window", "entrance", "pier", "corner", "trim"].includes(
-        mod.semantic,
-      ) ||
-      !Array.isArray(mod.directions) ||
-      !mod.directions.length ||
-      mod.directions.some((d) => !walls.includes(d))
-    )
-      fail();
-    if (
-      mod.connection &&
-      (!id(mod.connection.family) ||
-        !["single", "left", "middle", "right"].includes(mod.connection.part))
-    )
-      fail();
-    const asset = FACADE_ASSETS[mod.assetId];
-    if (
-      (mod.semantic === "trim") !==
-      (mod.assetId === "facade.cornice" || mod.assetId === "facade.cap")
-    )
-      fail();
-    const opening = "opening" in asset ? asset.opening : undefined;
-    const part = mod.connection?.part;
-    if (
-      part &&
-      (!opening ||
-        !!("openLeft" in opening && opening.openLeft) !==
-          (part === "right" || part === "middle") ||
-        !!("openRight" in opening && opening.openRight) !==
-          (part === "left" || part === "middle"))
-    )
-      fail();
-    defs.set(mod.id, mod);
+export const DEFAULT_BAND_POLICY:BandPolicy={baseRatioPermille:{retail:250,office:200,generic:200,residential:167,industrial:200},crownRatioPermille:100,maxBaseCells:4,maxCrownCells:3};
+export const VERTICAL_BANDS:VerticalBand[]=['base','body','crown'];
+const walls:Direction[]=['PX','NX','PZ','NZ'];
+const module=(id:string,assetId:FacadeAssetKey,semantic:BuildingModule['semantic'],connection?:BuildingModule['connection']):BuildingModule=>({id,assetId,semantic,width:1,height:1,directions:[...walls],...(connection?{connection}:{})});
+function stockStyle(id:'shop'|'office'):BuildingStyle {
+  const modules:BuildingModule[]=[module('wall','facade.wall','wall'),module('entry','facade.portal-single','entrance'),module('entry-left','facade.portal-left','entrance',{family:'portal',part:'left'}),module('entry-right','facade.portal-right','entrance',{family:'portal',part:'right'}),module('trim','facade.cap','trim')];
+  for(const band of VERTICAL_BANDS)for(const part of ['single','left','right','pier'] as const){
+    const key=`${band}-${part}`,rowAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`facade.banded-${id}-${band}-${row}-${part}`])) as Record<AssetRow,BandedFacadeKey>;
+    modules.push({...module(key,rowAssets.repeat,part==='pier'?'pier':'window',part==='pier'?undefined:{family:`${id}:${band}`,part}),rowAssets});
   }
-  const validUnit = (key: string) =>
-    defs.has(key) &&
-    (!defs.get(key)!.connection ||
-      defs.get(key)!.connection!.part === "single") &&
-    defs.get(key)!.semantic !== "trim";
-  const validGroup = (keys: string[]) => {
-    if (!Array.isArray(keys) || keys.length > 32) return false;
-    let family: string | undefined;
-    let dimensions: string | undefined;
-    for (const key of keys) {
-      const mod = defs.get(key);
-      if (!mod || mod.semantic === "trim" || mod.semantic === "entrance")
-        return false;
-      const c = mod.connection;
-      if (!c || c.part === "single") {
-        if (family) return false;
-      } else if (c.part === "left") {
-        if (family) return false;
-        family = c.family;
-        const asset = FACADE_ASSETS[mod.assetId] as {
-          opening: { minY: number; maxY: number };
-        };
-        dimensions = `${asset.opening.minY}|${asset.opening.maxY}`;
-      } else {
-        if (family !== c.family) return false;
-        const asset = FACADE_ASSETS[mod.assetId] as {
-          opening: { minY: number; maxY: number };
-        };
-        if (dimensions !== `${asset.opening.minY}|${asset.opening.maxY}`)
-          return false;
-        if (c.part === "right") family = undefined;
+  const patterns=VERTICAL_BANDS.map((band):FacadePattern=>({id:`${band}-rhythm`,start:[],repeat:[`${band}-left`,`${band}-right`,`${band}-pier`],end:[],minRepeat:1,maxRepeat:32,roles:[band],facades:['front','side'],minWidth:1,priority:100,remainder:`${band}-single`}));
+  return {format:'banded-facade-v1',id,version:4,label:id==='shop'?'상가형':'업무형',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
+    bands:Object.fromEntries(VERTICAL_BANDS.map(b=>[b,{moduleSet:['wall','entry','entry-left','entry-right','trim',`${b}-single`,`${b}-left`,`${b}-right`,`${b}-pier`],fallback:`${b}-single`}])) as Record<VerticalBand,BandDefinition>,
+    alignedFamilies:[{id:'paired-pier',periodCells:3,priority:100,patterns:{base:['base-rhythm'],body:['body-rhythm'],crown:['crown-rhythm']}}],modules,patterns,fallback:'wall',entrance:'entry',entrancePair:['entry-left','entry-right'],corner:{module:'body-pier',minRunWidth:3},topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0};
+}
+export const SHOP_STYLE=stockStyle('shop');
+export const OFFICE_STYLE=stockStyle('office');
+export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
+  const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
+  const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);
+  const range=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=min&&v<=max;
+  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY']);
+  if(style.format!=='banded-facade-v1'||!id(style.id)||!range(style.version,1,0x7fffffff)||typeof style.label!=='string'||style.label.length>120||style.groundY!==0) fail();
+  const policy=style.bandPolicy;
+  exactKeys(policy,['baseRatioPermille','crownRatioPermille','maxBaseCells','maxCrownCells'],['baseCountOverride','crownCountOverride']);
+  exactKeys(policy.baseRatioPermille,BUILDING_USES);
+  if(!range(policy.crownRatioPermille,50,250)||!range(policy.maxBaseCells,2,16)||!range(policy.maxCrownCells,1,8)||(policy.baseCountOverride!==undefined&&!range(policy.baseCountOverride,1,16))||(policy.crownCountOverride!==undefined&&!range(policy.crownCountOverride,0,8))||BUILDING_USES.some(use=>!range(policy.baseRatioPermille[use],100,400)||policy.baseRatioPermille[use]+policy.crownRatioPermille>650)) fail();
+  if(!Array.isArray(style.modules)||!style.modules.length||style.modules.length>256||!Array.isArray(style.patterns)||style.patterns.length>100) fail();
+  const mods=new Map<string,BuildingModule>();
+  for(const m of style.modules) {
+    exactKeys(m,['id','assetId','semantic','width','height','directions'],['connection','rowAssets']);
+    if(!id(m.id)||mods.has(m.id)||!Object.hasOwn(FACADE_ASSETS,m.assetId)||m.width!==1||m.height!==1||!['wall','window','entrance','pier','corner','trim'].includes(m.semantic)||!Array.isArray(m.directions)||!m.directions.length||new Set(m.directions).size!==m.directions.length||m.directions.some(d=>!walls.includes(d))) fail();
+    if(m.rowAssets){exactKeys(m.rowAssets,ASSET_ROWS);for(const key of Object.values(m.rowAssets)){
+      const descriptor=FACADE_ASSETS[key];if(!descriptor||!('structural' in descriptor)||!descriptor.structural)fail();
+      if(m.connection&&(!('part' in descriptor)||descriptor.part!==m.connection.part))fail();
+      if(m.semantic==='pier'&&!('pierWidth16' in descriptor))fail();
+    }}
+    const asset=FACADE_ASSETS[m.assetId];
+    if((m.semantic==='trim')!==['facade.cornice','facade.cap'].includes(m.assetId)) fail();
+    if(m.connection) {
+      exactKeys(m.connection,['family','part']);
+      const p=m.connection.part,opening='opening' in asset?asset.opening:undefined;
+      if(!id(m.connection.family)||!['single','left','middle','right'].includes(p)||!opening||!!('openLeft' in opening&&opening.openLeft)!==(p==='right'||p==='middle')||!!('openRight' in opening&&opening.openRight)!==(p==='left'||p==='middle')) fail();
+    }
+    mods.set(m.id,m);
+  }
+  const unit=(key:string)=>{const m=mods.get(key);return !!m&&m.semantic!=='trim'&&(!m.connection||m.connection.part==='single');};
+  const openingSignature=(m:BuildingModule)=>[m.assetId,...(m.rowAssets?ASSET_ROWS.map(r=>m.rowAssets![r]):[])].map(key=>{
+    const a=FACADE_ASSETS[key];if(!('opening' in a)||!a.opening)return '';
+    return [a.opening.minY,a.opening.maxY,'railWidth16' in a?a.railWidth16:'default','jointFamily' in a?a.jointFamily:'default'].join('|');
+  }).join(';');
+  const group=(keys:string[])=>{
+    if(!Array.isArray(keys)||keys.length>32) return false;
+    let family:string|undefined,height:string|undefined;
+    for(const key of keys) {
+      const m=mods.get(key);if(!m||m.semantic==='trim'||m.semantic==='entrance') return false;
+      const c=m.connection;
+      if(!c||c.part==='single') {if(family) return false;}
+      else {
+        const a=FACADE_ASSETS[m.assetId];if(!('opening' in a)||!a.opening) return false;
+        const h=openingSignature(m);
+        if(c.part==='left') {if(family) return false;family=c.family;height=h;}
+        else {if(family!==c.family||height!==h) return false;if(c.part==='right') family=undefined;}
       }
     }
     return !family;
   };
-  const patterns = new Map<string, FacadePattern>();
-  for (const p of style.patterns) {
-    if (
-      !p ||
-      !id(p.id) ||
-      patterns.has(p.id) ||
-      !validGroup(p.start) ||
-      !validGroup(p.repeat) ||
-      !p.repeat.length ||
-      !validGroup(p.end) ||
-      !validUnit(p.remainder) ||
-      !Number.isInteger(p.minRepeat) ||
-      !Number.isInteger(p.maxRepeat) ||
-      p.minRepeat < 1 ||
-      p.maxRepeat < p.minRepeat ||
-      p.maxRepeat > 32 ||
-      !Number.isInteger(p.minWidth) ||
-      p.minWidth < 1 ||
-      p.minWidth > 32 ||
-      !Number.isSafeInteger(p.priority) ||
-      !Array.isArray(p.roles) ||
-      !p.roles.length ||
-      p.roles.some((r) => !["ground", "middle", "top"].includes(r)) ||
-      !Array.isArray(p.facades) ||
-      !p.facades.length ||
-      p.facades.some((f) => !["front", "side"].includes(f))
-    )
-      fail();
-    patterns.set(p.id, p);
+  const patterns=new Map<string,FacadePattern>();
+  for(const p of style.patterns) {
+    exactKeys(p,['id','start','repeat','end','minRepeat','maxRepeat','roles','facades','minWidth','priority','remainder']);
+    if(!id(p.id)||patterns.has(p.id)||!group(p.start)||!group(p.repeat)||!p.repeat.length||!group(p.end)||!unit(p.remainder)||!range(p.minRepeat,1,32)||!range(p.maxRepeat,p.minRepeat,32)||!range(p.minWidth,1,32)||!Number.isSafeInteger(p.priority)||!Array.isArray(p.roles)||!p.roles.length||p.roles.some(r=>!VERTICAL_BANDS.includes(r))||!Array.isArray(p.facades)||!p.facades.length||p.facades.some(f=>!['front','side'].includes(f))) fail();
+    patterns.set(p.id,p);
   }
-  if (
-    style.levels.length !== 3 ||
-    style.levels.map((l) => l.role).join() !== "ground,middle,top" ||
-    style.levels.filter((l) => l.count === "remaining").length !== 1 ||
-    style.levels[1].count !== "remaining"
-  )
-    fail();
-  for (const l of style.levels) {
-    if (
-      (l.count !== "remaining" &&
-        (!Number.isInteger(l.count) || l.count < 1 || l.count > 16)) ||
-      (l.align !== undefined && !id(l.align)) ||
-      !Array.isArray(l.moduleSet) ||
-      !l.moduleSet.length ||
-      l.moduleSet.some((key) => !defs.has(key)) ||
-      !Array.isArray(l.patterns) ||
-      !l.patterns.length ||
-      l.patterns.some((key) => !patterns.has(key))
-    )
-      fail();
+  exactKeys(style.bands,VERTICAL_BANDS);
+  for(const b of VERTICAL_BANDS) {const band=style.bands[b];exactKeys(band,['moduleSet','fallback']);if(!Array.isArray(band.moduleSet)||!band.moduleSet.length||band.moduleSet.some(m=>!mods.has(m))||!unit(band.fallback)||!band.moduleSet.includes(band.fallback)) fail();}
+  if(!Array.isArray(style.alignedFamilies)||!style.alignedFamilies.length) fail();
+  const families=new Set<string>();
+  for(const f of style.alignedFamilies) {
+    exactKeys(f,['id','periodCells','patterns','priority']);exactKeys(f.patterns,VERTICAL_BANDS);
+    if(!id(f.id)||families.has(f.id)||!range(f.periodCells,1,8)||!Number.isSafeInteger(f.priority)) fail();families.add(f.id);
+    for(const b of VERTICAL_BANDS) if(!Array.isArray(f.patterns[b])||!f.patterns[b].length||f.patterns[b].some(k=>{const p=patterns.get(k);return !p||p.repeat.length!==f.periodCells||!p.roles.includes(b)||[...p.start,...p.repeat,...p.end,p.remainder].some(m=>!style.bands[b].moduleSet.includes(m));})) fail();
   }
-  const fallback = defs.get(style.fallback);
-  if (!fallback || walls.some((d) => !fallback.directions.includes(d))) fail();
-  if (
-    !["ground", "middle", "top"].includes(style.singleStorey) ||
-    !validUnit(style.fallback) ||
-    defs.get(style.fallback)?.semantic !== "wall" ||
-    defs.get(style.entrance)?.semantic !== "entrance" ||
-    !style.corner ||
-    !validUnit(style.corner.module) ||
-    !Number.isInteger(style.corner.minRunWidth) ||
-    style.corner.minRunWidth < 2 ||
-    defs.get(style.topTrim)?.semantic !== "trim" ||
-    !["facade.cornice", "facade.cap"].includes(
-      defs.get(style.topTrim)!.assetId,
-    ) ||
-    !Array.isArray(style.frontOrder) ||
-    new Set(style.frontOrder).size !== 4 ||
-    style.frontOrder.some((d) => !walls.includes(d))
-  )
-    fail();
-  return style;
-}
-
-export function levelAt(
-  style: BuildingStyle,
-  y: number,
-  minY: number,
-  maxY: number,
-): LevelDefinition {
-  const [ground, middle, top] = style.levels;
-  const height = maxY - minY + 1;
-  if (height === 1)
-    return minY === style.groundY
-      ? style.levels.find((l) => l.role === style.singleStorey)!
-      : top;
-  // Reserve at least one top row in a short building. Floating volumes have no ground role.
-  const groundCount =
-    minY === style.groundY ? Math.min(ground.count as number, height - 1) : 0;
-  const topCount = Math.min(top.count as number, height - groundCount);
-  return y < minY + groundCount ? ground : y > maxY - topCount ? top : middle;
+  if(!Array.isArray(style.entrancePair)||style.entrancePair.length!==2)fail();
+  const pair=style.entrancePair.map(k=>mods.get(k));
+  if(pair.some(m=>!m||m.semantic!=='entrance')||pair[0]!.connection?.part!=='left'||pair[1]!.connection?.part!=='right'||pair[0]!.connection?.family!==pair[1]!.connection?.family||openingSignature(pair[0]!)!==openingSignature(pair[1]!))fail();
+  exactKeys(style.corner,['module','minRunWidth']);
+  if(!unit(style.fallback)||mods.get(style.fallback)?.semantic!=='wall'||walls.some(d=>!mods.get(style.fallback)!.directions.includes(d))||mods.get(style.entrance)?.semantic!=='entrance'||!unit(style.corner.module)||!range(style.corner.minRunWidth,2,32)||mods.get(style.topTrim)?.semantic!=='trim'||!Array.isArray(style.frontOrder)||style.frontOrder.length!==4||new Set(style.frontOrder).size!==4||style.frontOrder.some(d=>!walls.includes(d))) fail();
+  return cloneJSON(style);
 }

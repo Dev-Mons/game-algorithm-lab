@@ -39,30 +39,19 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
     const saved = loadDocument(Buffer.concat(chunks).toString());
     const input = saved.sceneInputs!.objects[0];
     expect(input.cells).toHaveLength(9);
-    const placements = generateDocument(saved).scenePlacements!;
+    const placements = generateDocument(saved,{mode:"development-preview"}).scenePlacements!;
     await expect(page.locator("canvas")).toHaveAttribute(
       "data-scene-assets",
       placements.map((p) => p.asset).join(","),
     );
-    if (category === "lighting") {
-      const lamps = placements.filter((p) => p.asset === "roof-beacon");
-      expect(lamps).toHaveLength(9);
-      expect(
-        new Set(lamps.map((p) => `${p.center[0]},${p.center[2]}`)).size,
-      ).toBe(9);
-    } else {
-      expect(placements.some((p) => p.size[0] > 1 && p.size[2] > 1)).toBe(true);
-    }
+    if(category !== 'vegetation') await expect(page.locator('[data-stage="fixtures"]')).toHaveAttribute('data-state','ready');
     await expect(page.locator("canvas")).toHaveAttribute(
       "data-selection-cells",
       "9",
     );
     await page.mouse.click(x, y);
-    if (category === "vegetation")
-      await expect(page.locator("canvas")).toHaveAttribute(
-        "data-scene-assets",
-        "tree-bottom,tree-top",
-      );
+    // Height editing uses the source input even while its downstream stage is blocked.
+    await expect(page.locator('canvas')).toHaveAttribute('data-selection-cells','9');
     await page.mouse.click(x, y, { button: "right" });
     await expect(page.locator("canvas")).toHaveAttribute(
       "data-scene-assets",

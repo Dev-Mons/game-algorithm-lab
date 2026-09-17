@@ -33,33 +33,24 @@ it("adds/removes one layer, regenerates a tree, and preserves volume/history/JSO
   expect(last.selection).toEqual(ground);
   expect(editObjects(last.document,last.selection,"vegetation","add").document).toEqual(first.document);
 });
-it("uses roof, wall, ground and roadside context without asset selection", () => {
-  const input: ObjectInput = {id:"a",category:"lighting",cells:[[0,0,0]],direction:"PY"};
-  expect(objectContext(input,[],[[1,0,0]])).toBe("roadside");
-  const groundLight = editObjects(createDocument([]),ground,"lighting","add").document;
-  const roadLight = replaceSceneInputs(groundLight,{...groundLight.sceneInputs!,roads:[[1,0,0]]});
-  expect(generateDocument(groundLight).scenePlacements?.at(-1)?.asset).toBe("bollard");
-  expect(generateDocument(roadLight).scenePlacements?.at(-1)?.asset).toBe("street-lamp");
-  const doc = createDocument([[0,0,0]],42,"shop");
-  const roof = editObjects(doc,{direction:"PY",cells:[[0,0,0]]},"facility","add").document;
-  expect(generateDocument(roof).scenePlacements?.[0].asset).toBe("air-conditioner");
-  const wall = editObjects(doc,{direction:"PX",cells:[[0,0,0]]},"lighting","add").document;
-  expect(generateDocument(wall).scenePlacements?.at(-1)?.asset).toBe("wall-lamp");
-  expect(generateDocument(roof).placements).toEqual(generateDocument(doc).placements);
-  expect(() => editObjects(doc,{direction:"PX",cells:[[0,0,0]]},"vegetation","add").document).toThrow();
-  expect(() => editObjects(doc,{direction:"NY",cells:[[0,0,0]]},"lighting","add").document).toThrow();
-  expect(() => editObjects(doc,{direction:"PY",cells:[[2,2,0]]},"facility","add").document).toThrow();
-  expect(doc.sceneInputs).toBeUndefined();
+it("preserves supported and unresolved source intentions without invoking the old cell-by-cell fixture path", () => {
+  const input: ObjectInput={id:'a',category:'lighting',cells:[[0,0,0]],direction:'PY'};
+  expect(objectContext(input,[],[[1,0,0]])).toBe('roadside');
+  const groundLight=editObjects(createDocument([]),ground,'lighting','add').document;
+  expect(generateDocument(groundLight,{mode:'development-preview'}).environment?.stages.find(s=>s.stage==='fixtures')?.state).toBe('ready');
+  const doc=createDocument([[0,0,0]],42,'shop');
+  const roof=editObjects(doc,{direction:'PY',cells:[[0,0,0]]},'facility','add').document;
+  expect(objectContext(roof.sceneInputs.objects[0],doc.grid,[])).toBe('roof');
+  const wall=editObjects(doc,{direction:'PX',cells:[[0,0,0]]},'lighting','add').document;
+  expect(objectContext(wall.sceneInputs.objects[0],doc.grid,[])).toBe('wall');
+  const unsupported=editObjects(createDocument([]),{direction:'PY',cells:[[2,2,0]]},'vegetation','add').document;
+  const result=generateDocument(unsupported);
+  expect(unsupported.sceneInputs.objects).toHaveLength(1);expect(result.scenePlacements).toEqual([]);
+  expect(result.environment?.spatial?.diagnostics.some(d=>d.code==='UNSUPPORTED_OBJECT_SUPPORT')).toBe(true);
 });
-
-it("loads legacy misc objects as facilities without changing their placements or IDs", () => {
-  const document = editObjects(createDocument([[0,0,0]],42,"shop"), {direction:"PY",cells:[[0,0,0]]}, "facility", "add").document;
-  const legacy = JSON.parse(exportDocument(document));
-  legacy.sceneInputs.objects[0].category = "misc";
-  const restored = loadDocument(JSON.stringify(legacy));
-  expect(restored).toEqual(document);
-  expect(generateDocument(restored)).toEqual(generateDocument(document));
-  expect(JSON.parse(exportDocument(restored)).sceneInputs.objects[0].category).toBe("facility");
+it("rejects obsolete misc categories instead of silently migrating them",()=>{
+  const doc=editObjects(createDocument([]),ground,'facility','add').document;
+  const old=JSON.parse(exportDocument(doc));old.sceneInputs.objects[0].category='misc';expect(()=>loadDocument(JSON.stringify(old))).toThrow();
 });
 
 it("edits a multi-cell object's height partially without losing neighboring columns", () => {

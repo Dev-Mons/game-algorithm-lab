@@ -1,5 +1,5 @@
-import { assembleModules } from "./modules";
-import { selectTiles } from "./selection";
+import {CONTEXTUAL_BUILDING_RULE,CONTEXTUAL_SPATIAL_ADAPTER} from "./contextual-building-rule";
+import { registerRuleSpatialAdapter } from "./rule-spatial-adapters";
 import { PARKING_RULE } from "./parking-rule";
 import type {
   BuildingGenerationRule,
@@ -26,22 +26,8 @@ export function registerBuildingRule(rule: BuildingGenerationRule) {
     throw new Error("Invalid or duplicate building rule registration.");
   registry.set(rule.id, rule);
 }
-registerBuildingRule({
-  id: "standard",
-  version: "1.0.0",
-  label: "일반 건물",
-  definition: { pipeline: "surface-regions-facade-modules-v1" },
-  validateMetadata(metadata) {
-    if (Object.keys(metadata).length)
-      throw new Error("Standard building rule accepts no additional metadata.");
-  },
-  generate(input) {
-    return assembleModules(
-      selectTiles(input.analysis, input.options),
-      input.options,
-    );
-  },
-});
+registerBuildingRule(CONTEXTUAL_BUILDING_RULE);
+registerRuleSpatialAdapter(CONTEXTUAL_SPATIAL_ADAPTER);
 registerBuildingRule(PARKING_RULE);
 export function buildingRules() {
   return [...registry.values()];

@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { createDocument } from "../src/core/document";
 
 async function load(page: Page, grid: number[][]) {
-  await page.locator("#file").setInputFiles({ name: "surface.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(createDocument(grid, 42, "crafted-flat"))) });
+  await page.locator("#file").setInputFiles({ name: "surface.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(createDocument(grid, 42, "office"))) });
   await page.locator('[data-camera="top"]').click();
 }
 async function center(page: Page) {

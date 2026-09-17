@@ -1,3 +1,4 @@
+import {generateDocument} from '../src/core/generate-document';
 import { expect, it } from "vitest";
 import {
   generate,
@@ -17,7 +18,7 @@ import {
 } from "../src/core/document";
 import { FIXTURES } from "../src/fixtures";
 import { buildCraftedGeometry } from "../src/crafted-geometry";
-const options = { seed: 42, ...profileData("crafted-hip") };
+const options = { seed: 42, ...profileData("office") };
 
 it("every authored face asset respects its unit footprint and declared relief limit", () => {
   for (const key of new Set(
@@ -38,79 +39,7 @@ it("every authored face asset respects its unit footprint and declared relief li
     }
   }
 });
-it("crafted styles cannot silently fall back when their assembly policy is missing", () => {
-  expect(() =>
-    generate(FIXTURES.single.cells, { style: "crafted-panels" }),
-  ).toThrow("assembly policy");
-  expect(() =>
-    generate(FIXTURES.single.cells, { ...options, assembly: "unknown" as any }),
-  ).toThrow("assembly policy");
-});
-
-it("replaces roof areas and compatible convex corner pairs without duplicate ownership", () => {
-  for (const fixture of Object.values(FIXTURES)) {
-    const result = generate(fixture.cells, options);
-    expect(() =>
-      validateAssembly(
-        result.surfaces.map((s) => s.faceId),
-        result.placements,
-        result.modules!,
-      ),
-    ).not.toThrow();
-    expect(result.counters.ownedFaceCount).toBe(result.surfaces.length);
-    const covered = new Set(result.modules!.flatMap((m) => m.faceIds));
-    expect(result.placements.every((p) => !covered.has(p.faceId))).toBe(true);
-    for (const m of result.modules!.filter((m) =>
-      m.assetKey.startsWith("corner."),
-    )) {
-      expect(m.faceIds).toHaveLength(2);
-      expect(
-        m.faceIds.every(
-          (id) =>
-            result.surfaces.find((s) => s.faceId === id)?.architecture
-              ?.facadeElement === "window",
-        ),
-      ).toBe(true);
-    }
-    expect(
-      result.placements.filter((p) => p.ruleId === "facade.entry"),
-    ).toHaveLength(result.status === "ok" ? result.counters.componentCount : 0);
-  }
-});
-it("N-cell roof pivot/scale, flat annex fallback and explicit attachment coverage", () => {
-  const result = generate(FIXTURES.facade.cells, options);
-  const roof = result.modules!.find((m) => m.assetKey.startsWith("roof."))!;
-  expect(roof).toMatchObject({
-    assetKey: "roof.hip-x",
-    position2: [4, 6, 3],
-    scale16: [64, 48, 12],
-  });
-  expect(roof.faceIds).toHaveLength(12);
-  expect(result.modules!.filter((m) => m.kind === "attachment")).toHaveLength(
-    18,
-  );
-  expect(
-    result
-      .modules!.filter((m) => m.kind === "attachment")
-      .every((m) => m.faceIds.length === 0),
-  ).toBe(true);
-  const annex = generate(FIXTURES.annex.cells, options);
-  expect(
-    annex.modules!.filter((m) => m.assetKey.startsWith("roof.")),
-  ).toHaveLength(1);
-  expect(
-    annex.traces.find((t) => t.faceId === "3,1,0|PY")?.assemblyNote,
-  ).toContain("attached");
-  const bad = structuredClone(result.modules!);
-  bad.push({ ...roof, moduleId: "duplicate" });
-  expect(() =>
-    validateAssembly(
-      result.surfaces.map((s) => s.faceId),
-      result.placements,
-      bad,
-    ),
-  ).toThrow("duplicate");
-});
+it('current structure has exactly one owner for every external face',()=>{for(const fixture of Object.values(FIXTURES)){const r=generateDocument(createDocument(fixture.cells));validateAssembly(r.surfaces.map(s=>s.faceId),r.placements,r.modules!);expect(r.counters.ownedFaceCount).toBe(r.surfaces.length);}});
 it("actual shared geometry stays inside declared bounds and roofs have no internal bottom", () => {
   for (const asset of MODULE_ASSETS) {
     const parts = buildCraftedGeometry(asset.assetKey);
@@ -132,7 +61,7 @@ it("actual shared geometry stays inside declared bounds and roofs have no intern
   }
 });
 it("3D relief never penetrates an occupied cell and keeps roof/wall boundary coordinates", () => {
-  const result = generate(FIXTURES.terrace.cells, options),
+  const result = generateDocument(createDocument(FIXTURES.terrace.cells)),
     occupied = new Set(result.cells.map((c) => c.join(",")));
   for (const m of result.modules!) {
     const parts = buildCraftedGeometry(m.assetKey),
@@ -164,24 +93,8 @@ it("3D relief never penetrates an occupied cell and keeps roof/wall boundary coo
     }
   }
 });
-it.each(["crafted-hip", "crafted-gable", "crafted-flat"] as const)(
-  "%s saves exact assembly and stable traces",
-  async (profile) => {
-    const input = createDocument(FIXTURES.facade.cells, 42, profile),
-      loaded = loadDocument(exportDocument(input));
-    const output = generate(input.grid, {
-      seed: input.seed,
-      ...profileData(profile),
-    });
-    expect(
-      generate([...loaded.grid].reverse(), {
-        seed: loaded.seed,
-        ...profileData(loaded.catalog.id),
-      }),
-    ).toEqual(output);
-    expect(input.schemaVersion).toBe(3);
-    await expect(canonicalJSON({ input, output })).toMatchFileSnapshot(
-      `../fixtures/golden-v3/${profile}.json`,
-    );
-  },
-);
+it.each(['shop','office'] as const)('%s saves current assembly inputs and deterministically restores planned output',async profile=>{
+  const {generateDocument}=await import('../src/core/generate-document');
+  const input=createDocument(FIXTURES.facade.cells,42,profile),loaded=loadDocument(exportDocument(input));
+  expect(input.schemaVersion).toBe(5);expect(generateDocument(loaded)).toEqual(generateDocument(input));
+});

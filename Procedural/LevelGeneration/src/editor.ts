@@ -7,7 +7,7 @@ import {
   type GenerationResult,
 } from "./core/generate";
 import {
-  exportDocument,
+  exportDocument,canonicalJSON,
   loadDocument,
   type GenerationDocument,
 } from "./core/document";
@@ -75,14 +75,21 @@ export class DocumentHistory {
   ) {
     this.current = exportDocument(document);
   }
+  get serializedCurrent(){return this.current;}
   get canUndo() {
     return this.past.length > 0;
   }
   get canRedo() {
     return this.future.length > 0;
   }
-  commit(document: GenerationDocument) {
-    const next = exportDocument(document);
+  peek(direction:"undo"|"redo") {
+    const stack=direction==='undo'?this.past:this.future;
+    return stack.length?loadDocument(stack[stack.length-1]):undefined;
+  }
+  commit(document: GenerationDocument) {return this.record(exportDocument(document));}
+  /** Called only after the editor has successfully validated/generated/published this document. */
+  commitAccepted(document:GenerationDocument){return this.record(canonicalJSON(document));}
+  private record(next:string){
     if (next === this.current) return false;
     this.past.push(this.current);
     this.current = next;

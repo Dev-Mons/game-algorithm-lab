@@ -2,6 +2,8 @@ import type { Vec3 } from "./analysis";
 import type { VolumeAnalysis } from "./regions";
 import type { SelectionOptions } from "./selection";
 import type { GenerationResult } from "./generate";
+import type { BuildingContextPlan } from "./environment-contract";
+import type { DeepReadonly } from "./rule-spatial-contract";
 export type RuleData = Record<string, string | number | boolean>;
 export interface BuildingRuleReference {
   id: string;
@@ -15,6 +17,7 @@ export interface BuildingRuleInput {
   analysis: VolumeAnalysis;
   options: SelectionOptions;
   metadata: RuleData;
+  context: DeepReadonly<BuildingContextPlan>;
 }
 export interface BuildingGenerationRule {
   id: string;

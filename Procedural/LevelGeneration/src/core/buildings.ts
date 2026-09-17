@@ -1,8 +1,13 @@
-import { resolveBuildingRule, type BuildingRuleReference } from "./building-rules";
+import { resolveBuildingRule, ruleReference, type BuildingRuleReference } from "./building-rules";
+import { adapterReferenceFor, resolveRuleSpatialAdapter } from "./rule-spatial-adapters";
+import type { SpatialAdapterReference } from "./rule-spatial-contract";
+import { BUILDING_USES, type BuildingDesignV1, type BuildingUse } from "./environment-contract";
+import { cloneJSON, exactKeys } from "./canonical";
 import { add, BASES, cellId, compareCells, DIRECTIONS, normalizeGrid, type Vec3 } from "./analysis";
 import { validateBuildingStyle, type BuildingStyle } from "./building-style";
 
-export interface BuildingMetadata { componentId: string; theme?: BuildingStyle; rule?: BuildingRuleReference }
+export interface BuildingMetadata { componentId: string; theme?: BuildingStyle; rule?: BuildingRuleReference; design?: BuildingDesignV1; spatialAdapterRef?: SpatialAdapterReference }
+export interface ResolvedBuildingMetadata extends BuildingMetadata { rule: BuildingRuleReference; design: BuildingDesignV1; spatialAdapterRef: SpatialAdapterReference }
 export function buildingComponents(input: Vec3[]) {
   const cells = normalizeGrid(input), remaining = new Set(cells.map(cellId));
   const result: { id: string; cells: Vec3[] }[] = [];
@@ -17,17 +22,27 @@ export function buildingComponents(input: Vec3[]) {
   }
   return result;
 }
-export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[]) {
+export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[], defaultUse: BuildingUse = "generic"): ResolvedBuildingMetadata[] {
   if (!Array.isArray(metadata)) throw new Error("Invalid building metadata.");
-  const ids = new Set(buildingComponents(grid).map(c => c.id)), seen = new Set<string>();
+  const components=buildingComponents(grid),ids = new Set(components.map(c => c.id)), seen = new Set<string>();
   for (const entry of metadata) {
     if (!entry || !ids.has(entry.componentId) || seen.has(entry.componentId)) throw new Error("Invalid building component.");
     seen.add(entry.componentId);
     if (entry.theme !== undefined) validateBuildingStyle(entry.theme);
     if (entry.rule !== undefined) resolveBuildingRule(entry.rule);
-    if (Object.keys(entry).some(k => !["componentId", "theme", "rule"].includes(k))) throw new Error("Unknown building metadata.");
+    if (Object.keys(entry).some(k => !["componentId", "theme", "rule", "design", "spatialAdapterRef"].includes(k))) throw new Error("Unknown building metadata.");
   }
-  return JSON.parse(JSON.stringify(metadata)).sort((a: BuildingMetadata, b: BuildingMetadata) => a.componentId.localeCompare(b.componentId)) as BuildingMetadata[];
+  return components.map(component => {
+    const entry = metadata.find(m => m.componentId === component.id);
+    const rule = entry?.rule ?? ruleReference("standard-contextual");
+    const spatialAdapterRef = entry?.spatialAdapterRef ?? adapterReferenceFor(rule);
+    resolveRuleSpatialAdapter(rule, spatialAdapterRef);
+    const design = entry?.design ?? {version:1 as const,use:defaultUse,anchor:component.cells[0]};
+    exactKeys(design,["version","use","anchor"]);
+    if (design.version !== 1 || !BUILDING_USES.includes(design.use)) throw new Error("INVALID_BUILDING_DESIGN");
+    normalizeGrid([design.anchor]);
+    return cloneJSON({...entry,componentId:component.id,rule,spatialAdapterRef,design});
+  });
 }
 // Rank by PRE-edit volume, then numeric lexicographic minimum cell. New bridge cells never vote.
 export function inheritBuildings(oldGrid: Vec3[], grid: Vec3[], metadata: BuildingMetadata[]) {

@@ -1,12 +1,14 @@
 import * as THREE from "three";
 import { BASES, faceCenter2, faceCorners, cellId, type GenerationResult, type Vec3 } from "./core/generate";
 import { surfaceRectangle, type SurfaceSelection } from "./surface-edit";
+import type {ObjectInput} from './core/scene-inputs';
 
 interface Context {
   result?: GenerationResult;
   origin: THREE.Vector3;
   surfaces: THREE.Group;
   objects: THREE.Group;
+  objectInputs?: ObjectInput[];
 }
 interface Gesture {
   pointer: number;
@@ -19,7 +21,7 @@ interface Gesture {
 }
 
 export class SurfaceInteraction {
-  mode: "building" | "object" | "road" = "building";
+  mode: "building" | "object" | "road" | "parking" | "inspect" = "building";
   private selection?: SurfaceSelection;
   private gesture?: Gesture;
   private ray = new THREE.Raycaster();
@@ -68,7 +70,8 @@ export class SurfaceInteraction {
       if (g.dragged && g.start && inside) this.preview(e, g);
       this.cancelGesture();
       if (!inside) { this.draw(this.selection); return; }
-      const chosen = g.dragged ? g.preview : this.mode === "road" ? g.start : this.mode === "object" ? this.selection ?? g.start : this.selection;
+      if(this.mode==='inspect'){if(!g.dragged&&g.button===0)this.inspect(e);return;}
+      const chosen = g.dragged ? g.preview : this.mode === "road" || this.mode === "parking" ? g.start : this.mode === "object" ? this.selection ?? g.start : this.selection;
       if (chosen) {
         this.selection = this.commit(chosen, g.button === 2 ? "remove" : "add") ?? this.selection;
         this.draw(this.selection);
@@ -93,6 +96,11 @@ export class SurfaceInteraction {
     const { result, origin, surfaces, objects } = this.context();
     if (!result) return;
     this.setRay(e);
+    if(this.mode==='road'||this.mode==='parking'){
+      const point=this.ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-origin.y),new THREE.Vector3());
+      if(!point||this.ray.ray.direction.y>=0)return;point.sub(origin);
+      return {direction:'PY',cells:[[Math.floor(point.x),-1,Math.floor(point.z)]]};
+    }
     surfaces.updateMatrixWorld(true);
     objects.updateMatrixWorld(true);
     const hit = this.ray.intersectObjects(surfaces.children, false)[0];
@@ -101,9 +109,7 @@ export class SurfaceInteraction {
     // Pick the editable input volume, including empty-looking space between
     // procedural modules, so its face and edit plane agree like building voxels.
     if (this.mode === "object" && objects.visible) {
-      const inputs = new Map(objects.children.filter(o=>o.userData.scenePlacement?.input).map(o=>{
-        const input=o.userData.scenePlacement.input; return [input.id,input] as const;
-      }));
+      const inputs = new Map((this.context().objectInputs??[]).map(input=>[input.id,input]));
       for (const input of inputs.values()) {
         const cells=input.cells as Vec3[];
         const min=[0,1,2].map(a=>Math.min(...cells.map(c=>c[a]))) as Vec3;
@@ -136,6 +142,7 @@ export class SurfaceInteraction {
     return { direction: "PY", cells: [cell] };
   }
   private preview(e: PointerEvent, g: Gesture) {
+    if(this.mode==='inspect')return;
     const start = g.start!;
     const { origin, result } = this.context();
     const n = new THREE.Vector3(...BASES[start.direction].n);
@@ -151,9 +158,8 @@ export class SurfaceInteraction {
       const selection = surfaceRectangle(start.cells[0], end, start.direction);
       const faces = new Set(result?.surfaces.filter(f => f.direction === start.direction).map(f => cellId(f.cell)));
       if (this.mode === "object") {
-        const objects = this.context().objects;
         const occupied = new Map<string,Vec3>();
-        for (const child of objects.children) for (const cell of child.userData.scenePlacement?.input?.cells ?? []) occupied.set(cellId(cell),cell);
+        for (const input of this.context().objectInputs??[]) for (const cell of input.cells) occupied.set(cellId(cell),cell);
         const normal = BASES[start.direction].n;
         for (const cell of occupied.values()) {
           const next=cell.map((v,a)=>v+normal[a]) as Vec3;
@@ -162,7 +168,7 @@ export class SurfaceInteraction {
       }
       const ground = start.direction === "PY" && start.cells[0][1] === -1 && !faces.has(cellId(start.cells[0]));
       // Dragging on a facade/roof selects only its exposed, coplanar cells.
-      if (!ground) selection.cells = selection.cells.filter(c => faces.has(cellId(c)));
+      if (!ground&&this.mode!=='road'&&this.mode!=='parking') selection.cells = selection.cells.filter(c => faces.has(cellId(c)));
       if (!selection.cells.length) return;
       g.preview = selection;
       this.draw(selection);

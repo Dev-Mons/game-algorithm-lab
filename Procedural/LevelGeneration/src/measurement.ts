@@ -1,149 +1,42 @@
-import { generateDocument, documentCatalog } from "./core/generate-document";
-import {
-  analyzeVolume,
-  selectTiles,
-  assembleModules,
-  type GenerationResult,
-} from "./core/generate";
-import {
-  createDocument,
-  profileData,
-  documentOptions,
-  type GenerationDocument,
-} from "./core/document";
-import { FIXTURES, box } from "./fixtures";
-import { generateCity } from "./core/city";
-import type { Viewer } from "./viewer";
-
+import {generateDocument,documentCatalog} from './core/generate-document';
+import type {EnvironmentExecution} from './core/environment-generation';
+import type {ExecutionTelemetry} from './core/environment-cache';
+import type {GenerationResult} from './core/generate';
+import type {GenerationDocument} from './core/document';
+import type {Viewer} from './viewer';
 export interface Timings {
   analysis: number;
   selection: number;
   rendererSync: number;
   total: number;
+  generationCalls: number;
+  viewerSyncCalls: number;
+  stages: Record<string,number>;
+  telemetry?:ExecutionTelemetry;
 }
 export function measuredGeneration(
   document: GenerationDocument,
   viewer: Viewer,
-): { result: GenerationResult; timings: Timings } {
-  const options = documentOptions(document);
-  const start = performance.now();
-  const analysis = analyzeVolume(document.grid, options.rolePolicy),
-    analyzed = performance.now();
-  const result = (document.buildings?.length || document.sceneInputs) ? generateDocument(document) : assembleModules(
-      selectTiles(analysis, {
-        ...options,
-      }),
-      options,
-    ),
-    selected = performance.now();
-  viewer.sync(result, documentCatalog(document));
-  const synced = performance.now();
-  return {
-    result,
-    timings: {
-      analysis: analyzed - start,
-      selection: selected - analyzed,
-      rendererSync: synced - selected,
-      total: synced - start,
-    },
-  };
+): { result: GenerationResult; timings: Timings; execution:EnvironmentExecution } {
+  const start=performance.now(),starts:Record<string,number>={},stages:Record<string,number>={};
+  let telemetry:ExecutionTelemetry|undefined;
+  const result=generateDocument(document,{mode:"complete",telemetry:t=>telemetry=t,stageHook(stage,edge){
+    if(edge==='start') starts[stage]=performance.now(); else stages[stage]=performance.now()-starts[stage];
+  }});
+  const execution:EnvironmentExecution={mode:"complete",stages:result.environment!.stages,result};
+  const selected=performance.now();
+  viewer.sync(result,documentCatalog(document),document);
+  const synced=performance.now();
+  return {result,execution,timings:{analysis:stages.analysis??0,selection:selected-start-(stages.analysis??0),rendererSync:synced-selected,total:synced-start,generationCalls:1,viewerSyncCalls:1,stages,telemetry}};
 }
-export const BENCHMARK_INPUTS = {
-  ...Object.fromEntries(
-    [
-      "single",
-      "adjacent",
-      "cube",
-      "l",
-      "step",
-      "overhang",
-      "sealed",
-      "opened",
-    ].map((id) => [id, FIXTURES[id].cells]),
-  ),
-  dense: box(16, 16, 8),
-  stepped: box(16, 16, 8).filter(([x, y]) => y < (x < 8 ? 8 : 16)),
-  cantilever: box(16, 16, 8).filter(
-    ([x, y, z]) => y >= 8 || (x >= 4 && x < 12 && z >= 2 && z < 6),
-  ),
-  annex: FIXTURES.annex.cells,
-  facade: FIXTURES.facade.cells,
-  quarter: FIXTURES.quarter.cells,
-  generated: generateCity({
-    seed: 42,
-    blocks: 3,
-    lotSize: 4,
-    streetWidth: 2,
-    maxHeight: 6,
-    density: 100,
-    layout: "grid",
-  }).cells,
-};
-const percentile = (values: number[], p: number) =>
-  [...values].sort((a, b) => a - b)[Math.ceil(values.length * p) - 1];
-export async function benchmark(
-  viewer: Viewer,
-  progress: (text: string) => void,
-) {
-  const rows = [];
-  for (const profile of [
-    "reference",
-    "village",
-    "crafted-hip",
-    "crafted-gable",
-    "crafted-flat",
-  ] as const)
-    for (const [name, grid] of Object.entries(BENCHMARK_INPUTS)) {
-      progress(`${profile}/${name} · 준비 10회 / 측정 50회`);
-      const input = createDocument(grid, 42, profile);
-      const samples: Timings[] = [];
-      let result!: GenerationResult;
-      for (let i = 0; i < 60; i++) {
-        const run = measuredGeneration(input, viewer);
-        result = run.result;
-        if (result.status !== "ok")
-          throw new Error(`Benchmark fixture failed: ${name}`);
-        if (i >= 10) samples.push(run.timings);
-        if (i % 5 === 4)
-          await new Promise<void>((resolve) =>
-            requestAnimationFrame(() => resolve()),
-          );
-      }
-      const timings = Object.fromEntries(
-        (["analysis", "selection", "rendererSync", "total"] as const).map(
-          (key) => [
-            key,
-            {
-              p50: percentile(
-                samples.map((s) => s[key]),
-                0.5,
-              ),
-              p95: percentile(
-                samples.map((s) => s[key]),
-                0.95,
-              ),
-            },
-          ],
-        ),
-      );
-      rows.push({ name, input, counters: result.counters, timings, samples });
-    }
-  return {
-    measuredAt: new Date().toISOString(),
-    environment: {
-      userAgent: navigator.userAgent,
-      hardwareConcurrency: navigator.hardwareConcurrency,
-      platform: navigator.platform,
-      buildMode: import.meta.env.MODE,
-    },
-    protocol: {
-      warmup: 10,
-      samples: 50,
-      targetTotalP95Ms: 100,
-      scope:
-        "CPU normalization through adapter synchronization; excludes GPU completion, paint, DOM inspector updates and frame waits",
-    },
-    rows,
-  };
+
+export const percentile=(values:number[],p:number)=>[...values].sort((a,b)=>a-b)[Math.ceil(values.length*p)-1];
+export interface MeasurementSample {
+ runKind:'application-cold'|'warm-repeat'|'first-road-edit'|'first-area-edit';operation:'none'|'road-add'|'road-remove'|'area-remove';
+ inputBeforeSignature:string;inputAfterSignature:string;outputSignature:string;editId?:number;
+ initializationState:{plannerCacheEntries:number;geometryCacheEntries:number;startupGenerationCount:number};
+ totalMs:number;commandAndHistoryMs:number;rendererSyncMs:number;stages:Record<string,number>;
+ generationCalls:number;viewerSyncCalls:number;historyCommitCalls:number;telemetry?:ExecutionTelemetry;parkingQuality:unknown;
 }
-export type BenchmarkReport = Awaited<ReturnType<typeof benchmark>>;
+export async function benchmark(run:()=>MeasurementSample,progress:(text:string)=>void){const samples:MeasurementSample[]=[];for(let i=0;i<60;i++){progress(`현재 입력 · 준비 10회 / 측정 50회 (${i+1}/60)`);const sample=run();if(i>=10)samples.push(sample);await new Promise<void>(r=>requestAnimationFrame(()=>r()));}const totals=samples.map(s=>s.totalMs);return {protocol:{warmup:10,samples:50,scope:'acceptance through generation, Viewer sync, history and accepted publication'},rows:[{name:'current-input',timings:{total:{p50:percentile(totals,.5),p95:percentile(totals,.95),max:Math.max(...totals)}},samples}]};}
+export type BenchmarkReport=Awaited<ReturnType<typeof benchmark>>;

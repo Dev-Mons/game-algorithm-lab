@@ -1,5 +1,7 @@
 import { FACADE_ASSETS, type FacadeAssetKey } from "./facade-assets";
 import type { BuildingStyle } from "./building-style";
+import type {BuildingContextPlan} from "./environment-contract";
+import type {DeepReadonly} from "./rule-spatial-contract";
 import { applyFacadeStyle, type FacadeTrace } from "./facade-patterns";
 import {
   DIRECTIONS,
@@ -19,20 +21,10 @@ import type {
 export const PANEL_ASSETS = [
   ...(Object.keys(FACADE_ASSETS) as FacadeAssetKey[]),
   "crafted.plaster",
-  "crafted.window",
-  "crafted.window-top",
-  "crafted.entry",
   "crafted.roof",
   "crafted.paving",
   "crafted.soffit",
   "unit-panel",
-  "village.plaster",
-  "village.window",
-  "village.window-top",
-  "village.entry",
-  "village.roof",
-  "village.paving",
-  "village.soffit",
 ] as const;
 export const PALETTES = ["clay", "sage", "sand"] as const;
 export type Palette = (typeof PALETTES)[number];
@@ -56,7 +48,7 @@ export interface Rule {
   roles: Role[];
   orientationIds: Direction[];
   tileIds: string[];
-  predicate?: "entry" | "window" | "window-top" | "supported";
+  predicate?: "supported";
 }
 export const DEFAULT_CATALOG: Tile[] = ROLES.map((role) => ({
   tileId: `panel.${role}`,
@@ -87,8 +79,8 @@ export const DEFAULT_RULES: Rule[] = ROLES.map((role) => ({
   tileIds: [`panel.${role}`],
 }));
 export interface SelectionOptions {
+  context?: DeepReadonly<BuildingContextPlan>;
   architecture?: BuildingStyle;
-  assembly?: "hip" | "gable" | "flat";
   seed?: number;
   catalog?: Tile[];
   rules?: Rule[];
@@ -164,8 +156,7 @@ export function validateSelection(options: SelectionOptions) {
     throw new Error("Seed must be an unsigned 32-bit integer.");
   if (
     style !== "unit-panels" &&
-    style !== "village-panels" &&
-    style !== "crafted-panels"
+    style !== "environment-panels"
   )
     throw new Error(`Unsupported style: ${style}`);
   if (!Array.isArray(catalog) || !Array.isArray(rules))
@@ -211,7 +202,7 @@ export function validateSelection(options: SelectionOptions) {
       !validList(rule.orientationIds, DIRECTIONS) ||
       !Array.isArray(rule.tileIds) ||
       (rule.predicate !== undefined &&
-        !["entry", "window", "window-top", "supported"].includes(
+        !["supported"].includes(
           rule.predicate,
         )) ||
       new Set(rule.tileIds).size !== rule.tileIds.length ||
@@ -258,11 +249,6 @@ export function selectTiles(
   options: SelectionOptions = {},
 ) {
   if (
-    options.style === "crafted-panels" &&
-    (!options.assembly || !["hip", "gable", "flat"].includes(options.assembly))
-  )
-    throw new Error("Crafted panels require a supported assembly policy.");
-  if (
     options.rolePolicy !== undefined &&
     options.rolePolicy !== (analysis.rolePolicy ?? "component-height-v1")
   ) {
@@ -271,10 +257,10 @@ export function selectTiles(
     );
   }
   if (
-    options.style === "village-panels" &&
+    options.style === "environment-panels" &&
     analysis.rolePolicy !== "region-context-v1"
   ) {
-    throw new Error("Village panels require region-context-v1 analysis.");
+    throw new Error("Environment panels require region-context-v1 analysis.");
   }
   const { seed, tiles, rules } = validateSelection(options);
   const traces: FaceTrace[] = [],
@@ -283,7 +269,7 @@ export function selectTiles(
   let ruleEvaluations = 0,
     fallbackCount = 0;
   for (const surface of analysis.surfaces) {
-    const paletteHash = hash33(seed, `${surface.componentId}|facade.palette`);
+    const paletteHash = hash33(seed, `${options.context?.design.anchor.join(',')??surface.componentId}|facade.palette`);
     const palette = PALETTES[paletteHash % PALETTES.length];
     const evaluations: RuleTrace[] = [];
     let selection: FaceTrace["selection"] | undefined;
@@ -296,15 +282,7 @@ export function selectTiles(
       if (rule.predicate) {
         const context = surface.architecture;
         const supported = context && context.interpretation !== "unsupported";
-        const matched =
-          !!supported &&
-          (rule.predicate === "supported" ||
-            (rule.predicate === "entry" && context.facadeElement === "entry") ||
-            (rule.predicate === "window" &&
-              context.facadeElement === "window") ||
-            (rule.predicate === "window-top" &&
-              context.facadeElement === "window" &&
-              context.topBoundary));
+        const matched=!!supported;
         if (!matched)
           conditions.push(`architecture-${rule.predicate}-mismatch`);
       }

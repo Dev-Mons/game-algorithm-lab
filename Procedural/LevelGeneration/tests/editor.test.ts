@@ -1,3 +1,4 @@
+import {generateDocument} from '../src/core/generate-document';
 import { expect, it } from "vitest";
 import { DocumentHistory, editBox, extrudeRegion } from "../src/editor";
 import {
@@ -18,11 +19,11 @@ it("box add/delete handles overlap, negative coordinates and atomic limits", () 
 });
 it("region extrude/cut modifies the entire selected plane and regenerates valid coverage", () => {
   const grid = editBox([], [0, 0, 0], [3, 2, 3], "add"),
-    result = generate(grid, { ...profileData("crafted-hip") });
+    result = generateDocument(createDocument(grid));
   const top = result.regions!.find((r) => r.direction === "PY")!;
   const grown = extrudeRegion(grid, result, top.regionId, 2);
   expect(grown).toHaveLength(36);
-  const grownResult = generate(grown, { ...profileData("crafted-hip") });
+  const grownResult = generateDocument(createDocument(grown));
   const cut = extrudeRegion(
     grown,
     grownResult,
@@ -36,9 +37,9 @@ it("region extrude/cut modifies the entire selected plane and regenerates valid 
   expect(extrudeRegion(grid, result, side.regionId, 1)).toHaveLength(24);
 });
 it("history preserves full documents, branches correctly, skips no-ops and bounds memory", () => {
-  const a = createDocument([], 42, "crafted-hip"),
-    b = createDocument([[0, 0, 0]], 12, "crafted-gable"),
-    c = createDocument([[1, 0, 0]], 5, "village");
+  const a = createDocument([], 42, "office"),
+    b = createDocument([[0, 0, 0]], 12, "office"),
+    c = createDocument([[1, 0, 0]], 5, "office");
   const history = new DocumentHistory(a, 2);
   expect(history.commit(a)).toBe(false);
   history.commit(b);

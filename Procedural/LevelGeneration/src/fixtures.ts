@@ -27,11 +27,11 @@ for (let row = 0; row < 3; row++)
   }
 export const FIXTURES: Record<string, { label: string; cells: Vec3[] }> = {
   evenEntrance: {
-    label: "Even frontage · 14칸 중앙 출입구",
+    label: "Wide frontage · 14칸 외벽",
     cells: box(14, 3, 3),
   },
   symmetryGallery: {
-    label: "Facade rhythm · XOOOOX / XOXOX",
+    label: "Facade rhythm · 절대 좌표 반복",
     cells: [...box(6, 4, 4), ...shift(box(5, 4, 4), 9, 0, 0)],
   },
   styleGallery: {

@@ -1,6 +1,7 @@
+import type {SelectionOptions} from '../src/core/selection';
 import { expect, it } from "vitest";
 import {
-  generate,
+
   analyzeVolume,
   selectTiles,
   BASES,
@@ -18,16 +19,17 @@ import {
   profileData,
 } from "../src/core/document";
 import { FIXTURES, box } from "../src/fixtures";
-const options = { seed: 42, ...profileData("village") };
+const generate=(grid:unknown,options:SelectionOptions={})=>selectTiles(analyzeVolume(grid,options.rolePolicy),options);
+const options = { seed: 42, ...profileData("office"),architecture:undefined };
 
 it("rejects incompatible analysis/selection policies and incomplete asset metadata", () => {
-  const legacy = analyzeVolume(FIXTURES.single.cells);
-  expect(() => selectTiles(legacy, options)).toThrow("role policy");
-  expect(() => selectTiles(legacy, { style: "village-panels" })).toThrow(
+  const unitResult = analyzeVolume(FIXTURES.single.cells);
+  expect(() => selectTiles(unitResult, options)).toThrow("role policy");
+  expect(() => selectTiles(unitResult, { style: "environment-panels" })).toThrow(
     "require region-context",
   );
   const catalog = options.catalog.map((t) => ({ ...t }));
-  delete catalog.find((t) => t.assetKey === "village.entry")!.palette;
+  delete catalog.find((t) => t.assetKey === "crafted.plaster")!.palette;
   expect(() =>
     generate(FIXTURES.facade.cells, { ...options, catalog }),
   ).toThrow("Invalid unit panel");
@@ -60,7 +62,7 @@ it("seed changes component palettes without changing facade layout or geometry",
 });
 
 it("a low rectangular annex becomes one roof, while a surrounding platform remains terrace", () => {
-  const legacy = generate(FIXTURES.annex.cells),
+  const unitResult = generate(FIXTURES.annex.cells),
     result = generate(FIXTURES.annex.cells, options);
   const annex = result.regions!.find((r) => r.regionId === "r:3,1,0|PY")!;
   expect(annex).toMatchObject({
@@ -76,11 +78,11 @@ it("a low rectangular annex becomes one roof, while a surrounding platform remai
   );
   expect(annex.boundaryEdges).toHaveLength(14);
   for (const id of annex.faceIds) {
-    expect(legacy.surfaces.find((s) => s.faceId === id)?.role).toBe("terrace");
+    expect(unitResult.surfaces.find((s) => s.faceId === id)?.role).toBe("terrace");
     expect(result.surfaces.find((s) => s.faceId === id)?.role).toBe("roof");
   }
   expect(result.surfaces.map((s) => s.faceId)).toEqual(
-    legacy.surfaces.map((s) => s.faceId),
+    unitResult.surfaces.map((s) => s.faceId),
   );
   const terrace = generate(FIXTURES.terrace.cells, options).regions!.filter(
     (r) => r.interpretation === "terrace",
@@ -106,7 +108,7 @@ it("narrow ledges remain terraces and overhanging cells prevent annex-roof infer
 it("coplanar regions partition only exterior faces; all positions and coverage remain exact", () => {
   for (const fixture of Object.values(FIXTURES)) {
     const result = generate(fixture.cells, options),
-      legacy = generate(fixture.cells);
+      unitResult = generate(fixture.cells);
     const members = result.regions!.flatMap((r) => r.faceIds);
     expect(members.length).toBe(result.surfaces.length);
     expect(new Set(members)).toEqual(
@@ -122,7 +124,7 @@ it("coplanar regions partition only exterior faces; all positions and coverage r
     expect(
       result.placements.map((p) => [p.faceId, p.position2, p.orientationId]),
     ).toEqual(
-      legacy.placements.map((p) => [p.faceId, p.position2, p.orientationId]),
+      unitResult.placements.map((p) => [p.faceId, p.position2, p.orientationId]),
     );
     for (const r of result.regions!) {
       const surfaces = r.faceIds.map(
@@ -141,65 +143,6 @@ it("coplanar regions partition only exterior faces; all positions and coverage r
       ).toBe(1);
     }
   }
-});
-it("facades choose one central base entry, consistent component palette, and column-top windows", () => {
-  const result = generate(FIXTURES.facade.cells, options);
-  const entries = result.placements.filter((p) => p.ruleId === "facade.entry");
-  expect(entries.map((p) => p.faceId)).toEqual(["1,0,2|PZ"]);
-  expect(
-    result.surfaces.filter(
-      (s) => s.role === "wall" && s.architecture!.facadeElement === "window",
-    ),
-  ).toHaveLength(41);
-  expect(result.placements.find((p) => p.faceId === "1,2,2|PZ")?.ruleId).toBe(
-    "facade.window-top",
-  );
-  expect(result.placements.find((p) => p.faceId === "1,1,2|PZ")?.ruleId).toBe(
-    "facade.window",
-  );
-  expect(
-    new Set(
-      result.placements
-        .filter((p) => p.tileId.startsWith("village."))
-        .map((p) => p.tileId.split(".").at(-1)),
-    ).size,
-  ).toBe(1);
-  const trace = result.traces.find((t) => t.faceId === entries[0].faceId)!;
-  expect(
-    trace.rules.find((r) => r.ruleId === "facade.entry")?.conditions,
-  ).toContain("architecture-entry-match");
-  expect(
-    trace.rules.find((r) => r.ruleId === "facade.entry")?.rejected,
-  ).toHaveLength(2);
-  expect(
-    trace.rules.find((r) => r.ruleId === "facade.window")?.conditions,
-  ).toContain("architecture-window-mismatch");
-  const irregular = generate(
-    [
-      [0, 0, 0],
-      [1, 0, 0],
-      [0, 1, 0],
-    ],
-    options,
-  );
-  expect(
-    irregular.placements.find((p) => p.faceId === "1,0,0|PZ")?.ruleId,
-  ).toBe("facade.window-top");
-});
-it("separate buildings each have a base entry; no entry is inferred at an overhang", () => {
-  const result = generate(FIXTURES.quarter.cells, options);
-  expect(result.counters.componentCount).toBe(9);
-  expect(
-    result.placements.filter((p) => p.ruleId === "facade.entry"),
-  ).toHaveLength(9);
-  const overhang = generate(FIXTURES.overhang.cells, options);
-  for (const p of overhang.placements.filter(
-    (p) => p.ruleId === "facade.entry",
-  ))
-    expect(p.position2[1]).toBe(1);
-  expect(
-    overhang.placements.filter((p) => p.orientationId === "NY"),
-  ).toHaveLength(2);
 });
 it("unsupported contacts use basic coverage and remain degraded without architectural inference", () => {
   for (const name of ["edgeContact", "vertexContact"]) {
@@ -243,14 +186,14 @@ it("region policy is deterministic under permutations and translations, and save
       s.architecture!.facadeElement,
     ]),
   );
-  const input = createDocument(grid, 42, "village");
-  expect(input.schemaVersion).toBe(2);
-  expect(input.algorithmVersion).toBe("architecture-v1");
+  const input = createDocument(grid, 42, "office");
+  expect(input.schemaVersion).toBe(5);
+  expect(input.algorithmVersion).toBe("environment-plans-v1");
   const loaded = loadDocument(exportDocument(input));
   expect(
     generate(loaded.grid, {
       seed: loaded.seed,
-      ...profileData(loaded.catalog.id),
+      ...profileData(loaded.catalog.id),architecture:undefined,
     }),
   ).toEqual(result);
   for (const change of [
@@ -267,12 +210,3 @@ it("region policy is deterministic under permutations and translations, and save
     "Unsupported role policy",
   );
 });
-it.each(["annex", "facade", "terrace"])(
-  "architecture-v1 portable golden: %s",
-  async (name) => {
-    const input = createDocument(FIXTURES[name].cells, 42, "village");
-    await expect(
-      canonicalJSON({ input, output: generate(input.grid, options) }),
-    ).toMatchFileSnapshot(`../fixtures/golden-v2/${name}.json`);
-  },
-);

@@ -1,3 +1,12 @@
+import {environmentCache} from './core/environment-cache';
+import {canonicalJSON,immutableJSON} from './core/canonical';
+import type {MeasurementSample} from './measurement';
+import {applyEnvironmentEdit,inputSignature,type EnvironmentEditCommand,type EnvironmentEditRecord} from "./environment-editor";
+import {renderPlanInspector} from "./plan-inspector";
+import {ENVIRONMENT_RANGES} from "./core/environment-settings";
+import type {SourceRef,InputDelta} from "./core/environment-contract";
+import type { AcceptedEditorState } from "./core/environment-generation";
+import type { Timings } from "./measurement";
 import { buildingRules } from "./core/building-rules";
 import { editObjects, editRoads } from "./scene-editor";
 import type { ObjectCategory } from "./core/scene-inputs";
@@ -24,7 +33,7 @@ import {
 } from "./measurement";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <header><a class="brand" href="./"><span class="brand-icon">▧</span> FORM <i>&</i> FIELD</a><span class="header-note">PROCEDURAL CITY LAB <b> / </b> 002</span><span class="tag" id="version-tag">ARCHITECTURE V1</span></header>
+  <header><a class="brand" href="./"><span class="brand-icon">▧</span> FORM <i>&</i> FIELD</a><span class="header-note">PROCEDURAL CITY LAB <b> / </b> 002</span><span class="tag" id="version-tag">ENVIRONMENT-PLANS-V1</span></header>
   <main>
     <aside class="left-panel">
       <div class="section-heading"><span class="eyebrow">01 / VOLUME</span><span class="live-dot"></span></div>
@@ -40,13 +49,14 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <label class="toggle"><input id="layer-edges" type="checkbox" data-layer="edges" checked><span>모서리</span><small>EDGES</small></label>
         <label class="toggle"><input id="layer-normals" type="checkbox" data-layer="normals"><span>외향 법선</span><small>NORMALS</small></label>
         <label class="toggle"><input id="layer-regions" type="checkbox" data-layer="regions"><span>선택 영역 경계</span><small>REGION</small></label>
+        <label class="toggle"><input id="environment-inputs" type="checkbox" checked><span>환경 원본 입력</span></label><label class="toggle"><input id="environment-plans" type="checkbox" checked><span>환경 계획·예약</span></label>
         <label class="toggle"><input id="ground-visible" type="checkbox" checked><span>표시용 지면·그림자</span><small>GROUND</small></label>
       </details>
       <p class="edit-note">분석 표면 색상</p><div class="legend"><span><i class="wall"></i>외벽</span><span><i class="roof"></i>지붕</span><span><i class="terrace"></i>테라스</span><span><i class="underside"></i>하부면</span></div>
       <p class="footnote">1 CELL = 1 UNIT<br>입력 범위 32 × 32 × 32 · 면 공유 연결</p>
     </aside>
     <section class="stage" aria-label="생성 결과">
-      <div class="stage-top"><span class="breadcrumb">WORKSPACE <b>/</b> <span id="scene-name">Village quarter</span></span><span id="status" class="status" role="status">READY</span></div>
+      <div class="stage-top"><span class="breadcrumb">WORKSPACE <b>/</b> <span id="scene-name">빈 장면</span></span><span id="status" class="status" role="status">READY</span></div>
       <div id="viewport"></div>
       <div id="error" class="error" role="alert" hidden></div>
       <div class="camera-bar" aria-label="카메라"><button data-camera="iso" class="active">↗ 전체</button><button data-camera="top">↓ 상부</button><button data-camera="below">↥ 하부</button><label>기준면 Y <input id="ground" type="number" value="0" step="1" aria-label="표시용 기준면 높이"></label></div>
@@ -54,8 +64,8 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     </section>
     <aside class="right-panel">
       <div class="section-heading"><span class="eyebrow">03 / INSPECT</span><span class="muted">LIVE</span></div>
-      <h2>생성 결과</h2><div id="stats" class="stats"></div>
-      <div id="timings"></div>
+      <h2>생성 결과</h2><label for="source-select">원본 입력 선택</label><select id="source-select"></select><div id="plan-inspector"></div><div id="stats" class="stats"></div><p id="parking-summary" class="edit-note"></p>
+      <div id="timings"></div><p id="pipeline-state"></p><div id="stage-reports"></div>
       <details class="inspect-details"><summary>표면 분석 · 생성 근거</summary><div class="section-heading inspector-heading"><span class="eyebrow">FACE INSPECTOR</span></div>
       <label class="field-label" for="region">표면 영역</label><select id="region"></select><div id="region-info"></div>
       <label class="field-label" for="face">선택한 표면</label><select id="face"></select><label class="field-label" for="attachment">구조면 / 부착 모듈</label><select id="attachment" disabled></select><div id="inspector"></div>
@@ -80,15 +90,73 @@ const fixture = el<HTMLSelectElement>("fixture"),
   faceSelect = el<HTMLSelectElement>("face");
 for (const [id, data] of Object.entries(FIXTURES))
   fixture.add(new Option(data.label, id));
-fixture.value = "quarter";
+fixture.selectedIndex = -1;
 export let currentDocument = createDocument(
-  FIXTURES.quarter.cells,
+  [],
   42,
-  "crafted-hip",
+  "office",
 );
 const history = new DocumentHistory(currentDocument);
 export let currentResult: GenerationResult;
+export let acceptedState: AcceptedEditorState | undefined;
+export let lastTimings: Timings | undefined;
 let selectedBuilding: string | undefined;
+let selectedSource: SourceRef | undefined;
+export let lastEditRecord: EnvironmentEditRecord | undefined;
+export let lastInputDelta: InputDelta | undefined;
+export let lastEditTotalMs=0;
+export let lastMeasurement:MeasurementSample|undefined;
+export let startupGenerationCount=0;
+const measureMode=new URLSearchParams(location.search).get('measure')==='1';
+function initialization(){return {plannerCacheEntries:environmentCache.stats().entries,geometryCacheEntries:viewer.geometryCacheEntries,startupGenerationCount};}
+function finishMeasurement(start:number,initializationState:MeasurementSample['initializationState'],before:string,counts:number[],runKind:MeasurementSample['runKind'],operation:MeasurementSample['operation'],editId?:number){
+ const inputAfterSignature=inputSignature(history.serializedCurrent),outputSignature=inputSignature(canonicalJSON({placements:currentResult.placements,modules:currentResult.modules,scenePlacements:currentResult.scenePlacements,parking:currentResult.environment?.parking?.map(a=>({quality:a.quality,stalls:a.plans.flatMap(p=>p.stalls)}))}));
+ const totalMs=performance.now()-start;
+ lastMeasurement={runKind,operation,inputBeforeSignature:before,inputAfterSignature,outputSignature,editId,initializationState,totalMs,commandAndHistoryMs:totalMs-(lastTimings?.total??0),rendererSyncMs:lastTimings?.rendererSync??0,stages:lastTimings?.stages??{},generationCalls:generationCount-counts[0],viewerSyncCalls:viewerSyncCount-counts[1],historyCommitCalls:historyCommitCount-counts[2],telemetry:lastTimings?.telemetry,parkingQuality:currentResult.environment?.parking?.map(p=>p.quality)??[]};return lastMeasurement;
+}
+function loadAcceptedText(text:string){const doc=loadDocument(text),key='document:'+canonicalJSON(doc),hit=environmentCache.get<typeof doc>(key);if(hit)return hit;environmentCache.putImmutable(key,doc,doc);return doc;}
+function measureAcceptance(text?:string){const start=performance.now(),init=initialization(),counts=[generationCount,viewerSyncCount,historyCommitCount],before=inputSignature(history.serializedCurrent);
+ if(text!==undefined){if(!acceptDocument(loadAcceptedText(text),true))throw new Error(el('error').textContent??'ACCEPTANCE_FAILED');}else if(!regenerate())throw new Error('REGENERATION_FAILED');
+ return finishMeasurement(start,init,before,counts,text===undefined?'warm-repeat':'application-cold','none');
+}
+let nextEditId=0;
+export let generationCount=0,viewerSyncCount=0,historyCommitCount=0;
+function refreshEnvironmentSelection(){
+  const select=el<HTMLSelectElement>('source-select');
+  const sources:SourceRef[]=[...currentDocument.buildings.map(b=>({kind:'building' as const,id:b.componentId})),...currentDocument.sceneInputs.parkingAreas.map(p=>({kind:'parking' as const,id:p.id})),...currentDocument.sceneInputs.objects.map(o=>({kind:'object' as const,id:o.id})),...(currentDocument.sceneInputs.roads.length?[{kind:'road' as const,id:'roads'}]:[])];
+  if(!sources.some(s=>s.kind===selectedSource?.kind&&s.id===selectedSource.id))selectedSource=undefined;
+  select.replaceChildren(new Option('선택 없음',''),...sources.map(s=>new Option(`${s.kind} · ${s.id}`,JSON.stringify(s))));
+  select.value=selectedSource?JSON.stringify(selectedSource):'';
+  viewer.environmentPreview.select(selectedSource);
+  if(currentResult)renderPlanInspector(el('plan-inspector'),currentDocument,currentResult,selectedSource);
+  const areas=el<HTMLSelectElement>('parking-area');
+  if(areas){const previous=areas.value;areas.replaceChildren(new Option('새 지상 주차 영역',''),...currentDocument.sceneInputs.parkingAreas.map(p=>new Option(p.id,p.id)));areas.value=currentDocument.sceneInputs.parkingAreas.some(p=>p.id===previous)?previous:selectedSource?.kind==='parking'?selectedSource.id:'';}
+  refreshEnvironmentSetting();
+}
+function selectSource(source?:SourceRef){selectedSource=source;refreshEnvironmentSelection();if(source?.kind==='building'){selectedBuilding=source.id;refreshBuildingSelection();}else if(source?.kind==='parking')el<HTMLSelectElement>('parking-area').value=source.id;}
+viewer.onSourceSelect=sources=>selectSource(sources[0]);
+function refreshEnvironmentSetting(){
+  const picker=el<HTMLSelectElement>('environment-setting'),input=el<HTMLInputElement>('environment-value');if(!picker||!input)return;
+  let value:unknown=currentDocument.environment;
+  for(const key of picker.value.split('.'))value=(value as Record<string,unknown>)?.[key];
+  input.value=value===undefined?'':String(value);
+  const [group,key]=picker.value.split('.'),range=(ENVIRONMENT_RANGES as Record<string,Record<string,readonly number[]>>)[group]?.[key];
+  input.min=range?String(range[0]):'0';input.max=range?String(range[1]):'';input.step=range?'1':'any';
+}
+export function commitEnvironmentEdit(command:EnvironmentEditCommand,start=performance.now()){
+  lastMeasurement=undefined;
+  const init=initialization(),counts=[generationCount,viewerSyncCount,historyCommitCount],editId=++nextEditId,beforeSignature=inputSignature(history.serializedCurrent);
+  try{
+    const edit=applyEnvironmentEdit(currentDocument,command);lastInputDelta=edit.delta;
+    if(edit.changed&&!acceptDocument(edit.document,false,true))throw new Error(el('error').textContent??'GENERATION_FAILED');
+    lastEditRecord={editId,command,beforeSignature:edit.beforeSignature,afterSignature:edit.afterSignature,outcome:'accepted',changed:edit.changed};
+    if(command.kind==='parking-add'&&edit.delta.parkingIds.length){selectedSource={kind:'parking',id:edit.delta.parkingIds[0]};refreshEnvironmentSelection();el<HTMLSelectElement>('parking-area').value=edit.delta.parkingIds[0];}
+    if(!edit.changed&&lastTimings)lastTimings={...lastTimings,generationCalls:0,viewerSyncCalls:0,total:0};
+    return true;
+  }catch(error){lastEditRecord={editId,command,beforeSignature,afterSignature:beforeSignature,outcome:'rejected',changed:false};el('edit-note').textContent=error instanceof Error?error.message:String(error);return false;}
+  finally{el('viewport').dataset.editRecord=JSON.stringify(lastEditRecord);el('viewport').dataset.executionCounts=JSON.stringify({generationCount,viewerSyncCount,historyCommitCount});if(lastEditRecord?.outcome==='accepted'&&lastEditRecord.changed&&['road-add','road-remove','parking-remove'].includes(command.kind))finishMeasurement(start,init,beforeSignature,counts,command.kind.startsWith('road')?'first-road-edit':'first-area-edit',command.kind==='road-add'?'road-add':command.kind==='road-remove'?'road-remove':'area-remove',editId);lastEditTotalMs=performance.now()-start;}
+}
+
 function selectBuildingFace(id: string, attachmentId?: string) {
   selectFace(id, attachmentId);
   selectedBuilding = currentResult?.surfaces.find(s => s.faceId === id)?.componentId;
@@ -101,7 +169,8 @@ function refreshBuildingSelection() {
   panel.hidden = !selectedBuilding;
   viewer.selectBuilding(selectedBuilding);
   if (selectedBuilding) {
-    el<HTMLSelectElement>("building-rule").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.rule?.id ?? "standard";
+    el<HTMLSelectElement>("building-rule").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.rule?.id ?? "standard-contextual";
+    refreshBand();
     el("building-id").textContent = `건물 ${selectedBuilding}`;
     el<HTMLSelectElement>("building-theme").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.theme?.id ?? currentDocument.buildingDefinition?.id ?? "";
   }
@@ -110,25 +179,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { selectedBu
 let valid = true;
 let busy = false;
 export function showError(error: unknown) {
-  valid = false;
-  el<HTMLButtonElement>("save").disabled = true;
+  valid = !!acceptedState;
+  el<HTMLButtonElement>("save").disabled = !valid;
   el("error").hidden = false;
-  el("error").textContent =
-    error instanceof Error ? error.message : String(error);
+  el("error").textContent = error instanceof Error ? error.message : String(error);
   el("status").textContent = "ERROR";
   el("status").className = "status error-status";
-  viewer.clearEditSelection();
-  viewer.clear();
-  el("stats").textContent = "생성 실패 · 이전 결과를 표시하지 않습니다.";
-  faceSelect.replaceChildren();
-  el("attachment").replaceChildren();
-  el<HTMLSelectElement>("attachment").disabled = true;
-  el("region").replaceChildren();
-  el("region-info").textContent = "";
-  el("inspector").replaceChildren();
-  el("trace").textContent = "";
-  el("diagnostics").replaceChildren();
-  el("timings").replaceChildren();
+
 }
 export function showResult(result: GenerationResult) {
   valid = true;
@@ -137,15 +194,15 @@ export function showResult(result: GenerationResult) {
   el("version-tag").textContent =
     currentDocument.algorithmVersion.toUpperCase();
   el("error").hidden = true;
-  el("status").textContent = result.status.toUpperCase();
+  const incomplete=result.environment?.stages.some(s=>s.state==='not-implemented'||s.state==='blocked');
+  el("status").textContent = incomplete ? 'PREVIEW' : result.status.toUpperCase();
+  el('pipeline-state').textContent=incomplete?'개발 미리보기 · 미구현 단계가 있습니다.':'환경 계획 실행 완료';
+  el('stage-reports').replaceChildren(...(result.environment?.stages??[]).map(s=>{const p=document.createElement('p');p.className='edit-note';p.dataset.stage=s.stage;p.dataset.state=s.state;p.textContent=`${s.stage}: ${s.state} ${s.reasonCodes.join(', ')}`;return p;}));
   el("status").className = `status ${result.status}`;
   el("stats").innerHTML =
     `<div><strong>${result.cells.length}</strong><span>점유 셀</span></div><div><strong>${result.surfaces.length}</strong><span>외부 표면</span></div><div><strong>${result.placements.length + (result.counters.moduleCount ?? 0) + (result.scenePlacements?.filter(p => p.kind === "building").length ?? 0)}</strong><span>구조 모듈</span></div><div><strong>${result.counters.componentCount}</strong><span>독립 성분</span></div>`;
-  faceSelect.replaceChildren(
-    ...result.surfaces.map(
-      (s) => new Option(`${s.faceId} · ${s.role}`, s.faceId),
-    ),
-  );
+  if(document.querySelector<HTMLDetailsElement>('.inspect-details')!.open)refreshFaceOptions();
+  el('parking-summary').textContent=(result.environment?.parking??[]).map(p=>`${p.areaId}: 검증 ${p.quality.acceptedStalls}대 · 차로 ${p.quality.aisleRatio===null?'해당 없음':(p.quality.aisleRatio*100).toFixed(1)+'%'} · 미검증 ${p.quality.untestedStalls}개`).join('\n');
   const regionSelect = el<HTMLSelectElement>("region");
   regionSelect.replaceChildren(
     ...(result.regions ?? []).map(
@@ -156,13 +213,13 @@ export function showResult(result: GenerationResult) {
   el("region-info").textContent = result.regions
     ? ""
     : "마을 건축 스타일에서 영역을 분석합니다.";
-  if (result.surfaces.length)
+  if (result.surfaces.length&&document.querySelector<HTMLDetailsElement>('.inspect-details')!.open)
     selectFace(
       result.placements.find(
         (p) => p.ruleId === "facade.entry" || p.ruleId === "building.entrance",
       )?.faceId ?? result.surfaces[0].faceId,
     );
-  else {
+  else if(!result.surfaces.length) {
     el("inspector").textContent = "빈 부피입니다. 셀을 추가해 시작하세요.";
     el("trace").textContent = "";
     el("attachment").replaceChildren();
@@ -184,7 +241,17 @@ export function showResult(result: GenerationResult) {
     diagnostics.innerHTML =
       result.scenePlacements?.some(p=>p.kind==="building") ? '<p class="all-clear">✓ 등록된 생성 규칙으로 구조 생성 완료</p>' : '<p class="all-clear">✓ 외피 누락·중복 0 · fallback 0</p>';
 }
+let inspectorResult:GenerationResult|undefined;
+function refreshFaceOptions(){const result=currentResult;if(!result||inspectorResult===result)return;
+  faceSelect.replaceChildren(
+    ...result.surfaces.map(
+      (s) => new Option(`${s.faceId} · ${s.role}`, s.faceId),
+    ),
+  );
+  inspectorResult=result;
+}
 export function selectFace(id: string, attachmentId?: string) {
+  refreshFaceOptions();
   const trace = currentResult?.traces.find((t) => t.faceId === id);
   const attachment = currentResult?.modules?.find(
     (m) =>
@@ -257,7 +324,7 @@ export function selectFace(id: string, attachmentId?: string) {
     info.id = "facade-info";
     info.textContent = `스타일 ${f.styleId} v${f.styleVersion} · 층 ${f.level} · ${f.facade}\n패턴 ${f.patternId} · 모듈 ${f.moduleId}\n묶음 ${f.groupId ?? "없음"} · 조각 ${f.part ?? "없음"}\n상단 마감 ${f.topBoundary ? "있음" : "없음"}\n${f.reason}\n${f.candidates.map((c) => `${c.id}: ${c.reason}`).join("\n")}`;
     if (f.entranceSpan)
-      info.textContent += `\n출입구 ${f.entranceSpan}칸 · 중앙 대칭 배치`;
+      info.textContent += `\n출입구 ${f.entranceSpan}칸 · 검증된 접근 경로`;
     el("inspector").append(info);
   }
   if (module)
@@ -280,11 +347,15 @@ export function selectFace(id: string, attachmentId?: string) {
 }
 export function regenerate(fit = false) {
   try {
-    const { result, timings } = measuredGeneration(currentDocument, viewer);
+    const { result, timings, execution } = measuredGeneration(currentDocument, viewer);
+    immutableJSON(currentDocument);
+    acceptedState = {document:currentDocument,execution};
+    lastTimings=timings;generationCount+=timings.generationCalls;viewerSyncCount+=timings.viewerSyncCalls;
     showResult(result);
     refreshBuildingSelection();
+    refreshEnvironmentSelection();
     el("timings").innerHTML =
-      `CPU 전체 <strong>${timings.total.toFixed(2)} ms</strong><br>분석 ${timings.analysis.toFixed(2)} · 선택 ${timings.selection.toFixed(2)} · 표시 동기화 ${timings.rendererSync.toFixed(2)} ms<br>탐색 범위 ${result.counters.paddedCells} cells · Rule 평가 ${result.counters.ruleEvaluations}회${result.regions ? `<br>표면 영역 ${result.regions.length}개 · 출입구 ${result.placements.filter((p) => p.ruleId === "facade.entry" || p.ruleId === "building.entrance").length}개` : ""}`;
+      `CPU 전체 <strong>${timings.total.toFixed(2)} ms</strong><br>분석 ${timings.analysis.toFixed(2)} · 선택 ${timings.selection.toFixed(2)} · 표시 동기화 ${timings.rendererSync.toFixed(2)} ms<br>탐색 범위 ${result.counters.paddedCells} cells · 논리 Rule 판단 ${result.counters.ruleEvaluations}회${result.regions ? `<br>표면 영역 ${result.regions.length}개 · 출입구 ${result.placements.filter((p) => p.ruleId === "facade.entry" || p.ruleId === "building.entrance").length}개` : ""}`;
     if (fit) {
       viewer.setCamera("iso");
       document
@@ -306,13 +377,14 @@ function acceptDocument(
 ) {
   if (busy) return false;
   if (!keepSelection) viewer.clearEditSelection();
+  if (acceptedState&&canonicalJSON(next)===canonicalJSON(currentDocument)) return true;
   const previous = currentDocument;
   currentDocument = next;
   if (!regenerate(fit)) {
     currentDocument = previous;
     return false;
   }
-  history.commit(next);
+  if(history.commitAccepted(next))historyCommitCount++;
   el<HTMLInputElement>("seed").value = String(next.seed);
   el<HTMLSelectElement>("profile").value = next.catalog.id;
   return true;
@@ -328,6 +400,7 @@ fixture.addEventListener("change", () => {
       currentDocument.seed,
       currentDocument.catalog.id,
       currentDocument.buildingDefinition,
+      undefined, undefined, currentDocument.environment,
     ),
     true,
   );
@@ -370,23 +443,25 @@ el<HTMLInputElement>("ground-visible").addEventListener("change", () =>
 viewer.setGroundVisible(true);
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
-  <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option></select><p id="road-tools" class="edit-note" hidden>지면을 드래그해 도로 길이와 폭을 지정하세요. 좌클릭 설치 · 우클릭 제거. 연결과 차선은 자동으로 바뀝니다.</p>
+  <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">지면 드래그로 의미 영역 추가·제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>지면을 드래그해 도로 길이와 폭을 지정하세요. 좌클릭 설치 · 우클릭 제거. 연결과 차선은 자동으로 바뀝니다.</p>
   <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><p class="edit-note">클릭/드래그로 첫 층 설치. 선택 중 좌클릭은 한 층 추가, 우클릭은 한 층 제거합니다. Esc로 해제합니다. 식생은 한 층일 때 관목, 높이 쌓기에 따라 조합형 나무로 바뀝니다.</p></div>
   <div id="building-guide" class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 후 블록 추가</span></p><p><b>오른쪽 드래그</b><span>영역 선택 후 블록 제거</span></p><p><b>선택 중 좌 / 우 클릭</b><span>같은 영역 한 층 추가 / 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
-  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
-  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="crafted-hip">입체 · 우진각</option><option value="crafted-gable">입체 · 박공</option><option value="crafted-flat">입체 · 평지붕</option><option value="village">마을 건축 v2</option><option value="reference">기본 패널 v1</option><option value="variants">2종 변형 v1</option></select></label></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select><label for="building-use">용도</label><select id="building-use"><option value="generic">일반</option><option value="retail">상업</option><option value="office">업무</option><option value="residential">주거</option><option value="industrial">산업</option></select><label for="band-setting">수직 디자인</label><select id="band-setting"></select><input id="band-value" type="number"><button id="band-apply">디자인 적용</button><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
+  <details><summary>환경 설정</summary><select id="environment-setting"></select><input id="environment-value" type="number"><button id="environment-apply">설정 적용</button></details>
+  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option></select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 드래그하세요.
 실행 취소 Ctrl+Z · 다시 실행 Ctrl+Shift+Z</p>`;
 el("benchmark-slot").innerHTML =
   '<button id="measure" class="wide-button">생성 성능 측정 ↗</button><p id="measure-status" role="status" class="edit-note"></p><button id="save-measure" class="wide-button" hidden>측정 JSON 저장</button><pre id="measure-report" hidden></pre>';
 el("edit-mode").addEventListener("change", () => {
-  const mode = el<HTMLSelectElement>("edit-mode").value as "building" | "object" | "road";
+  const mode = el<HTMLSelectElement>("edit-mode").value as "building" | "object" | "road" | "parking" | "inspect";
   viewer.setEditMode(mode);
   selectedBuilding = undefined; refreshBuildingSelection();
   el("object-tools").hidden = mode !== "object";
   el("road-tools").hidden = mode !== "road";
-  el("building-guide").hidden = mode === "road";
+  el("parking-tools").hidden=mode!=="parking";
+  el("building-guide").hidden = mode === "road"||mode==="parking"||mode==="inspect";
 });
 for (const rule of buildingRules()) el<HTMLSelectElement>("building-rule").add(new Option(rule.label,rule.id));
 el("building-rule").addEventListener("change", () => {
@@ -418,6 +493,7 @@ function applyGrid(grid: Vec3[], fit = false, resetScene = false) {
           : undefined,
         resetScene ? undefined : replaceGrid(currentDocument, grid).buildings,
         resetScene ? undefined : currentDocument.sceneInputs,
+        currentDocument.environment,
       ),
       fit,
     );
@@ -428,15 +504,15 @@ function applyGrid(grid: Vec3[], fit = false, resetScene = false) {
   }
 }
 function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
+  const commandStart=performance.now();
   if (busy || !valid) return undefined;
   try {
-    if (el<HTMLSelectElement>("edit-mode").value === "road") {
-      const next = editRoads(currentDocument, selection, mode);
-      if (acceptDocument(next, false, true)) {
-        el("edit-note").textContent = `도로 ${mode === "add" ? "설치" : "제거"} 완료 · 주변 연결/오브젝트 재평가`;
-        return selection;
-      }
-      return undefined;
+    const inputMode=el<HTMLSelectElement>('edit-mode').value;
+    if(inputMode==='parking'||inputMode==='road'){
+      if(selection.direction!=='PY'||selection.cells.some(c=>c[1]!==-1))throw new Error('GROUND_ONLY');
+      const cells=selection.cells.map(([x,,z])=>[x,0,z] as Vec3);
+      const command:EnvironmentEditCommand={kind:`${inputMode}-${mode}` as EnvironmentEditCommand['kind'],cells,...(inputMode==='parking'&&el<HTMLSelectElement>('parking-area').value?{targetId:el<HTMLSelectElement>('parking-area').value}:{})};
+      return commitEnvironmentEdit(command,commandStart)?selection:undefined;
     }
     if (el<HTMLSelectElement>("edit-mode").value === "object") {
       const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, mode);
@@ -497,15 +573,16 @@ el("city-generate").addEventListener("click", () => {
 });
 function restoreHistory(direction: "undo" | "redo") {
   if (busy) return;
-  const doc = history[direction]();
+  const doc = history.peek(direction);
   if (!doc) return;
   viewer.clearEditSelection();
+  const previous=currentDocument;
   currentDocument = doc;
   el<HTMLInputElement>("seed").value = String(doc.seed);
   el<HTMLSelectElement>("profile").value = doc.catalog.id;
   fixture.selectedIndex = -1;
   el("scene-name").textContent = "Restored volume";
-  regenerate(true);
+  if(regenerate(true))history[direction]();else currentDocument=previous;
 }
 document.addEventListener("keydown", (event) => {
   if (!(event.ctrlKey || event.metaKey) || busy) return;
@@ -556,8 +633,8 @@ el("file").addEventListener("change", async () => {
   try {
     if (file.size > 20_000_000)
       throw new Error("JSON 파일은 20 MB 이하만 지원합니다.");
-    const loaded = loadDocument(await file.text());
-    acceptDocument(loaded, true);
+    const loaded = loadAcceptedText(await file.text());
+    if (!acceptDocument(loaded, true)) return;
     el<HTMLInputElement>("seed").value = String(loaded.seed);
     el<HTMLSelectElement>("profile").value = loaded.catalog.id;
     fixture.selectedIndex = -1;
@@ -584,13 +661,13 @@ el("measure").addEventListener("click", async () => {
   el("measure-status").textContent = "측정 준비 중…";
   try {
     report = await benchmark(
-      viewer,
+      ()=>measureAcceptance(),
       (text) => (el("measure-status").textContent = text),
     );
     el("measure-status").textContent = report.rows
       .map(
         (r) =>
-          `${r.input.catalog.id}/${r.name}: p95 ${r.timings.total.p95.toFixed(1)} ms`,
+          `${r.name}: p95 ${r.timings.total.p95.toFixed(1)} ms`,
       )
       .join("\n");
     el("measure-report").textContent = JSON.stringify(report);
@@ -611,5 +688,21 @@ el("save-measure").addEventListener("click", () => {
     );
 });
 el<HTMLSelectElement>("profile").value = currentDocument.catalog.id;
-regenerate(true);
+el('environment-inputs').addEventListener('change',()=>viewer.environmentPreview.inputs.visible=el<HTMLInputElement>('environment-inputs').checked);
+el('environment-plans').addEventListener('change',()=>viewer.environmentPreview.plans.visible=el<HTMLInputElement>('environment-plans').checked);
+el('source-select').addEventListener('change',()=>selectSource(el<HTMLSelectElement>('source-select').value?JSON.parse(el<HTMLSelectElement>('source-select').value):undefined));
+for(const [group,fields] of Object.entries(ENVIRONMENT_RANGES))for(const key of Object.keys(fields))el<HTMLSelectElement>('environment-setting').add(new Option(`${group}.${key}`,`${group}.${key}`));
+el<HTMLSelectElement>('environment-setting').add(new Option('units.metersPerCell','units.metersPerCell'));
+el('environment-setting').addEventListener('change',refreshEnvironmentSetting);
+el('environment-apply').addEventListener('click',()=>commitEnvironmentEdit({kind:'setting',settingPath:el<HTMLSelectElement>('environment-setting').value,value:el<HTMLInputElement>('environment-value').value===''?undefined:el<HTMLInputElement>('environment-value').valueAsNumber}));
+for(const key of ['baseRatioPermille.generic','baseRatioPermille.retail','baseRatioPermille.office','baseRatioPermille.residential','baseRatioPermille.industrial','crownRatioPermille','maxBaseCells','maxCrownCells','baseCountOverride','crownCountOverride'])el<HTMLSelectElement>('band-setting').add(new Option(key,`bandPolicy.${key}`));
+function refreshBand(){const b=currentDocument.buildings.find(b=>b.componentId===selectedBuilding);if(!b)return;el<HTMLSelectElement>('building-use').value=b.design.use;let value:unknown=b.theme??currentDocument.buildingDefinition;for(const k of el<HTMLSelectElement>('band-setting').value.split('.'))value=(value as Record<string,unknown>)?.[k];el<HTMLInputElement>('band-value').value=value===undefined?'':String(value);}
+el('band-setting').addEventListener('change',refreshBand);
+el('building-use').addEventListener('change',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:'use',value:el<HTMLSelectElement>('building-use').value});});
+el('band-apply').addEventListener('click',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:el<HTMLSelectElement>('band-setting').value,value:el<HTMLInputElement>('band-value').value===''?undefined:el<HTMLInputElement>('band-value').valueAsNumber});});
+el('source-select').addEventListener('change',refreshBand);
+document.querySelector<HTMLDetailsElement>('.inspect-details')!.addEventListener('toggle',event=>{if((event.currentTarget as HTMLDetailsElement).open&&currentResult){refreshFaceOptions();selectFace(faceSelect.value||currentResult.surfaces[0]?.faceId);}});
+if(!measureMode){startupGenerationCount++;regenerate(true);}else {
+ Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),point:(cell:Vec3)=>viewer.projectCell(cell),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
+}
 if (import.meta.hot) import.meta.hot.dispose(() => viewer.dispose());

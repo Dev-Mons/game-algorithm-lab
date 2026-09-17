@@ -89,9 +89,10 @@ export function editObjects(
   mode: "add" | "remove",
 ) {
   const inputs = document.sceneInputs ?? {
-    version: 1 as const,
+    version: 2 as const,
     roads: [],
     objects: [],
+    parkingAreas: [],
   };
   const normal = BASES[selection.direction].n;
   const targets = normalizeGrid(
@@ -99,6 +100,10 @@ export function editObjects(
       ? selection.cells.map((c) => add(c, normal))
       : selection.cells,
   );
+  if(mode==='add') {
+    const buildings=new Set(document.grid.map(cellId));
+    if(targets.some(c=>buildings.has(cellId(c))))throw new Error('오브젝트가 건물과 겹칩니다.');
+  }
   const owners = new Map(
     inputs.objects.flatMap((o) => o.cells.map((c) => [cellId(c), o] as const)),
   );
@@ -229,9 +234,10 @@ export function editRoads(
   const cells = normalizeGrid(selection.cells.map((c) => add(c, [0, 1, 0])));
   const ids = new Set(cells.map(cellId));
   const inputs = document.sceneInputs ?? {
-    version: 1 as const,
+    version: 2 as const,
     roads: [],
     objects: [],
+    parkingAreas: [],
   };
   return replaceSceneInputs(document, {
     ...inputs,

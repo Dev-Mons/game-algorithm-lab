@@ -11,7 +11,7 @@ export const BASES: Record<Direction, { n: Vec3; u: Vec3; v: Vec3 }> = {
   PZ: { n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] },
   NZ: { n: [0, 0, -1], u: [-1, 0, 0], v: [0, 1, 0] },
 };
-export const cellId = (c: Vec3): string => c.join(",");
+export const cellId = (c: Vec3): string => `${c[0]},${c[1]},${c[2]}`;
 export const compareCells = (a: Vec3, b: Vec3): number =>
   a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
 export const add = (a: Vec3, b: Vec3): Vec3 => [
@@ -98,7 +98,8 @@ export function faceCorners(cell: Vec3, direction: Direction): Vec3[] {
       center.map((n, axis) => (n + a * u[axis] + b * v[axis]) / 2) as Vec3,
   );
 }
-export function analyze(input: unknown) {
+export interface AnalysisComponent {id:string;cells:Vec3[]}
+export function analyze(input: unknown,onComponents?:(components:AnalysisComponent[])=>void) {
   const cells = normalizeGrid(input),
     occupied = new Set(cells.map(cellId));
   const exterior = new Set<string>();
@@ -148,6 +149,7 @@ export function analyze(input: unknown) {
         component.maxY = Math.max(component.maxY, next[1]);
       }
   }
+  if(onComponents){const groups=new Map<string,AnalysisComponent>();for(const c of cells){const owner=components.get(cellId(c))!.id;let part=groups.get(owner);if(!part){part={id:owner,cells:[]};groups.set(owner,part);}part.cells.push(c);}onComponents([...groups.values()]);}
   const surfaces: Surface[] = [];
   for (const cell of cells)
     for (const direction of DIRECTIONS) {

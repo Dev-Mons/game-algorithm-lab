@@ -5,6 +5,7 @@ import {
   type FacadeAsset,
   type FacadeAssetKey,
 } from "./core/facade-assets";
+import {TRIM_ASSETS,type BandedFacadeAsset} from './core/banded-facade-assets';
 
 export interface GeometryParts {
   panel: THREE.BufferGeometry;
@@ -85,6 +86,15 @@ function facade(asset: FacadeAsset): GeometryParts {
     ...(glass ? { glass } : {}),
   };
 }
+function bandedFacade(asset:BandedFacadeAsset):GeometryParts {
+  const blocks=asset.reliefBoxes16.map(b=>box((b.min[0]+b.max[0])/32,(b.min[1]+b.max[1])/32,(b.min[2]+b.max[2])/32,(b.max[0]-b.min[0])/16,(b.max[1]-b.min[1])/16,(b.max[2]-b.min[2])/16));
+  const opening=asset.opening16;
+  const panels:THREE.BufferGeometry[]=[];
+  const plate=(u0:number,u1:number,v0:number,v1:number)=>{if(u1>u0&&v1>v0)panels.push(new THREE.PlaneGeometry((u1-u0)/16,(v1-v0)/16).translate((u0+u1)/32,(v0+v1)/32,0));};
+  if(opening){plate(-8,opening.minU,-8,8);plate(opening.maxU,8,-8,8);plate(opening.minU,opening.maxU,-8,opening.minV);plate(opening.minU,opening.maxU,opening.maxV,8);}
+  else plate(-8,8,-8,8);
+  return {panel:merged(panels),...(blocks.length?{relief:merged(blocks)}:{}),...(opening?{glass:new THREE.PlaneGeometry((opening.maxU-opening.minU)/16,(opening.maxV-opening.minV)/16).translate((opening.minU+opening.maxU)/32,(opening.minV+opening.maxV)/32,1/64)}:{})};
+}
 function roof(shape: string): GeometryParts {
   const top: number[] = [],
     sides: number[] = [];
@@ -146,34 +156,17 @@ function roof(shape: string): GeometryParts {
 }
 // Asset-key-only construction: dimensions and input Grid never enter this function.
 export function buildCraftedGeometry(assetKey: string): GeometryParts {
+  if(TRIM_ASSETS[assetKey])return {panel:merged(TRIM_ASSETS[assetKey].boxes16.map(b=>box((b.min[0]+b.max[0])/32,(b.min[1]+b.max[1])/32,(b.min[2]+b.max[2])/32,(b.max[0]-b.min[0])/16,(b.max[1]-b.min[1])/16,(b.max[2]-b.min[2])/16)))};
+  const descriptor=FACADE_ASSETS[assetKey as FacadeAssetKey];
+  if(descriptor&&'reliefBoxes16' in descriptor)return bandedFacade(descriptor);
   if (assetKey.startsWith("facade.") && Object.hasOwn(FACADE_ASSETS, assetKey))
     return facade(FACADE_ASSETS[assetKey as FacadeAssetKey]);
-  if (assetKey.startsWith("roof.")) return roof(assetKey.slice(5));
-  if (assetKey === "eave.straight")
-    return { panel: box(0, 0.0625, 0.0625, 1, 0.125, 0.125) };
-  if (assetKey === "eave.corner")
-    return { panel: box(0.0625, 0.0625, 0.0625, 0.125, 0.125, 0.125) };
-  if (assetKey.startsWith("corner.")) {
-    const a = framed(assetKey.slice(7)),
-      b = framed(assetKey.slice(7));
-    const transform = new THREE.Matrix4().makeRotationY(Math.PI / 2);
-    transform.setPosition(0.5, 0, -0.5);
-    b.panel.applyMatrix4(transform);
-    b.relief?.applyMatrix4(transform);
-    const blocks: THREE.BufferGeometry[] = [a.relief!, b.relief!];
-    for (let i = 0; i < 4; i++) {
-      const y = -0.375 + i * 0.25;
-      blocks.push(box(0.4375, y, 0.0625, 0.125, 0.21875, 0.125));
-      blocks.push(box(0.5625, y, -0.0625, 0.125, 0.21875, 0.125));
-      blocks.push(box(0.5625, y, 0.0625, 0.125, 0.21875, 0.125));
-    }
-    return { panel: merged([a.panel, b.panel]), relief: merged(blocks) };
-  }
-  if (assetKey.startsWith("crafted.")) return framed(assetKey.slice(8));
+  if (["crafted.plaster","crafted.roof","crafted.paving","crafted.soffit"].includes(assetKey)) return framed(assetKey.slice(8));
   throw new Error(`Unknown crafted geometry: ${assetKey}`);
 }
 export class CraftedGeometryLibrary {
   private cache = new Map<string, GeometryParts>();
+  get size(){return this.cache.size;}
   get(key: string) {
     if (!this.cache.has(key)) this.cache.set(key, buildCraftedGeometry(key));
     return this.cache.get(key)!;

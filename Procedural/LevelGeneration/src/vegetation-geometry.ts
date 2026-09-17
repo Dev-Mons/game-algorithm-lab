@@ -13,6 +13,7 @@ const VEGETATION_ASSETS = new Set([
 // All assets occupy one cell, centered on the placement pivot. Bottom/middle
 // trunks and middle/top foliage meet on the same boundary across repeated tiles.
 export class VegetationGeometryLibrary {
+  get size(){return this.geometries.size;}
   private geometries = new Map<string, THREE.BufferGeometry>();
   readonly material = new THREE.MeshStandardMaterial({
     vertexColors: true,

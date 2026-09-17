@@ -1,3 +1,4 @@
+import type {AssetRow} from "./banded-facade-assets";
 import {
   BASES,
   add,
@@ -8,10 +9,8 @@ import {
 } from "./analysis";
 import {
   validateBuildingStyle,
-  levelAt,
   type BuildingStyle,
-  type LevelDefinition,
-  type LevelRole,
+  type VerticalBand,
   type FacadeKind,
   type FacadePattern,
 } from "./building-style";
@@ -21,32 +20,25 @@ import type { VolumeAnalysis } from "./regions";
 export interface FacadeTrace {
   styleId: string;
   styleVersion: number;
-  level: LevelRole;
+  level: VerticalBand;
   topBoundary: boolean;
   facade: FacadeKind;
   runId: string;
   patternId: string;
   moduleId: string;
   entranceSpan?: number;
+  portalId?: string;
+  portalRole?: string;
+  rowRole?: string;
+  phase?: number;
   groupId?: string;
   part?: "single" | "left" | "middle" | "right";
   alignment?: string;
   reason: string;
   candidates: { id: string; reason: string; filler?: number }[];
 }
-interface Run {
-  faces: Surface[];
-  level: LevelDefinition;
-  kind: FacadeKind;
-  anchor: number;
-  key: string;
-}
-const dot = (s: Surface, vector: number[]) =>
-  s.cell.reduce((n, x, i) => n + x * vector[i], 0);
-const horizontal = (s: Surface) => dot(s, BASES[s.direction].u);
-const planeKey = (s: Surface) =>
-  `${s.componentId}|${s.direction}|${dot(s, BASES[s.direction].n)}`;
-const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+export interface PatternRunBand {role: VerticalBand; patterns:string[];moduleSet:string[];align?:string}
+const cmp = (a:string,b:string) => a < b ? -1 : a > b ? 1 : 0;
 
 export function chooseFacadePattern(
   style: BuildingStyle,
@@ -54,7 +46,7 @@ export function chooseFacadePattern(
     width: number;
     start: number;
     anchor: number;
-    level: LevelDefinition;
+    level: PatternRunBand;
     kind: FacadeKind;
     direction: Direction;
   },
@@ -146,275 +138,57 @@ export function chooseFacadePattern(
   return { best, candidates };
 }
 
-export function applyFacadeStyle<
-  T extends Omit<VolumeAnalysis, "status"> & {
-    status: "ok" | "degraded" | "error";
-  } & { traces: FaceTrace[]; placements: Placement[] },
->(base: T, options: SelectionOptions): T {
-  if (!options.architecture) return base;
-  if (base.rolePolicy !== "region-context-v1" || !options.assembly)
-    throw new Error(
-      "Building styles require region analysis and module assembly.",
-    );
-  const style = validateBuildingStyle(options.architecture);
-  const defs = new Map(style.modules.map((m) => [m.id, m]));
-  const occupied = new Set(base.cells.map(cellId));
-  const walls = base.surfaces.filter((s) => s.role === "wall");
-  const bounds = new Map<string, { min: number; max: number }>();
-  for (const s of base.surfaces) {
-    const b = bounds.get(s.componentId) ?? { min: s.cell[1], max: s.cell[1] };
-    b.min = Math.min(b.min, s.cell[1]);
-    b.max = Math.max(b.max, s.cell[1]);
-    bounds.set(s.componentId, b);
-  }
-  const traceById = new Map(base.traces.map((t) => [t.faceId, t]));
-  const placementById = new Map(base.placements.map((p) => [p.faceId, p]));
-  const byRow = new Map<string, Surface[]>();
-  const anchors = new Map<string, number>();
-  for (const s of walls) {
-    const region = s.architecture!.regionId;
-    anchors.set(
-      region,
-      Math.min(anchors.get(region) ?? Infinity, horizontal(s)),
-    );
-    const key = `${region}|${s.cell[1]}|${s.architecture!.topBoundary}`;
-    if (!byRow.has(key)) byRow.set(key, []);
-    byRow.get(key)!.push(s);
-  }
-  const raw: Surface[][] = [];
-  for (const faces of byRow.values()) {
-    faces.sort((a, b) => horizontal(a) - horizontal(b));
-    let run: Surface[] = [];
-    for (const face of faces) {
-      if (run.length && horizontal(face) !== horizontal(run.at(-1)!) + 1) {
-        raw.push(run);
-        run = [];
-      }
-      run.push(face);
-    }
-    if (run.length) raw.push(run);
-  }
-  // One grounded entrance zone per component. A parity-aware zone may use two cells.
-  const front = new Map<string, string>();
-  const entries = new Set<string>();
-  const entrySpans = new Map<string, number>();
-  const eligible = raw
-    .map((faces) =>
-      faces.filter(
-        (s) =>
-          bounds.get(s.componentId)!.min === style.groundY &&
-          s.cell[1] === style.groundY &&
-          !occupied.has(cellId(add(s.cell, [0, -1, 0]))),
-      ),
-    )
-    .filter((r) => r.length)
-    .sort(
-      (a, b) =>
-        b.length - a.length ||
-        style.frontOrder.indexOf(a[0].direction) -
-          style.frontOrder.indexOf(b[0].direction) ||
-        cmp(a[0].faceId, b[0].faceId),
-    );
-  if (!base.diagnostics.length)
-    for (const run of eligible) {
-      if (front.has(run[0].componentId)) continue;
-      front.set(run[0].componentId, planeKey(run[0]));
-      const span =
-        style.entranceLayout === "centered-parity" && run.length % 2 === 0
-          ? 2
-          : 1;
-      const first = Math.floor((run.length - span) / 2);
-      for (const face of run.slice(first, first + span)) {
-        entries.add(face.faceId);
-        entrySpans.set(face.faceId, span);
-      }
-    }
-  const corners = new Set(
-    base.features
-      .filter((e) => e.kind === "convex" && e.start[1] !== e.end[1])
-      .flatMap((e) => e.faceIds),
-  );
-  const assigned = new Set<string>();
-  const assign = (
-    s: Surface,
-    id: string,
-    info: Omit<
-      FacadeTrace,
-      "styleId" | "styleVersion" | "moduleId" | "topBoundary"
-    >,
-  ) => {
-    if (assigned.has(s.faceId))
-      throw new Error(`Duplicate facade assignment: ${s.faceId}`);
-    assigned.add(s.faceId);
-    const mod = defs.get(id)!;
-    const trace = traceById.get(s.faceId)!;
-    const tileId = `${mod.assetId}.${trace.architecture!.palette}`;
-    if (!options.catalog?.some((t) => t.tileId === tileId))
-      throw new Error(`Missing facade asset: ${tileId}`);
-    const p = placementById.get(s.faceId)!;
-    p.tileId = tileId;
-    p.ruleId = `building.${info.patternId}`;
-    trace.selection = {
-      ...trace.selection,
-      tileId,
-      ruleId: p.ruleId,
-      candidateCount: 1,
-      candidateIndex: 0,
-    };
-    trace.rules.forEach((r) => {
-      if (r.outcome === "selected") r.outcome = "coverage-owned";
-    });
-    trace.rules.push({
-      ruleId: p.ruleId,
-      priority: 600,
-      matched: true,
-      conditions: [info.reason],
-      candidates: [tileId],
-      rejected: [],
-      outcome: "selected",
-    });
-    trace.facade = {
-      ...info,
-      styleId: style.id,
-      styleVersion: style.version,
-      moduleId: id,
-      topBoundary: !!s.architecture?.topBoundary,
-      ...(mod.connection ? { part: mod.connection.part } : {}),
-    };
+export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placement[];traces:FaceTrace[]}>(base:T,options:SelectionOptions):T {
+  if(!options.architecture)return base;
+  const style=validateBuildingStyle(options.architecture),context=options.context;
+  if(!context?.verticalBands||!context.entrances)throw new Error('ENV_PIPELINE_NOT_READY:facade-context');
+  const vertical=context.verticalBands,entrances=context.entrances;
+  const caps=new Set(vertical.boundaries.filter(b=>b.kind==='local-cap').map(b=>b.hostFaceId)),catalogIds=new Set(options.catalog?.map(t=>t.tileId));
+  const defs=new Map(style.modules.map(m=>[m.id,m])),faces=new Map(base.surfaces.map(s=>[s.faceId,s]));
+  const bands=new Map(vertical.faceBands.map(b=>[b.faceId,b]));
+  const family=style.alignedFamilies.find(f=>f.id===vertical.alignment.familyId)!;
+  const placements=base.placements.map(p=>({...p})),traces=base.traces.map(t=>({...t}));
+  const byPlacement=new Map(placements.map(p=>[p.faceId,p])),byTrace=new Map(traces.map(t=>[t.faceId,t]));
+  const claimed=new Set<string>();
+  const u=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*BASES[s.direction].u[i],0);
+  const plane=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*Math.abs(BASES[s.direction].n[i]),0)+(BASES[s.direction].n.some(n=>n===1)?1:0);
+  const kind=(s:Surface):FacadeKind=>entrances.frontages.some(f=>f.direction===s.direction&&f.plane===plane(s))?'front':'side';
+  const assign=(s:Surface,key:string,patternId:string,reason:string,candidates:FacadeTrace['candidates']=[],groupId?:string,portal?:typeof entrances.entrances[number])=>{
+    const def=defs.get(key),band=bands.get(s.faceId),p=byPlacement.get(s.faceId),trace=byTrace.get(s.faceId);
+    if(!def||!band||!p||!trace||!def.directions.includes(s.direction))throw new Error('INVALID_FACADE_MODULE');
+    const isCap=caps.has(s.faceId);
+    const rowAsset=(isCap?`${band.rowRole}-cap`:band.rowRole) as AssetRow;
+    const asset=def.rowAssets?.[rowAsset]??def.assetId;
+    const palette=trace.architecture?.palette??'clay',tileId=`${asset}.${palette}`;
+    if(!catalogIds.has(tileId))throw new Error(`MISSING_FACADE_ASSET:${tileId}`);
+    p.tileId=tileId;p.ruleId=portal?'building.entrance':'building.banded';
+    trace.selection={...trace.selection,ruleId:p.ruleId,tileId};
+    trace.facade={styleId:style.id,styleVersion:style.version,level:band.band,rowRole:band.rowRole,phase:vertical.alignment.phaseByDirection[s.direction as 'PX'|'NX'|'PZ'|'NZ'],topBoundary:caps.has(s.faceId),facade:kind(s),runId:`${s.componentId}:${s.direction}:${plane(s)}:${s.cell[1]}`,patternId,moduleId:key,reason,candidates,...(groupId?{groupId}:{}),...(def.connection?{part:def.connection.part}:{}),...(portal?{portalId:portal.id,portalRole:portal.role,entranceSpan:portal.widthCells}:{})};
+    claimed.add(s.faceId);
   };
-  const runs: Run[] = [];
-  for (const faces of raw) {
-    const s = faces[0],
-      b = bounds.get(s.componentId)!;
-    const level = levelAt(style, s.cell[1], b.min, b.max);
-    const kind = front.get(s.componentId) === planeKey(s) ? "front" : "side";
-    const key = `${s.architecture!.regionId}|${s.cell[1]}|${horizontal(s)}`;
-    const info = {
-      level: level.role,
-      facade: kind as FacadeKind,
-      runId: key,
-      candidates: [],
+  for(const portal of entrances.entrances)for(const [partIndex,faceId] of portal.faceIds.entries()){const face=faces.get(faceId);if(!face||face.role!=='wall')throw new Error('INVALID_PORTAL_FACE');assign(face,portal.widthCells===2?style.entrancePair[partIndex]:style.entrance,'entrance','validated exterior access',[],portal.id,portal);}
+  const rows=new Map<string,Surface[]>();
+  for(const s of base.surfaces)if(s.role==='wall'&&s.architecture?.interpretation!=='unsupported'&&bands.has(s.faceId)){const key=`${s.componentId}:${s.direction}:${plane(s)}:${s.cell[1]}`,row=rows.get(key)??[];row.push(s);rows.set(key,row);}
+  for(const row of rows.values()){
+    row.sort((a,b)=>u(a)-u(b));
+    // Physical run ends, rather than bounding rectangle ends, receive corners.
+    let all:Surface[]=[];
+    const fill=()=>{
+      if(!all.length)return;
+      if(all.length>=style.corner.minRunWidth)for(const face of [all[0],all[all.length-1]])if(!claimed.has(face.faceId))assign(face,style.bands[bands.get(face.faceId)!.band].moduleSet.find(k=>defs.get(k)?.semantic==='pier')??style.corner.module,'corner','actual run end');
+      let open:Surface[]=[];
+      const flush=()=>{
+        if(!open.length)return;
+        const first=open[0],band=bands.get(first.faceId)!.band;
+        const result=chooseFacadePattern(style,{width:open.length,start:u(first),anchor:vertical.alignment.phaseByDirection[first.direction as 'PX'|'NX'|'PZ'|'NZ'],level:{role:band,patterns:family.patterns[band],moduleSet:style.bands[band].moduleSet,align:family.id},kind:kind(first),direction:first.direction});
+        const tokens=result.best?.tokens??Array<string>(open.length).fill(style.bands[band].fallback);
+        let groupId:string|undefined;
+        tokens.forEach((key,i)=>{const def=defs.get(key)!;if(def.connection?.part==='left')groupId=`group:${first.componentId}:${first.direction}:${first.cell[1]}:${u(open[i])}:${plane(first)}`;assign(open[i],key,result.best?.pattern.id??'single-fallback','absolute anchor / complete connected groups',result.candidates,groupId);if(def.connection?.part==='right'||def.connection?.part==='single'||!def.connection)groupId=undefined;});
+        open=[];
+      };
+      for(const face of all){if(claimed.has(face.faceId))flush();else open.push(face);}flush();all=[];
     };
-    let part: Surface[] = [];
-    const flush = () => {
-      if (part.length)
-        runs.push({
-          faces: part,
-          level,
-          kind,
-          anchor: anchors.get(s.architecture!.regionId)!,
-          key,
-        });
-      part = [];
-    };
-    for (const face of faces) {
-      const entrance =
-        entries.has(face.faceId) &&
-        level.moduleSet.includes(style.entrance) &&
-        defs.get(style.entrance)!.directions.includes(face.direction);
-      const corner =
-        faces.length >= style.corner.minRunWidth &&
-        corners.has(face.faceId) &&
-        level.moduleSet.includes(style.corner.module) &&
-        defs.get(style.corner.module)!.directions.includes(face.direction);
-      if (base.diagnostics.length || entrance || corner) {
-        flush();
-        const id = base.diagnostics.length
-          ? style.fallback
-          : entrance
-            ? style.entrance
-            : style.corner.module;
-        assign(face, id, {
-          ...info,
-          ...(entrance && style.entranceLayout === "centered-parity"
-            ? { entranceSpan: entrySpans.get(face.faceId) }
-            : {}),
-          patternId: base.diagnostics.length
-            ? "fallback"
-            : entrance
-              ? "entrance"
-              : "corner",
-          reason: base.diagnostics.length
-            ? "unsupported-volume: basic wall"
-            : entrance
-              ? style.entranceLayout === "centered-parity"
-                ? `centered ${entrySpans.get(face.faceId)}-cell entrance zone; equal left/right space; longest grounded run at Y=0`
-                : "longest-grounded-front-run at document Y=0"
-              : "convex-corner reserved before patterns",
-        });
-      } else part.push(face);
-    }
-    flush();
+    for(const face of row){if(all.length&&u(face)!==u(all[all.length-1])+1)fill();all.push(face);}fill();
   }
-  // Establish the shared plan on the widest actual row, never on an AABB across holes.
-  runs.sort(
-    (a, b) =>
-      b.faces.length - a.faces.length ||
-      a.faces[0].cell[1] - b.faces[0].cell[1] ||
-      cmp(a.faces[0].faceId, b.faces[0].faceId),
-  );
-  const shared = new Map<string, { pattern: string; anchor: number }>();
-  for (const run of runs) {
-    const first = run.faces[0];
-    const alignment = run.level.align
-      ? `${first.architecture!.regionId}|${run.level.align}|${run.kind}`
-      : undefined;
-    const plan = alignment ? shared.get(alignment) : undefined;
-    const start = horizontal(first);
-    const { best, candidates } = chooseFacadePattern(
-      style,
-      {
-        width: run.faces.length,
-        start,
-        anchor: plan?.anchor ?? start,
-        level: run.level,
-        kind: run.kind,
-        direction: first.direction,
-      },
-      plan?.pattern,
-    );
-    if (best && alignment && !plan)
-      shared.set(alignment, { pattern: best.pattern.id, anchor: start });
-    // Short runs use an allowed single piece from the level, otherwise the wall fallback.
-    const single =
-      run.level.patterns
-        .map((id) => style.patterns.find((p) => p.id === id)!)
-        .find(
-          (p) =>
-            p.roles.includes(run.level.role) &&
-            p.facades.includes(run.kind) &&
-            run.level.moduleSet.includes(p.remainder) &&
-            defs.get(p.remainder)!.directions.includes(first.direction),
-        )?.remainder ?? style.fallback;
-    const tokens = best?.tokens ?? Array<string>(run.faces.length).fill(single);
-    let groupId: string | undefined;
-    for (let i = 0; i < tokens.length; i++) {
-      const mod = defs.get(tokens[i])!;
-      if (mod.connection?.part === "left")
-        groupId = `g:${run.faces[i].faceId}:${best!.pattern.id}`;
-      const pieceGroup =
-        mod.connection && mod.connection.part !== "single"
-          ? groupId
-          : undefined;
-      assign(run.faces[i], mod.id, {
-        level: run.level.role,
-        facade: run.kind,
-        runId: run.key,
-        patternId: best?.pattern.id ?? "single-fallback",
-        ...(pieceGroup ? { groupId: pieceGroup } : {}),
-        ...(alignment ? { alignment } : {}),
-        reason: best
-          ? best.filler
-            ? `integer fit with ${best.filler} single fillers; complete groups only`
-            : "exact integer fit; complete groups only"
-          : "no complete compatible pattern fits; single/wall fallback",
-        candidates,
-      });
-      if (mod.connection?.part === "right") groupId = undefined;
-    }
-    if (groupId) throw new Error("Incomplete connection group.");
-  }
-  if (assigned.size !== walls.length)
-    throw new Error("Unassigned facade faces.");
-  return base;
+  return {...base,placements,traces};
 }

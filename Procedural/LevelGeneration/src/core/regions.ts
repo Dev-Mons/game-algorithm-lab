@@ -7,7 +7,7 @@ import {
   DIRECTIONS,
   type Direction,
   type Surface,
-  type Vec3,
+  type Vec3,type AnalysisComponent,
 } from "./analysis";
 
 export type RolePolicy = "component-height-v1" | "region-context-v1";
@@ -57,10 +57,11 @@ const compareFaces = (a: Surface, b: Surface) =>
 export function analyzeVolume(
   input: unknown,
   policy: RolePolicy = "component-height-v1",
+  onComponents?:(components:AnalysisComponent[])=>void,
 ): VolumeAnalysis {
   if (policy !== "component-height-v1" && policy !== "region-context-v1")
     throw new Error(`Unsupported role policy: ${policy}`);
-  const base = analyze(input);
+  const base = analyze(input,onComponents);
   if (policy === "component-height-v1") return base;
   const surfaces = base.surfaces.map((s) => ({ ...s })),
     byId = new Map(surfaces.map((s) => [s.faceId, s]));
@@ -199,49 +200,6 @@ export function analyzeVolume(
       ),
     });
     regionFaces.set(regionId, queue);
-  }
-  if (supported) {
-    const candidates = new Map<
-      string,
-      { faces: Surface[]; region: SurfaceRegion }[]
-    >();
-    for (const region of regions) {
-      if (region.interpretation !== "facade") continue;
-      const baseRow = regionFaces
-        .get(region.regionId)!
-        .filter((s) => s.cell[1] === componentMin.get(s.componentId))
-        .sort((a, b) => a.architecture!.column - b.architecture!.column);
-      let run: Surface[] = [];
-      const store = () => {
-        if (!run.length) return;
-        if (!candidates.has(region.componentId))
-          candidates.set(region.componentId, []);
-        candidates.get(region.componentId)!.push({ faces: run, region });
-        run = [];
-      };
-      for (const face of baseRow) {
-        if (
-          run.length &&
-          face.architecture!.column !==
-            run[run.length - 1].architecture!.column + 1
-        )
-          store();
-        run.push(face);
-      }
-      store();
-    }
-    for (const list of candidates.values()) {
-      const rank = (d: Direction) => ["PZ", "PX", "NZ", "NX"].indexOf(d);
-      list.sort(
-        (a, b) =>
-          b.faces.length - a.faces.length ||
-          rank(a.region.direction) - rank(b.region.direction) ||
-          compareFaces(a.faces[0], b.faces[0]),
-      );
-      const winner = list[0].faces;
-      winner[Math.floor((winner.length - 1) / 2)].architecture!.facadeElement =
-        "entry";
-    }
   }
   return {
     ...base,

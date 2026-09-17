@@ -14,6 +14,13 @@ import { CraftedGeometryLibrary } from "./crafted-geometry";
 import { setPlacementMatrix } from "./display-transform";
 import { SurfaceInteraction } from "./surface-interaction";
 import type { SurfaceSelection } from "./surface-edit";
+import type { GenerationDocument } from "./core/document";
+import { EnvironmentPreview } from "./environment-preview";
+import type {SourceRef} from './core/environment-contract';
+import {rankSourceHits,type SourceHit} from './environment-editor';
+import {buildingComponents} from './core/buildings';
+import {createParkingArrowGeometry} from './parking-geometry';
+import {FixtureGeometryLibrary} from './fixture-geometry';
 
 export const ROLE_COLORS = {
   wall: "#ded3ba",
@@ -29,6 +36,12 @@ export type Layer =
   | "normals"
   | "regions";
 export class Viewer {
+  get geometryCacheEntries(){return this.crafted.size+this.fixtures.size+this.vegetation.size+this.assets.size+this.sceneMaterials.size+this.environmentPreview.inputs.children.length+(this.parkingArrow?1:0);}
+  projectCell(cell:Vec3){this.camera.updateMatrixWorld();const p=new THREE.Vector3(cell[0]+.5,cell[1],cell[2]+.5).add(this.displayOrigin).project(this.camera),r=this.renderer.domElement.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
+
+  private inputDocument?: GenerationDocument;
+  onSourceSelect?: (sources:SourceRef[])=>void;
+  readonly environmentPreview = new EnvironmentPreview();
   private renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(38, 1, 0.05, 4000);
@@ -44,6 +57,8 @@ export class Viewer {
   };
   private plane = new THREE.PlaneGeometry(1, 1);
   private cube = new THREE.BoxGeometry(1, 1, 1);
+  private parkingArrow?:THREE.BufferGeometry;
+  private fixtures=new FixtureGeometryLibrary();
   private vegetation = new VegetationGeometryLibrary();
   private assets = new PanelAssets();
   private crafted = new CraftedGeometryLibrary();
@@ -136,7 +151,7 @@ export class Viewer {
     this.groundPlane.visible = false;
     this.scene.add(this.model, this.grid, this.groundPlane);
     Object.values(this.groups).forEach((g) => this.model.add(g));
-    this.model.add(this.selection, this.buildingSelection, this.scenePlacements);
+    this.model.add(this.selection, this.buildingSelection, this.scenePlacements,this.environmentPreview.group);
     this.selection.visible = false;
     this.selection.renderOrder = 10;
     this.groups.voxels.visible = false;
@@ -168,6 +183,7 @@ export class Viewer {
         origin: this.displayOrigin,
         surfaces: this.groups.surfaces,
         objects: this.scenePlacements,
+        objectInputs: this.inputDocument?.sceneInputs.objects,
       }),
       onEdit,
       (e) => this.inspect(e),
@@ -196,11 +212,26 @@ export class Viewer {
     ];
     this.scene.updateMatrixWorld(true);
     const hit = this.raycaster.intersectObjects(targets, false)[0];
+    const sourceHits:SourceHit[]=[];
+    if(this.inputDocument){
+      const doc=this.inputDocument;
+      const sources=[...buildingComponents(doc.grid).map(b=>({source:{kind:'building' as const,id:b.id},cells:b.cells,anchor:doc.buildings.find(x=>x.componentId===b.id)!.design.anchor})),
+        ...doc.sceneInputs.objects.map(o=>({source:{kind:'object' as const,id:o.id},cells:o.cells,anchor:o.cells[0]})),
+        ...doc.sceneInputs.parkingAreas.map(p=>({source:{kind:'parking' as const,id:p.id},cells:p.cells,anchor:p.anchor})),
+        ...(doc.sceneInputs.roads.length?[{source:{kind:'road' as const,id:'roads'},cells:doc.sceneInputs.roads,anchor:doc.sceneInputs.roads[0]}]:[])];
+      for(const source of sources){let distance=Infinity;
+        for(const c of source.cells){const box=new THREE.Box3(new THREE.Vector3(...c).add(this.displayOrigin),new THREE.Vector3(c[0]+1,c[1]+(source.source.kind==='parking'?.05:1),c[2]+1).add(this.displayOrigin)),point=this.raycaster.ray.intersectBox(box,new THREE.Vector3());if(point)distance=Math.min(distance,point.distanceTo(this.raycaster.ray.origin));}
+        if(Number.isFinite(distance))sourceHits.push({source:source.source,anchor:source.anchor,distance});
+      }
+      for(const rayHit of this.raycaster.intersectObjects(this.scenePlacements.children,false))for(const source of (rayHit.object.userData.scenePlacements?.[rayHit.instanceId??0]??rayHit.object.userData.scenePlacement)?.sourceRefs??[])sourceHits.push({source,distance:rayHit.distance,anchor:sources.find(s=>s.source.kind===source.kind&&s.source.id===source.id)?.anchor??[0,0,0]});
+    }
+    const mode=this.interaction.mode;
+    this.onSourceSelect?.(rankSourceHits(sourceHits,mode==='inspect'?undefined:mode==='parking'?'parking':mode).map(h=>h.source));
     if (hit?.instanceId !== undefined && this.result) {
-      const module = hit.object.userData.module;
+      const module = hit.object.userData.modules?.[hit.instanceId]??hit.object.userData.module;
       let faceId = hit.object.userData.faceIds?.[hit.instanceId];
       if (hit.object.userData.scenePlacement?.kind === "building") {
-        const componentId = hit.object.userData.scenePlacement.componentId;
+        const componentId = (hit.object.userData.scenePlacements?.[hit.instanceId]??hit.object.userData.scenePlacement).componentId;
         faceId = this.result.surfaces.find(s => s.componentId === componentId)?.faceId;
       }
       if (!faceId) return;
@@ -236,9 +267,12 @@ export class Viewer {
         faceId,
         module?.kind === "attachment" ? module.moduleId : undefined,
       );
-    } else this.onSelect("");
+    } else {
+      const first=rankSourceHits(sourceHits,mode==='inspect'?undefined:mode==='parking'?'parking':mode)[0]?.source;
+      this.onSelect(first?.kind==='building'?this.result?.surfaces.find(s=>s.componentId===first.id)?.faceId??'':'');
+    }
   }
-  setEditMode(mode: "building" | "object" | "road") {
+  setEditMode(mode: "building" | "object" | "road" | "parking" | "inspect") {
     this.interaction.clear();
     this.interaction.mode = mode;
   }
@@ -259,16 +293,21 @@ export class Viewer {
     }
   }
   clear() {
+    this.environmentPreview.clear();
     Object.values(this.groups).forEach((g) => this.clearGroup(g));
     this.selection.visible = false;
     this.clearGroup(this.buildingSelection);
     this.clearGroup(this.scenePlacements);
     this.result = undefined;
   }
-  sync(result: GenerationResult, catalog: Tile[]) {
+  sync(result: GenerationResult, catalog: Tile[], document?: GenerationDocument) {
     this.clear();
     this.result = result;
+    this.inputDocument=document;
     const bounds = new THREE.Box3();
+    for(const c of document ? [...document.sceneInputs.roads,...document.sceneInputs.objects.flatMap(o=>o.cells),...document.sceneInputs.parkingAreas.flatMap(p=>p.cells)] : []) {
+      bounds.expandByPoint(new THREE.Vector3(...c));bounds.expandByPoint(new THREE.Vector3(c[0]+1,c[1]+1,c[2]+1));
+    }
     for (const c of result.cells) {
       bounds.expandByPoint(new THREE.Vector3(...c));
       bounds.expandByPoint(new THREE.Vector3(c[0] + 1, c[1] + 1, c[2] + 1));
@@ -293,17 +332,26 @@ export class Viewer {
       2,
       bounds.isEmpty() ? 2 : bounds.getSize(new THREE.Vector3()).length() / 2,
     );
-    for (const p of result.scenePlacements ?? []) {
-      let material = this.sceneMaterials.get(p.color);
-      if (!material) { material = new THREE.MeshStandardMaterial({color:p.color, roughness:.8}); this.sceneMaterials.set(p.color,material); }
-      const vegetationGeometry = p.kind === "object" ? this.vegetation.get(p.asset) : undefined;
-      const mesh = new THREE.InstancedMesh(vegetationGeometry ?? this.cube, vegetationGeometry ? this.vegetation.material : material, 1);
-      const matrix = new THREE.Matrix4().compose(new THREE.Vector3(...p.center).add(this.displayOrigin), new THREE.Quaternion(), new THREE.Vector3(...p.size));
-      mesh.setMatrixAt(0,matrix); mesh.castShadow = true; mesh.receiveShadow = true;
-      mesh.userData.scenePlacement = p;
-      this.scenePlacements.add(mesh);
+    this.environmentPreview.sync(document,result,this.displayOrigin);
+    const sceneBatches=new Map<string,NonNullable<GenerationResult['scenePlacements']>>();
+    for(const p of result.scenePlacements??[]){const key=`${p.asset}|${p.color}|${p.kind}`,batch=sceneBatches.get(key)??[];batch.push(p);sceneBatches.set(key,batch);}
+    const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
+    for(const placements of sceneBatches.values()){
+      const p=placements[0];let material=this.sceneMaterials.get(p.color);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8});this.sceneMaterials.set(p.color,material);}
+      const vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=vegetationGeometry??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):this.cube);
+      const mesh=new THREE.InstancedMesh(geometry,vegetationGeometry?this.vegetation.material:material,placements.length);
+      placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
+      mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.scenePlacement=p;mesh.userData.scenePlacements=placements;mesh.computeBoundingSphere();this.scenePlacements.add(mesh);
     }
     this.renderer.domElement.dataset.sceneAssets = (result.scenePlacements ?? []).map(p => p.asset).join(",");
+    this.renderer.domElement.dataset.environmentStages = JSON.stringify(result.environment?.stages??[]);
+    this.renderer.domElement.dataset.inputOutlineCount = String(this.environmentPreview.inputs.children.length);
+    this.renderer.domElement.dataset.accessPaths = JSON.stringify((result.environment?.overlays??[]).filter(o=>o.path).map(o=>({id:o.id,path:o.path})));
+    this.renderer.domElement.dataset.verticalBands = JSON.stringify((result.environment?.vertical??[]).map(v=>({buildingId:v.buildingId,bands:v.bands,alignment:v.alignment})));
+    this.renderer.domElement.dataset.parkingCirculation = JSON.stringify((result.environment?.parkingCirculation??[]).flatMap(a=>a.components.map(p=>({areaId:a.areaId,status:p.status,gateCount:p.gates.length,aisleCells:p.aisleCells.length,walkCells:p.walkCells.length,crossings:p.crossings.length,budget:p.budget,counters:p.counters,reasonCodes:p.reasonCodes}))));
+    this.renderer.domElement.dataset.entrances = JSON.stringify(result.environment?.entrances??[]);
+    this.renderer.domElement.dataset.parkingQuality=JSON.stringify(result.environment?.parking?.map(p=>p.quality)??[]);
+    this.renderer.domElement.dataset.fixtures=JSON.stringify(result.environment?.fixtures?.placements??[]);
     const count = result.surfaces.length;
     if (!count) return;
     const surfaces = new THREE.InstancedMesh(
@@ -382,43 +430,13 @@ export class Viewer {
         this.groups.placements.add(glass);
       }
     }
-    for (const m of result.modules ?? []) {
-      const parts = this.crafted.get(m.assetKey);
-      setPlacementMatrix(
-        matrix,
-        m.position2,
-        m.orientationId,
-        this.displayOrigin,
-        m.scale16,
-      );
-      const material = m.assetKey.startsWith("roof.")
-        ? this.assets.roof(m.palette, m.scale16[0] / 16, m.scale16[1] / 16)
-        : m.assetKey.startsWith("corner.")
-          ? this.assets.get({
-              tileId: m.assetKey,
-              assetKey: m.assetKey.endsWith("top")
-                ? "village.window-top"
-                : "village.window",
-              palette: m.palette,
-              roles: ["wall"],
-              orientationIds: [m.orientationId],
-              footprint: "unit-face",
-              pivot: "face-center",
-            })
-          : this.assets.frame(m.palette);
-      for (const [geometry, mat] of [
-        [parts.panel, material],
-        [parts.relief, this.assets.frame(m.palette)],
-      ] as const) {
-        if (!geometry) continue;
-        const mesh = new THREE.InstancedMesh(geometry, mat, 1);
-        mesh.setMatrixAt(0, matrix);
-        mesh.userData.faceIds = [m.hostFaceId];
-        mesh.userData.module = m;
-        mesh.computeBoundingSphere();
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        this.groups.placements.add(mesh);
+    const moduleBatches=new Map<string,NonNullable<GenerationResult['modules']>>();
+    for(const m of result.modules??[]){const key=`${m.assetKey}|${m.palette}`,batch=moduleBatches.get(key)??[];batch.push(m);moduleBatches.set(key,batch);}
+    for(const modules of moduleBatches.values()){
+      const first=modules[0],parts=this.crafted.get(first.assetKey),material=this.assets.frame(first.palette);
+      for(const geometry of [parts.panel,parts.relief]){if(!geometry)continue;const mesh=new THREE.InstancedMesh(geometry,material,modules.length);
+        modules.forEach((m,i)=>{setPlacementMatrix(matrix,m.position2,m.orientationId,this.displayOrigin,m.scale16);mesh.setMatrixAt(i,matrix);});
+        mesh.userData.faceIds=modules.map(m=>m.hostFaceId);mesh.userData.modules=modules;mesh.computeBoundingSphere();mesh.castShadow=true;mesh.receiveShadow=true;this.groups.placements.add(mesh);
       }
     }
     surfaces.userData.faceIds = result.surfaces.map((s) => s.faceId);
@@ -449,6 +467,16 @@ export class Viewer {
       lines.renderOrder = 8;
       this.groups.regions.add(lines);
     }
+    if(this.groups.voxels.visible)this.buildVoxels();
+    for (const kind of ["convex", "concave", "flat", "unsupported"] as const) {
+      const points = result.features
+        .filter((e) => e.kind === kind)
+        .flatMap((e) => [...e.start, ...e.end]);
+      this.groups.edges.add(this.lines(points, this.lineMaterials[kind]));
+    }
+    if(this.groups.normals.visible)this.buildNormals();
+  }
+  private buildVoxels(){const result=this.result;if(!result)return;
     const voxels = new THREE.InstancedMesh(
       this.cube,
       this.voxelMaterial,
@@ -467,12 +495,8 @@ export class Viewer {
     voxels.instanceMatrix.needsUpdate = true;
     voxels.computeBoundingSphere();
     this.groups.voxels.add(voxels);
-    for (const kind of ["convex", "concave", "flat", "unsupported"] as const) {
-      const points = result.features
-        .filter((e) => e.kind === kind)
-        .flatMap((e) => [...e.start, ...e.end]);
-      this.groups.edges.add(this.lines(points, this.lineMaterials[kind]));
-    }
+  }
+  private buildNormals(){const result=this.result;if(!result)return;
     const normalPoints = result.surfaces.flatMap((s) => {
       const c = faceCenter2(s.cell, s.direction).map((n) => n / 2);
       return [...c, ...c.map((n, a) => n + BASES[s.direction].n[a] * 0.3)];
@@ -523,6 +547,7 @@ export class Viewer {
   }
   setLayer(layer: Layer, visible: boolean) {
     this.groups[layer].visible = visible;
+    if(visible&&!this.groups[layer].children.length){if(layer==='voxels')this.buildVoxels();if(layer==='normals')this.buildNormals();}
     if (layer === "placements") this.scenePlacements.visible = visible;
   }
   setGround(y: number) {
@@ -548,6 +573,7 @@ export class Viewer {
     this.controls.update();
   }
   dispose() {
+    this.environmentPreview.dispose();
     this.renderer.setAnimationLoop(null);
     this.observer.disconnect();
     this.interaction.dispose();
@@ -555,6 +581,8 @@ export class Viewer {
     this.clear();
     this.plane.dispose();
     this.cube.dispose();
+    this.parkingArrow?.dispose();
+    this.fixtures.dispose();
     this.selection.geometry.dispose();
     this.selectedMaterial.dispose();
     this.grid.dispose();

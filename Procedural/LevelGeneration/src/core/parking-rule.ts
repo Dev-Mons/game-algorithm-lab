@@ -2,18 +2,14 @@ import { cellId } from "./analysis";
 import type { Vec3 } from "./analysis";
 import type { ScenePlacement } from "./scene-inputs";
 import type { BuildingGenerationRule } from "./building-rule-contract";
+import { PARKING_RULE_DEFINITION } from "./rule-spatial-adapters";
 
 // A structural strategy: open decks, columns and parking bays, with no facade shell.
 export const PARKING_RULE: BuildingGenerationRule = {
   id: "parking",
   version: "1.0.0",
   label: "개방형 주차장",
-  definition: {
-    structure: "open-decks-v1",
-    slabThickness: 0.12,
-    columnWidth: 0.12,
-    bayPattern: "grid-stride-v1",
-  },
+  definition: PARKING_RULE_DEFINITION,
   validateMetadata(metadata) {
     if (
       Object.keys(metadata).some((k) => k !== "bayStride") ||

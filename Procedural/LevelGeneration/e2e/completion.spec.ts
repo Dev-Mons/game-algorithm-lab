@@ -1,3 +1,4 @@
+import {generateDocument} from '../src/core/generate-document';
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { generate, validateAssembly } from "../src/core/generate";
@@ -7,7 +8,7 @@ import {
   profileData,
 } from "../src/core/document";
 
-test("3D styles, city generation and v3 save/load work together", async ({
+test("current styles, city generation and save/load work together", async ({
   page,
 }, testInfo) => {
   const errors: string[] = [];
@@ -16,25 +17,7 @@ test("3D styles, city generation and v3 save/load work together", async ({
   await expect(page.locator("#status")).toHaveText("OK");
   await page.locator(".inspect-details summary").first().click();
   await page.locator("#fixture").selectOption("facade");
-  for (const [profile, roof] of [
-    ["crafted-hip", "roof.hip-x"],
-    ["crafted-gable", "roof.gable-x"],
-    ["crafted-flat", "roof.flat"],
-  ]) {
-    await page.locator("#profile").selectOption(profile);
-    await page.locator("#face").selectOption("0,2,0|PY");
-    await expect(page.locator("#inspector")).toContainText(roof);
-    await expect(page.locator("#inspector")).toContainText("12면을 대체");
-    await page.locator("#attachment").selectOption({ index: 1 });
-    await expect(page.locator("#inspector")).toContainText("eave.straight");
-    const attachment = JSON.parse(
-      (await page.locator("#trace").textContent())!,
-    ).attachment;
-    expect(attachment.faceIds).toEqual([]);
-    expect(attachment.clearanceCell).toEqual([-1, 3, 0]);
-    await page.locator("#attachment").selectOption("");
-  }
-  await page.locator("#profile").selectOption("crafted-hip");
+  for(const profile of ['shop','office']){await page.locator('#profile').selectOption(profile);await expect(page.locator('#status')).toHaveText('OK');await page.locator('#face').selectOption('1,1,2|PZ');await expect(page.locator('#facade-info')).toContainText('스타일');}
   await page.locator("#new").click();
   await page.locator(".city-tools summary").click();
   await page.locator("#city-layout").selectOption("courtyard");
@@ -51,11 +34,8 @@ test("3D styles, city generation and v3 save/load work together", async ({
   }
   const saved = await save("city-v3.json"),
     doc = loadDocument(saved.text),
-    result = generate(doc.grid, {
-      seed: doc.seed,
-      ...profileData(doc.catalog.id),
-    });
-  expect(doc.schemaVersion).toBe(3);
+    result = generateDocument(doc);
+  expect(doc.schemaVersion).toBe(5);
   expect(result.status).toBe("ok");
   expect(result.modules!.length).toBeGreaterThan(0);
   validateAssembly(
@@ -82,9 +62,9 @@ test("3D styles, city generation and v3 save/load work together", async ({
   await page.locator("#retry").click();
   await expect(page.locator("#status")).toHaveText("OK");
   const large = createDocument(
-    [[1_000_000, 0, 1_000_000]],
+    [[999_999, 0, 999_999]],
     42,
-    "crafted-gable",
+    "office",
   );
   await page.locator("#file").setInputFiles({
     name: "large-coordinate.json",
@@ -97,7 +77,7 @@ test("3D styles, city generation and v3 save/load work together", async ({
   await page
     .locator("#viewport canvas")
     .click({ position: { x: viewport.width / 2, y: viewport.height / 2 } });
-  await expect(page.locator("#face")).toHaveValue("1000000,0,1000000|PY");
-  await expect(page.locator("#inspector")).toContainText("roof.gable-x");
+  await expect(page.locator("#face")).toHaveValue("999999,0,999999|PY");
+  await expect(page.locator("#inspector")).toContainText("architecture.roof");
   expect(errors).toEqual([]);
 });
