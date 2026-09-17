@@ -5,6 +5,26 @@ import { editObjects } from "../src/scene-editor";
 import { DocumentHistory } from "../src/editor";
 import { objectContext, type ObjectInput } from "../src/core/scene-inputs";
 const ground = { direction: "PY" as const, cells: [[0,-1,0] as [number,number,number]] };
+it("places a separate tree in every dragged column and preserves columns when editing height", () => {
+  const area = {direction:"PY" as const,cells:[[-1,-1,0],[0,-1,0],[-1,-1,1],[0,-1,1]] as [number,number,number][]};
+  const first = editObjects(createDocument([]),area,"vegetation","add");
+  const shrubs = generateDocument(first.document).scenePlacements!;
+  expect(shrubs.map(p=>p.asset)).toEqual(["shrub","shrub","shrub","shrub"]);
+  const second = editObjects(first.document,first.selection,"vegetation","add");
+  const third = editObjects(second.document,second.selection,"vegetation","add");
+  const trees = generateDocument(loadDocument(exportDocument(third.document))).scenePlacements!;
+  expect(trees).toHaveLength(12);
+  expect(new Set(trees.map(p=>p.id)).size).toBe(12);
+  for(const [x,,z] of area.cells){
+    const column = trees.filter(p=>p.center[0]===x+.5&&p.center[2]===z+.5);
+    expect(column.map(p=>p.asset)).toEqual(["tree-bottom","tree-middle","tree-top"]);
+    expect(column.map(p=>p.size)).toEqual([[1,1,1],[1,1,1],[1,1,1]]);
+  }
+  const lowered = editObjects(third.document,{direction:"PY",cells:[[-1,2,0]]},"vegetation","remove");
+  const tiles = generateDocument(lowered.document).scenePlacements!;
+  expect(tiles).toHaveLength(11);
+  expect(tiles.filter(p=>p.center[0]===-.5&&p.center[2]===.5).map(p=>p.asset)).toEqual(["tree-bottom","tree-top"]);
+});
 it("adds/removes one layer, regenerates a tree, and preserves volume/history/JSON", () => {
   const doc = createDocument([],42,"shop");
   const first = editObjects(doc,ground,"vegetation","add");

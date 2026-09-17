@@ -8,15 +8,18 @@ test("road drag owns ground independently, object overwrite and road restoration
   await page.locator("#edit-mode").selectOption("road");
   const canvas=page.locator("canvas"),b=(await canvas.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
   await page.mouse.move(x-100,y-180);await page.mouse.down();await page.mouse.move(x+100,y+180,{steps:8});await page.mouse.up();
+  await page.keyboard.press('e');
   await expect(canvas).toHaveAttribute("data-scene-assets",/road\./);
   await expect(page.locator("#stats strong").first()).toHaveText("0");
   const original=await canvas.getAttribute("data-scene-assets");
   await page.keyboard.press("Escape");await page.locator("#edit-mode").selectOption("object");
   await page.locator("#object-category").selectOption("vegetation");
   await page.mouse.click(x+5,y+5);
+  await page.keyboard.press('e');
   await expect(canvas).toHaveAttribute("data-scene-assets",/shrub|planter/);
   await page.screenshot({path:info.outputPath("road-object.png")});
   await page.locator("#edit-mode").selectOption("road");await page.mouse.click(x+5,y+5);
+  await page.keyboard.press('e');
   await expect(canvas).toHaveAttribute("data-scene-assets",original!);
   await canvas.focus();await page.keyboard.press("Control+z");
   await expect(canvas).toHaveAttribute("data-scene-assets",/shrub|planter/);
@@ -26,7 +29,8 @@ test("road drag owns ground independently, object overwrite and road restoration
   await page.locator("#new").click();await page.locator("#file").setInputFiles(path!);
   await expect(canvas).toHaveAttribute("data-scene-assets",original!);
   await page.locator('[data-camera="top"]').click();
-  await page.mouse.move(x-15,y-15);await page.mouse.down({button:"right"});await page.mouse.move(x+15,y+15,{steps:4});await page.mouse.up({button:"right"});
+  await page.mouse.move(x-15,y-15);await page.mouse.down();await page.mouse.move(x+15,y+15,{steps:4});await page.mouse.up();
+  await page.keyboard.press('q');
   expect(await canvas.getAttribute("data-scene-assets")).not.toBe(original);
   expect(errors).toEqual([]);
 });

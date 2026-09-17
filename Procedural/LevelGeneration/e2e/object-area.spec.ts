@@ -30,6 +30,8 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
     await page.mouse.down();
     await page.mouse.move(x + extent, y + extent, { steps: 10 });
     await page.mouse.up();
+    await expect(page.locator('canvas')).toHaveAttribute('data-scene-assets', '');
+    await page.keyboard.press('e');
     await expect(page.locator("#edit-note")).toContainText("설치 완료");
     const downloadPromise = page.waitForEvent("download");
     await page.locator("#save").click();
@@ -40,6 +42,17 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
     const input = saved.sceneInputs!.objects[0];
     expect(input.cells).toHaveLength(9);
     const placements = generateDocument(saved,{mode:"development-preview"}).scenePlacements!;
+    if (category === 'lighting') {
+      const lights = placements.filter(p => p.asset === 'fixture.lamp-16');
+      expect(lights).toHaveLength(9);
+      expect(new Set(lights.map(p => `${Math.floor(p.center[0])},${Math.floor(p.center[2])}`))).toEqual(new Set(input.cells.map(c => `${c[0]},${c[2]}`)));
+    }
+    if (category === 'vegetation') {
+      const plants = placements.filter(p => p.asset === 'roof-planter');
+      expect(plants).toHaveLength(9);
+      expect(plants.every(p => p.size.every(n => n === 1))).toBe(true);
+      expect(new Set(plants.map(p => `${Math.floor(p.center[0])},${Math.floor(p.center[2])}`))).toEqual(new Set(input.cells.map(c => `${c[0]},${c[2]}`)));
+    }
     await expect(page.locator("canvas")).toHaveAttribute(
       "data-scene-assets",
       placements.map((p) => p.asset).join(","),
@@ -49,10 +62,16 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
       "data-selection-cells",
       "9",
     );
-    await page.mouse.click(x, y);
+    await page.locator('canvas').focus();
+    await page.keyboard.press('e');
+    if (category === 'vegetation') {
+      const assets = (await page.locator('canvas').getAttribute('data-scene-assets'))!.split(',');
+      expect(assets.filter(asset => asset === 'tree-bottom')).toHaveLength(9);
+      expect(assets.filter(asset => asset === 'tree-top')).toHaveLength(9);
+    }
     // Height editing uses the source input even while its downstream stage is blocked.
     await expect(page.locator('canvas')).toHaveAttribute('data-selection-cells','9');
-    await page.mouse.click(x, y, { button: "right" });
+    await page.keyboard.press('q');
     await expect(page.locator("canvas")).toHaveAttribute(
       "data-scene-assets",
       placements.map((p) => p.asset).join(","),
@@ -63,6 +82,7 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
       await page.mouse.down();
       await page.mouse.move(x + 5, y + 5, { steps: 4 });
       await page.mouse.up();
+      await page.keyboard.press('e');
       await expect(page.locator("canvas")).toHaveAttribute(
         "data-selection-cells",
         "1",

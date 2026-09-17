@@ -60,22 +60,17 @@ export interface ObjectCategoryRule {
   category: ObjectCategory;
   generate(input: ObjectInput, context: ObjectContext): ScenePlacement[];
 }
-function dimensions(input: ObjectInput, context: ObjectContext) {
-  const min = [0,1,2].map(a => Math.min(...input.cells.map(c => c[a]))) as Vec3;
-  const size = [0,1,2].map(a => Math.max(...input.cells.map(c => c[a]))-min[a]+1) as Vec3;
-  const center = min.map((v,a) => v+size[a]/2) as Vec3;
-  const placement = (asset: string, color: string, at = center, dimensions = size): ScenePlacement => ({ input, id: `${input.id}:${asset}`, kind: "object", asset, center: at, size: dimensions, color, context });
-  return { min, size, center, placement };
-}
 export const OBJECT_CATEGORY_RULES: ObjectCategoryRule[] = [
   { category: "vegetation", generate(input, context) {
-    const { min, size, center, placement } = dimensions(input, context);
-    if (size[1] === 1) return [placement(context === "median" ? "median-planter" : context === "roof" ? "roof-planter" : "shrub", "#79a66b", [center[0],min[1]+.5,center[2]], [size[0],1,size[2]])];
-    return Array.from({length:size[1]},(_,i) => {
-      const asset = i === 0 ? "tree-bottom" : i === size[1]-1 ? "tree-top" : "tree-middle";
-      const tile = placement(asset, i === 0 ? "#886348" : "#62905c", [center[0],min[1]+i+.5,center[2]], [size[0],1,size[2]]);
-      // Repeated middle tiles share one asset but retain distinct instance IDs.
-      return {...tile, id:`${tile.id}:layer-${i}`};
+    const bottom = Math.min(...input.cells.map(c => c[1])), top = Math.max(...input.cells.map(c => c[1]));
+    // Each horizontal cell owns a tree; vertical cells form its trunk and crown.
+    return input.cells.map(cell => {
+      const asset = bottom === top
+        ? context === "median" ? "median-planter" : context === "roof" ? "roof-planter" : "shrub"
+        : cell[1] === bottom ? "tree-bottom" : cell[1] === top ? "tree-top" : "tree-middle";
+      return { input, id: `${input.id}:${asset}:cell-${cellId(cell)}`, kind: "object", asset,
+        center: cell.map(n => n + .5) as Vec3, size: [1,1,1],
+        color: bottom === top ? "#79a66b" : cell[1] === bottom ? "#886348" : "#62905c", context };
     });
   } },
 

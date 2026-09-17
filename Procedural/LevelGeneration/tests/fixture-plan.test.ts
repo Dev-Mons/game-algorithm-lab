@@ -43,13 +43,30 @@ it('uses fixed height variants and marks roof service access unverified without 
   expect(result.environment!.fixtures!.traces.flatMap(t=>t.candidates).some(c=>c.reasonCodes.includes('MAINTENANCE_ROUTE_UNVERIFIED'))).toBe(true);
 });
 
-it('suppression uses all higher-priority potential clusters even when the intermediate cluster loses',()=>{
+it('does not suppress explicitly painted lights through interval or shared bucket spacing',()=>{
  const scene=emptySceneInputs();scene.roads=box(7,1,1).map(([x,y])=>[x,y,-1]);scene.objects=[0,4,6].map(x=>input(`lamp-${x}`,'lighting',[[x,0,0]]));
  const plan=generateDocument(createDocument([],15,'office',undefined,undefined,scene)).environment!.fixtures!;
- expect(plan.placements).toHaveLength(1);expect(plan.placements[0].id).toContain(':0,0,0:');
- const suppressed=plan.traces.flatMap(t=>t.candidates).filter(c=>c.reasonCodes.includes('LOCAL_PRIORITY_SUPPRESSED'));
- expect(suppressed.find(c=>c.candidateId.includes(':4,0,0:'))!.conflictIds[0]).toContain(':0,0,0:');
- expect(suppressed.find(c=>c.candidateId.includes(':6,0,0:'))!.conflictIds[0]).toContain(':4,0,0:');
+ expect(plan.placements).toHaveLength(3);
+ expect(plan.traces.flatMap(t=>t.candidates).some(c=>c.reasonCodes.includes('LOCAL_PRIORITY_SUPPRESSED'))).toBe(false);
+});
+it.each([['strip',8,1,1,false],['area',4,1,4,false],['tall',3,4,3,false],['roof',3,1,3,true]] as const)('fills every painted %s support cell with a light without reserving empty maintenance cells',(_name,width,height,depth,roof)=>{
+ const scene=emptySceneInputs(),cells=box(width,height,depth).map(([x,y,z])=>[x-2,y+(roof?1:0),z-2] as Vec3);
+ scene.objects=[input('lights','lighting',cells)];
+ const document=createDocument(roof?box(width,1,depth).map(([x,y,z])=>[x-2,y,z-2]):[],42,'office',undefined,undefined,scene);
+ const plan=generateDocument(document).environment!.fixtures!;
+ expect(plan.placements).toHaveLength(width*depth);
+ expect(new Set(plan.placements.map(p=>`${Math.floor(p.center[0])},${Math.floor(p.center[2])}`))).toEqual(new Set(cells.map(c=>`${c[0]},${c[2]}`)));
+ expect(plan.placements.every(p=>p.asset===`fixture.lamp-${height*16}`)).toBe(true);
+ expect(plan.reservations.every(r=>r.kind==='lighting')).toBe(true);
+ for(let i=0;i<plan.reservations.length;i++)for(let j=0;j<i;j++)expect(plan.reservations[i].boxes16.some(a=>plan.reservations[j].boxes16.some(b=>boxesOverlap(a,b)))).toBe(false);
+});
+it('fills compatible painted wall cells at every height while preserving wall mount checks',()=>{
+ const scene=emptySceneInputs();scene.objects=[{id:'wall-lights',category:'lighting',direction:'PZ',cells:box(3,3,1).map(([x,y])=>[x,y,1])}];
+ const plan=generateDocument(createDocument(box(3,3,1),42,'office',undefined,undefined,scene)).environment!.fixtures!;
+ expect(plan.counters.slots).toBe(9);
+ expect(plan.placements).toHaveLength(6);
+ expect(plan.traces.flatMap(t=>t.candidates).filter(c=>c.reasonCodes.includes('NO_COMPATIBLE_WALL_MOUNT'))).toHaveLength(3);
+ expect(plan.placements.every(p=>p.asset==='fixture.wall-lamp')).toBe(true);
 });
 it('roadless vegetation does not invent a usable local pocket inside a narrow blocked channel',()=>{
  const scene=emptySceneInputs();scene.objects=[input('rest','facility',[[0,0,0]]),input('tree','vegetation',[[0,0,-1]])];

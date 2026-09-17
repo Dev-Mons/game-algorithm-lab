@@ -41,6 +41,7 @@ test("special rule renders, remains selectable, preserves theme independence and
   await page.mouse.down();
   await page.mouse.move(x + 5, y + 5, { steps: 4 });
   await page.mouse.up();
+  await page.keyboard.press('e');
   await expect(page.locator("#stats strong").first()).not.toHaveText("18");
   await expect(page.locator("#building-rule")).toHaveValue("parking");
   await page.keyboard.press("Control+z");

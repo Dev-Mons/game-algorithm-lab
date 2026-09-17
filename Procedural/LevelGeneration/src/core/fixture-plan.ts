@@ -26,7 +26,7 @@ export interface FixturePlan {placements:ScenePlacement[];reservations:Reservati
 interface Column {cell:Vec3;height:number}
 interface Patch {category:'facility'|'lighting';direction:Direction;support:FixtureContext['support'];footY:number;columns:Column[];inputs:ObjectInput[];volume:Set<string>}
 interface Slot {bucketKey?:string;id:string;columns:Column[];patch:Patch;family:string;prototype:FixturePrototypeId|'lamp'|'empty';companion?:'bin'|'pay-station';interval:number;center2:Vec3}
-interface Cluster {bucketKey?:string;id:string;items:FixtureCandidate[];main:FixtureCandidate;trace:CandidateTrace;companionTraces:CandidateTrace[]}
+interface Cluster {bucketKey?:string;explicitLighting:boolean;id:string;items:FixtureCandidate[];main:FixtureCandidate;trace:CandidateTrace;companionTraces:CandidateTrace[]}
 const ascii=(a:string,b:string)=>a<b?-1:a>b?1:0;
 const manhattan=(a:Vec3,b:Vec3)=>a.reduce((n,v,i)=>n+Math.abs(v-b[i]),0);
 const sameHeightDistance=(a:Vec3,b:Vec3)=>a[1]===b[1]?Math.abs(a[0]-b[0])+Math.abs(a[2]-b[2]):Infinity;
@@ -43,7 +43,7 @@ function makePatches(document:GenerationDocument,analysis:VolumeAnalysis):Patch[
   const patches:Patch[]=[];
   for(const group of groups.values()){
     const columns=new Map<string,Column>();
-    for(const input of group.inputs)for(const c of input.cells)if(c[1]===group.footY){let height=1;while(group.volume.has(cellId([c[0],c[1]+height,c[2]])))height++;columns.set(cellId(c),{cell:c,height});}
+    for(const input of group.inputs)for(const c of input.cells)if(group.support==='wall'||c[1]===group.footY){let height=1;while(group.support!=='wall'&&group.volume.has(cellId([c[0],c[1]+height,c[2]])))height++;columns.set(cellId(c),{cell:c,height});}
     const remaining=new Set(columns.keys());
     for(const root of [...columns.values()].sort((a,b)=>compareCells(a.cell,b.cell))){if(!remaining.delete(cellId(root.cell)))continue;const queue=[root];for(let i=0;i<queue.length;i++)for(const d of HEADING_VECTORS){const id=cellId(add(queue[i].cell,d));if(remaining.delete(id))queue.push(columns.get(id)!);}patches.push({...group,columns:queue.sort((a,b)=>compareCells(a.cell,b.cell))});}
   }
@@ -91,6 +91,11 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   };
   const slots:Slot[]=[];
   for(const patch of makePatches(document,analysis)){
+    // Painted lighting owns one fixture per support cell; vertical ground/roof cells set pole height.
+    if(patch.category==='lighting'){
+      for(const column of patch.columns)slots.push({id:`cell:lighting:${patch.direction}:${cellId(column.cell)}`,columns:[column],patch,family:familyAt(getContext(column,patch),patch),interval:1,center2:column.cell.map(n=>2*n) as Vec3,prototype:patch.support==='wall'?'wall-lamp':'lamp'});
+      continue;
+    }
     const contexts=new Map<string,Column[]>();for(const c of patch.columns){const family=familyAt(getContext(c,patch),patch),list=contexts.get(family)??[];list.push(c);contexts.set(family,list);}
     for(const [family,columns] of contexts){
       const interval=intervalFor(family),minX=Math.min(...columns.map(c=>c.cell[0])),maxX=Math.max(...columns.map(c=>c.cell[0])),minZ=Math.min(...columns.map(c=>c.cell[2])),maxZ=Math.max(...columns.map(c=>c.cell[2]));
@@ -147,12 +152,15 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     if(slot.patch.support==='wall')use=search.graph.walkNodes.filter(n=>n.foot[0]===c[0]&&n.foot[2]===c[2]&&n.foot[1]<=c[1]).sort((a,b)=>b.foot[1]-a.foot[1])[0]?.foot??c;
     let serviceCells:Vec3[]=[],useBoxes:Box16[]=[],publicDistance=Infinity;
     const publicPath=publicAccess(use,bodies);
-    if(publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])){
+    if(slot.patch.category==='lighting'){
+      // Maintenance access is informational, not a permanent empty cell beside every painted light.
+      context.accessMode=publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])?'public':'service-unverified';
+    }else if(publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])){
       context.accessMode='public';serviceCells=publicPath;publicDistance=publicPath.length-1;useBoxes=publicPath.map(p=>bodyBox16(p,document.environment.access));for(let i=1;i<publicPath.length;i++)useBoxes.push(walkSweep16(publicPath[i-1],publicPath[i],document.environment.access));
     }else if(prototype==='bench'||prototype==='bin'){
       if(document.sceneInputs.roads.length||context.vegetationDistanceCells===undefined)return {reason:'NO_PUBLIC_ACCESS'};
       const pocket=localPocket(use,bodies);if(!pocket)return {reason:'NO_USE_CLEARANCE'};context.accessMode='local-only';serviceCells=pocket.cells;useBoxes=pocket.boxes;
-    }else if(slot.patch.support==='roof'||slot.patch.support==='wall'||slot.patch.category==='lighting'){
+    }else if(slot.patch.support==='roof'||slot.patch.support==='wall'){
       if(search.nodes.has(cellId(use))&&bodyClear(bodyBox16(use,document.environment.access),bodies)){serviceCells=[use];useBoxes=[bodyBox16(use,document.environment.access)];}
       else if(slot.patch.support!=='wall')return {reason:'NO_USE_CLEARANCE'};
       context.accessMode='service-unverified';
@@ -199,7 +207,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
       companions.sort((a,b)=>a.publicDistance-b.publicDistance||manhattan(a.anchorCell,main!.anchorCell)-manhattan(b.anchorCell,main!.anchorCell)||compareCells(a.anchorCell,b.anchorCell)||a.heading-b.heading);
       if(companions[0])items.push(companions[0]);trace.candidates.push(...companionTraces);
     }
-    const candidateTrace:CandidateTrace={candidateId:main.id,accepted:false,reasonCodes:[],metrics:{prototype:main.prototypeId,heading:main.heading,offset:main.offset,accessMode:main.context.accessMode,frontFree:main.frontFree,family:slot.family,context:JSON.stringify(main.context),companionCount:items.length-1},conflictIds:[]};trace.candidates.push(candidateTrace);clusters.push({id:slot.id,bucketKey:slot.bucketKey,main,items,trace:candidateTrace,companionTraces});
+    const candidateTrace:CandidateTrace={candidateId:main.id,accepted:false,reasonCodes:[],metrics:{prototype:main.prototypeId,heading:main.heading,offset:main.offset,accessMode:main.context.accessMode,frontFree:main.frontFree,family:slot.family,context:JSON.stringify(main.context),companionCount:items.length-1},conflictIds:[]};trace.candidates.push(candidateTrace);clusters.push({id:slot.id,bucketKey:slot.bucketKey,explicitLighting:slot.patch.category==='lighting',main,items,trace:candidateTrace,companionTraces});
   }
   const unique=new Map<string,Cluster>();
   for(const cluster of clusters){const key=`${cluster.main.prototypeId}:${cluster.main.center16.join(',')}:${cluster.main.heading}`,previous=unique.get(key);
@@ -210,8 +218,9 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   const familyInterval=(id:FixturePrototypeId)=>FIXTURE_CATALOG[id].family==='bench'?settings.restIntervalCells:FIXTURE_CATALOG[id].family==='lamp'?settings.lightIntervalCells:FIXTURE_CATALOG[id].family==='hydrant'?settings.hydrantIntervalCells:2;
   const conflict=(a:Cluster,b:Cluster)=>{
     counters.neighborChecks++;if(a.bucketKey&&a.bucketKey===b.bucketKey)return true;if(a.main.context.gateId&&a.main.context.gateId===b.main.context.gateId&&a.main.prototypeId==='raised-barrier-post'&&b.main.prototypeId==='raised-barrier-post')return true;
-    if(manhattan(a.main.anchorCell,b.main.anchorCell)<2)return true;
-    for(const x of a.items)for(const y of b.items){if(FIXTURE_CATALOG[x.prototypeId].family===FIXTURE_CATALOG[y.prototypeId].family&&manhattan(x.anchorCell,y.anchorCell)<Math.max(familyInterval(x.prototypeId),familyInterval(y.prototypeId)))return true;if(intersects(x.bodyBoxes16,[...y.bodyBoxes16,...y.useBoxes16])||intersects(y.bodyBoxes16,x.useBoxes16))return true;}return false;
+    const paintedLights=a.explicitLighting&&b.explicitLighting;
+    if(!paintedLights&&manhattan(a.main.anchorCell,b.main.anchorCell)<2)return true;
+    for(const x of a.items)for(const y of b.items){if(!paintedLights&&FIXTURE_CATALOG[x.prototypeId].family===FIXTURE_CATALOG[y.prototypeId].family&&manhattan(x.anchorCell,y.anchorCell)<Math.max(familyInterval(x.prototypeId),familyInterval(y.prototypeId)))return true;if(intersects(x.bodyBoxes16,[...y.bodyBoxes16,...y.useBoxes16])||intersects(y.bodyBoxes16,x.useBoxes16))return true;}return false;
   };
   const anchorBuckets=new Map<string,number[]>(),spatialCandidates=new BoundsIndex<number>(),gateCandidates=new Map<string,number[]>(),bucketCandidates=new Map<string,number[]>();
   ranked.forEach((cluster,i)=>{if(cluster.bucketKey){const list=bucketCandidates.get(cluster.bucketKey)??[];list.push(i);bucketCandidates.set(cluster.bucketKey,list);}for(const item of cluster.items){const key=item.anchorCell.map(n=>Math.floor(n/4)).join(','),list=anchorBuckets.get(key)??[];list.push(i);anchorBuckets.set(key,list);for(const box of [...item.bodyBoxes16,...item.useBoxes16])spatialCandidates.add(box,i);}if(cluster.main.context.gateId){const list=gateCandidates.get(cluster.main.context.gateId)??[];list.push(i);gateCandidates.set(cluster.main.context.gateId,list);}});

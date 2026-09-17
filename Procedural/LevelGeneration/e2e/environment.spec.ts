@@ -38,6 +38,7 @@ test('parking area drag, source selection, settings, no-op and history share one
   await page.locator('#edit-mode').selectOption('parking');await page.locator('[data-camera="top"]').click();
   const canvas=page.locator('canvas'),b=(await canvas.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
   await page.mouse.move(x-70,y-70);await page.mouse.down();await page.mouse.move(x+70,y+70,{steps:5});await page.mouse.up();
+  await page.keyboard.press('e');
   const first=await savedDocument(page),area=first.sceneInputs.parkingAreas[0];expect(area.cells.length).toBeGreaterThan(1);
   let counts=JSON.parse((await page.locator('#viewport').getAttribute('data-execution-counts'))!);
   expect(counts.generationCount).toBe(2);expect(counts.viewerSyncCount).toBe(2);expect(counts.historyCommitCount).toBe(1);

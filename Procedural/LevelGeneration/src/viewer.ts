@@ -46,6 +46,9 @@ export class Viewer {
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(38, 1, 0.05, 4000);
   private controls: OrbitControls;
+  private navigationKeys = new Set<string>();
+  private navigationAbort = new AbortController();
+  private previousFrameTime?: number;
   private model = new THREE.Group();
   private groups: Record<Layer, THREE.Group> = {
     voxels: new THREE.Group(),
@@ -167,8 +170,8 @@ export class Viewer {
     this.observer.observe(host);
     this.controls.mouseButtons = {
       LEFT: null,
-      MIDDLE: THREE.MOUSE.ROTATE,
-      RIGHT: null,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.ROTATE,
     };
     this.controls.touches = {
       ONE: THREE.TOUCH.ROTATE,
@@ -189,10 +192,37 @@ export class Viewer {
       (e) => this.inspect(e),
       onSelection,
     );
-    this.renderer.setAnimationLoop(() => {
+    const canvas = this.renderer.domElement, navigationOptions = {signal:this.navigationAbort.signal};
+    canvas.addEventListener('pointerdown', () => canvas.focus({preventScroll:true}), navigationOptions);
+    canvas.addEventListener('keydown', event => {
+      if (event.code === 'Escape' || event.ctrlKey || event.metaKey || event.altKey) { this.navigationKeys.clear(); return; }
+      if (event.isComposing || !['KeyW','KeyA','KeyS','KeyD'].includes(event.code)) return;
+      event.preventDefault();
+      this.navigationKeys.add(event.code);
+    }, navigationOptions);
+    document.addEventListener('keyup', event => this.navigationKeys.delete(event.code), navigationOptions);
+    canvas.addEventListener('blur', () => this.navigationKeys.clear(), navigationOptions);
+    window.addEventListener('blur', () => this.navigationKeys.clear(), navigationOptions);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.navigationKeys.clear(); }, navigationOptions);
+    this.renderer.setAnimationLoop(time => {
+      const delta = this.previousFrameTime === undefined ? 0 : Math.min(.05, Math.max(0, (time - this.previousFrameTime) / 1000));
+      this.previousFrameTime = time;
       this.controls.update();
+      this.moveCamera(delta);
+      this.interaction.updateHandle();
+      const pose = JSON.stringify({position:this.camera.position.toArray(),target:this.controls.target.toArray(),quaternion:this.camera.quaternion.toArray()});
+      if (canvas.dataset.cameraPose !== pose) canvas.dataset.cameraPose = pose;
       this.renderer.render(this.scene, this.camera);
     });
+  }
+  private moveCamera(delta: number) {
+    if (!this.navigationKeys.size) return;
+    const forward = Number(this.navigationKeys.has('KeyW')) - Number(this.navigationKeys.has('KeyS'));
+    const right = Number(this.navigationKeys.has('KeyD')) - Number(this.navigationKeys.has('KeyA'));
+    // Translate the orbit pivot with the camera so travel preserves the viewing direction.
+    const movement = new THREE.Vector3(right, 0, -forward).applyQuaternion(this.camera.quaternion).normalize().multiplyScalar(8 * delta);
+    this.camera.position.add(movement);
+    this.controls.target.add(movement);
   }
   private inspect(e: PointerEvent) {
     const rect = this.renderer.domElement.getBoundingClientRect();
@@ -573,6 +603,8 @@ export class Viewer {
     this.controls.update();
   }
   dispose() {
+    this.navigationAbort.abort();
+    this.navigationKeys.clear();
     this.environmentPreview.dispose();
     this.renderer.setAnimationLoop(null);
     this.observer.disconnect();

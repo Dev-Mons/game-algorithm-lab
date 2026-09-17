@@ -18,6 +18,7 @@ interface Gesture {
   start?: SurfaceSelection;
   preview?: SurfaceSelection;
   dragged: boolean;
+  handle?: { axis: THREE.Vector2; pixelsPerCell: number; consumed: number };
 }
 
 export class SurfaceInteraction {
@@ -26,6 +27,13 @@ export class SurfaceInteraction {
   private gesture?: Gesture;
   private ray = new THREE.Raycaster();
   private overlay = new THREE.Group();
+  private handleAnchor?: THREE.Vector3;
+  private handle = new THREE.Mesh(
+    // Half-cell square base and height, in world units rather than screen pixels.
+    new THREE.ConeGeometry(Math.SQRT1_2 / 2, .5, 4).rotateY(Math.PI / 4).translate(0, .25, 0),
+    new THREE.MeshBasicMaterial({ color: "#ffc35b", depthTest: false, depthWrite: false }),
+  );
+  private handleEdges = new THREE.LineSegments(new THREE.EdgesGeometry(this.handle.geometry), new THREE.LineBasicMaterial({ color: "#704519", depthTest: false }));
   private lineMaterial = new THREE.LineBasicMaterial({ color: "#ffca69", depthTest: false });
   private fillMaterial = new THREE.MeshBasicMaterial({ color: "#ffca69", depthTest: false, depthWrite: false, transparent: true, opacity: .2, side: THREE.DoubleSide });
   private abort = new AbortController();
@@ -39,27 +47,36 @@ export class SurfaceInteraction {
     private inspect: (event: PointerEvent) => void,
     private notify: (message: string, active: boolean) => void,
   ) {
-    scene.add(this.overlay);
+    scene.add(this.overlay, this.handle);
+    this.handle.add(this.handleEdges);
+    this.handle.renderOrder = 22;
+    this.handleEdges.renderOrder = 23;
+    this.handle.visible = false;
     canvas.tabIndex = 0;
     const opts = { signal: this.abort.signal };
     canvas.addEventListener("contextmenu", e => e.preventDefault(), opts);
     canvas.addEventListener("pointerdown", e => {
-      if ((e.button !== 0 && e.button !== 2) || this.gesture || !e.isPrimary) return;
+      if (e.button !== 0 || this.gesture || !e.isPrimary) return;
       e.preventDefault();
       canvas.focus({ preventScroll: true });
       canvas.setPointerCapture(e.pointerId);
-      this.gesture = { pointer: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, start: this.pick(e), dragged: false };
+      const metrics = this.hitHandle(e) ? this.handleMetrics() : undefined;
+      this.gesture = { pointer: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, start: metrics ? this.selection : this.pick(e), dragged: false,
+        ...(metrics ? {handle: {axis: new THREE.Vector2(metrics.axisX, metrics.axisY), pixelsPerCell: metrics.pixelsPerCell, consumed: 0}} : {}) };
+      if (metrics) canvas.style.cursor = "grabbing";
     }, opts);
     canvas.addEventListener("pointermove", e => {
       const g = this.gesture;
       if (!g) {
-        if (!this.selection && e.buttons === 0) this.draw(this.pick(e));
+        canvas.style.cursor = this.hitHandle(e) ? "grab" : "";
+        if (!this.selection && e.buttons === 0 && this.mode !== 'inspect') this.draw(this.pick(e));
         return;
       }
       if (e.pointerId !== g.pointer) return;
       if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > 4) g.dragged = true;
       if (!g.dragged || !g.start) return;
-      this.preview(e, g);
+      if (g.handle) this.dragHandle(e, g);
+      else this.preview(e, g);
     }, opts);
     canvas.addEventListener("pointerup", e => {
       const g = this.gesture;
@@ -67,16 +84,24 @@ export class SurfaceInteraction {
       const rect = canvas.getBoundingClientRect();
       const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
       if (Math.hypot(e.clientX - g.x, e.clientY - g.y) > 4) g.dragged = true;
-      if (g.dragged && g.start && inside) this.preview(e, g);
+      if (g.dragged && g.start && inside) {
+        if (g.handle) this.dragHandle(e, g);
+        else this.preview(e, g);
+      }
       this.cancelGesture();
       if (!inside) { this.draw(this.selection); return; }
+      if (g.handle) { this.draw(this.selection); this.announce(); return; }
       if(this.mode==='inspect'){if(!g.dragged&&g.button===0)this.inspect(e);return;}
-      const chosen = g.dragged ? g.preview : this.mode === "road" || this.mode === "parking" ? g.start : this.mode === "object" ? this.selection ?? g.start : this.selection;
+      const chosen = g.dragged ? g.preview : g.start;
       if (chosen) {
-        this.selection = this.commit(chosen, g.button === 2 ? "remove" : "add") ?? this.selection;
+        this.selection = chosen;
+        const released = this.pointOnSelection(e, chosen);
+        const centers = chosen.cells.map(cell => new THREE.Vector3(...faceCenter2(cell, chosen.direction).map(v => v / 2) as Vec3));
+        this.handleAnchor = released ? centers.reduce((nearest, center) => center.distanceToSquared(released) < nearest.distanceToSquared(released) ? center : nearest) : centers[0];
         this.draw(this.selection);
         this.announce();
-      } else if (!g.dragged && g.button === 0) this.inspect(e);
+      } else this.draw(this.selection);
+      if (!g.dragged) this.inspect(e);
     }, opts);
     canvas.addEventListener("pointercancel", () => this.cancel(), opts);
     canvas.addEventListener("lostpointercapture", () => { if (this.gesture) this.cancel(); }, opts);
@@ -84,7 +109,73 @@ export class SurfaceInteraction {
     window.addEventListener("blur", () => this.cancel(), opts);
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") { e.preventDefault(); this.clear(); }
+      const target = e.target as HTMLElement;
+      if (this.mode === 'inspect' || !this.selection || this.gesture || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.isComposing || target.closest('input,textarea,select') || target.isContentEditable) return;
+      if (e.code === 'KeyE' || e.code === 'KeyQ') {
+        e.preventDefault();
+        this.apply(e.code === 'KeyE' ? 'add' : 'remove');
+      }
     }, opts);
+  }
+
+  private pointOnSelection(e: PointerEvent, selection: SurfaceSelection) {
+    const { origin } = this.context();
+    const normal = new THREE.Vector3(...BASES[selection.direction].n);
+    const center = new THREE.Vector3(...faceCenter2(selection.cells[0], selection.direction).map(v => v / 2) as Vec3).add(origin);
+    this.setRay(e);
+    return this.ray.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(normal, center), new THREE.Vector3())?.sub(origin);
+  }
+  private screenPoint(point: THREE.Vector3) {
+    const rect = this.canvas.getBoundingClientRect(), projected = point.clone().project(this.camera);
+    return new THREE.Vector2((projected.x + 1) * rect.width / 2, (1 - projected.y) * rect.height / 2);
+  }
+  private handleMetrics() {
+    if (!this.selection || !this.handleAnchor) return;
+    const base = this.handleAnchor.clone().add(this.context().origin), normal = new THREE.Vector3(...BASES[this.selection.direction].n);
+    const from = this.screenPoint(base), axis = this.screenPoint(base.clone().add(normal)).sub(from);
+    const view = this.camera.getWorldDirection(new THREE.Vector3());
+    // Looking along the normal has no useful projected axis: screen-up still adds a layer.
+    const endOn = Math.abs(view.dot(normal)) > .95 || axis.length() < .001;
+    const pixelsPerCell = endOn ? 48 : Math.max(24, Math.min(120, axis.length()));
+    if (endOn) axis.set(0, -1); else axis.normalize();
+    const center = this.screenPoint(base.clone().addScaledVector(normal, .25));
+    return { x: center.x, y: center.y, axisX: axis.x, axisY: axis.y, pixelsPerCell };
+  }
+  updateHandle() {
+    this.handle.visible = !!this.selection && !!this.handleAnchor && this.mode !== 'inspect';
+    if (!this.handle.visible) { delete this.canvas.dataset.editHandle; return; }
+    this.camera.updateMatrixWorld();
+    const base = this.handleAnchor!.clone().add(this.context().origin);
+    this.handle.position.copy(base);
+    this.handle.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(...BASES[this.selection!.direction].n));
+    this.handle.updateMatrixWorld(true);
+    this.canvas.dataset.editHandle = JSON.stringify(this.handleMetrics());
+  }
+  private hitHandle(e: PointerEvent) {
+    this.updateHandle();
+    if (!this.handle.visible) return false;
+    this.setRay(e);
+    return this.ray.intersectObject(this.handle, false).length > 0;
+  }
+  private apply(mode: 'add' | 'remove') {
+    if (!this.selection) return false;
+    const previous = this.selection, next = this.commit(previous, mode);
+    if (!next) return false;
+    this.selection = next;
+    if (this.handleAnchor) this.handleAnchor.add(new THREE.Vector3(...next.cells[0]).sub(new THREE.Vector3(...previous.cells[0])));
+    this.draw(next);
+    this.announce();
+    return true;
+  }
+  private dragHandle(e: PointerEvent, gesture: Gesture) {
+    const drag = gesture.handle!;
+    const distance = new THREE.Vector2(e.clientX - gesture.x, e.clientY - gesture.y).dot(drag.axis);
+    const steps = Math.trunc((distance - drag.consumed) / drag.pixelsPerCell);
+    // Each step uses the same validated edit path as E/Q, including collision and span limits.
+    for (let i = 0; i < Math.min(32, Math.abs(steps)); i++) {
+      if (!this.apply(steps > 0 ? 'add' : 'remove')) { drag.consumed = distance; break; }
+      drag.consumed += Math.sign(steps) * drag.pixelsPerCell;
+    }
   }
 
   private setRay(e: PointerEvent) {
@@ -172,7 +263,7 @@ export class SurfaceInteraction {
       if (!selection.cells.length) return;
       g.preview = selection;
       this.draw(selection);
-      this.notify(`${selection.cells.length}칸 선택 · 버튼을 놓으면 ${g.button === 2 ? "제거" : "추가"}`, !!this.selection);
+      this.notify(`${selection.cells.length}칸 선택 · 버튼을 놓아 영역 확정`, !!this.selection);
     } catch {
       this.draw(this.selection);
       this.notify("선택 범위는 각 축 32칸 이내입니다.", !!this.selection);
@@ -185,6 +276,7 @@ export class SurfaceInteraction {
     }
     this.canvas.dataset.selectionCells = String(this.selection?.cells.length ?? 0);
     this.canvas.dataset.selectionDirection = this.selection?.direction ?? "";
+    this.updateHandle();
     if (!selection) return;
     const { origin } = this.context();
     const n = new THREE.Vector3(...BASES[selection.direction].n).multiplyScalar(.015);
@@ -208,16 +300,16 @@ export class SurfaceInteraction {
     this.overlay.add(mesh, lines);
   }
   private announce() {
-    const actions = this.mode !== "road" ? "좌클릭 한 층 추가 · 우클릭 한 층 제거" : "클릭 설치 · 드래그 여러 칸 · 우클릭 제거";
-    this.notify(this.selection ? `${this.selection.cells.length}칸 선택 중 · ${actions} · Esc 해제` : "좌·우 드래그로 영역을 선택하세요.", !!this.selection);
+    this.notify(this.selection ? `${this.selection.cells.length}칸 선택 중 · 정사각뿔 드래그 또는 E 추가 / Q 제거 · Esc 해제` : "왼쪽 드래그로 영역을 선택하세요. E 추가 · Q 제거", !!this.selection);
   }
   private cancelGesture() {
     const g = this.gesture;
     this.gesture = undefined;
+    this.canvas.style.cursor = "";
     if (g && this.canvas.hasPointerCapture(g.pointer)) this.canvas.releasePointerCapture(g.pointer);
   }
   private cancel() { this.cancelGesture(); this.draw(this.selection); this.announce(); }
-  clear() { this.selection = undefined; this.cancel(); }
+  clear() { this.selection = undefined; this.handleAnchor = undefined; this.cancel(); }
   refresh() { this.draw(this.selection); }
   dispose() {
     this.abort.abort();
@@ -227,5 +319,10 @@ export class SurfaceInteraction {
     this.overlay.removeFromParent();
     this.lineMaterial.dispose();
     this.fillMaterial.dispose();
+    this.handle.removeFromParent();
+    this.handle.geometry.dispose();
+    this.handle.material.dispose();
+    this.handleEdges.geometry.dispose();
+    this.handleEdges.material.dispose();
   }
 }

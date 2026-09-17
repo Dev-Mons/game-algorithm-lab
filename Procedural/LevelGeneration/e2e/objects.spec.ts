@@ -8,7 +8,7 @@ test("object mode installs modular vegetation without voxels, removes, restores 
   await page.locator("#edit-mode").selectOption("object");
   await page.locator("#object-category").selectOption("vegetation");
   const canvas=page.locator("canvas"), b=(await canvas.boundingBox())!;
-  const click=()=>page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2);
+  const click=async()=>{await page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2);await page.keyboard.press('e');};
   await click();
   await expect(canvas).toHaveAttribute("data-scene-assets","shrub");
   await expect(page.locator("#stats strong").first()).toHaveText("0");
@@ -31,7 +31,8 @@ test("object mode installs modular vegetation without voxels, removes, restores 
   await page.locator("#new").click(); await page.locator("#file").setInputFiles(path!);
   await expect(canvas).toHaveAttribute("data-scene-assets",/tree-top/);
   await page.locator('[data-camera="top"]').click();
-  const remove=()=>page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2,{button:"right"});
+  await page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2);
+  const remove=()=>page.keyboard.press('q');
   await remove();
   await expect(canvas).toHaveAttribute("data-scene-assets","tree-bottom,tree-middle,tree-top");
   await remove();
