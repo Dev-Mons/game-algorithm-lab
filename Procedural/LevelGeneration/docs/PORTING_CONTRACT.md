@@ -12,5 +12,6 @@
 - parking-budget-v1은 입력당1,500,000/500,000/128이며 U_i=12*N_i+32*floor(P_i/2)를 구획 pool에서 먼저 보호합니다. cache는 논리 비용을 동일하게 재현하며 실제 작업·시간은 결과 밖 telemetry입니다.
 - 구획 proof의 허용 mask는 원본 road+확정 gate/connector/aisle+자기 두 셀뿐입니다. base graph1회/BFS2회, 후보의 추가 상태는16 이하입니다.
 - 구조면마다 정확히 한 소유자를 유지합니다. 선택 마감과 도색은 구조 coverage 소유자가 아닙니다. 원본 마스크의 구멍을 렌더링 편의를 위해 채우지 않습니다.
+- 일반 건물은 완성형 면 키를 선택하고 면당 Mesh 객체 하나에 본체·프레임·유리·채택 마감을 모두 포함합니다. 고정 finish profile과 호스트 소유 규칙은 `COMPLETE_FACE_ASSETS.md`를 따릅니다. 마감 예약/결정은 유지하지만 별도 마감 렌더 모듈은 만들지 않습니다. 여러 재질 슬롯과 공유 geometry는 허용하며 단일 객체가 단일 draw call을 뜻하지는 않습니다.
 
 `npm run verify`, `npm run test:e2e`와 `e2e/environment.spec.ts --grep '@measure'`를 현재 구현의 인수 경로로 사용합니다. JS/GPU 표시 원점은 파생 표시 변환이며 문서 좌표·계획을 변경하지 않습니다.

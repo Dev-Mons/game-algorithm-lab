@@ -31,6 +31,8 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 안전성과 결정론
 
+일반 건물은 벽 본체·프레임·유리·난간·채택된 필수 마감까지 포함한 **면당 실제 Mesh 객체 하나**로 렌더링합니다. 지붕·테라스·밑면에도 같은 계약을 적용하며 geometry/재질은 공유합니다. 완성형 에셋 선택·마감 소유·Blender 교체 지점은 [완성형 면 에셋 계약](docs/COMPLETE_FACE_ASSETS.md)에 정리했습니다.
+
 외벽은 `wallKind: regular | rooftop`으로 구분합니다. 각 X/Z 기둥에서 하늘에 노출된 최상단 셀의 외벽이 옥상 외벽이며, 계단형·Setback의 낮은 옥상도 같은 규칙으로 처리합니다. 상부 볼륨으로 덮인 테라스는 제외합니다. 볼륨 추가·제거, Undo/Redo 때 현재 Grid에서 다시 계산하며 Inspector에 판정과 선택 타일을 표시합니다.
 
 공통 타일 룰에서 `rooftop-wall` / `regular-wall` predicate를 사용할 수 있습니다. 건물 스타일 모듈은 선택적 `rooftopAssets`에 기존 `rowAssets`와 같은 행 키를 지정하여 옥상 전용 변형을 선택합니다. 기본 상가형은 낮은 난간 벽, 업무형은 가는 난간을 사용하고 기존 팔레트·창문 연결·출입구를 유지합니다. 난간은 벽 상단보다 4/16셀 높으며 실제 형상 범위를 공간 사전 검사에 포함합니다. 전용 변형이 없는 기존 사용자 스타일은 원래 외벽 타일을 유지합니다.

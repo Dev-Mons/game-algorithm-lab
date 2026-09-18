@@ -5,6 +5,7 @@ import {cloneJSON,immutableJSON} from './canonical';
 import {FACADE_ASSETS,type FacadeAssetKey} from "./facade-assets";
 import {planFixtures} from "./fixture-plan";
 import {planFacadeTrims} from "./facade-trims";
+import {selectCompleteFaceAsset} from './complete-face-assets';
 import {validateAssembly} from "./modules";
 import {planParkingStalls} from "./parking-stalls";
 import {parkingPlacements} from "./parking-placement";
@@ -159,12 +160,22 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   }
   const fixtures=hasFixtures&&spatialRun&&finalBook?measure('fixtures',()=>planFixtures(document,analysis,spatialRun.spatial,finalBook!,spatialRun.solidIndex,parking??[],wallMounts)):undefined;
   report('fixtures',!hasFixtures?'not-applicable':fixtures?'ready':'blocked',...(hasFixtures&&!fixtures?['SPATIAL_PLAN_NOT_READY']:[]));
-  const trims=contextual&&spatialRun&&finalBook&&(!hasFixtures||fixtures)?measure('attachments',()=>planFacadeTrims(document,analysis.surfaces,vertical,preflight,generated.flatMap(r=>r.traces),finalBook!)):undefined;
+  const trims=contextual&&spatialRun&&finalBook&&(!hasFixtures||fixtures)?measure('attachments',()=>planFacadeTrims(document,analysis.surfaces,vertical,preflight,finalBook!)):undefined;
   report('attachments',!contextual?'not-applicable':trims?'ready':'blocked',...(contextual&&!trims?['FIXTURE_PLAN_NOT_READY']:[]));
-  for(const generatedResult of generated)if(generatedResult.placements.length){const faces=new Set(generatedResult.surfaces.map(s=>s.faceId));validateAssembly([...faces],generatedResult.placements,trims?.modules.filter(m=>faces.has(m.hostFaceId))??[]);}
+  for(const generatedResult of generated)if(generatedResult.placements.length){const faces=new Set(generatedResult.surfaces.map(s=>s.faceId));validateAssembly([...faces],generatedResult.placements,[]);}
   const stages=order.map(s=>reports.get(s)!);
   if(mode==="complete"&&stages.some(s=>s.state==="blocked"||s.state==="not-implemented")) throw new Error("ENV_PIPELINE_NOT_READY:"+stages.filter(s=>s.state==="blocked"||s.state==="not-implemented").map(s=>s.stage).join(","));
-  const placements=generated.flatMap(r=>r.placements),modules=[...generated.flatMap(r=>r.modules??[]),...(trims?.modules??[])];
+  // The joint planner reserves fixed finish alternatives, then transfers their
+  // ownership to complete faces. Its candidates are not output/render modules.
+  const finishesByFace=new Map<string,NonNullable<typeof trims>['finishes']>();
+  for(const finish of trims?.finishes??[]){const list=finishesByFace.get(finish.hostFaceId)??[];list.push(finish);finishesByFace.set(finish.hostFaceId,list);}
+  const placedFaceIds=new Set(generated.flatMap(r=>r.placements.map(p=>p.faceId)));
+  if([...finishesByFace.keys()].some(id=>!placedFaceIds.has(id)))throw new Error('MISSING_FACE_FINISH_OWNER');
+  const placements=generated.flatMap(r=>r.placements).map(p=>{
+    const finishes=(finishesByFace.get(p.faceId)??[]).sort((a,b)=>a.assetKey<b.assetKey?-1:a.assetKey>b.assetKey?1:0),baseAssetKey=tileLookup.get(p.tileId)!.assetKey;
+    if(finishes.some(f=>f.orientationId!==p.orientationId||f.position2.some((n,a)=>n!==p.position2[a])))throw new Error('INVALID_FACE_FINISH_TRANSFORM');
+    return {...p,faceAssetKey:selectCompleteFaceAsset(baseAssetKey,finishes.map(f=>f.assetKey)),finishIds:finishes.map(f=>f.finishId)};
+  }),modules=generated.flatMap(r=>r.modules??[]);
   const result:GenerationResult={...analysis,status:analysis.diagnostics.length?"degraded":"ok",placements,modules,traces:generated.flatMap(r=>r.traces),
     scenePlacements:[...(fixtures?.placements??[]),...parkingPlacements(parking??[]),...generated.flatMap(r=>r.scenePlacements??[]),...roadPlacements(document.sceneInputs.roads),...(spatialRun?vegetationPlacements(document.grid,{...document.sceneInputs,objects:document.sceneInputs.objects.filter(o=>o.category==='vegetation')},analysis).map(p=>({...p,planId:`vegetation:${p.input!.id}`,sourceRefs:[{kind:'object' as const,id:p.input!.id}],yawQuarterTurns:0 as const,worldBounds16:sceneBounds16(p.center,p.size)})):[])],
     counters:{...analysis.counters,fallbackCount:0,ruleEvaluations:generated.reduce((n,r)=>n+r.counters.ruleEvaluations,0),placementCount:placements.length,moduleCount:modules.filter(m=>m.kind==="structure").length,attachmentCount:modules.filter(m=>m.kind==="attachment").length,ownedFaceCount:generated.reduce((n,r)=>n+(r.counters.ownedFaceCount??0),0)},

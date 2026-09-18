@@ -1,18 +1,19 @@
 import {BASES,faceCenter2,cellId,compareCells,type Surface,type Vec3} from './analysis';
 import type {GenerationDocument} from './document';
 import type {VerticalPlan} from './vertical-design';
-import type {ModulePlacement} from './modules';
-import type {FaceTrace} from './selection';
+import type {Direction} from './analysis';
 import type {RuleSpatialEnvelope} from './rule-spatial-contract';
 import type {Reservation,DecisionTrace} from './environment-contract';
 import {TRIM_ASSETS} from './banded-facade-assets';
 import {BoundsIndex,ReservationBook} from './reservations';
 import {cellBox16,faceBounds16} from './placement-bounds';
 import {assertOutputBounds,envelopeIndex} from './rule-spatial-adapters';
-export interface FacadeTrimPlan {modules:ModulePlacement[];reservations:Reservation[];traces:DecisionTrace[]}
+/** Selected fixed finish on a host face, never an independently renderable module. */
+export interface FacadeFinishSelection {finishId:string;assetKey:string;hostFaceId:string;position2:Vec3;orientationId:Direction;reason:string}
+export interface FacadeTrimPlan {finishes:FacadeFinishSelection[];reservations:Reservation[];traces:DecisionTrace[]}
 interface Edge {boundary:VerticalPlan['boundaries'][number];buildingId:string;host:Surface;kind:'cap'|'belt';cutStart:boolean;cutEnd:boolean}
-export function planFacadeTrims(document:GenerationDocument,surfaces:Surface[],vertical:VerticalPlan[],envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],faceTraces:FaceTrace[],book:ReservationBook):FacadeTrimPlan {
-  const indices=new Map(envelopes.map(e=>[e.buildingId,envelopeIndex(e.envelope,true)])),traceByFace=new Map(faceTraces.map(t=>[t.faceId,t]));
+export function planFacadeTrims(document:GenerationDocument,surfaces:Surface[],vertical:VerticalPlan[],envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],book:ReservationBook):FacadeTrimPlan {
+  const indices=new Map(envelopes.map(e=>[e.buildingId,envelopeIndex(e.envelope,true)]));
   const faces=new Map(surfaces.map(s=>[s.faceId,s])),raw=new BoundsIndex<string>();for(const c of document.grid)raw.add(cellBox16(c),cellId(c));
   const edges:Edge[]=vertical.flatMap(v=>v.boundaries.map(boundary=>({boundary,buildingId:v.buildingId,host:faces.get(boundary.hostFaceId)!,kind:boundary.kind==='local-cap'?'cap' as const:'belt' as const,cutStart:false,cutEnd:false}))),endpoints=new Map<string,{edge:Edge;side:-1|1}[]>();
   for(const edge of edges)for(const point of [edge.boundary.edgeStart2,edge.boundary.edgeEnd2]){
@@ -33,7 +34,7 @@ export function planFacadeTrims(document:GenerationDocument,surfaces:Surface[],v
   for(const edge of edges)candidates.push({edge,asset:`trim.${edge.kind}.${edge.cutStart&&edge.cutEnd?'both':edge.cutStart?'start':edge.cutEnd?'end':'plain'}`,id:`trim:${edge.buildingId}:${edge.boundary.id}`});
   const rank=(e:Edge)=>e.boundary.kind==='local-cap'?3:e.boundary.kind==='crown-belt'?2:1;
   candidates.sort((a,b)=>rank(b.edge)-rank(a.edge)||compareCells(a.edge.boundary.edgeStart2,b.edge.boundary.edgeStart2)||compareCells(a.edge.boundary.edgeEnd2,b.edge.boundary.edgeEnd2)||(a.id<b.id?-1:1));
-  const modules:ModulePlacement[]=[],reservations:Reservation[]=[],traces=new Map<string,DecisionTrace>();
+  const finishes:FacadeFinishSelection[]=[],reservations:Reservation[]=[],traces=new Map<string,DecisionTrace>();
   for(const candidate of candidates){
     const {edge,asset,id}=candidate,descriptor=TRIM_ASSETS[asset];if(!descriptor)throw new Error('RULE_OUTPUT_BOUNDS_UNKNOWN');
     const position2=faceCenter2(edge.host.cell,edge.host.direction),boxes=descriptor.boxes16.map(box=>faceBounds16(box,position2,edge.host.direction)),envelope=envelopes.find(e=>e.buildingId===edge.buildingId)!.envelope;
@@ -45,7 +46,7 @@ export function planFacadeTrims(document:GenerationDocument,surfaces:Surface[],v
     trace.candidates.push({candidateId:id,accepted:reserved.accepted,reasonCodes:reserved.accepted?[]:['ATTACHMENT_CLEARANCE_CONFLICT'],conflictIds:reserved.conflictIds,metrics:{asset,host:edge.host.faceId,kind:edge.boundary.kind}});
     if(!reserved.accepted)continue;
     reservations.push(proposal);trace.selectedIds.push(id);
-    modules.push({moduleId:id,assetKey:asset,kind:'attachment',faceIds:[],hostFaceId:edge.host.faceId,position2,orientationId:edge.host.direction,scale16:[16,16,16],palette:traceByFace.get(edge.host.faceId)?.architecture?.palette??'clay',ruleId:'attachment.planned-trim',reason:`${edge.boundary.kind}; ${descriptor.jointFamily}; shared world-edge owner`});
+    finishes.push({finishId:id,assetKey:asset,hostFaceId:edge.host.faceId,position2,orientationId:edge.host.direction,reason:`${edge.boundary.kind}; ${descriptor.jointFamily}; shared world-edge owner`});
   }
-  return {modules,reservations,traces:[...traces.values()]};
+  return {finishes,reservations,traces:[...traces.values()]};
 }

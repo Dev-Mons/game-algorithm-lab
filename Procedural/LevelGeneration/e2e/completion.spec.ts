@@ -37,7 +37,8 @@ test("current styles, city generation and save/load work together", async ({
     result = generateDocument(doc);
   expect(doc.schemaVersion).toBe(5);
   expect(result.status).toBe("ok");
-  expect(result.modules!.length).toBeGreaterThan(0);
+  expect(result.modules).toEqual([]);
+  expect(result.placements.some(p=>p.finishIds?.length)).toBe(true);
   validateAssembly(
     result.surfaces.map((s) => s.faceId),
     result.placements,

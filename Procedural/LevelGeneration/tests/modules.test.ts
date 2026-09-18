@@ -27,7 +27,7 @@ it("every authored face asset respects its unit footprint and declared relief li
     ),
   )) {
     const parts = buildCraftedGeometry(key);
-    for (const geometry of [parts.panel, parts.relief].filter(Boolean)) {
+    for (const geometry of [parts]) {
       const p = geometry!.getAttribute("position");
       for (let i = 0; i < p.count; i++) {
         expect(Math.abs(p.getX(i))).toBeLessThanOrEqual(0.5);
@@ -43,7 +43,7 @@ it('current structure has exactly one owner for every external face',()=>{for(co
 it("actual shared geometry stays inside declared bounds and roofs have no internal bottom", () => {
   for (const asset of MODULE_ASSETS) {
     const parts = buildCraftedGeometry(asset.assetKey);
-    for (const g of [parts.panel, parts.relief].filter(Boolean)) {
+    for (const g of [parts]) {
       const pos = g!.getAttribute("position");
       for (let i = 0; i < pos.count; i++)
         for (let a = 0; a < 3; a++) {
@@ -63,10 +63,11 @@ it("actual shared geometry stays inside declared bounds and roofs have no intern
 it("3D relief never penetrates an occupied cell and keeps roof/wall boundary coordinates", () => {
   const result = generateDocument(createDocument(FIXTURES.terrace.cells)),
     occupied = new Set(result.cells.map((c) => c.join(",")));
-  for (const m of result.modules!) {
+  expect(result.placements.length).toBeGreaterThan(0);
+  for (const m of result.placements.map(p=>({...p,assetKey:p.faceAssetKey!,scale16:[16,16,16]}))) {
     const parts = buildCraftedGeometry(m.assetKey),
       basis = BASES[m.orientationId];
-    for (const geometry of [parts.panel, parts.relief].filter(Boolean)) {
+    for (const geometry of [parts]) {
       const p = geometry!.getAttribute("position");
       // Vertex samples moved a tiny amount toward the neighboring vertices, away from cell boundaries.
       const index = geometry!.getIndex();

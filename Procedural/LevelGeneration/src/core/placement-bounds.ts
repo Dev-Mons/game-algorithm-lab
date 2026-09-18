@@ -4,11 +4,18 @@ import { cloneJSON } from "./canonical";
 import type { ScenePlacement } from "./scene-inputs";
 import {FACADE_ASSETS} from './facade-assets';
 import {TRIM_ASSETS} from './banded-facade-assets';
+import {completeFaceAsset} from './complete-face-assets';
 
 const faceDescriptors=new Map<string,Box16>();
 export function registerFaceAssetBounds(assetKey:string,bounds16:Box16){if(faceDescriptors.has(assetKey))throw new Error('DUPLICATE_ASSET_BOUNDS');faceDescriptors.set(assetKey,cloneJSON(validateBox16(bounds16)));}
-export const hasFaceAssetBounds=(assetKey:string)=>faceDescriptors.has(assetKey);
-export function faceAssetBounds(assetKey:string):Box16 {const descriptor=faceDescriptors.get(assetKey);if(!descriptor)throw new Error(`RULE_OUTPUT_BOUNDS_UNKNOWN:${assetKey}`);return cloneJSON(descriptor);}
+export const hasFaceAssetBounds=(assetKey:string)=>{if(faceDescriptors.has(assetKey))return true;try{faceAssetBounds(assetKey);return true;}catch{return false;}};
+export function faceAssetBounds(assetKey:string):Box16 {
+  if(assetKey.startsWith('face-v1|')){
+    const asset=completeFaceAsset(assetKey),bounds=[faceAssetBounds(asset.baseAssetKey),...asset.finishAssetKeys.map(faceAssetBounds)];
+    return {min:[0,1,2].map(a=>Math.min(...bounds.map(b=>b.min[a]))) as Vec3,max:[0,1,2].map(a=>Math.max(...bounds.map(b=>b.max[a]))) as Vec3};
+  }
+  const descriptor=faceDescriptors.get(assetKey);if(!descriptor)throw new Error(`RULE_OUTPUT_BOUNDS_UNKNOWN:${assetKey}`);return cloneJSON(descriptor);
+}
 
 const sceneDescriptors = new Map<string,Box16>();
 /** Bounds of the shared prototype in normalized, centered local coordinates. */
