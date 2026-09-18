@@ -43,6 +43,8 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 코드와 검증 자료
 
+설계·개발 계획과 계약 문서는 [docs 폴더](docs/)에 모았습니다.
+
 - `src/core/environment-generation.ts`: 단일 실행과 단계 상태
 - `src/core/environment-contract.ts`, `environment-settings.ts`, `rule-spatial-*`: 입력·사전 공간·공통 예약 계약
 - `spatial-analysis.ts`, `access-graph.ts`, `reservations.ts`: 실제 접근과 공간 공유
@@ -52,4 +54,4 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 - `environment-editor.ts`, `plan-inspector.ts`, `viewer.ts`: 편집·선택·현재 계획 표시
 - `environment-cache.ts`, `measurement.ts`: 제한 FIFO와 결정적 논리 비용/실제 계측 분리
 
-[스타일 계약](BUILDING_STYLE_PLAN.md), [포팅 계약](PORTING_CONTRACT.md), [이슈별 구현·검증 기록](ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.
+[스타일 계약](docs/BUILDING_STYLE_PLAN.md), [포팅 계약](docs/PORTING_CONTRACT.md), [이슈별 구현·검증 기록](docs/ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.
