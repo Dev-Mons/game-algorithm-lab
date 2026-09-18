@@ -83,8 +83,9 @@ export function chooseFacadePattern(
       )
     )
       reason = "module-set-or-direction";
+    // The repeated group follows the authored start pieces and the alignment filler.
     const prefix = run.level.align
-      ? (((run.anchor - run.start) % p.repeat.length) + p.repeat.length) %
+      ? (((run.anchor - run.start - p.start.length) % p.repeat.length) + p.repeat.length) %
         p.repeat.length
       : 0;
     const repeats = Math.min(

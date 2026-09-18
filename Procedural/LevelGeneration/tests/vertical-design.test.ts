@@ -45,6 +45,31 @@ it('does not rephase unaffected rows when the widest row grows and the component
   const project=(r:typeof a.result)=>r.traces.filter(t=>t.faceId.includes(',4,')).map(t=>({faceId:t.faceId,module:t.facade?.moduleId,phase:t.facade?.phase,palette:t.architecture?.palette}));
   expect(project(b.result)).toEqual(project(a.result));
 });
+it.each([0,-5])('aligns bands with different authored starts at offset %i',offset=>{
+  const style=structuredClone(SHOP_STYLE);
+  style.patterns.find(p=>p.id==='base-rhythm')!.start=['base-pier'];
+  style.patterns.find(p=>p.id==='crown-rhythm')!.start=['crown-pier','crown-pier'];
+  const grid=box(12,8,12).map(([x,y,z])=>[x+offset,y,z+offset] as Vec3);
+  const {result}=selection(grid,createDocument(grid,42,'shop',style));
+  const faces=new Map(result.surfaces.map(s=>[s.faceId,s]));
+  const starts=result.traces.filter(t=>t.facade?.part==='left');
+  for(const direction of ['PX','NX','PZ','NZ'] as const)for(const band of ['base','body','crown'] as const){
+    const rowStarts=starts.filter(t=>t.direction===direction&&t.facade!.level===band);
+    expect(rowStarts.length,`${direction}:${band}`).toBeGreaterThan(0);
+    for(const trace of rowStarts){
+      const face=faces.get(trace.faceId)!,u=face.cell.reduce((n,v,i)=>n+v*BASES[direction].u[i],0);
+      expect(((u-trace.facade!.phase!)%3+3)%3,trace.faceId).toBe(0);
+    }
+  }
+  for(const y of [0,2,7]){
+    const columns=starts.filter(t=>t.direction==='PZ'&&faces.get(t.faceId)!.cell[1]===y)
+      .map(t=>faces.get(t.faceId)!.cell[0]).sort((a,b)=>a-b);
+    expect(columns).toEqual([offset+3,offset+6]);
+  }
+  const moduleAt=(x:number,y:number)=>result.traces.find(t=>t.faceId===`${x+offset},${y},${11+offset}|PZ`)!.facade!.moduleId;
+  expect(moduleAt(1,0)).toBe('base-pier');
+  expect([moduleAt(1,7),moduleAt(2,7)]).toEqual(['crown-pier','crown-pier']);
+});
 it('never clips a connected pair at a missing wall cell',()=>{
   const {result}=selection(box(9,8,3).filter(c=>c.join(',')!=='4,4,2'));
   const groups=new Map<string,string[]>();
