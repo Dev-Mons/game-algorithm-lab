@@ -4,6 +4,7 @@ export type AssetRow='foot'|'repeat'|'head'|'single'|'foot-cap'|'repeat-cap'|'he
 export type AssetPart='single'|'left'|'right'|'pier';
 export type BandedFacadeKey=`facade.banded-${'shop'|'office'}-${AssetBand}-${AssetRow}-${AssetPart}`;
 export interface BandedFacadeAsset {
+  displayRects16?:{minU:number;maxU:number;minV:number;maxV:number;n:number}[];
   structural:boolean;opening16?:{minU:number;maxU:number;minV:number;maxV:number;openLeft:boolean;openRight:boolean};
   opening?:{minX:number;maxX:number;minY:number;maxY:number;openLeft?:boolean;openRight?:boolean};
   reliefBoxes16:Box16[];bounds16:Box16;pierWidth16?:number;railWidth16:number;

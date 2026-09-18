@@ -34,7 +34,7 @@ const intersects=(a:Box16[],b:Box16[])=>a.some(x=>b.some(y=>boxesOverlap(x,y)));
 function occupiedCells(box:Box16):Vec3[]{const cells:Vec3[]=[];for(let x=Math.floor(box.min[0]/16);x<Math.ceil(box.max[0]/16);x++)for(let y=Math.floor(box.min[1]/16);y<Math.ceil(box.max[1]/16);y++)for(let z=Math.floor(box.min[2]/16);z<Math.ceil(box.max[2]/16);z++)cells.push([x,y,z]);return cells;}
 function makePatches(document:GenerationDocument,analysis:VolumeAnalysis):Patch[]{
   const groups=new Map<string,Patch>();
-  for(const input of document.sceneInputs.objects){if(input.category==='vegetation')continue;let context:ReturnType<typeof objectContext>;
+  for(const input of document.sceneInputs.objects){if(input.category==='vegetation'||input.facilityKind)continue;let context:ReturnType<typeof objectContext>;
     try{context=objectContext(input,document.grid,document.sceneInputs.roads,analysis);}catch{continue;}
     const support=context==='roof'?'roof':context==='wall'?'wall':'ground',footY=Math.min(...input.cells.map(c=>c[1])),key=`${input.category}:${input.direction}:${support}:${footY}`;
     const patch=groups.get(key)??{category:input.category,direction:input.direction,support,footY,columns:[],inputs:[],volume:new Set<string>()};

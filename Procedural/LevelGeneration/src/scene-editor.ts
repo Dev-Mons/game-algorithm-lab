@@ -87,6 +87,7 @@ export function editObjects(
   selection: SurfaceSelection,
   category: ObjectCategory,
   mode: "add" | "remove",
+  options:Pick<ObjectInput,'facilityKind'|'facadeRequest'>={},
 ) {
   const inputs = document.sceneInputs ?? {
     version: 2 as const,
@@ -118,11 +119,12 @@ export function editObjects(
     for (const cell of targets) {
       const behind = add(cell, normal.map((n) => -n) as Vec3),
         owner = owners.get(cellId(behind));
-      if (owner && owner.category !== category)
+      if (owner && (owner.category !== category||owner.facilityKind!==options.facilityKind||owner.facadeRequest!==options.facadeRequest))
         throw new Error(
           "다른 카테고리 위에는 쌓을 수 없습니다. 같은 카테고리를 선택하세요.",
         );
       if (owner) affected.add(owner);
+      if(options.facilityKind)for(const d of [BASES[selection.direction].u,[0,1,0] as Vec3])for(const sign of [-1,1]){const neighbor=owners.get(cellId(add(cell,d.map(n=>n*sign) as Vec3)));if(neighbor?.direction===selection.direction&&neighbor.facilityKind===options.facilityKind&&neighbor.facadeRequest===options.facadeRequest)affected.add(neighbor);}
       const direction = owner?.direction ?? selection.direction;
       const list = additions.get(direction) ?? [];
       list.push(cell);
@@ -136,28 +138,30 @@ export function editObjects(
       category: ObjectCategory;
       direction: ObjectInput["direction"];
       cells: Vec3[];
+      options:Pick<ObjectInput,'facilityKind'|'facadeRequest'>;
     }
   >();
   const group = (
     category: ObjectCategory,
     direction: ObjectInput["direction"],
+    options:Pick<ObjectInput,'facilityKind'|'facadeRequest'>,
   ) => {
-    const key = `${category}:${direction}`;
+    const key = `${category}:${direction}:${options.facilityKind??''}:${options.facadeRequest??''}`;
     let value = groups.get(key);
     if (!value) {
-      value = { category, direction, cells: [] };
+      value = { category, direction, cells: [],options };
       groups.set(key, value);
     }
     return value;
   };
   for (const object of affected)
-    group(object.category, object.direction).cells.push(
+    group(object.category, object.direction,{...(object.facilityKind?{facilityKind:object.facilityKind}:{}),...(object.facadeRequest?{facadeRequest:object.facadeRequest}:{})}).cells.push(
       ...object.cells.filter(
         (c) => mode !== "remove" || !removed.has(cellId(c)),
       ),
     );
   for (const [direction, cells] of additions)
-    group(category, direction).cells.push(...cells);
+    group(category, direction,options).cells.push(...cells);
   const objects = inputs.objects.filter((o) => !affected.has(o));
   const usedIds = new Set(objects.map((o) => o.id));
   for (const value of groups.values())
@@ -170,6 +174,7 @@ export function editObjects(
       for (let i = 1; usedIds.has(fragment.id); i++)
         fragment.id = `${baseId}:${i}`;
       usedIds.add(fragment.id);
+      Object.assign(fragment,value.options);
       objects.push(fragment);
     }
   const next = replaceSceneInputs(document, {

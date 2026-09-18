@@ -41,6 +41,9 @@ export function applyEnvironmentEdit(document:GenerationDocument,command:Environ
   }else if(command.kind==='building-design'){
     const building=next.buildings.find(b=>b.componentId===command.targetId);if(!building)throw new Error('UNKNOWN_BUILDING');
     if(command.settingPath==='use')building.design.use=command.value as typeof building.design.use;
+    else if(command.settingPath==='designSeed')building.design.designSeed=command.value as number;
+    else if(command.settingPath==='columnMode')building.design.columnMode=command.value as typeof building.design.columnMode;
+    else if(command.settingPath?.startsWith('overrides.')){building.design.overrides??={};setPath(building.design,command.settingPath,command.value,['overrides.programId','overrides.familyId','overrides.palette']);}
     else {
       building.theme??=cloneJSON(next.buildingDefinition);
       if(!command.settingPath?.startsWith('bandPolicy.'))throw new Error('UNKNOWN_SETTING');

@@ -21,6 +21,7 @@ import type {SourceRef} from './core/environment-contract';
 import {rankSourceHits,type SourceHit} from './environment-editor';
 import {buildingComponents} from './core/buildings';
 import {createParkingArrowGeometry} from './parking-geometry';
+import {WallFacilityGeometryLibrary} from './wall-facility-geometry';
 import {FixtureGeometryLibrary} from './fixture-geometry';
 
 export const ROLE_COLORS = {
@@ -37,7 +38,7 @@ export type Layer =
   | "normals"
   | "regions";
 export class Viewer {
-  get geometryCacheEntries(){return this.crafted.size+this.fixtures.size+this.vegetation.size+this.assets.size+this.sceneMaterials.size+this.environmentPreview.inputs.children.length+(this.parkingArrow?1:0);}
+  get geometryCacheEntries(){return this.crafted.size+this.fixtures.size+this.wallFacilities.size+this.vegetation.size+this.assets.size+this.sceneMaterials.size+this.environmentPreview.inputs.children.length+(this.parkingArrow?1:0);}
   projectCell(cell:Vec3){this.camera.updateMatrixWorld();const p=new THREE.Vector3(cell[0]+.5,cell[1],cell[2]+.5).add(this.displayOrigin).project(this.camera),r=this.renderer.domElement.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
 
   private inputDocument?: GenerationDocument;
@@ -63,6 +64,7 @@ export class Viewer {
   private cube = new THREE.BoxGeometry(1, 1, 1);
   private parkingArrow?:THREE.BufferGeometry;
   private fixtures=new FixtureGeometryLibrary();
+  private wallFacilities=new WallFacilityGeometryLibrary();
   private vegetation = new VegetationGeometryLibrary();
   private assets = new PanelAssets();
   private crafted = new CraftedGeometryLibrary();
@@ -370,7 +372,7 @@ export class Viewer {
     const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
     for(const placements of sceneBatches.values()){
       const p=placements[0];let material=this.sceneMaterials.get(p.color);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8});this.sceneMaterials.set(p.color,material);}
-      const vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=vegetationGeometry??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):this.cube);
+      const vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=vegetationGeometry??this.wallFacilities.get(p.asset)??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):this.cube);
       const mesh=new THREE.InstancedMesh(geometry,vegetationGeometry?this.vegetation.material:material,placements.length);
       placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
       mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.scenePlacement=p;mesh.userData.scenePlacements=placements;mesh.computeBoundingSphere();this.scenePlacements.add(mesh);
@@ -571,6 +573,7 @@ export class Viewer {
     this.cube.dispose();
     this.parkingArrow?.dispose();
     this.fixtures.dispose();
+    this.wallFacilities.dispose();
     this.selection.geometry.dispose();
     this.selectedMaterial.dispose();
     this.grid.dispose();

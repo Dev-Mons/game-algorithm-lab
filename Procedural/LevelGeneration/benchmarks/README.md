@@ -47,3 +47,9 @@ Production artifact SHA256: `c8df65a6c6c45c4c93b7f7b6afc04d0a8a588f4588ce10abee2
 브라우저: 153.0.8010.12; CPU: AMD Ryzen 9 7950X 16-Core Processor; OS: win32 10.0.26200.
 
 같은 production build의 cold 100회, warm 측정250회(별도 준비50회), 독립 첫 편집120회를 기록했습니다. 도로 추가는 R30 양성 유용성을 재검증하고, 도로 삭제는 NO_ROAD_GATE/구획 제거/입력 보존을 확인합니다. 영역 편집은 120/168셀 제거, anchor/ID/도로 보존, 잔류 생성물 없음과 모든 구획 proof를 확인합니다.
+
+## Issue #29 도시형 건물
+
+`npm run measure:urban`은 Node 생성기의 27개 Style/Seed/매스 표본, 최대 32³ solid, 정책 임계값 비교와 한 칸 삭제 영향 범위를 `urban-generation.json`에 기록합니다. 입력마다 1회이며 Viewer를 제외한 관측값입니다.
+
+`npm run build` 후 `npx playwright test e2e/urban-measure.spec.ts --grep "@measure"`는 기존 업무형과 도시형 업무형의 동일 32³ 볼륨을 비교합니다. 각 스타일의 새 context 최초 20회, 준비 10회 후 반복 50회를 `urban-browser-performance.json`에 기록합니다. 기존 cold 500ms / warm 250ms 기준은 보고서 행의 `passed`에서 판정하며, 테스트 통과 자체는 성능 합격을 의미하지 않습니다. GPU 완료와 paint는 측정 범위 밖입니다. 세부 계약과 결과는 [구현 기록](../docs/URBAN_BUILDINGS_29.md)을 참조하세요.

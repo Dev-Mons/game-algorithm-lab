@@ -1,4 +1,4 @@
-import {contextualBase,contextualOutput,contextualTemplates} from './contextual-building-rule';
+import {contextualBase,contextualOutput,contextualTemplates,contextualTemplateDependencies} from './contextual-building-rule';
 import type {BuildingRuleInput} from './building-rule-contract';
 import {environmentCache,type EnvironmentCache,type ExecutionTelemetry} from './environment-cache';
 import {cloneJSON,immutableJSON} from './canonical';
@@ -16,6 +16,9 @@ import {planParkingCirculation} from "./parking-circulation";
 import {vegetationPlacements} from "./scene-inputs";
 import {sceneBounds16} from "./placement-bounds";
 import {planVertical} from "./vertical-design";
+import {planFacade} from './facade-plan';
+import {planWallFacilities} from './wall-facilities';
+import {planColumns} from './column-prototype';
 import {faceBounds16} from "./placement-bounds";
 import {faceCenter2} from "./analysis";
 import {analyzeSpatial} from "./spatial-analysis";
@@ -119,6 +122,13 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   report("fixtures",hasFixtures?"blocked":"not-applicable",...(hasFixtures?["FIXTURE_PLAN_NOT_IMPLEMENTED"]:[]));
   report("attachments",contextual?"blocked":"not-applicable",...(contextual?["ATTACHMENT_PLAN_NOT_IMPLEMENTED"]:[]));
   const tileLookup=new Map(document.catalog.tiles.map(t=>[t.tileId,t]));
+  const portalFacesForFacilities=new Set(entrances.flatMap(e=>e.entrances.flatMap(p=>p.faceIds)));
+  const wallFacilities=finalBook?planWallFacilities(document,analysis.surfaces,vertical,portalFacesForFacilities,finalBook):undefined;
+  const facadeFixed=new Set([...portalFacesForFacilities,...(wallFacilities?.changes.map(c=>c.faceId)??[])]);
+  const columnFixed=new Set([...facadeFixed,...(wallFacilities?.groups.filter(g=>g.accepted).flatMap(g=>g.faceIds)??[])]);
+  const columns=vertical.map(v=>{const b=document.buildings.find(b=>b.componentId===v.buildingId)!,style=b.theme??document.buildingDefinition;return planColumns(v.buildingId,components.find(c=>c.id===v.buildingId)!.cells,analysis.surfaces,b.design.columnMode??(style.programs?'auto':'building'),columnFixed);});
+  const columnFaces=new Set(columns.flatMap(c=>c.faces.map(f=>f.faceId)));columnFaces.forEach(id=>facadeFixed.add(id));
+  const facades=vertical.flatMap(v=>{const style=document.buildings.find(b=>b.componentId===v.buildingId)!.theme??document.buildingDefinition;return style.facadeGrammar?[planFacade(analysis.surfaces,v,style.facadeGrammar,facadeFixed)]:[];});
   const generated:GenerationResult[]=[];
   measure("facade",()=>{
     for(const component of components) {
@@ -128,9 +138,9 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
       const part={...analysis,...(entry.rule.id==='standard-contextual'?{cells:component.cells,features:[]}:{}),surfaces:analysis.surfaces.filter(s=>s.componentId===component.id),regions:analysis.regions?.filter(r=>r.componentId===component.id)};
       const currentVertical=vertical.find(v=>v.buildingId===component.id),currentEntrances=entrances.find(e=>e.buildingId===component.id);
       const geometryVertical=currentVertical?(({traces,...plan})=>plan)(currentVertical):undefined,geometryEntrances=currentEntrances?(({traces,reservations,...plan})=>plan)(currentEntrances):undefined;
-      const ruleInput:BuildingRuleInput={componentId:component.id,cells:component.cells,analysis:part,options:{...documentOptions(document),architecture:entry.theme??document.buildingDefinition},metadata:entry.rule.metadata,context:{design:entry.design,sourceRefs:[{kind:"building",id:component.id}],reservations:finalBook?.snapshot(entry.rule.id==='standard-contextual'?new Set([`solid:building:${component.id}`]):undefined)??[],envelope,verticalBands:entry.rule.id==='standard-contextual'?geometryVertical:currentVertical,entrances:entry.rule.id==='standard-contextual'?geometryEntrances:currentEntrances}};
+      const ruleInput:BuildingRuleInput={componentId:component.id,cells:component.cells,analysis:part,options:{...documentOptions(document),architecture:entry.theme??document.buildingDefinition},metadata:entry.rule.metadata,context:{design:entry.design,columns:columns.find(c=>c.buildingId===component.id),facadeChanges:wallFacilities?.changes,facadePlan:facades.find(f=>f.buildingId===component.id),sourceRefs:[{kind:"building",id:component.id}],reservations:finalBook?.snapshot(entry.rule.id==='standard-contextual'?new Set([`solid:building:${component.id}`]):undefined)??[],envelope,verticalBands:entry.rule.id==='standard-contextual'?geometryVertical:currentVertical,entrances:entry.rule.id==='standard-contextual'?geometryEntrances:currentEntrances}};
       immutableJSON(ruleInput);
-      const key=entry.rule.id==='standard-contextual'?cache?.key('building-panels',{rule:entry.rule,adapter:entry.spatialAdapterRef,input:ruleInput}):undefined;
+      const key=entry.rule.id==='standard-contextual'?cache?.key('building-panels',{rule:entry.rule,adapter:entry.spatialAdapterRef,input:contextualTemplateDependencies(ruleInput)}):undefined;
       let base=key?cache!.get<ReturnType<typeof contextualTemplates>>(key):undefined;
       if(entry.rule.id==='standard-contextual'&&!base){base=contextualTemplates(ruleInput);if(key)cache!.putImmutable(key,base);}
       const result:GenerationResult=base?contextualOutput(ruleInput,contextualBase(ruleInput,base)):resolveBuildingRule(entry.rule).generate(ruleInput);
@@ -160,7 +170,7 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   }
   const fixtures=hasFixtures&&spatialRun&&finalBook?measure('fixtures',()=>planFixtures(document,analysis,spatialRun.spatial,finalBook!,spatialRun.solidIndex,parking??[],wallMounts)):undefined;
   report('fixtures',!hasFixtures?'not-applicable':fixtures?'ready':'blocked',...(hasFixtures&&!fixtures?['SPATIAL_PLAN_NOT_READY']:[]));
-  const trims=contextual&&spatialRun&&finalBook&&(!hasFixtures||fixtures)?measure('attachments',()=>planFacadeTrims(document,analysis.surfaces,vertical,preflight,finalBook!)):undefined;
+  const trims=contextual&&spatialRun&&finalBook&&(!hasFixtures||fixtures)?measure('attachments',()=>planFacadeTrims(document,analysis.surfaces,vertical.map(v=>({...v,boundaries:v.boundaries.filter(b=>!columnFaces.has(b.hostFaceId))})),preflight,finalBook!)):undefined;
   report('attachments',!contextual?'not-applicable':trims?'ready':'blocked',...(contextual&&!trims?['FIXTURE_PLAN_NOT_READY']:[]));
   for(const generatedResult of generated)if(generatedResult.placements.length){const faces=new Set(generatedResult.surfaces.map(s=>s.faceId));validateAssembly([...faces],generatedResult.placements,[]);}
   const stages=order.map(s=>reports.get(s)!);
@@ -176,16 +186,18 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
     if(finishes.some(f=>f.orientationId!==p.orientationId||f.position2.some((n,a)=>n!==p.position2[a])))throw new Error('INVALID_FACE_FINISH_TRANSFORM');
     return {...p,faceAssetKey:selectCompleteFaceAsset(baseAssetKey,finishes.map(f=>f.assetKey)),finishIds:finishes.map(f=>f.finishId)};
   }),modules=generated.flatMap(r=>r.modules??[]);
+  const zoneColors:Record<string,string>={base:'#edb76c',retail:'#edb76c',body:'#70c5bf',office:'#70c5bf',crown:'#c69be7',upper:'#c69be7',mechanical:'#9babb5'};
+  const verticalOverlays=vertical.flatMap(v=>(v.zones??v.bands.map(b=>({id:`band:${v.buildingId}:${b.band}`,sectionId:b.band,faceIds:v.faceBands.filter(f=>f.band===b.band).map(f=>f.faceId)}))).map(z=>({id:z.id,sourceRefs:[{kind:'building' as const,id:v.buildingId}],boxes16:z.faceIds.map(id=>{const s=faceLookup.get(id)!;return faceBounds16({min:[-8,-8,0],max:[8,8,1]},faceCenter2(s.cell,s.direction),s.direction);}),color:zoneColors[z.sectionId]??'#99b6c5'})));
   const result:GenerationResult={...analysis,status:analysis.diagnostics.length?"degraded":"ok",placements,modules,traces:generated.flatMap(r=>r.traces),
-    scenePlacements:[...(fixtures?.placements??[]),...parkingPlacements(parking??[]),...generated.flatMap(r=>r.scenePlacements??[]),...roadPlacements(document.sceneInputs.roads),...(spatialRun?vegetationPlacements(document.grid,{...document.sceneInputs,objects:document.sceneInputs.objects.filter(o=>o.category==='vegetation')},analysis).map(p=>({...p,planId:`vegetation:${p.input!.id}`,sourceRefs:[{kind:'object' as const,id:p.input!.id}],yawQuarterTurns:0 as const,worldBounds16:sceneBounds16(p.center,p.size)})):[])],
+    scenePlacements:[...(wallFacilities?.placements??[]),...(fixtures?.placements??[]),...parkingPlacements(parking??[]),...generated.flatMap(r=>r.scenePlacements??[]),...roadPlacements(document.sceneInputs.roads),...(spatialRun?vegetationPlacements(document.grid,{...document.sceneInputs,objects:document.sceneInputs.objects.filter(o=>o.category==='vegetation')},analysis).map(p=>({...p,planId:`vegetation:${p.input!.id}`,sourceRefs:[{kind:'object' as const,id:p.input!.id}],yawQuarterTurns:0 as const,worldBounds16:sceneBounds16(p.center,p.size)})):[])],
     counters:{...analysis.counters,fallbackCount:0,ruleEvaluations:generated.reduce((n,r)=>n+r.counters.ruleEvaluations,0),placementCount:placements.length,moduleCount:modules.filter(m=>m.kind==="structure").length,attachmentCount:modules.filter(m=>m.kind==="attachment").length,ownedFaceCount:generated.reduce((n,r)=>n+(r.counters.ownedFaceCount??0),0)},
-    environment:{stages,preflight,vertical,entrances,...(fixtures?{fixtures}:{}),...(parking?{parking}:{}),...(circulation?{parkingCirculation:circulation.areas}:{}),reservations:finalBook?.snapshot()??[],
+    environment:{stages,preflight,vertical,facades,wallFacilities,columns,entrances,...(fixtures?{fixtures}:{}),...(parking?{parking}:{}),...(circulation?{parkingCirculation:circulation.areas}:{}),reservations:finalBook?.snapshot()??[],
       ...(spatialRun?{spatial:spatialRun.spatial}:{}),
       overlays:[...entrances.flatMap(p=>p.entrances.map(e=>({id:e.id,sourceRefs:[{kind:"building" as const,id:p.buildingId}],path:e.pathCells,color:"#f6d968"}))),...(circulation?.areas??[]).flatMap(a=>a.components.flatMap(p=>[
       {id:`aisle:${p.componentKey}`,sourceRefs:[{kind:'parking' as const,id:a.areaId}],boxes16:p.aisleCells.map(c=>({min:[c[0]*16,0,c[2]*16] as [number,number,number],max:[(c[0]+1)*16,1,(c[2]+1)*16] as [number,number,number]})),color:'#ec9866'},
       {id:`walk:${p.componentKey}`,sourceRefs:[{kind:'parking' as const,id:a.areaId}],boxes16:p.walkCells.map(c=>({min:[c[0]*16,1,c[2]*16] as [number,number,number],max:[(c[0]+1)*16,2,(c[2]+1)*16] as [number,number,number]})),color:'#83cfb9'},
-      ...p.gates.map(g=>({id:g.id,sourceRefs:[{kind:'parking' as const,id:a.areaId}],path:g.openingCells,color:'#fff082'}))])),...vertical.flatMap(v=>v.bands.map(b=>({id:`band:${v.buildingId}:${b.band}`,sourceRefs:[{kind:'building' as const,id:v.buildingId}],boxes16:analysis.surfaces.filter(s=>s.componentId===v.buildingId&&s.role==='wall'&&s.cell[1]>=b.yMin&&s.cell[1]<b.yMaxExclusive).map(s=>faceBounds16({min:[-8,-8,0],max:[8,8,1]},faceCenter2(s.cell,s.direction),s.direction)),color:({base:'#edb76c',body:'#70c5bf',crown:'#c69be7'})[b.band]}))),...probes.filter(p=>p.access.reachable).map(p=>({id:`access:${p.ref.id}`,sourceRefs:[p.ref],path:p.access.path,color:'#ffe887'}))],
-      traces:[...(fixtures?.traces??[]),...(trims?.traces??[]),...(parking??[]).flatMap(a=>a.plans.flatMap(p=>p.traces)),...entrances.flatMap(p=>p.traces),...(circulation?.areas??[]).flatMap(a=>a.components.flatMap(c=>c.traces)),...vertical.flatMap(v=>v.traces),...probes.map(p=>({id:`access:${p.ref.id}`,ownerId:p.ref.id,ruleId:'spatial-access',ruleVersion:'1.0.0',sourceRefs:[p.ref],selectedIds:p.access.reachable?[cellId(p.cell)]:[],candidates:[{candidateId:cellId(p.cell),accepted:p.access.reachable,reasonCodes:p.access.reasonCodes,metrics:{distance:p.access.distanceCells??-1},conflictIds:[]}]}))],
+      ...p.gates.map(g=>({id:g.id,sourceRefs:[{kind:'parking' as const,id:a.areaId}],path:g.openingCells,color:'#fff082'}))])),...verticalOverlays,...probes.filter(p=>p.access.reachable).map(p=>({id:`access:${p.ref.id}`,sourceRefs:[p.ref],path:p.access.path,color:'#ffe887'}))],
+      traces:[...(wallFacilities?.traces??[]),...(fixtures?.traces??[]),...(trims?.traces??[]),...(parking??[]).flatMap(a=>a.plans.flatMap(p=>p.traces)),...entrances.flatMap(p=>p.traces),...(circulation?.areas??[]).flatMap(a=>a.components.flatMap(c=>c.traces)),...vertical.flatMap(v=>v.traces),...probes.map(p=>({id:`access:${p.ref.id}`,ownerId:p.ref.id,ruleId:'spatial-access',ruleVersion:'1.0.0',sourceRefs:[p.ref],selectedIds:p.access.reachable?[cellId(p.cell)]:[],candidates:[{candidateId:cellId(p.cell),accepted:p.access.reachable,reasonCodes:p.access.reasonCodes,metrics:{distance:p.access.distanceCells??-1},conflictIds:[]}]}))],
       counters:{preflightCalls,generationCalls:1}}};
   options.telemetry?.({cacheStats:cache?.stats()??{hits:0,misses:0,writes:0,evictions:0,entries:0,bytes:0},actualExpansions,logicalExpansions:(circulation?.areas??[]).reduce((n,a)=>n+a.components.reduce((v,c)=>v+c.counters.stateExpansions,0),0)+(parking??[]).reduce((n,a)=>n+a.plans.reduce((v,p)=>v+p.counters.stateExpansions,0),0),layoutTrials:(circulation?.areas??[]).reduce((n,a)=>n+a.components.reduce((v,c)=>v+c.counters.layoutCandidates,0),0)});
   return {mode,stages,result};

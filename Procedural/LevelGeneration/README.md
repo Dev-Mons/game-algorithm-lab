@@ -13,7 +13,7 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 입력과 실행
 
-현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2 / catalog 3**입니다. 동일 schema의 catalog 2 문서는 기존 메타데이터를 검증한 뒤 catalog 3으로 읽으며, 저장된 스타일 정의는 유지합니다. 그 외 구버전 로더나 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
+현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2 / catalog 4**입니다. 동일 schema의 catalog 2/3 문서는 기존 메타데이터를 검증한 뒤 catalog 4으로 읽으며, 저장된 스타일 정의는 유지합니다. 그 외 구버전 로더나 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
 
 실행 순서는 외피 분석·수직 구간·rule preflight → 공간과 공공 보행900 → 차량 동선800 → 출입구·보행700 → 주차 구획600 → 필수 구조 → 시설500~300 → 선택 마감200 → 검증과 Viewer입니다. 도로·주차만 있거나 건물0개인 문서도 같은 경로를 사용합니다. 실제 미구현 단계는 성공한 빈 계획으로 대체하지 않습니다.
 
@@ -42,6 +42,10 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 차량은 폭1×길이2셀, 회전은 전체4×4 sweep와 정확한 역회전입니다. 주차 입력당 차로150만/구획50만 expansion, 전체 layout trial128이며 구획 검증 상한을 탐색 전에 보호합니다. 다른 구획을 비어 있다고 가정하지 않습니다. 이 모델은 게임용 격자 모델이며 실제 법규·연속 차량 운동학 모델이 아닙니다.
 
 시설물은 절대 좌표 슬롯·빈 슬롯·방향·문맥·이용 공간·간격·최대2개 군집으로 계획합니다. 도로 없는 식생 휴식 지점의 local-only와 옥상/벽의 service-unverified는 public 접근과 구분합니다.
+
+## 도시형 건물 프로그램 (#29)
+
+건축 스타일의 도시형 상가/업무 프리셋은 보존된 건물 Seed로 수직 프로그램, 매스별 로컬 상층, 다층 프레임을 생성합니다. 외벽 시설 종류와 선택적 솔리드 변경, 세로 기둥 표시 해석도 같은 공간·면 소유 계약을 사용합니다. 기존 상가형/업무형은 유지합니다. 사용법·계약·단계별 검증·한계는 [구현 기록](docs/URBAN_BUILDINGS_29.md), 실제 측정은 [urban-generation.json](benchmarks/urban-generation.json)에 있습니다. `npm run measure:urban`으로 재현합니다.
 
 ## 코드와 검증 자료
 

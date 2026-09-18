@@ -22,7 +22,7 @@ export function buildingComponents(input: Vec3[]) {
   }
   return result;
 }
-export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[], defaultUse: BuildingUse = "generic"): ResolvedBuildingMetadata[] {
+export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[], defaultUse: BuildingUse = "generic",seed=0): ResolvedBuildingMetadata[] {
   if (!Array.isArray(metadata)) throw new Error("Invalid building metadata.");
   const components=buildingComponents(grid),ids = new Set(components.map(c => c.id)), seen = new Set<string>();
   for (const entry of metadata) {
@@ -37,9 +37,12 @@ export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[], de
     const rule = entry?.rule ?? ruleReference("standard-contextual");
     const spatialAdapterRef = entry?.spatialAdapterRef ?? adapterReferenceFor(rule);
     resolveRuleSpatialAdapter(rule, spatialAdapterRef);
-    const design = entry?.design ?? {version:1 as const,use:defaultUse,anchor:component.cells[0]};
-    exactKeys(design,["version","use","anchor"]);
+    const design:BuildingDesignV1 = entry?.design ?? {version:1 as const,use:defaultUse,anchor:component.cells[0],designSeed:seed};
+    exactKeys(design,["version","use","anchor"],['designSeed','overrides','columnMode']);
+    if(design.columnMode!==undefined&&!['auto','building','column'].includes(design.columnMode))throw new Error('INVALID_COLUMN_MODE');
     if (design.version !== 1 || !BUILDING_USES.includes(design.use)) throw new Error("INVALID_BUILDING_DESIGN");
+    if(design.designSeed!==undefined&&(!Number.isInteger(design.designSeed)||design.designSeed<0||design.designSeed>0xffffffff))throw new Error('INVALID_DESIGN_SEED');
+    if(design.overrides!==undefined){exactKeys(design.overrides,[],['programId','familyId','palette']);for(const key of ['programId','familyId'] as const)if(design.overrides[key]!==undefined&&(typeof design.overrides[key]!=='string'||!/^[a-zA-Z0-9_.:-]+$/.test(design.overrides[key] as string)))throw new Error('INVALID_DESIGN_OVERRIDE');if(design.overrides.palette!==undefined&&(typeof design.overrides.palette!=='string'||!['clay','sage','sand'].includes(design.overrides.palette)))throw new Error('INVALID_DESIGN_OVERRIDE');}
     normalizeGrid([design.anchor]);
     return cloneJSON({...entry,componentId:component.id,rule,spatialAdapterRef,design});
   });

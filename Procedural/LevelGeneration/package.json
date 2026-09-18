@@ -11,7 +11,8 @@
     "test": "vitest run tests",
     "verify": "npm run typecheck && npm test && npm run build",
     "test:e2e": "npm run build && playwright test --grep-invert @measure",
-    "measure": "npm run build && playwright test --grep @measure"
+    "measure": "npm run build && playwright test --grep @measure",
+    "measure:urban": "vitest run experiments/urban-generation.test.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

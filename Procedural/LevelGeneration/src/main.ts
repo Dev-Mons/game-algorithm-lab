@@ -9,13 +9,14 @@ import type { AcceptedEditorState } from "./core/environment-generation";
 import type { Timings } from "./measurement";
 import { buildingRules } from "./core/building-rules";
 import { editObjects, editRoads } from "./scene-editor";
-import type { ObjectCategory } from "./core/scene-inputs";
+import type { ObjectCategory, ObjectInput } from "./core/scene-inputs";
 import { setBuildingTheme, setBuildingRule } from "./core/document";
 import { SHOP_STYLE, OFFICE_STYLE } from "./core/building-style";
 import "./style.css";
 import { type Vec3, type GenerationResult } from "./core/generate";
 import {
   createDocument,
+  profileData,
   exportDocument,
   loadDocument,
   replaceGrid,
@@ -445,11 +446,11 @@ viewer.setGroundVisible(true);
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
   <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">왼쪽 드래그로 지면 영역 선택 후 정사각뿔 드래그 또는 E 추가 / Q 제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>왼쪽 드래그로 도로 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 연결과 차선은 자동으로 바뀝니다.</p>
-  <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 식생은 한 층일 때 관목, 높이를 쌓으면 각 칸의 나무가 자랍니다.</p></div>
+  <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><label for="facility-kind">외벽 시설 종류</label><select id="facility-kind"><option value="">자동 지상·옥상 시설</option><option value="balcony">발코니 · 표시용</option><option value="fire-escape">외부 계단 · 표시용</option><option value="elevator">엘리베이터 · 표시용</option></select><label><input id="facility-solid" type="checkbox"> 시설 뒤 외벽을 솔리드로 변경</label><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 식생은 한 층일 때 관목, 높이를 쌓으면 각 칸의 나무가 자랍니다.</p></div>
   <div id="building-guide" class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 · 마지막 블록 중앙에 정사각뿔 표시</span></p><p><b>정사각뿔 드래그</b><span>면 바깥쪽으로 추가 · 안쪽으로 제거</span></p><p><b>E / Q</b><span>선택 영역 한 층 추가 / 제거</span></p><p><b>상부 시점</b><span>핸들을 위로 추가 · 아래로 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
-  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option></select><label for="building-use">용도</label><select id="building-use"><option value="generic">일반</option><option value="retail">상업</option><option value="office">업무</option><option value="residential">주거</option><option value="industrial">산업</option></select><label for="band-setting">수직 디자인</label><select id="band-setting"></select><input id="band-value" type="number"><button id="band-apply">디자인 적용</button><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option><option value="urban-shop">도시형 복합 상가</option><option value="urban-office">도시형 업무</option></select><label for="building-use">용도</label><select id="building-use"><option value="generic">일반</option><option value="retail">상업</option><option value="office">업무</option><option value="residential">주거</option><option value="industrial">산업</option></select><label for="band-setting">수직 디자인</label><select id="band-setting"></select><input id="band-value" type="number"><button id="band-apply">디자인 적용</button><label for="building-design-seed">건물 디자인 Seed</label><input id="building-design-seed" type="number" min="0" max="4294967295"><label for="building-column">세로 기둥 해석</label><select id="building-column"><option value="auto">지지 접합이 있는 줄만 자동</option><option value="building">일반 건물 유지</option><option value="column">고립된 세로 줄을 기둥으로 표시</option></select><div id="urban-overrides"><label for="design-program">수직 프로그램</label><select id="design-program"></select><label for="design-family">입면 bay</label><select id="design-family"></select><label for="design-palette">재료</label><select id="design-palette"><option value="">Seed에서 선택</option><option value="clay">Clay</option><option value="sage">Sage</option><option value="sand">Sand</option></select></div><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
   <details><summary>환경 설정</summary><select id="environment-setting"></select><input id="environment-value" type="number"><button id="environment-apply">설정 적용</button></details>
-  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option></select></label></div>
+  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="urban-shop">도시형 · Retail / Office / Upper</option><option value="urban-office">도시형 · 업무 / 상층 / 설비</option></select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 왼쪽 드래그로 선택한 뒤 정사각뿔 드래그 또는 E / Q로 편집하세요.
 실행 취소 Ctrl+Z · 다시 실행 Ctrl+Shift+Z</p>`;
@@ -472,7 +473,7 @@ el("building-rule").addEventListener("change", () => {
 });
 el("building-theme").addEventListener("change", () => {
   if (!selectedBuilding) return;
-  acceptDocument(setBuildingTheme(currentDocument, selectedBuilding, el<HTMLSelectElement>("building-theme").value === "office" ? OFFICE_STYLE : SHOP_STYLE));
+  acceptDocument(setBuildingTheme(currentDocument, selectedBuilding, profileData(el<HTMLSelectElement>("building-theme").value as Profile).architecture));
 });
 function inputSettings() {
   return {
@@ -492,7 +493,7 @@ function applyGrid(grid: Vec3[], fit = false, resetScene = false) {
         profile === currentDocument.catalog.id
           ? currentDocument.buildingDefinition
           : undefined,
-        resetScene ? undefined : replaceGrid(currentDocument, grid).buildings,
+        resetScene ? undefined : replaceGrid(currentDocument, grid).buildings.map(b=>seed===currentDocument.seed?b:{...b,design:{...b.design,designSeed:seed}}),
         resetScene ? undefined : currentDocument.sceneInputs,
         currentDocument.environment,
       ),
@@ -516,7 +517,7 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
       return commitEnvironmentEdit(command,commandStart)?selection:undefined;
     }
     if (el<HTMLSelectElement>("edit-mode").value === "object") {
-      const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, mode);
+      const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, mode, el<HTMLSelectElement>('object-category').value==='facility'&&el<HTMLSelectElement>('facility-kind').value?{facilityKind:el<HTMLSelectElement>('facility-kind').value as ObjectInput['facilityKind'],...(el<HTMLInputElement>('facility-solid').checked?{facadeRequest:'solid' as const}:{})}:{});
       if (!next.changed) {
         el("edit-note").textContent = mode === "add" ? "추가할 층이 다른 오브젝트와 겹칩니다. 영역을 다시 선택하세요." : "제거할 층이 비어 있습니다. 영역을 유지합니다.";
         return undefined;
@@ -697,7 +698,7 @@ el<HTMLSelectElement>('environment-setting').add(new Option('units.metersPerCell
 el('environment-setting').addEventListener('change',refreshEnvironmentSetting);
 el('environment-apply').addEventListener('click',()=>commitEnvironmentEdit({kind:'setting',settingPath:el<HTMLSelectElement>('environment-setting').value,value:el<HTMLInputElement>('environment-value').value===''?undefined:el<HTMLInputElement>('environment-value').valueAsNumber}));
 for(const key of ['baseRatioPermille.generic','baseRatioPermille.retail','baseRatioPermille.office','baseRatioPermille.residential','baseRatioPermille.industrial','crownRatioPermille','maxBaseCells','maxCrownCells','baseCountOverride','crownCountOverride'])el<HTMLSelectElement>('band-setting').add(new Option(key,`bandPolicy.${key}`));
-function refreshBand(){const b=currentDocument.buildings.find(b=>b.componentId===selectedBuilding);if(!b)return;el<HTMLSelectElement>('building-use').value=b.design.use;let value:unknown=b.theme??currentDocument.buildingDefinition;for(const k of el<HTMLSelectElement>('band-setting').value.split('.'))value=(value as Record<string,unknown>)?.[k];el<HTMLInputElement>('band-value').value=value===undefined?'':String(value);}
+function refreshBand(){const b=currentDocument.buildings.find(b=>b.componentId===selectedBuilding);if(!b)return;const style=b.theme??currentDocument.buildingDefinition;el<HTMLInputElement>('building-design-seed').value=String(b.design.designSeed??0);el<HTMLSelectElement>('building-column').value=b.design.columnMode??(style.programs?'auto':'building');el('urban-overrides').hidden=!style.programs;for(const id of ['band-setting','band-value','band-apply'])el(id).hidden=!!style.programs;el<HTMLSelectElement>('design-program').replaceChildren(new Option('Seed에서 선택',''),...(style.programs??[]).map(p=>new Option(p.id,p.id)));el<HTMLSelectElement>('design-family').replaceChildren(new Option('Seed에서 선택',''),...style.alignedFamilies.map(f=>new Option(f.id,f.id)));el<HTMLSelectElement>('design-program').value=b.design.overrides?.programId??'';el<HTMLSelectElement>('design-family').value=b.design.overrides?.familyId??'';el<HTMLSelectElement>('design-palette').value=b.design.overrides?.palette??'';el<HTMLSelectElement>('building-use').value=b.design.use;let value:unknown=b.theme??currentDocument.buildingDefinition;for(const k of el<HTMLSelectElement>('band-setting').value.split('.'))value=(value as Record<string,unknown>)?.[k];el<HTMLInputElement>('band-value').value=value===undefined?'':String(value);}
 el('band-setting').addEventListener('change',refreshBand);
 el('building-use').addEventListener('change',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:'use',value:el<HTMLSelectElement>('building-use').value});});
 el('band-apply').addEventListener('click',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:el<HTMLSelectElement>('band-setting').value,value:el<HTMLInputElement>('band-value').value===''?undefined:el<HTMLInputElement>('band-value').valueAsNumber});});
@@ -707,3 +708,7 @@ if(!measureMode){startupGenerationCount++;regenerate(true);}else {
  Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),point:(cell:Vec3)=>viewer.projectCell(cell),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
 }
 if (import.meta.hot) import.meta.hot.dispose(() => viewer.dispose());
+
+el('building-design-seed').addEventListener('change',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:'designSeed',value:el<HTMLInputElement>('building-design-seed').valueAsNumber});});
+el('building-column').addEventListener('change',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:'columnMode',value:el<HTMLSelectElement>('building-column').value});});
+for(const [id,key] of [['design-program','programId'],['design-family','familyId'],['design-palette','palette']])el(id).addEventListener('change',()=>{if(selectedBuilding)commitEnvironmentEdit({kind:'building-design',targetId:selectedBuilding,settingPath:`overrides.${key}`,value:el<HTMLSelectElement>(id).value||undefined});});
