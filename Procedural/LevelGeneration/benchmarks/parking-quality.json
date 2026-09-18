@@ -1738,7 +1738,7 @@
         "seed": 42,
         "catalog": {
           "id": "office",
-          "version": 3,
+          "version": 4,
           "tiles": [
             {
               "tileId": "crafted.paving.clay",
@@ -16372,6 +16372,1326 @@
             {
               "tileId": "facade.rooftop-shop-wall.sand",
               "assetKey": "facade.rooftop-shop-wall",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.clay",
+              "assetKey": "facade.urban-column-body",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sage",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sand",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.clay",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sage",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sand",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.clay",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sage",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sand",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.clay",
+              "assetKey": "facade.urban-column-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sage",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sand",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.clay",
+              "assetKey": "facade.urban-column-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sage",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sand",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.clay",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sage",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sand",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.clay",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sage",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sand",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.clay",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sage",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sand",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.clay",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sage",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sand",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.clay",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sage",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sand",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.clay",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sage",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sand",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.clay",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sage",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sand",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.clay",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sage",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sand",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.clay",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sage",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sand",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.clay",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sage",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sand",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.clay",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sage",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sand",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.clay",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sage",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sand",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.clay",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sage",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sand",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.clay",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sage",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sand",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.clay",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sage",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sand",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.clay",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sage",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sand",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.clay",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sage",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sand",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.clay",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sage",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sand",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.clay",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sage",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sand",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.clay",
+              "assetKey": "facade.urban-louver",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sage",
+              "assetKey": "facade.urban-louver",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sand",
+              "assetKey": "facade.urban-louver",
               "palette": "sand",
               "roles": [
                 "wall"
@@ -21558,7 +22878,7 @@
         "seed": 42,
         "catalog": {
           "id": "office",
-          "version": 3,
+          "version": 4,
           "tiles": [
             {
               "tileId": "crafted.paving.clay",
@@ -36192,6 +37512,1326 @@
             {
               "tileId": "facade.rooftop-shop-wall.sand",
               "assetKey": "facade.rooftop-shop-wall",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.clay",
+              "assetKey": "facade.urban-column-body",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sage",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sand",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.clay",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sage",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sand",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.clay",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sage",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sand",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.clay",
+              "assetKey": "facade.urban-column-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sage",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sand",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.clay",
+              "assetKey": "facade.urban-column-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sage",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sand",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.clay",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sage",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sand",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.clay",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sage",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sand",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.clay",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sage",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sand",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.clay",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sage",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sand",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.clay",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sage",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sand",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.clay",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sage",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sand",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.clay",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sage",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sand",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.clay",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sage",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sand",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.clay",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sage",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sand",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.clay",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sage",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sand",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.clay",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sage",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sand",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.clay",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sage",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sand",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.clay",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sage",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sand",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.clay",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sage",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sand",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.clay",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sage",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sand",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.clay",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sage",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sand",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.clay",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sage",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sand",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.clay",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sage",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sand",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.clay",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sage",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sand",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.clay",
+              "assetKey": "facade.urban-louver",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sage",
+              "assetKey": "facade.urban-louver",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sand",
+              "assetKey": "facade.urban-louver",
               "palette": "sand",
               "roles": [
                 "wall"
@@ -39056,7 +41696,7 @@
         "seed": 42,
         "catalog": {
           "id": "office",
-          "version": 3,
+          "version": 4,
           "tiles": [
             {
               "tileId": "crafted.paving.clay",
@@ -53690,6 +56330,1326 @@
             {
               "tileId": "facade.rooftop-shop-wall.sand",
               "assetKey": "facade.rooftop-shop-wall",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.clay",
+              "assetKey": "facade.urban-column-body",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sage",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sand",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.clay",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sage",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sand",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.clay",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sage",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sand",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.clay",
+              "assetKey": "facade.urban-column-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sage",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sand",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.clay",
+              "assetKey": "facade.urban-column-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sage",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sand",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.clay",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sage",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sand",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.clay",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sage",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sand",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.clay",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sage",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sand",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.clay",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sage",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sand",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.clay",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sage",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sand",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.clay",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sage",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sand",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.clay",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sage",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sand",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.clay",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sage",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sand",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.clay",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sage",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sand",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.clay",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sage",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sand",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.clay",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sage",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sand",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.clay",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sage",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sand",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.clay",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sage",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sand",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.clay",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sage",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sand",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.clay",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sage",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sand",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.clay",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sage",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sand",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.clay",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sage",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sand",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.clay",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sage",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sand",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.clay",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sage",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sand",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.clay",
+              "assetKey": "facade.urban-louver",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sage",
+              "assetKey": "facade.urban-louver",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sand",
+              "assetKey": "facade.urban-louver",
               "palette": "sand",
               "roles": [
                 "wall"
@@ -58864,7 +62824,8 @@
                 13,
                 0,
                 8
-              ]
+              ],
+              "designSeed": 42
             }
           }
         ],
@@ -58954,7 +62915,7 @@
         "seed": 42,
         "catalog": {
           "id": "office",
-          "version": 3,
+          "version": 4,
           "tiles": [
             {
               "tileId": "crafted.paving.clay",
@@ -73588,6 +77549,1326 @@
             {
               "tileId": "facade.rooftop-shop-wall.sand",
               "assetKey": "facade.rooftop-shop-wall",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.clay",
+              "assetKey": "facade.urban-column-body",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sage",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sand",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.clay",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sage",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sand",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.clay",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sage",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sand",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.clay",
+              "assetKey": "facade.urban-column-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sage",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sand",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.clay",
+              "assetKey": "facade.urban-column-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sage",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sand",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.clay",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sage",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sand",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.clay",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sage",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sand",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.clay",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sage",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sand",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.clay",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sage",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sand",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.clay",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sage",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sand",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.clay",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sage",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sand",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.clay",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sage",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sand",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.clay",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sage",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sand",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.clay",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sage",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sand",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.clay",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sage",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sand",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.clay",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sage",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sand",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.clay",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sage",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sand",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.clay",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sage",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sand",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.clay",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sage",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sand",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.clay",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sage",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sand",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.clay",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sage",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sand",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.clay",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sage",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sand",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.clay",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sage",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sand",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.clay",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sage",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sand",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.clay",
+              "assetKey": "facade.urban-louver",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sage",
+              "assetKey": "facade.urban-louver",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sand",
+              "assetKey": "facade.urban-louver",
               "palette": "sand",
               "roles": [
                 "wall"
@@ -77176,7 +82457,7 @@
         "seed": 42,
         "catalog": {
           "id": "office",
-          "version": 3,
+          "version": 4,
           "tiles": [
             {
               "tileId": "crafted.paving.clay",
@@ -91810,6 +97091,1326 @@
             {
               "tileId": "facade.rooftop-shop-wall.sand",
               "assetKey": "facade.rooftop-shop-wall",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.clay",
+              "assetKey": "facade.urban-column-body",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sage",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-body.sand",
+              "assetKey": "facade.urban-column-body",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.clay",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sage",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-cap.sand",
+              "assetKey": "facade.urban-column-cap",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.clay",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sage",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-foot.sand",
+              "assetKey": "facade.urban-column-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.clay",
+              "assetKey": "facade.urban-column-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sage",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-head.sand",
+              "assetKey": "facade.urban-column-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.clay",
+              "assetKey": "facade.urban-column-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sage",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-single.sand",
+              "assetKey": "facade.urban-column-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.clay",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sage",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-foot.sand",
+              "assetKey": "facade.urban-column-slab-foot",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.clay",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sage",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-head.sand",
+              "assetKey": "facade.urban-column-slab-head",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.clay",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "clay",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sage",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sage",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-column-slab-single.sand",
+              "assetKey": "facade.urban-column-slab-single",
+              "palette": "sand",
+              "roles": [
+                "roof",
+                "terrace",
+                "underside",
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NY",
+                "NZ",
+                "PX",
+                "PY",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.clay",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sage",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-0.sand",
+              "assetKey": "facade.urban-frame-0",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.clay",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sage",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-1.sand",
+              "assetKey": "facade.urban-frame-1",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.clay",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sage",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-10.sand",
+              "assetKey": "facade.urban-frame-10",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.clay",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sage",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-11.sand",
+              "assetKey": "facade.urban-frame-11",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.clay",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sage",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-12.sand",
+              "assetKey": "facade.urban-frame-12",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.clay",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sage",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-13.sand",
+              "assetKey": "facade.urban-frame-13",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.clay",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sage",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-14.sand",
+              "assetKey": "facade.urban-frame-14",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.clay",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sage",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-15.sand",
+              "assetKey": "facade.urban-frame-15",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.clay",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sage",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-2.sand",
+              "assetKey": "facade.urban-frame-2",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.clay",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sage",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-3.sand",
+              "assetKey": "facade.urban-frame-3",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.clay",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sage",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-4.sand",
+              "assetKey": "facade.urban-frame-4",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.clay",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sage",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-5.sand",
+              "assetKey": "facade.urban-frame-5",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.clay",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sage",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-6.sand",
+              "assetKey": "facade.urban-frame-6",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.clay",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sage",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-7.sand",
+              "assetKey": "facade.urban-frame-7",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.clay",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sage",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-8.sand",
+              "assetKey": "facade.urban-frame-8",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.clay",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sage",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-frame-9.sand",
+              "assetKey": "facade.urban-frame-9",
+              "palette": "sand",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.clay",
+              "assetKey": "facade.urban-louver",
+              "palette": "clay",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sage",
+              "assetKey": "facade.urban-louver",
+              "palette": "sage",
+              "roles": [
+                "wall"
+              ],
+              "orientationIds": [
+                "NX",
+                "NZ",
+                "PX",
+                "PZ"
+              ],
+              "footprint": "unit-face",
+              "pivot": "face-center"
+            },
+            {
+              "tileId": "facade.urban-louver.sand",
+              "assetKey": "facade.urban-louver",
               "palette": "sand",
               "roles": [
                 "wall"

@@ -8,6 +8,7 @@ import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./bu
 import {
   SHOP_STYLE,
   OFFICE_STYLE,
+  URBAN_SHOP_STYLE, URBAN_OFFICE_STYLE,
   validateBuildingStyle,
   type BuildingStyle,
 } from "./building-style";
@@ -36,9 +37,9 @@ export const SETTINGS = {
   padding: 1,
   hash: "h33-u32-v1",
 } as const;
-export type Profile = "shop" | "office";
+export type Profile = "shop" | "office" | "urban-shop" | "urban-office";
 export function profileData(profile: Profile) {
-  if (profile === "shop" || profile === "office")
+  if (["shop","office","urban-shop","urban-office"].includes(profile))
     return {
       catalog: [
         ...CRAFTED_CATALOG,
@@ -47,8 +48,8 @@ export function profileData(profile: Profile) {
             tileId: `${asset}.${palette}`,
             assetKey: asset as FacadeAssetKey,
             palette: palette as "clay" | "sage" | "sand",
-            roles: ["wall"] as Tile["roles"],
-            orientationIds: ["PX", "NX", "PZ", "NZ"] as Tile["orientationIds"],
+            roles: (asset.startsWith('facade.urban-column-')?["wall","roof","terrace","underside"]:["wall"]) as Tile["roles"],
+            orientationIds: (asset.startsWith('facade.urban-column-')?["PX","NX","PZ","NZ","PY","NY"]:["PX", "NX", "PZ", "NZ"]) as Tile["orientationIds"],
             footprint: "unit-face" as const,
             pivot: "face-center" as const,
           })),
@@ -58,7 +59,7 @@ export function profileData(profile: Profile) {
       style: "environment-panels",
       rolePolicy: "region-context-v1" as const,
       architecture: JSON.parse(
-        JSON.stringify(profile === "shop" ? SHOP_STYLE : OFFICE_STYLE),
+        JSON.stringify(profile === "shop" ? SHOP_STYLE : profile==='urban-shop'?URBAN_SHOP_STYLE:profile==='urban-office'?URBAN_OFFICE_STYLE:OFFICE_STYLE),
       ) as BuildingStyle,
     };
   throw new Error("Unknown current building profile.");
@@ -104,11 +105,11 @@ export function createDocument(
     algorithmVersion: "environment-plans-v1" as const,
     buildingDefinition: architecture,
     sceneInputs: validateSceneInputs(cells, sceneInputs ?? emptySceneInputs()),
-    buildings: validateBuildings(cells, buildings ?? [], profile === "shop" ? "retail" : profile === "office" ? "office" : "generic"),
+    buildings: validateBuildings(cells, buildings ?? [], profile.endsWith('shop') ? "retail" : "office",seed),
     environment: validateEnvironmentSettings(environment),
     grid: cells, seed,
     catalog: {
-      id: profile, version: 3,
+      id: profile, version: 4,
       tiles: canonicalCatalog(profileData("office").catalog),
       modules: cloneJSON(canonicalModules([...FACADE_MODULE_ASSETS])),
     },
@@ -130,7 +131,7 @@ export function loadDocument(text: string): GenerationDocument {
   exactKeys(raw as unknown,["schemaVersion","algorithmVersion","buildingDefinition","sceneInputs","buildings","environment","grid","seed","catalog","ruleSet","style","settings"]);
   if (!Array.isArray(raw.buildings)) throw new Error("INVALID_BUILDINGS");
   for (const b of raw.buildings) exactKeys(b,["componentId","rule","design","spatialAdapterRef"],["theme"]);
-  if (!raw.catalog || !raw.ruleSet || !raw.style || ![2,3].includes(raw.catalog.version) || raw.ruleSet.version !== 1 || raw.style.version !== 1)
+  if (!raw.catalog || !raw.ruleSet || !raw.style || ![2,3,4].includes(raw.catalog.version) || raw.ruleSet.version !== 1 || raw.style.version !== 1)
     throw new Error("Unknown catalog, rule or style version.");
   // Only registered immutable metadata is accepted under each ID/version.
   const expected = createDocument(
@@ -159,11 +160,11 @@ export function loadDocument(text: string): GenerationDocument {
         : {}),
     },
   };
-  // Catalog 2 has the same immutable assets except the newly added rooftop variants.
+  // Catalog 3 excludes urban prototypes; catalog 2 also excludes rooftop variants.
   // Verify it against that exact catalog before upgrading; preserve authored styles.
-  const registered = raw.catalog.version === 2 ? {
-    ...expected, catalog: { ...expected.catalog, version: 2,
-      tiles: expected.catalog.tiles.filter(t => !t.assetKey.startsWith('facade.rooftop-')) },
+  const registered = raw.catalog.version < 4 ? {
+    ...expected, catalog: { ...expected.catalog, version: raw.catalog.version,
+      tiles: expected.catalog.tiles.filter(t => !t.assetKey.startsWith('facade.urban-')&&(raw.catalog.version!==2||!t.assetKey.startsWith('facade.rooftop-'))) },
   } : expected;
   if (canonicalJSON(normalized) !== canonicalJSON(registered))
     throw new Error(

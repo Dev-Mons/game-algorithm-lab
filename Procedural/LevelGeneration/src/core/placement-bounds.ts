@@ -5,6 +5,7 @@ import type { ScenePlacement } from "./scene-inputs";
 import {FACADE_ASSETS} from './facade-assets';
 import {TRIM_ASSETS} from './banded-facade-assets';
 import {completeFaceAsset} from './complete-face-assets';
+import {WALL_FACILITY_ASSETS} from './wall-facility-assets';
 
 const faceDescriptors=new Map<string,Box16>();
 export function registerFaceAssetBounds(assetKey:string,bounds16:Box16){if(faceDescriptors.has(assetKey))throw new Error('DUPLICATE_ASSET_BOUNDS');faceDescriptors.set(assetKey,cloneJSON(validateBox16(bounds16)));}
@@ -38,6 +39,7 @@ export function scenePlacementBounds16(p:ScenePlacement):Box16 {
 }
 for(const asset of ["parking-deck","parking-roof-deck","parking-column","parking-bay"])
   registerSceneAssetBounds(asset,{min:[-8,-8,-8],max:[8,8,8]});
+for(const [key,asset] of Object.entries(WALL_FACILITY_ASSETS))registerSceneAssetBounds(key,asset.bounds16);
 for(const [asset,descriptor] of Object.entries(FACADE_ASSETS))
   registerFaceAssetBounds(asset,'bounds16' in descriptor?descriptor.bounds16:asset==='facade.wall'?{min:[-8,-8,-1],max:[8,8,0]}:{min:[-8,-8,0],max:[8,8,2]});
 for(const asset of ['unit-panel',...['plaster','roof','paving','soffit'].map(a=>`crafted.${a}`)])

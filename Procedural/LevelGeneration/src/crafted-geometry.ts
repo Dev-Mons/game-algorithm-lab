@@ -92,7 +92,8 @@ function bandedFacade(asset:BandedFacadeAsset):GeometryParts {
   const opening=asset.opening16;
   const panels:THREE.BufferGeometry[]=[];
   const plate=(u0:number,u1:number,v0:number,v1:number)=>{if(u1>u0&&v1>v0)panels.push(new THREE.PlaneGeometry((u1-u0)/16,(v1-v0)/16).translate((u0+u1)/32,(v0+v1)/32,0));};
-  if(opening){plate(-8,opening.minU,-8,8);plate(opening.maxU,8,-8,8);plate(opening.minU,opening.maxU,-8,opening.minV);plate(opening.minU,opening.maxU,opening.maxV,8);}
+  if(asset.displayRects16)for(const r of asset.displayRects16)panels.push(new THREE.PlaneGeometry((r.maxU-r.minU)/16,(r.maxV-r.minV)/16).translate((r.minU+r.maxU)/32,(r.minV+r.maxV)/32,r.n/16));
+  else if(opening){plate(-8,opening.minU,-8,8);plate(opening.maxU,8,-8,8);plate(opening.minU,opening.maxU,-8,opening.minV);plate(opening.minU,opening.maxU,opening.maxV,8);}
   else plate(-8,8,-8,8);
   return {panel:merged(panels),...(blocks.length?{relief:merged(blocks)}:{}),...(opening?{glass:new THREE.PlaneGeometry((opening.maxU-opening.minU)/16,(opening.maxV-opening.minV)/16).translate((opening.minU+opening.maxU)/32,(opening.minV+opening.maxV)/32,1/64)}:{})};
 }

@@ -35,6 +35,7 @@ export interface FacadeTrace {
   groupId?: string;
   part?: "single" | "left" | "middle" | "right";
   alignment?: string;
+  framePanelId?:string;
   reason: string;
   candidates: { id: string; reason: string; filler?: number }[];
 }
@@ -147,6 +148,7 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
   const vertical=context.verticalBands,entrances=context.entrances;
   const caps=new Set(vertical.boundaries.filter(b=>b.kind==='local-cap').map(b=>b.hostFaceId)),catalogIds=new Set(options.catalog?.map(t=>t.tileId));
   const defs=new Map(style.modules.map(m=>[m.id,m])),faces=new Map(base.surfaces.map(s=>[s.faceId,s]));
+  for(const c of context.columns?.faces??[])defs.set(c.assetKey,{id:c.assetKey,assetId:c.assetKey,semantic:'wall',width:1,height:1,directions:['PX','NX','PZ','NZ']});
   const bands=new Map(vertical.faceBands.map(b=>[b.faceId,b]));
   const family=style.alignedFamilies.find(f=>f.id===vertical.alignment.familyId)!;
   const placements=base.placements.map(p=>({...p})),traces=base.traces.map(t=>({...t}));
@@ -162,7 +164,7 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     const rowAsset=(isCap?`${band.rowRole}-cap`:band.rowRole) as AssetRow;
     const rooftopAsset=s.wallKind==='rooftop'?def.rooftopAssets?.[rowAsset]:undefined;
     const asset=rooftopAsset??def.rowAssets?.[rowAsset]??def.assetId;
-    const palette=trace.architecture?.palette??'clay',tileId=`${asset}.${palette}`;
+    const palette=vertical.profile?.palette??trace.architecture?.palette??'clay',tileId=`${asset}.${palette}`;
     if(!catalogIds.has(tileId))throw new Error(`MISSING_FACADE_ASSET:${tileId}`);
     p.tileId=tileId;p.ruleId=portal?'building.entrance':'building.banded';
     if(rooftopAsset&&!portal)p.ruleId='building.rooftop-wall';
@@ -172,6 +174,9 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     trace.facade.wallKind=s.wallKind;
   };
   for(const portal of entrances.entrances)for(const [partIndex,faceId] of portal.faceIds.entries()){const face=faces.get(faceId);if(!face||face.role!=='wall')throw new Error('INVALID_PORTAL_FACE');assign(face,portal.widthCells===2?style.entrancePair[partIndex]:style.entrance,'entrance','validated exterior access',[],portal.id,portal);}
+  for(const change of context.facadeChanges??[]){const s=faces.get(change.faceId);if(!s)continue;if(claimed.has(s.faceId))throw new Error('FACILITY_PORTAL_CONFLICT');assign(s,change.moduleId,'approved-facility-wall','atomic approved wall request');}
+  for(const c of context.columns?.faces??[]){const s=faces.get(c.faceId)!,trace=byTrace.get(c.faceId)!;if(claimed.has(c.faceId))throw new Error('COLUMN_FIXED_CONSTRAINT');if(s.role==='wall')assign(s,c.assetKey,'column-display','source occupancy and face ownership retained');else{const p=byPlacement.get(c.faceId)!,tileId=`${c.assetKey}.${vertical.profile?.palette??trace.architecture?.palette??'clay'}`;if(!catalogIds.has(tileId))throw new Error('MISSING_COLUMN_CAP');p.tileId=tileId;p.ruleId='column-display';trace.selection={...trace.selection,tileId,ruleId:p.ruleId};}}
+  for(const face of context.facadePlan?.faces??[]){if(claimed.has(face.faceId))throw new Error('FACADE_FIXED_CONSTRAINT_OVERWRITE');assign(faces.get(face.faceId)!,face.moduleId,'multi-floor-frame','complete U/V group');byTrace.get(face.faceId)!.facade!.framePanelId=face.panelId;}
   const rows=new Map<string,Surface[]>();
   for(const s of base.surfaces)if(s.role==='wall'&&s.architecture?.interpretation!=='unsupported'&&bands.has(s.faceId)){const key=`${s.componentId}:${s.direction}:${plane(s)}:${s.cell[1]}`,row=rows.get(key)??[];row.push(s);rows.set(key,row);}
   for(const row of rows.values()){
@@ -191,7 +196,7 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
         tokens.forEach((key,i)=>{const def=defs.get(key)!;if(def.connection?.part==='left')groupId=`group:${first.componentId}:${first.direction}:${first.cell[1]}:${u(open[i])}:${plane(first)}`;assign(open[i],key,result.best?.pattern.id??'single-fallback','absolute anchor / complete connected groups',result.candidates,groupId);if(def.connection?.part==='right'||def.connection?.part==='single'||!def.connection)groupId=undefined;});
         open=[];
       };
-      for(const face of all){if(claimed.has(face.faceId))flush();else open.push(face);}flush();all=[];
+      for(const face of all){if(claimed.has(face.faceId))flush();else {const prior=open[open.length-1];if(prior&&(bands.get(prior.faceId)!.band!==bands.get(face.faceId)!.band||bands.get(prior.faceId)!.rowRole!==bands.get(face.faceId)!.rowRole||prior.wallKind!==face.wallKind||caps.has(prior.faceId)!==caps.has(face.faceId)))flush();open.push(face);}}flush();all=[];
     };
     for(const face of row){if(all.length&&u(face)!==u(all[all.length-1])+1)fill();all.push(face);}fill();
   }

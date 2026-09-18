@@ -1,0 +1,2915 @@
+{
+  "measuredAt": "2026-09-18T16:07:37.561Z",
+  "browser": "153.0.8010.12",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "buildArtifacts": {
+    "index-BNhW5TUL.js": "3af2ac5882f3a905f00cb64f4be5817c14c0521d51e10036b727d7bb3366ef08",
+    "index-o8zqimnd.css": "b52082e0cb4de47f8de60283fc369b7017dca85448280835af39086468a98a70"
+  },
+  "protocol": {
+    "coldSamples": 20,
+    "warmup": 10,
+    "warmSamples": 50,
+    "scope": "document acceptance, validation, generation, Viewer sync, history; excludes browser navigation, GPU completion and paint",
+    "referenceLimitsMs": {
+      "cold": 500,
+      "warm": 250
+    }
+  },
+  "rows": [
+    {
+      "profile": "office",
+      "kind": "cold",
+      "limitMs": 500,
+      "passed": true,
+      "p50": 430.40000000037253,
+      "p95": 439.5,
+      "max": 447.90000000037253,
+      "samples": [
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 425.59999999962747,
+          "commandAndHistoryMs": 86.5,
+          "rendererSyncMs": 40.79999999888241,
+          "stages": {
+            "analysis": 147.69999999925494,
+            "vertical": 5.599999999627471,
+            "preflight": 26.5,
+            "spatial": 28.40000000037253,
+            "entrances": 11.899999998509884,
+            "facade": 42.79999999888241,
+            "attachments": 20.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 429.1000000014901,
+          "commandAndHistoryMs": 89.20000000111759,
+          "rendererSyncMs": 40,
+          "stages": {
+            "analysis": 151.90000000037253,
+            "vertical": 5.799999998882413,
+            "preflight": 25.800000000745058,
+            "spatial": 28.40000000037253,
+            "entrances": 11.200000001117587,
+            "facade": 41.899999998509884,
+            "attachments": 20.90000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 426.90000000037253,
+          "commandAndHistoryMs": 88.5,
+          "rendererSyncMs": 43.20000000111759,
+          "stages": {
+            "analysis": 146.90000000037253,
+            "vertical": 5.799999998882413,
+            "preflight": 23.700000001117587,
+            "spatial": 27.199999999254942,
+            "entrances": 11.099999999627471,
+            "facade": 41.90000000037253,
+            "attachments": 24
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 428,
+          "commandAndHistoryMs": 91.80000000074506,
+          "rendererSyncMs": 43.79999999888241,
+          "stages": {
+            "analysis": 144.2999999988824,
+            "vertical": 4.700000001117587,
+            "preflight": 22.799999998882413,
+            "spatial": 29,
+            "entrances": 10.800000000745058,
+            "facade": 42.59999999962747,
+            "attachments": 23.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 430.40000000037253,
+          "commandAndHistoryMs": 88.70000000111759,
+          "rendererSyncMs": 39.69999999925494,
+          "stages": {
+            "analysis": 152.90000000037253,
+            "vertical": 5.5,
+            "preflight": 26.5,
+            "spatial": 28.300000000745058,
+            "entrances": 10.799999998882413,
+            "facade": 41.90000000037253,
+            "attachments": 21.800000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 428.5,
+          "commandAndHistoryMs": 86.70000000111759,
+          "rendererSyncMs": 45,
+          "stages": {
+            "analysis": 150.59999999962747,
+            "vertical": 8.299999998882413,
+            "preflight": 19.90000000037253,
+            "spatial": 26.5,
+            "entrances": 9.5,
+            "facade": 43.80000000074506,
+            "attachments": 24.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 439.5,
+          "commandAndHistoryMs": 88.5,
+          "rendererSyncMs": 43.09999999962747,
+          "stages": {
+            "analysis": 152,
+            "vertical": 5.400000000372529,
+            "preflight": 26.09999999962747,
+            "spatial": 31.200000001117587,
+            "entrances": 11.299999998882413,
+            "facade": 42.59999999962747,
+            "attachments": 24.299999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 429,
+          "commandAndHistoryMs": 89.10000000149012,
+          "rendererSyncMs": 45,
+          "stages": {
+            "analysis": 145.59999999962747,
+            "vertical": 5.099999999627471,
+            "preflight": 23.59999999962747,
+            "spatial": 27.90000000037253,
+            "entrances": 9.800000000745058,
+            "facade": 43.5,
+            "attachments": 24.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 431.5,
+          "commandAndHistoryMs": 88.5,
+          "rendererSyncMs": 44.40000000037253,
+          "stages": {
+            "analysis": 152.19999999925494,
+            "vertical": 5.400000000372529,
+            "preflight": 22.700000001117587,
+            "spatial": 27.699999999254942,
+            "entrances": 9.400000000372529,
+            "facade": 43.59999999962747,
+            "attachments": 24.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 421.5,
+          "commandAndHistoryMs": 86.29999999888241,
+          "rendererSyncMs": 44.30000000074506,
+          "stages": {
+            "analysis": 146.80000000074506,
+            "vertical": 5.400000000372529,
+            "preflight": 24.300000000745058,
+            "spatial": 24.5,
+            "entrances": 10.300000000745058,
+            "facade": 41.69999999925494,
+            "attachments": 23
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 438.69999999925494,
+          "commandAndHistoryMs": 94.29999999888241,
+          "rendererSyncMs": 42.30000000074506,
+          "stages": {
+            "analysis": 150.89999999850988,
+            "vertical": 5.299999998882413,
+            "preflight": 25.100000001490116,
+            "spatial": 28.5,
+            "entrances": 11.400000000372529,
+            "facade": 42,
+            "attachments": 23.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 421.09999999962747,
+          "commandAndHistoryMs": 86.40000000037253,
+          "rendererSyncMs": 39.90000000037253,
+          "stages": {
+            "analysis": 151.30000000074506,
+            "vertical": 4.699999999254942,
+            "preflight": 22.200000001117587,
+            "spatial": 27.699999999254942,
+            "entrances": 11.700000001117587,
+            "facade": 42,
+            "attachments": 21.199999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 431.2999999988824,
+          "commandAndHistoryMs": 89.59999999962747,
+          "rendererSyncMs": 43.19999999925494,
+          "stages": {
+            "analysis": 148.19999999925494,
+            "vertical": 5.700000001117587,
+            "preflight": 25.199999999254942,
+            "spatial": 27.90000000037253,
+            "entrances": 11.099999999627471,
+            "facade": 42.19999999925494,
+            "attachments": 23.299999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 431.59999999962747,
+          "commandAndHistoryMs": 88.5,
+          "rendererSyncMs": 42.90000000037253,
+          "stages": {
+            "analysis": 153.5,
+            "vertical": 5.599999999627471,
+            "preflight": 23.800000000745058,
+            "spatial": 27.399999998509884,
+            "entrances": 10.799999998882413,
+            "facade": 41.5,
+            "attachments": 23.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 430.40000000037253,
+          "commandAndHistoryMs": 88.40000000037253,
+          "rendererSyncMs": 40.40000000037253,
+          "stages": {
+            "analysis": 147.80000000074506,
+            "vertical": 5.300000000745058,
+            "preflight": 26.299999998882413,
+            "spatial": 28.800000000745058,
+            "entrances": 10.899999998509884,
+            "facade": 41.80000000074506,
+            "attachments": 30
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 432.80000000074506,
+          "commandAndHistoryMs": 90.80000000074506,
+          "rendererSyncMs": 39.70000000111759,
+          "stages": {
+            "analysis": 151.30000000074506,
+            "vertical": 5.599999999627471,
+            "preflight": 25.800000000745058,
+            "spatial": 29,
+            "entrances": 12,
+            "facade": 42.80000000074506,
+            "attachments": 21.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 426.1000000014901,
+          "commandAndHistoryMs": 88.8000000026077,
+          "rendererSyncMs": 40.09999999962747,
+          "stages": {
+            "analysis": 148.2999999988824,
+            "vertical": 5.599999999627471,
+            "preflight": 26.40000000037253,
+            "spatial": 28.09999999962747,
+            "entrances": 11.600000001490116,
+            "facade": 41.90000000037253,
+            "attachments": 20.5
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 434.80000000074506,
+          "commandAndHistoryMs": 91.5,
+          "rendererSyncMs": 42.59999999962747,
+          "stages": {
+            "analysis": 149.5,
+            "vertical": 5.699999999254942,
+            "preflight": 25.700000001117587,
+            "spatial": 28.699999999254942,
+            "entrances": 11.5,
+            "facade": 41.40000000037253,
+            "attachments": 23.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 434.90000000037253,
+          "commandAndHistoryMs": 90.90000000037253,
+          "rendererSyncMs": 43.90000000037253,
+          "stages": {
+            "analysis": 149.69999999925494,
+            "vertical": 5.900000000372529,
+            "preflight": 24.5,
+            "spatial": 28.199999999254942,
+            "entrances": 11,
+            "facade": 42.40000000037253,
+            "attachments": 24
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "application-cold",
+          "operation": "none",
+          "inputBeforeSignature": "251872:96e5f230",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 0,
+            "geometryCacheEntries": 0,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 447.90000000037253,
+          "commandAndHistoryMs": 96.00000000186265,
+          "rendererSyncMs": 40.19999999925494,
+          "stages": {
+            "analysis": 161.60000000149012,
+            "vertical": 4.699999999254942,
+            "preflight": 25.09999999962747,
+            "spatial": 29.100000001490116,
+            "entrances": 11.800000000745058,
+            "facade": 43.40000000037253,
+            "attachments": 21.199999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 1,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 1,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        }
+      ]
+    },
+    {
+      "profile": "office",
+      "kind": "warm",
+      "limitMs": 250,
+      "passed": true,
+      "p50": 175.69999999925494,
+      "p95": 213,
+      "max": 225.40000000037253,
+      "samples": [
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 175.69999999925494,
+          "commandAndHistoryMs": 7.799999998882413,
+          "rendererSyncMs": 42.600000001490116,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 3.600000001490116,
+            "preflight": 18.899999998509884,
+            "spatial": 26.700000001117587,
+            "entrances": 9,
+            "facade": 36.29999999888241,
+            "attachments": 21.5
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 34,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 165.2999999988824,
+          "commandAndHistoryMs": 7,
+          "rendererSyncMs": 42.79999999888241,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 3.300000000745058,
+            "preflight": 17.40000000037253,
+            "spatial": 24,
+            "entrances": 8.799999998882413,
+            "facade": 33.30000000074506,
+            "attachments": 21.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 37,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 188.80000000074506,
+          "commandAndHistoryMs": 8.300000000745058,
+          "rendererSyncMs": 58.40000000037253,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.700000001117587,
+            "preflight": 18,
+            "spatial": 27,
+            "entrances": 9,
+            "facade": 36.5,
+            "attachments": 20.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 40,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 180.5,
+          "commandAndHistoryMs": 7.800000000745058,
+          "rendererSyncMs": 45.80000000074506,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 6,
+            "preflight": 19.09999999962747,
+            "spatial": 22.800000000745058,
+            "entrances": 9.199999999254942,
+            "facade": 39.70000000111759,
+            "attachments": 20.199999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 43,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 167.90000000037253,
+          "commandAndHistoryMs": 7.100000001490116,
+          "rendererSyncMs": 43.19999999925494,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 4.200000001117587,
+            "preflight": 16.899999998509884,
+            "spatial": 21.90000000037253,
+            "entrances": 9.299999998882413,
+            "facade": 36,
+            "attachments": 21.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 46,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 172.90000000037253,
+          "commandAndHistoryMs": 7.300000000745058,
+          "rendererSyncMs": 44.40000000037253,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.300000000745058,
+            "preflight": 21.40000000037253,
+            "spatial": 22.09999999962747,
+            "entrances": 8.800000000745058,
+            "facade": 38.09999999962747,
+            "attachments": 19.100000001490116
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 49,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 172.40000000037253,
+          "commandAndHistoryMs": 7.300000000745058,
+          "rendererSyncMs": 40.40000000037253,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3.199999999254942,
+            "preflight": 16.700000001117587,
+            "spatial": 21.799999998882413,
+            "entrances": 11.5,
+            "facade": 44.29999999888241,
+            "attachments": 19.5
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 52,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 194.19999999925494,
+          "commandAndHistoryMs": 7.299999998882413,
+          "rendererSyncMs": 47.30000000074506,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 4.300000000745058,
+            "preflight": 30.699999999254942,
+            "spatial": 24.5,
+            "entrances": 10,
+            "facade": 40.90000000037253,
+            "attachments": 20.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 55,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 182.90000000037253,
+          "commandAndHistoryMs": 7.300000000745058,
+          "rendererSyncMs": 43.5,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 7.399999998509884,
+            "preflight": 16.700000001117587,
+            "spatial": 27.699999999254942,
+            "entrances": 12.099999999627471,
+            "facade": 37,
+            "attachments": 20.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 58,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 170.7000000011176,
+          "commandAndHistoryMs": 7.200000001117587,
+          "rendererSyncMs": 45.5,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 4.400000000372529,
+            "preflight": 17.800000000745058,
+            "spatial": 22,
+            "entrances": 7.299999998882413,
+            "facade": 38.40000000037253,
+            "attachments": 20.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 61,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 164,
+          "commandAndHistoryMs": 7.400000000372529,
+          "rendererSyncMs": 41.09999999962747,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.200000001117587,
+            "preflight": 17.899999998509884,
+            "spatial": 22.90000000037253,
+            "entrances": 8.800000000745058,
+            "facade": 34.399999998509884,
+            "attachments": 21.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 64,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 225.40000000037253,
+          "commandAndHistoryMs": 8.100000001490116,
+          "rendererSyncMs": 49,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 3.699999999254942,
+            "preflight": 19.5,
+            "spatial": 37.59999999962747,
+            "entrances": 12.200000001117587,
+            "facade": 62.90000000037253,
+            "attachments": 22.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 67,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 169.5,
+          "commandAndHistoryMs": 7.099999999627471,
+          "rendererSyncMs": 45.90000000037253,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 4.199999999254942,
+            "preflight": 19,
+            "spatial": 21.199999999254942,
+            "entrances": 8.099999999627471,
+            "facade": 37.59999999962747,
+            "attachments": 19.5
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 70,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 186.7999999988824,
+          "commandAndHistoryMs": 6.699999999254942,
+          "rendererSyncMs": 44.40000000037253,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.900000000372529,
+            "preflight": 18.40000000037253,
+            "spatial": 22.59999999962747,
+            "entrances": 11.900000000372529,
+            "facade": 45.80000000074506,
+            "attachments": 24.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 73,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 183.7000000011176,
+          "commandAndHistoryMs": 7.100000001490116,
+          "rendererSyncMs": 44.40000000037253,
+          "stages": {
+            "analysis": 0.3999999985098839,
+            "vertical": 4,
+            "preflight": 20.90000000037253,
+            "spatial": 22.59999999962747,
+            "entrances": 11.399999998509884,
+            "facade": 44.19999999925494,
+            "attachments": 20.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 76,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 188.69999999925494,
+          "commandAndHistoryMs": 7.199999999254942,
+          "rendererSyncMs": 46.80000000074506,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.600000001490116,
+            "preflight": 17.5,
+            "spatial": 23.399999998509884,
+            "entrances": 23,
+            "facade": 38,
+            "attachments": 21.200000001117587
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 79,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 173.80000000074506,
+          "commandAndHistoryMs": 6.800000000745058,
+          "rendererSyncMs": 43.399999998509884,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 4.400000000372529,
+            "preflight": 19,
+            "spatial": 25.199999999254942,
+            "entrances": 9.099999999627471,
+            "facade": 37.5,
+            "attachments": 21.199999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 82,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 171.90000000037253,
+          "commandAndHistoryMs": 7.400000000372529,
+          "rendererSyncMs": 42.600000001490116,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 4,
+            "preflight": 18.09999999962747,
+            "spatial": 23.5,
+            "entrances": 11.100000001490116,
+            "facade": 36.09999999962747,
+            "attachments": 19.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 85,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 166.2999999988824,
+          "commandAndHistoryMs": 7.299999998882413,
+          "rendererSyncMs": 43.5,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.199999999254942,
+            "preflight": 17,
+            "spatial": 23.700000001117587,
+            "entrances": 8.400000000372529,
+            "facade": 35.19999999925494,
+            "attachments": 21.200000001117587
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 88,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 198.2999999988824,
+          "commandAndHistoryMs": 10.399999998509884,
+          "rendererSyncMs": 47.09999999962747,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3,
+            "preflight": 19.199999999254942,
+            "spatial": 25.200000001117587,
+            "entrances": 8,
+            "facade": 38.100000001490116,
+            "attachments": 39.29999999888241
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 91,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 223,
+          "commandAndHistoryMs": 10.099999999627471,
+          "rendererSyncMs": 54.19999999925494,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 4.599999999627471,
+            "preflight": 26.200000001117587,
+            "spatial": 31.799999998882413,
+            "entrances": 12.400000000372529,
+            "facade": 49.899999998509884,
+            "attachments": 22.5
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 94,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 169.5,
+          "commandAndHistoryMs": 7.400000000372529,
+          "rendererSyncMs": 42.40000000037253,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 3.599999999627471,
+            "preflight": 21,
+            "spatial": 22.300000000745058,
+            "entrances": 8.199999999254942,
+            "facade": 35.70000000111759,
+            "attachments": 20.399999998509884
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 97,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 164.39999999850988,
+          "commandAndHistoryMs": 6.799999998882413,
+          "rendererSyncMs": 42.59999999962747,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 3.599999999627471,
+            "preflight": 18.300000000745058,
+            "spatial": 22,
+            "entrances": 7.199999999254942,
+            "facade": 37.70000000111759,
+            "attachments": 19.399999998509884
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 100,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 164.40000000037253,
+          "commandAndHistoryMs": 8.800000000745058,
+          "rendererSyncMs": 41.19999999925494,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 4.700000001117587,
+            "preflight": 15.899999998509884,
+            "spatial": 22.600000001490116,
+            "entrances": 8.300000000745058,
+            "facade": 35.09999999962747,
+            "attachments": 18.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 103,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 213,
+          "commandAndHistoryMs": 7.5,
+          "rendererSyncMs": 43.899999998509884,
+          "stages": {
+            "analysis": 0.2999999988824129,
+            "vertical": 4.700000001117587,
+            "preflight": 21.699999999254942,
+            "spatial": 36.5,
+            "entrances": 8.900000000372529,
+            "facade": 60.40000000037253,
+            "attachments": 21.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 106,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 169.19999999925494,
+          "commandAndHistoryMs": 7.099999999627471,
+          "rendererSyncMs": 46.09999999962747,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 5.699999999254942,
+            "preflight": 18.40000000037253,
+            "spatial": 21.09999999962747,
+            "entrances": 7.199999999254942,
+            "facade": 35.80000000074506,
+            "attachments": 20.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 109,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 163.09999999962747,
+          "commandAndHistoryMs": 6.699999999254942,
+          "rendererSyncMs": 41,
+          "stages": {
+            "analysis": 0.5,
+            "vertical": 4.099999999627471,
+            "preflight": 18,
+            "spatial": 22.800000000745058,
+            "entrances": 8.299999998882413,
+            "facade": 34.90000000037253,
+            "attachments": 20
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 112,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 165.30000000074506,
+          "commandAndHistoryMs": 7.300000000745058,
+          "rendererSyncMs": 44.79999999888241,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 2.900000000372529,
+            "preflight": 18.699999999254942,
+            "spatial": 21.59999999962747,
+            "entrances": 7.299999998882413,
+            "facade": 35.899999998509884,
+            "attachments": 19.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 115,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 194.90000000037253,
+          "commandAndHistoryMs": 7.5,
+          "rendererSyncMs": 47.40000000037253,
+          "stages": {
+            "analysis": 0.2000000011175871,
+            "vertical": 5.5,
+            "preflight": 32.29999999888241,
+            "spatial": 24.300000000745058,
+            "entrances": 7.799999998882413,
+            "facade": 40.100000001490116,
+            "attachments": 20.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 118,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 175,
+          "commandAndHistoryMs": 10.799999998882413,
+          "rendererSyncMs": 44.09999999962747,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 6.800000000745058,
+            "preflight": 16.299999998882413,
+            "spatial": 23.200000001117587,
+            "entrances": 8.699999999254942,
+            "facade": 36.69999999925494,
+            "attachments": 20.800000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 121,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 169.10000000149012,
+          "commandAndHistoryMs": 7.400000002235174,
+          "rendererSyncMs": 46.19999999925494,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.300000000745058,
+            "preflight": 18.5,
+            "spatial": 21.59999999962747,
+            "entrances": 7.299999998882413,
+            "facade": 37.80000000074506,
+            "attachments": 19.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 124,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 168.69999999925494,
+          "commandAndHistoryMs": 7.699999999254942,
+          "rendererSyncMs": 46,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.300000000745058,
+            "preflight": 17.40000000037253,
+            "spatial": 22.699999999254942,
+            "entrances": 8.5,
+            "facade": 36.30000000074506,
+            "attachments": 18
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 127,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 196.7000000011176,
+          "commandAndHistoryMs": 8,
+          "rendererSyncMs": 50.30000000074506,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3.900000000372529,
+            "preflight": 19.699999999254942,
+            "spatial": 23.09999999962747,
+            "entrances": 18.299999998882413,
+            "facade": 40.40000000037253,
+            "attachments": 22.200000001117587
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 130,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 176.19999999925494,
+          "commandAndHistoryMs": 7.399999998509884,
+          "rendererSyncMs": 47.600000001490116,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 4.799999998882413,
+            "preflight": 18.800000000745058,
+            "spatial": 25.40000000037253,
+            "entrances": 7.400000000372529,
+            "facade": 36.5,
+            "attachments": 20.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 133,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 179.7999999988824,
+          "commandAndHistoryMs": 7.699999999254942,
+          "rendererSyncMs": 43,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.699999999254942,
+            "preflight": 17.200000001117587,
+            "spatial": 22.799999998882413,
+            "entrances": 8,
+            "facade": 38.09999999962747,
+            "attachments": 30.399999998509884
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 136,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 171.5,
+          "commandAndHistoryMs": 8,
+          "rendererSyncMs": 44.30000000074506,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.099999999627471,
+            "preflight": 19.300000000745058,
+            "spatial": 26.09999999962747,
+            "entrances": 6.899999998509884,
+            "facade": 35.80000000074506,
+            "attachments": 20.90000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 139,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 212.40000000037253,
+          "commandAndHistoryMs": 7.600000001490116,
+          "rendererSyncMs": 46.69999999925494,
+          "stages": {
+            "analysis": 0.599999999627471,
+            "vertical": 4.199999999254942,
+            "preflight": 31.90000000037253,
+            "spatial": 24.09999999962747,
+            "entrances": 9.300000000745058,
+            "facade": 61,
+            "attachments": 18.699999999254942
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 142,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 176.5,
+          "commandAndHistoryMs": 7.400000000372529,
+          "rendererSyncMs": 47.30000000074506,
+          "stages": {
+            "analysis": 0.3999999985098839,
+            "vertical": 6.600000001490116,
+            "preflight": 17.199999999254942,
+            "spatial": 22.90000000037253,
+            "entrances": 8.599999999627471,
+            "facade": 37.80000000074506,
+            "attachments": 21
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 145,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 183.7000000011176,
+          "commandAndHistoryMs": 8,
+          "rendererSyncMs": 53.70000000111759,
+          "stages": {
+            "analysis": 0.2000000011175871,
+            "vertical": 3.299999998882413,
+            "preflight": 19.200000001117587,
+            "spatial": 23,
+            "entrances": 7.299999998882413,
+            "facade": 41,
+            "attachments": 20.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 148,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 175.09999999962747,
+          "commandAndHistoryMs": 7.399999998509884,
+          "rendererSyncMs": 44.59999999962747,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 4,
+            "preflight": 19.300000000745058,
+            "spatial": 24.199999999254942,
+            "entrances": 8.5,
+            "facade": 37.30000000074506,
+            "attachments": 19.40000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 151,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 192,
+          "commandAndHistoryMs": 8.099999999627471,
+          "rendererSyncMs": 46.40000000037253,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3.199999999254942,
+            "preflight": 19.800000000745058,
+            "spatial": 23.699999999254942,
+            "entrances": 21.09999999962747,
+            "facade": 41.30000000074506,
+            "attachments": 18.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 154,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 176.09999999962747,
+          "commandAndHistoryMs": 7.099999999627471,
+          "rendererSyncMs": 47.600000001490116,
+          "stages": {
+            "analysis": 0.5,
+            "vertical": 4.599999999627471,
+            "preflight": 20.90000000037253,
+            "spatial": 24.5,
+            "entrances": 7.300000000745058,
+            "facade": 35.79999999888241,
+            "attachments": 20.300000000745058
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 157,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 172.69999999925494,
+          "commandAndHistoryMs": 7.5,
+          "rendererSyncMs": 44.19999999925494,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3,
+            "preflight": 20.299999998882413,
+            "spatial": 23.90000000037253,
+            "entrances": 8.900000000372529,
+            "facade": 36.80000000074506,
+            "attachments": 18.200000001117587
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 160,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 171.09999999962747,
+          "commandAndHistoryMs": 8.300000000745058,
+          "rendererSyncMs": 44.29999999888241,
+          "stages": {
+            "analysis": 0.19999999925494194,
+            "vertical": 3.400000000372529,
+            "preflight": 17.800000000745058,
+            "spatial": 24.299999998882413,
+            "entrances": 8.599999999627471,
+            "facade": 36.19999999925494,
+            "attachments": 20.90000000037253
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 163,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 191.90000000037253,
+          "commandAndHistoryMs": 8.900000000372529,
+          "rendererSyncMs": 49,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3,
+            "preflight": 19.299999998882413,
+            "spatial": 23.800000000745058,
+            "entrances": 7,
+            "facade": 52.09999999962747,
+            "attachments": 20.799999998882413
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 166,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 180.30000000074506,
+          "commandAndHistoryMs": 7.5,
+          "rendererSyncMs": 44.09999999962747,
+          "stages": {
+            "analysis": 0.40000000037252903,
+            "vertical": 5.699999999254942,
+            "preflight": 19.200000001117587,
+            "spatial": 32.19999999925494,
+            "entrances": 9.399999998509884,
+            "facade": 35.09999999962747,
+            "attachments": 18
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 169,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 170.10000000149012,
+          "commandAndHistoryMs": 7.300000000745058,
+          "rendererSyncMs": 44.69999999925494,
+          "stages": {
+            "analysis": 0.2000000011175871,
+            "vertical": 3.199999999254942,
+            "preflight": 18.700000001117587,
+            "spatial": 22.799999998882413,
+            "entrances": 7.300000000745058,
+            "facade": 35.59999999962747,
+            "attachments": 21.399999998509884
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 172,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 176.90000000037253,
+          "commandAndHistoryMs": 7.699999999254942,
+          "rendererSyncMs": 45.20000000111759,
+          "stages": {
+            "analysis": 0.2000000011175871,
+            "vertical": 3.900000000372529,
+            "preflight": 20.199999999254942,
+            "spatial": 26.300000000745058,
+            "entrances": 7.700000001117587,
+            "facade": 37.70000000111759,
+            "attachments": 21.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 175,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 177.40000000037253,
+          "commandAndHistoryMs": 8,
+          "rendererSyncMs": 43.69999999925494,
+          "stages": {
+            "analysis": 0.30000000074505806,
+            "vertical": 3.699999999254942,
+            "preflight": 19.700000001117587,
+            "spatial": 26.59999999962747,
+            "entrances": 9.299999998882413,
+            "facade": 37.40000000037253,
+            "attachments": 18.59999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 178,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        },
+        {
+          "runKind": "warm-repeat",
+          "operation": "none",
+          "inputBeforeSignature": "581968:dc179328",
+          "inputAfterSignature": "581968:dc179328",
+          "outputSignature": "1534391:b35f102f",
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 56,
+            "startupGenerationCount": 0
+          },
+          "totalMs": 195.40000000037253,
+          "commandAndHistoryMs": 9.199999999254942,
+          "rendererSyncMs": 47.70000000111759,
+          "stages": {
+            "analysis": 0.2000000011175871,
+            "vertical": 3.699999999254942,
+            "preflight": 19.800000000745058,
+            "spatial": 25.699999999254942,
+            "entrances": 8,
+            "facade": 35.40000000037253,
+            "attachments": 37.09999999962747
+          },
+          "generationCalls": 1,
+          "viewerSyncCalls": 1,
+          "historyCommitCalls": 0,
+          "telemetry": {
+            "cacheStats": {
+              "hits": 181,
+              "misses": 3,
+              "writes": 3,
+              "evictions": 0,
+              "entries": 3,
+              "bytes": 16315800
+            },
+            "actualExpansions": 0,
+            "logicalExpansions": 0,
+            "layoutTrials": 0
+          },
+          "parkingQuality": []
+        }
+      ]
+    }
+  ],
+  "incomplete": true,
+  "failure": "Initial harness timed out at 240 seconds during urban warm sampling with trace capture enabled. Not an urban latency acceptance result."
+}

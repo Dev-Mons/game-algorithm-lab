@@ -271,7 +271,7 @@ export function selectTiles(
     fallbackCount = 0;
   for (const surface of analysis.surfaces) {
     const paletteHash = hash33(seed, `${options.context?.design.anchor.join(',')??surface.componentId}|facade.palette`);
-    const palette = PALETTES[paletteHash % PALETTES.length];
+    const palette = options.context?.verticalBands?.profile?.palette??PALETTES[paletteHash % PALETTES.length];
     const evaluations: RuleTrace[] = [];
     let selection: FaceTrace["selection"] | undefined;
     for (const rule of rules) {

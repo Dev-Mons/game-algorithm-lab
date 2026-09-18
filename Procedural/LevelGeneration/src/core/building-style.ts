@@ -4,7 +4,10 @@ import { FACADE_ASSETS, type FacadeAssetKey } from './facade-assets';
 import type { Direction } from './analysis';
 import { BUILDING_USES, type BuildingUse } from './environment-contract';
 import { exactKeys, cloneJSON } from './canonical';
-export type VerticalBand = 'base' | 'body' | 'crown';
+import {validatePrograms,type ArchitecturalProgram} from './architectural-program';
+import type {MassPolicy} from './mass-relations';
+import type {FacadeGrammar} from './facade-plan';
+export type VerticalBand = string;
 export type FacadeKind = 'front' | 'side';
 export interface BuildingModule {
   id:string; assetId:FacadeAssetKey; semantic:'wall'|'window'|'entrance'|'pier'|'corner'|'trim';
@@ -28,9 +31,12 @@ export interface BuildingStyle {
   bandPolicy:BandPolicy;bands:Record<VerticalBand,BandDefinition>;alignedFamilies:AlignedFamily[];
   modules:BuildingModule[];patterns:FacadePattern[];fallback:string;entrance:string;entrancePair:[string,string];
   corner:{module:string;minRunWidth:number};topTrim:string;frontOrder:Direction[];groundY:0;
+  programs?:ArchitecturalProgram[];
+  massPolicy?:MassPolicy;
+  facadeGrammar?:FacadeGrammar;
 }
 export const DEFAULT_BAND_POLICY:BandPolicy={baseRatioPermille:{retail:250,office:200,generic:200,residential:167,industrial:200},crownRatioPermille:100,maxBaseCells:4,maxCrownCells:3};
-export const VERTICAL_BANDS:VerticalBand[]=['base','body','crown'];
+export const VERTICAL_BANDS:('base'|'body'|'crown')[]=['base','body','crown'];
 const walls:Direction[]=['PX','NX','PZ','NZ'];
 const module=(id:string,assetId:FacadeAssetKey,semantic:BuildingModule['semantic'],connection?:BuildingModule['connection']):BuildingModule=>({id,assetId,semantic,width:1,height:1,directions:[...walls],...(connection?{connection}:{})});
 function stockStyle(id:'shop'|'office'):BuildingStyle {
@@ -51,11 +57,40 @@ function stockStyle(id:'shop'|'office'):BuildingStyle {
 }
 export const SHOP_STYLE=stockStyle('shop');
 export const OFFICE_STYLE=stockStyle('office');
+/** Legacy styles remain exact presets. New urban presets share the same mesh supplier. */
+export function urbanStyle(kind:'shop'|'office'):BuildingStyle {
+  const style=stockStyle(kind);style.id=`urban-${kind}`;style.label=kind==='shop'?'도시형 복합 상가':'도시형 업무';
+  const roles={retail:'base',office:'body',upper:'crown',mechanical:'body'} as const;
+  style.modules.push(module('louver','facade.urban-louver','wall'));
+  style.bands={};style.patterns=[];style.alignedFamilies=[];
+  for(const [id,legacy] of Object.entries(roles))style.bands[id]={moduleSet:[...stockStyle(kind).bands[legacy].moduleSet,'louver'],fallback:id==='mechanical'?'louver':`${legacy}-single`};
+  for(const period of [2,3,4]){
+    const patterns:Record<string,string[]>={};
+    for(const [id,legacy] of Object.entries(roles)){
+      const key=`${id}-${period}`,repeat=id==='mechanical'?Array<string>(period).fill('louver'):[`${legacy}-left`,`${legacy}-right`,...Array<string>(period-2).fill(`${legacy}-pier`)];
+      style.patterns.push({id:key,start:[],repeat,end:[],minRepeat:1,maxRepeat:32,roles:[id],facades:['front','side'],minWidth:1,priority:100,remainder:style.bands[id].fallback});patterns[id]=[key];
+    }
+    style.alignedFamilies.push({id:`bay-${period}`,periodCells:period,priority:100,patterns});
+  }
+  style.programs=[1,2].map(n=>({id:`mixed-${n}`,fallback:'retail',sections:[
+    {id:'retail',scope:'ground',required:true,min:1,preferred:kind==='shop'?n:1,max:2,priority:100,minHeight:1},
+    {id:'office',scope:'repeat',required:true,min:1,preferred:1,max:32,priority:0,minHeight:1},
+    {id:'upper',scope:'upper',required:false,min:1,preferred:n,max:2,priority:80,minHeight:4},
+    {id:'mechanical',scope:'upper',required:false,min:1,preferred:1,max:1,priority:20,minHeight:12},
+  ]}));
+  style.massPolicy={minArea:4,minWidth:2,minPersistence:2,changePermille:150};
+  for(let bits=0;bits<16;bits++)style.modules.push(module(`frame-${bits}`,`facade.urban-frame-${bits}` as import('./urban-facade-assets').FrameKey,'window'));
+  style.facadeGrammar={sections:['office'],periodV:2,minWidth:2,minHeight:2,boundaryPolicy:'absolute',maxGroups:4096};
+  return style;
+}
+export const URBAN_SHOP_STYLE=urbanStyle('shop');
+export const URBAN_OFFICE_STYLE=urbanStyle('office');
 export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
   const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);
   const range=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=min&&v<=max;
-  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY']);
+  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar']);
+  if(style.massPolicy!==undefined){const p=style.massPolicy;exactKeys(p,['minArea','minWidth','minPersistence','changePermille']);if(!style.programs||!range(p.minArea,1,1024)||!range(p.minWidth,1,32)||!range(p.minPersistence,1,32)||!range(p.changePermille,1,1000))fail();}
   if(style.format!=='banded-facade-v1'||!id(style.id)||!range(style.version,1,0x7fffffff)||typeof style.label!=='string'||style.label.length>120||style.groundY!==0) fail();
   const policy=style.bandPolicy;
   exactKeys(policy,['baseRatioPermille','crownRatioPermille','maxBaseCells','maxCrownCells'],['baseCountOverride','crownCountOverride']);
@@ -101,20 +136,24 @@ export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
     }
     return !family;
   };
+  const roles=style.programs?Object.keys(style.bands):VERTICAL_BANDS;
+  if(!roles.length||roles.length>16||roles.some(r=>!id(r)))fail();
+  if(style.programs!==undefined)validatePrograms(style.programs,roles);
+  if(style.facadeGrammar!==undefined){const g=style.facadeGrammar;exactKeys(g,['sections','periodV','minWidth','minHeight','boundaryPolicy','maxGroups']);if(!style.programs||!Array.isArray(g.sections)||!g.sections.length||g.sections.some(r=>!roles.includes(r))||!range(g.periodV,2,8)||!range(g.minWidth,2,8)||!range(g.minHeight,2,g.periodV)||!['absolute','restart'].includes(g.boundaryPolicy)||!range(g.maxGroups,1,16384)||Array.from({length:16},(_,i)=>i).some(i=>mods.get(`frame-${i}`)?.assetId!==`facade.urban-frame-${i}`))fail();}
   const patterns=new Map<string,FacadePattern>();
   for(const p of style.patterns) {
     exactKeys(p,['id','start','repeat','end','minRepeat','maxRepeat','roles','facades','minWidth','priority','remainder']);
-    if(!id(p.id)||patterns.has(p.id)||!group(p.start)||!group(p.repeat)||!p.repeat.length||!group(p.end)||!unit(p.remainder)||!range(p.minRepeat,1,32)||!range(p.maxRepeat,p.minRepeat,32)||!range(p.minWidth,1,32)||!Number.isSafeInteger(p.priority)||!Array.isArray(p.roles)||!p.roles.length||p.roles.some(r=>!VERTICAL_BANDS.includes(r))||!Array.isArray(p.facades)||!p.facades.length||p.facades.some(f=>!['front','side'].includes(f))) fail();
+    if(!id(p.id)||patterns.has(p.id)||!group(p.start)||!group(p.repeat)||!p.repeat.length||!group(p.end)||!unit(p.remainder)||!range(p.minRepeat,1,32)||!range(p.maxRepeat,p.minRepeat,32)||!range(p.minWidth,1,32)||!Number.isSafeInteger(p.priority)||!Array.isArray(p.roles)||!p.roles.length||p.roles.some(r=>!roles.includes(r))||!Array.isArray(p.facades)||!p.facades.length||p.facades.some(f=>!['front','side'].includes(f))) fail();
     patterns.set(p.id,p);
   }
-  exactKeys(style.bands,VERTICAL_BANDS);
-  for(const b of VERTICAL_BANDS) {const band=style.bands[b];exactKeys(band,['moduleSet','fallback']);if(!Array.isArray(band.moduleSet)||!band.moduleSet.length||band.moduleSet.some(m=>!mods.has(m))||!unit(band.fallback)||!band.moduleSet.includes(band.fallback)) fail();}
+  exactKeys(style.bands,roles);
+  for(const b of roles) {const band=style.bands[b];exactKeys(band,['moduleSet','fallback']);if(!Array.isArray(band.moduleSet)||!band.moduleSet.length||band.moduleSet.some(m=>!mods.has(m))||!unit(band.fallback)||!band.moduleSet.includes(band.fallback)) fail();}
   if(!Array.isArray(style.alignedFamilies)||!style.alignedFamilies.length) fail();
   const families=new Set<string>();
   for(const f of style.alignedFamilies) {
-    exactKeys(f,['id','periodCells','patterns','priority']);exactKeys(f.patterns,VERTICAL_BANDS);
+    exactKeys(f,['id','periodCells','patterns','priority']);exactKeys(f.patterns,roles);
     if(!id(f.id)||families.has(f.id)||!range(f.periodCells,1,8)||!Number.isSafeInteger(f.priority)) fail();families.add(f.id);
-    for(const b of VERTICAL_BANDS) if(!Array.isArray(f.patterns[b])||!f.patterns[b].length||f.patterns[b].some(k=>{const p=patterns.get(k);return !p||p.repeat.length!==f.periodCells||!p.roles.includes(b)||[...p.start,...p.repeat,...p.end,p.remainder].some(m=>!style.bands[b].moduleSet.includes(m));})) fail();
+    for(const b of roles) if(!Array.isArray(f.patterns[b])||!f.patterns[b].length||f.patterns[b].some(k=>{const p=patterns.get(k);return !p||p.repeat.length!==f.periodCells||!p.roles.includes(b)||[...p.start,...p.repeat,...p.end,p.remainder].some(m=>!style.bands[b].moduleSet.includes(m));})) fail();
   }
   if(!Array.isArray(style.entrancePair)||style.entrancePair.length!==2)fail();
   const pair=style.entrancePair.map(k=>mods.get(k));
