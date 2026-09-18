@@ -31,8 +31,10 @@ export function scenePlacementBounds16(p:ScenePlacement):Box16 {
 }
 for(const asset of ["parking-deck","parking-roof-deck","parking-column","parking-bay"])
   registerSceneAssetBounds(asset,{min:[-8,-8,-8],max:[8,8,8]});
-for(const asset of [...Object.keys(FACADE_ASSETS),'unit-panel',...['plaster','roof','paving','soffit'].map(a=>`crafted.${a}`)])
-  registerFaceAssetBounds(asset,['unit-panel','facade.wall','crafted.plaster','crafted.roof','crafted.paving','crafted.soffit'].includes(asset)?{min:[-8,-8,-1],max:[8,8,0]}:{min:[-8,-8,0],max:[8,8,2]});
+for(const [asset,descriptor] of Object.entries(FACADE_ASSETS))
+  registerFaceAssetBounds(asset,'bounds16' in descriptor?descriptor.bounds16:asset==='facade.wall'?{min:[-8,-8,-1],max:[8,8,0]}:{min:[-8,-8,0],max:[8,8,2]});
+for(const asset of ['unit-panel',...['plaster','roof','paving','soffit'].map(a=>`crafted.${a}`)])
+  registerFaceAssetBounds(asset,{min:[-8,-8,-1],max:[8,8,0]});
 for(const asset of Object.values(TRIM_ASSETS))registerFaceAssetBounds(asset.assetKey,asset.bounds16);
 
 export function validateBox16(box: Box16): Box16 {

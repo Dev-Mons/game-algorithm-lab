@@ -3,6 +3,7 @@ import {setPlacementMatrix} from "../src/display-transform";
 import {expect,it} from 'vitest';
 import {BANDED_FACADE_ASSETS,TRIM_ASSETS,portalDescriptor} from '../src/core/banded-facade-assets';
 import {FACADE_ASSETS} from '../src/core/facade-assets';
+import {ROOFTOP_FACADE_ASSETS} from '../src/core/rooftop-facade-assets';
 import {buildCraftedGeometry,CraftedGeometryLibrary} from '../src/crafted-geometry';
 import {createDocument} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
@@ -13,7 +14,7 @@ import {planFacadeTrims} from '../src/core/facade-trims';
 import {BASES,type Vec3} from '../src/core/analysis';
 
 it('all authored band, portal and trim vertices fit their numeric descriptors',()=>{
-  const descriptors={...BANDED_FACADE_ASSETS,'facade.portal-single':portalDescriptor('single'),'facade.portal-left':portalDescriptor('left'),'facade.portal-right':portalDescriptor('right'),...TRIM_ASSETS};
+  const descriptors={...BANDED_FACADE_ASSETS,...ROOFTOP_FACADE_ASSETS,'facade.portal-single':portalDescriptor('single'),'facade.portal-left':portalDescriptor('left'),'facade.portal-right':portalDescriptor('right'),...TRIM_ASSETS};
   for(const [key,descriptor] of Object.entries(descriptors)){
     const parts=buildCraftedGeometry(key);
     for(const g of [parts.panel,parts.relief,parts.glass].filter(Boolean)){

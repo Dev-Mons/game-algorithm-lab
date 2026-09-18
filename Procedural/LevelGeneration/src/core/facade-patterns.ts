@@ -22,6 +22,7 @@ export interface FacadeTrace {
   styleVersion: number;
   level: VerticalBand;
   topBoundary: boolean;
+  wallKind?: Surface['wallKind'];
   facade: FacadeKind;
   runId: string;
   patternId: string;
@@ -158,13 +159,16 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     if(!def||!band||!p||!trace||!def.directions.includes(s.direction))throw new Error('INVALID_FACADE_MODULE');
     const isCap=caps.has(s.faceId);
     const rowAsset=(isCap?`${band.rowRole}-cap`:band.rowRole) as AssetRow;
-    const asset=def.rowAssets?.[rowAsset]??def.assetId;
+    const rooftopAsset=s.wallKind==='rooftop'?def.rooftopAssets?.[rowAsset]:undefined;
+    const asset=rooftopAsset??def.rowAssets?.[rowAsset]??def.assetId;
     const palette=trace.architecture?.palette??'clay',tileId=`${asset}.${palette}`;
     if(!catalogIds.has(tileId))throw new Error(`MISSING_FACADE_ASSET:${tileId}`);
     p.tileId=tileId;p.ruleId=portal?'building.entrance':'building.banded';
+    if(rooftopAsset&&!portal)p.ruleId='building.rooftop-wall';
     trace.selection={...trace.selection,ruleId:p.ruleId,tileId};
     trace.facade={styleId:style.id,styleVersion:style.version,level:band.band,rowRole:band.rowRole,phase:vertical.alignment.phaseByDirection[s.direction as 'PX'|'NX'|'PZ'|'NZ'],topBoundary:caps.has(s.faceId),facade:kind(s),runId:`${s.componentId}:${s.direction}:${plane(s)}:${s.cell[1]}`,patternId,moduleId:key,reason,candidates,...(groupId?{groupId}:{}),...(def.connection?{part:def.connection.part}:{}),...(portal?{portalId:portal.id,portalRole:portal.role,entranceSpan:portal.widthCells}:{})};
     claimed.add(s.faceId);
+    trace.facade.wallKind=s.wallKind;
   };
   for(const portal of entrances.entrances)for(const [partIndex,faceId] of portal.faceIds.entries()){const face=faces.get(faceId);if(!face||face.role!=='wall')throw new Error('INVALID_PORTAL_FACE');assign(face,portal.widthCells===2?style.entrancePair[partIndex]:style.entrance,'entrance','validated exterior access',[],portal.id,portal);}
   const rows=new Map<string,Surface[]>();

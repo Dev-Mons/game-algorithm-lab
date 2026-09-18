@@ -13,7 +13,7 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 입력과 실행
 
-현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2**입니다. 구버전 로더, 마이그레이션, 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
+현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2 / catalog 3**입니다. 동일 schema의 catalog 2 문서는 기존 메타데이터를 검증한 뒤 catalog 3으로 읽으며, 저장된 스타일 정의는 유지합니다. 그 외 구버전 로더나 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
 
 실행 순서는 외피 분석·수직 구간·rule preflight → 공간과 공공 보행900 → 차량 동선800 → 출입구·보행700 → 주차 구획600 → 필수 구조 → 시설500~300 → 선택 마감200 → 검증과 Viewer입니다. 도로·주차만 있거나 건물0개인 문서도 같은 경로를 사용합니다. 실제 미구현 단계는 성공한 빈 계획으로 대체하지 않습니다.
 
@@ -30,6 +30,10 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 - 오른쪽 드래그로 카메라를 회전합니다. 뷰어에 포커스가 있을 때 W/S는 바라보는 방향의 앞/뒤, A/D는 카메라 기준 왼쪽/오른쪽으로 이동합니다. 가운데 드래그 이동과 휠 확대도 가능합니다. 입력창 편집 중에는 카메라가 움직이지 않습니다. 표시 지면·입력/계획 레이어는 생성 입력을 바꾸지 않습니다.
 
 ## 안전성과 결정론
+
+외벽은 `wallKind: regular | rooftop`으로 구분합니다. 각 X/Z 기둥에서 하늘에 노출된 최상단 셀의 외벽이 옥상 외벽이며, 계단형·Setback의 낮은 옥상도 같은 규칙으로 처리합니다. 상부 볼륨으로 덮인 테라스는 제외합니다. 볼륨 추가·제거, Undo/Redo 때 현재 Grid에서 다시 계산하며 Inspector에 판정과 선택 타일을 표시합니다.
+
+공통 타일 룰에서 `rooftop-wall` / `regular-wall` predicate를 사용할 수 있습니다. 건물 스타일 모듈은 선택적 `rooftopAssets`에 기존 `rowAssets`와 같은 행 키를 지정하여 옥상 전용 변형을 선택합니다. 기본 상가형은 낮은 난간 벽, 업무형은 가는 난간을 사용하고 기존 팔레트·창문 연결·출입구를 유지합니다. 난간은 벽 상단보다 4/16셀 높으며 실제 형상 범위를 공간 사전 검사에 포함합니다. 전용 변형이 없는 기존 사용자 스타일은 원래 외벽 타일을 유지합니다.
 
 좌표는 Y-up, 셀 span32, 원본 좌표 ±1,000,000입니다. 정수 Box16은 min 포함/max 제외이며 공유는 공통 예약 규칙과 인증 crossing에만 허용됩니다. 실제 지지면과 보행 몸체·sweep를 검증하며 높이 차에 가짜 계단을 만들지 않습니다. 모든 일반 건물 입구는 공통 접근 계획에서 결정합니다.
 

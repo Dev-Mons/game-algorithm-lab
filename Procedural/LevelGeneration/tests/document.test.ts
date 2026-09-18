@@ -70,7 +70,7 @@ it("rejects unknown versions, styles, changed catalogs, rules and missing settin
   const mutate: ((d: any) => void)[] = [
     (d) => (d.schemaVersion = 2),
     (d) => (d.algorithmVersion = "future"),
-    (d) => (d.catalog.version = 3),
+    (d) => (d.catalog.version = 4),
     (d) => (d.catalog.id = "unregistered"),
     (d) => (d.catalog.tiles[0].roles = []),
     (d) => (d.ruleSet.id = "other"),

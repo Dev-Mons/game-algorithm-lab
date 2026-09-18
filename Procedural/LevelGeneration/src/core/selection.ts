@@ -48,7 +48,7 @@ export interface Rule {
   roles: Role[];
   orientationIds: Direction[];
   tileIds: string[];
-  predicate?: "supported";
+  predicate?: "supported" | "rooftop-wall" | "regular-wall";
 }
 export const DEFAULT_CATALOG: Tile[] = ROLES.map((role) => ({
   tileId: `panel.${role}`,
@@ -113,6 +113,7 @@ export interface FaceTrace {
   policy: RolePolicy;
   componentId: string;
   role: Role;
+  wallKind?: "regular" | "rooftop";
   direction: Direction;
   undersideKind?: "base" | "overhang";
   architecture?: SurfaceArchitecture & {
@@ -202,7 +203,7 @@ export function validateSelection(options: SelectionOptions) {
       !validList(rule.orientationIds, DIRECTIONS) ||
       !Array.isArray(rule.tileIds) ||
       (rule.predicate !== undefined &&
-        !["supported"].includes(
+        !["supported", "rooftop-wall", "regular-wall"].includes(
           rule.predicate,
         )) ||
       new Set(rule.tileIds).size !== rule.tileIds.length ||
@@ -282,7 +283,8 @@ export function selectTiles(
       if (rule.predicate) {
         const context = surface.architecture;
         const supported = context && context.interpretation !== "unsupported";
-        const matched=!!supported;
+        const matched = rule.predicate === "supported" ? !!supported
+          : surface.wallKind === (rule.predicate === "rooftop-wall" ? "rooftop" : "regular");
         if (!matched)
           conditions.push(`architecture-${rule.predicate}-mismatch`);
       }
@@ -370,6 +372,7 @@ export function selectTiles(
       policy: analysis.rolePolicy ?? "component-height-v1",
       componentId: surface.componentId,
       role: surface.role,
+      ...(surface.wallKind ? { wallKind: surface.wallKind } : {}),
       direction: surface.direction,
       ...(surface.undersideKind
         ? { undersideKind: surface.undersideKind }

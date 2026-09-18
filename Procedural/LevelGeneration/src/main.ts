@@ -322,7 +322,7 @@ export function selectFace(id: string, attachmentId?: string) {
     const info = document.createElement("p");
     info.className = "edit-note";
     info.id = "facade-info";
-    info.textContent = `스타일 ${f.styleId} v${f.styleVersion} · 층 ${f.level} · ${f.facade}\n패턴 ${f.patternId} · 모듈 ${f.moduleId}\n묶음 ${f.groupId ?? "없음"} · 조각 ${f.part ?? "없음"}\n상단 마감 ${f.topBoundary ? "있음" : "없음"}\n${f.reason}\n${f.candidates.map((c) => `${c.id}: ${c.reason}`).join("\n")}`;
+    info.textContent = `스타일 ${f.styleId} v${f.styleVersion} · 층 ${f.level} · ${f.facade}\n패턴 ${f.patternId} · 모듈 ${f.moduleId}\n묶음 ${f.groupId ?? "없음"} · 조각 ${f.part ?? "없음"}\n외벽 ${f.wallKind === "rooftop" ? "옥상 외벽" : "일반 외벽"} · 상단 마감 ${f.topBoundary ? "있음" : "없음"}\n${f.reason}\n${f.candidates.map((c) => `${c.id}: ${c.reason}`).join("\n")}`;
     if (f.entranceSpan)
       info.textContent += `\n출입구 ${f.entranceSpan}칸 · 검증된 접근 경로`;
     el("inspector").append(info);

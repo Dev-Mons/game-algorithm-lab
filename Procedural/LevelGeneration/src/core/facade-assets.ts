@@ -1,4 +1,5 @@
 import {BANDED_FACADE_ASSETS,portalDescriptor,TRIM_ASSETS} from './banded-facade-assets';
+import {ROOFTOP_FACADE_ASSETS} from './rooftop-facade-assets';
 // Authored dimensions in local face coordinates. No volume input.
 export interface FacadeAsset {
   opening?: {
@@ -15,6 +16,7 @@ export interface FacadeAsset {
 }
 export const FACADE_ASSETS = {
   ...BANDED_FACADE_ASSETS,
+  ...ROOFTOP_FACADE_ASSETS,
   "facade.portal-single": portalDescriptor('single'),
   "facade.portal-left": portalDescriptor('left'),
   "facade.portal-right": portalDescriptor('right'),

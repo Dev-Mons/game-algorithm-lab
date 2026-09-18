@@ -1,4 +1,5 @@
 import {ASSET_ROWS,type AssetRow,type BandedFacadeKey} from "./banded-facade-assets";
+import {rooftopBandedKey} from './rooftop-facade-assets';
 import { FACADE_ASSETS, type FacadeAssetKey } from './facade-assets';
 import type { Direction } from './analysis';
 import { BUILDING_USES, type BuildingUse } from './environment-contract';
@@ -10,6 +11,7 @@ export interface BuildingModule {
   width:number; height:number; directions:Direction[];
   connection?:{family:string;part:'single'|'left'|'middle'|'right'};
   rowAssets?:Record<AssetRow,FacadeAssetKey>;
+  rooftopAssets?:Record<AssetRow,FacadeAssetKey>;
 }
 export interface FacadePattern {
   id:string;start:string[];repeat:string[];end:string[];minRepeat:number;maxRepeat:number;
@@ -35,10 +37,15 @@ function stockStyle(id:'shop'|'office'):BuildingStyle {
   const modules:BuildingModule[]=[module('wall','facade.wall','wall'),module('entry','facade.portal-single','entrance'),module('entry-left','facade.portal-left','entrance',{family:'portal',part:'left'}),module('entry-right','facade.portal-right','entrance',{family:'portal',part:'right'}),module('trim','facade.cap','trim')];
   for(const band of VERTICAL_BANDS)for(const part of ['single','left','right','pier'] as const){
     const key=`${band}-${part}`,rowAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`facade.banded-${id}-${band}-${row}-${part}`])) as Record<AssetRow,BandedFacadeKey>;
-    modules.push({...module(key,rowAssets.repeat,part==='pier'?'pier':'window',part==='pier'?undefined:{family:`${id}:${band}`,part}),rowAssets});
+    const rooftopAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,rooftopBandedKey(`facade.banded-${id}-${band}-${row.replace('-cap','')}-cap-${part}` as BandedFacadeKey)])) as Record<AssetRow,FacadeAssetKey>;
+    modules.push({...module(key,rowAssets.repeat,part==='pier'?'pier':'window',part==='pier'?undefined:{family:`${id}:${band}`,part}),rowAssets,rooftopAssets});
+  }
+  for(const m of modules.filter(m=>m.semantic==='entrance'||m.semantic==='wall')) {
+    const suffix=m.semantic==='wall'?'wall':m.assetId.slice('facade.'.length);
+    m.rooftopAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`facade.rooftop-${id}-${suffix}`])) as Record<AssetRow,FacadeAssetKey>;
   }
   const patterns=VERTICAL_BANDS.map((band):FacadePattern=>({id:`${band}-rhythm`,start:[],repeat:[`${band}-left`,`${band}-right`,`${band}-pier`],end:[],minRepeat:1,maxRepeat:32,roles:[band],facades:['front','side'],minWidth:1,priority:100,remainder:`${band}-single`}));
-  return {format:'banded-facade-v1',id,version:4,label:id==='shop'?'상가형':'업무형',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
+  return {format:'banded-facade-v1',id,version:5,label:id==='shop'?'상가형':'업무형',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
     bands:Object.fromEntries(VERTICAL_BANDS.map(b=>[b,{moduleSet:['wall','entry','entry-left','entry-right','trim',`${b}-single`,`${b}-left`,`${b}-right`,`${b}-pier`],fallback:`${b}-single`}])) as Record<VerticalBand,BandDefinition>,
     alignedFamilies:[{id:'paired-pier',periodCells:3,priority:100,patterns:{base:['base-rhythm'],body:['body-rhythm'],crown:['crown-rhythm']}}],modules,patterns,fallback:'wall',entrance:'entry',entrancePair:['entry-left','entry-right'],corner:{module:'body-pier',minRunWidth:3},topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0};
 }
@@ -57,9 +64,9 @@ export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   if(!Array.isArray(style.modules)||!style.modules.length||style.modules.length>256||!Array.isArray(style.patterns)||style.patterns.length>100) fail();
   const mods=new Map<string,BuildingModule>();
   for(const m of style.modules) {
-    exactKeys(m,['id','assetId','semantic','width','height','directions'],['connection','rowAssets']);
+    exactKeys(m,['id','assetId','semantic','width','height','directions'],['connection','rowAssets','rooftopAssets']);
     if(!id(m.id)||mods.has(m.id)||!Object.hasOwn(FACADE_ASSETS,m.assetId)||m.width!==1||m.height!==1||!['wall','window','entrance','pier','corner','trim'].includes(m.semantic)||!Array.isArray(m.directions)||!m.directions.length||new Set(m.directions).size!==m.directions.length||m.directions.some(d=>!walls.includes(d))) fail();
-    if(m.rowAssets){exactKeys(m.rowAssets,ASSET_ROWS);for(const key of Object.values(m.rowAssets)){
+    for(const variants of [m.rowAssets,m.rooftopAssets])if(variants){exactKeys(variants,ASSET_ROWS);for(const key of Object.values(variants)){
       const descriptor=FACADE_ASSETS[key];if(!descriptor||!('structural' in descriptor)||!descriptor.structural)fail();
       if(m.connection&&(!('part' in descriptor)||descriptor.part!==m.connection.part))fail();
       if(m.semantic==='pier'&&!('pierWidth16' in descriptor))fail();
@@ -74,7 +81,7 @@ export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
     mods.set(m.id,m);
   }
   const unit=(key:string)=>{const m=mods.get(key);return !!m&&m.semantic!=='trim'&&(!m.connection||m.connection.part==='single');};
-  const openingSignature=(m:BuildingModule)=>[m.assetId,...(m.rowAssets?ASSET_ROWS.map(r=>m.rowAssets![r]):[])].map(key=>{
+  const openingSignature=(m:BuildingModule)=>[m.assetId,...(m.rowAssets?ASSET_ROWS.map(r=>m.rowAssets![r]):[]),...(m.rooftopAssets?ASSET_ROWS.map(r=>m.rooftopAssets![r]):[])].map(key=>{
     const a=FACADE_ASSETS[key];if(!('opening' in a)||!a.opening)return '';
     return [a.opening.minY,a.opening.maxY,'railWidth16' in a?a.railWidth16:'default','jointFamily' in a?a.jointFamily:'default'].join('|');
   }).join(';');

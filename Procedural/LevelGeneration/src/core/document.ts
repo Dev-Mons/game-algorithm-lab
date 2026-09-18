@@ -108,7 +108,7 @@ export function createDocument(
     environment: validateEnvironmentSettings(environment),
     grid: cells, seed,
     catalog: {
-      id: profile, version: 2,
+      id: profile, version: 3,
       tiles: canonicalCatalog(profileData("office").catalog),
       modules: cloneJSON(canonicalModules([...FACADE_MODULE_ASSETS])),
     },
@@ -130,7 +130,7 @@ export function loadDocument(text: string): GenerationDocument {
   exactKeys(raw as unknown,["schemaVersion","algorithmVersion","buildingDefinition","sceneInputs","buildings","environment","grid","seed","catalog","ruleSet","style","settings"]);
   if (!Array.isArray(raw.buildings)) throw new Error("INVALID_BUILDINGS");
   for (const b of raw.buildings) exactKeys(b,["componentId","rule","design","spatialAdapterRef"],["theme"]);
-  if (!raw.catalog || !raw.ruleSet || !raw.style || raw.catalog.version !== 2 || raw.ruleSet.version !== 1 || raw.style.version !== 1)
+  if (!raw.catalog || !raw.ruleSet || !raw.style || ![2,3].includes(raw.catalog.version) || raw.ruleSet.version !== 1 || raw.style.version !== 1)
     throw new Error("Unknown catalog, rule or style version.");
   // Only registered immutable metadata is accepted under each ID/version.
   const expected = createDocument(
@@ -159,7 +159,13 @@ export function loadDocument(text: string): GenerationDocument {
         : {}),
     },
   };
-  if (canonicalJSON(normalized) !== canonicalJSON(expected))
+  // Catalog 2 has the same immutable assets except the newly added rooftop variants.
+  // Verify it against that exact catalog before upgrading; preserve authored styles.
+  const registered = raw.catalog.version === 2 ? {
+    ...expected, catalog: { ...expected.catalog, version: 2,
+      tiles: expected.catalog.tiles.filter(t => !t.assetKey.startsWith('facade.rooftop-')) },
+  } : expected;
+  if (canonicalJSON(normalized) !== canonicalJSON(registered))
     throw new Error(
       "Document metadata/settings do not match the registered version.",
     );

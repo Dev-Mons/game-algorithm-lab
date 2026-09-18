@@ -59,6 +59,7 @@ export interface Surface {
   direction: Direction;
   componentId: string;
   role: Role;
+  wallKind?: "regular" | "rooftop";
   undersideKind?: "base" | "overhang";
   architecture?: SurfaceArchitecture;
 }
@@ -151,6 +152,11 @@ export function analyze(input: unknown,onComponents?:(components:AnalysisCompone
   }
   if(onComponents){const groups=new Map<string,AnalysisComponent>();for(const c of cells){const owner=components.get(cellId(c))!.id;let part=groups.get(owner);if(!part){part={id:owner,cells:[]};groups.set(owner,part);}part.cells.push(c);}onComponents([...groups.values()]);}
   const surfaces: Surface[] = [];
+  // A local roof is sky-exposed in its own column, independent of component height.
+  // Covered terraces and walls ending beneath an overhang are not rooftop walls.
+  const columnTops = new Map<string, number>();
+  for (const [x, y, z] of cells)
+    columnTops.set(`${x},${z}`, Math.max(columnTops.get(`${x},${z}`) ?? -Infinity, y));
   for (const cell of cells)
     for (const direction of DIRECTIONS) {
       if (!exterior.has(cellId(add(cell, BASES[direction].n)))) continue;
@@ -160,6 +166,10 @@ export function analyze(input: unknown,onComponents?:(components:AnalysisCompone
         cell,
         direction,
         componentId: component.id,
+        ...(direction !== "PY" && direction !== "NY"
+          ? { wallKind: columnTops.get(`${cell[0]},${cell[2]}`) === cell[1]
+              ? "rooftop" as const : "regular" as const }
+          : {}),
         role:
           direction === "PY"
             ? cell[1] === component.maxY
