@@ -113,7 +113,11 @@ export class PanelAssets {
   get size(){return this.materials.size+this.extraMaterials.size;}
   private painted(asset:Tile['assetKey'],palette:Palette){const key=`${asset}|${palette}`;if(!this.materials.has(key)){const texture=new THREE.CanvasTexture(paint(asset,palette));texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;this.materials.set(key,new THREE.MeshStandardMaterial({map:texture,roughness:.9,side:THREE.DoubleSide}));}return this.materials.get(key)!;}
   get(tile: Tile): THREE.MeshStandardMaterial {
-    if (tile.assetKey === "unit-panel") return this.plain;
+    if (tile.assetKey === "unit-panel") {
+      const key = `unit|${tile.tileId}`;
+      if (!this.extraMaterials.has(key)) this.extraMaterials.set(key, new THREE.MeshStandardMaterial({color:LEGACY_COLORS[tile.tileId]??'#ff36b6',roughness:.88,side:THREE.DoubleSide}));
+      return this.extraMaterials.get(key)!;
+    }
     if (tile.assetKey.startsWith("facade.")) {
       const key = `facade-wall|${tile.palette}`;
       if (!this.extraMaterials.has(key))

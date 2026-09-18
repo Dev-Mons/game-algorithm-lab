@@ -31,7 +31,7 @@ The latest issue bodies and comments were fetched on 2026-09-17. Local reference
 
 - `npm run verify`: typecheck, 153 tests in 33 files, production build passed.
 - `npm run test:e2e`: all 23 browser regressions passed. Current screenshots are in `benchmarks/screenshots/`; they are inspection evidence, not frozen-output golden tests.
-- `npm run build` followed by `npx playwright test e2e/environment.spec.ts --grep @measure`: all 16 distributions passed, with 470 measured samples and 50 separate warm-up runs. The complete p50/p95/max table, machine/build identity, protocol and failed earlier evidence are in [benchmarks/README.md](benchmarks/README.md).
+- `npm run build` followed by `npx playwright test e2e/environment.spec.ts --grep @measure`: all 16 distributions passed, with 470 measured samples and 50 separate warm-up runs. The complete p50/p95/max table, machine/build identity, protocol and failed earlier evidence are in [benchmarks/README.md](../benchmarks/README.md).
 - `git diff --check`: passed. No unrelated project files or user attachments are included. Remote main commit and issue closure records are reported in GitHub #16–#27 after push verification.
 
 ## Safety and optimization notes

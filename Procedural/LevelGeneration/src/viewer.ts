@@ -9,8 +9,9 @@ import {
   type Vec3,
   type Tile,
 } from "./core/generate";
-import { PanelAssets, LEGACY_COLORS } from "./panel-assets";
+import { PanelAssets } from "./panel-assets";
 import { CraftedGeometryLibrary } from "./crafted-geometry";
+import { createFaceMesh } from "./face-mesh";
 import { setPlacementMatrix } from "./display-transform";
 import { SurfaceInteraction } from "./surface-interaction";
 import type { SurfaceSelection } from "./surface-edit";
@@ -257,11 +258,11 @@ export class Viewer {
     }
     const mode=this.interaction.mode;
     this.onSourceSelect?.(rankSourceHits(sourceHits,mode==='inspect'?undefined:mode==='parking'?'parking':mode).map(h=>h.source));
-    if (hit?.instanceId !== undefined && this.result) {
-      const module = hit.object.userData.modules?.[hit.instanceId]??hit.object.userData.module;
-      let faceId = hit.object.userData.faceIds?.[hit.instanceId];
+    if (hit && this.result && (hit.instanceId !== undefined || hit.object.userData.faceId)) {
+      const module = hit.object.userData.modules?.[hit.instanceId ?? 0]??hit.object.userData.module;
+      let faceId = hit.object.userData.faceId ?? hit.object.userData.faceIds?.[hit.instanceId ?? 0];
       if (hit.object.userData.scenePlacement?.kind === "building") {
-        const componentId = (hit.object.userData.scenePlacements?.[hit.instanceId]??hit.object.userData.scenePlacement).componentId;
+        const componentId = (hit.object.userData.scenePlacements?.[hit.instanceId ?? 0]??hit.object.userData.scenePlacement).componentId;
         faceId = this.result.surfaces.find(s => s.componentId === componentId)?.faceId;
       }
       if (!faceId) return;
@@ -329,6 +330,7 @@ export class Viewer {
     this.clearGroup(this.buildingSelection);
     this.clearGroup(this.scenePlacements);
     this.result = undefined;
+    this.reportFaceMeshes();
   }
   sync(result: GenerationResult, catalog: Tile[], document?: GenerationDocument) {
     this.clear();
@@ -391,84 +393,25 @@ export class Viewer {
     );
     const matrix = new THREE.Matrix4();
     const tiles = new Map(catalog.map((t) => [t.tileId, t]));
-    const batches = new Map<string, { tile: Tile; indices: number[] }>();
-    result.placements.forEach((p, i) => {
+    for (const p of result.placements) {
       const tile = tiles.get(p.tileId);
       if (!tile) throw new Error(`Unknown catalog tile: ${p.tileId}`);
-      if (!batches.has(tile.tileId))
-        batches.set(tile.tileId, { tile, indices: [] });
-      batches.get(tile.tileId)!.indices.push(i);
-    });
-    for (const { tile, indices } of batches.values()) {
-      const parts =
-        tile.assetKey.startsWith("crafted.") ||
-        tile.assetKey.startsWith("facade.")
-          ? this.crafted.get(tile.assetKey)
-          : undefined;
-      const mesh = new THREE.InstancedMesh(
-        parts?.panel ?? this.plane,
-        this.assets.get(tile),
-        indices.length,
-      );
-      mesh.userData.faceIds = indices.map((i) => result.placements[i].faceId);
-      indices.forEach((index, instance) => {
-        const p = result.placements[index];
-        setPlacementMatrix(
-          matrix,
-          p.position2,
-          p.orientationId,
-          this.displayOrigin,
-        );
-        mesh.setMatrixAt(instance, matrix);
-        mesh.setColorAt(
-          instance,
-          new THREE.Color(
-            tile.assetKey === "unit-panel"
-              ? (LEGACY_COLORS[tile.tileId] ?? "#ff36b6")
-              : "#ffffff",
-          ),
-        );
-      });
-      mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      mesh.computeBoundingSphere();
-      this.groups.placements.add(mesh);
+      const palette = tile.palette ?? 'clay';
+      this.groups.placements.add(createFaceMesh(p, tile, this.crafted,
+        [this.assets.get(tile), this.assets.frame(palette), this.assets.glass(palette)], this.displayOrigin));
+    }
+    // Independent modules, if a rule supplies them, do not stand in for face parts.
+    for (const m of result.modules ?? []) {
+      const mesh = new THREE.Mesh(this.crafted.get(m.assetKey), this.assets.frame(m.palette));
+      mesh.matrixAutoUpdate = false;
+      setPlacementMatrix(mesh.matrix, m.position2, m.orientationId, this.displayOrigin, m.scale16);
+      mesh.userData.faceId = m.hostFaceId;
+      mesh.userData.module = m;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      if (parts?.relief) {
-        const relief = new THREE.InstancedMesh(
-          parts.relief,
-          this.assets.frame(tile.palette!),
-          indices.length,
-        );
-        relief.instanceMatrix.copy(mesh.instanceMatrix);
-        relief.userData.faceIds = [...mesh.userData.faceIds];
-        relief.computeBoundingSphere();
-        relief.castShadow = true;
-        relief.receiveShadow = true;
-        this.groups.placements.add(relief);
-      }
-      if (parts?.glass) {
-        const glass = new THREE.InstancedMesh(
-          parts.glass,
-          this.assets.glass(tile.palette!),
-          indices.length,
-        );
-        glass.instanceMatrix.copy(mesh.instanceMatrix);
-        glass.userData.faceIds = [...mesh.userData.faceIds];
-        glass.computeBoundingSphere();
-        this.groups.placements.add(glass);
-      }
+      this.groups.placements.add(mesh);
     }
-    const moduleBatches=new Map<string,NonNullable<GenerationResult['modules']>>();
-    for(const m of result.modules??[]){const key=`${m.assetKey}|${m.palette}`,batch=moduleBatches.get(key)??[];batch.push(m);moduleBatches.set(key,batch);}
-    for(const modules of moduleBatches.values()){
-      const first=modules[0],parts=this.crafted.get(first.assetKey),material=this.assets.frame(first.palette);
-      for(const geometry of [parts.panel,parts.relief]){if(!geometry)continue;const mesh=new THREE.InstancedMesh(geometry,material,modules.length);
-        modules.forEach((m,i)=>{setPlacementMatrix(matrix,m.position2,m.orientationId,this.displayOrigin,m.scale16);mesh.setMatrixAt(i,matrix);});
-        mesh.userData.faceIds=modules.map(m=>m.hostFaceId);mesh.userData.modules=modules;mesh.computeBoundingSphere();mesh.castShadow=true;mesh.receiveShadow=true;this.groups.placements.add(mesh);
-      }
-    }
+    this.reportFaceMeshes();
     surfaces.userData.faceIds = result.surfaces.map((s) => s.faceId);
     for (let i = 0; i < count; i++) {
       // Build the analysis view from surfaces independently of placement transforms.
@@ -505,6 +448,19 @@ export class Viewer {
       this.groups.edges.add(this.lines(points, this.lineMaterials[kind]));
     }
     if(this.groups.normals.visible)this.buildNormals();
+  }
+  private reportFaceMeshes() {
+    // Inspect actual render objects, excluding analysis/selection and scene objects.
+    const faceMeshes = this.groups.placements.children.filter(o => o.userData.faceAssetKey);
+    this.renderer.domElement.dataset.faceMeshes = JSON.stringify({
+      count: faceMeshes.length,
+      uniqueFaces: new Set(faceMeshes.map(o => o.userData.faceId)).size,
+      instanced: faceMeshes.filter(o => o instanceof THREE.InstancedMesh).length,
+      childObjects: faceMeshes.reduce((n, o) => n + o.children.length, 0),
+      extraPlacementObjects: this.groups.placements.children.length - faceMeshes.length,
+      finishedFaces: faceMeshes.filter(o => o.userData.finishIds.length).length,
+      glassFaces: faceMeshes.filter(o => (o as THREE.Mesh).geometry.groups.some(g => g.materialIndex === 2)).length,
+    });
   }
   private buildVoxels(){const result=this.result;if(!result)return;
     const voxels = new THREE.InstancedMesh(

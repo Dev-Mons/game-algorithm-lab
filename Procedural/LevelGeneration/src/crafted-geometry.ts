@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { completeFaceAsset } from './core/complete-face-assets';
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import {
   FACADE_ASSETS,
@@ -7,7 +8,7 @@ import {
 } from "./core/facade-assets";
 import {TRIM_ASSETS,type BandedFacadeAsset} from './core/banded-facade-assets';
 
-export interface GeometryParts {
+interface GeometryParts {
   panel: THREE.BufferGeometry;
   relief?: THREE.BufferGeometry;
   glass?: THREE.BufferGeometry;
@@ -95,67 +96,8 @@ function bandedFacade(asset:BandedFacadeAsset):GeometryParts {
   else plate(-8,8,-8,8);
   return {panel:merged(panels),...(blocks.length?{relief:merged(blocks)}:{}),...(opening?{glass:new THREE.PlaneGeometry((opening.maxU-opening.minU)/16,(opening.maxV-opening.minV)/16).translate((opening.minU+opening.maxU)/32,(opening.minV+opening.maxV)/32,1/64)}:{})};
 }
-function roof(shape: string): GeometryParts {
-  const top: number[] = [],
-    sides: number[] = [];
-  const quad = (
-    out: number[],
-    a: number[],
-    b: number[],
-    c: number[],
-    d?: number[],
-  ) => {
-    out.push(...a, ...b, ...c);
-    if (d) out.push(...a, ...c, ...d);
-  };
-  const lip = shape === "flat" ? 1 : 1 / 16;
-  const a = [-0.5, -0.5, lip],
-    b = [0.5, -0.5, lip],
-    c = [0.5, 0.5, lip],
-    d = [-0.5, 0.5, lip];
-  for (const [p, q] of [
-    [a, b],
-    [b, c],
-    [c, d],
-    [d, a],
-  ])
-    quad(sides, [...p.slice(0, 2), 0], [...q.slice(0, 2), 0], q, p);
-  if (shape === "flat") quad(top, a, b, c, d);
-  else if (shape.startsWith("gable")) {
-    const r = [-0.5, 0, 1],
-      s = [0.5, 0, 1];
-    quad(top, a, b, s, r);
-    quad(top, r, s, c, d);
-    quad(sides, a, r, d);
-    quad(sides, b, c, s);
-  } else {
-    const r = [-0.25, 0, 1],
-      s = [0.25, 0, 1];
-    quad(top, a, b, s, r);
-    quad(top, r, s, c, d);
-    quad(top, a, r, d);
-    quad(top, b, c, s);
-  }
-  const geometry = (positions: number[]) => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    g.setAttribute(
-      "uv",
-      new THREE.Float32BufferAttribute(
-        positions.flatMap((_, i) =>
-          i % 3 === 0 ? [positions[i] + 0.5, positions[i + 1] + 0.5] : [],
-        ),
-        2,
-      ),
-    );
-    g.computeVertexNormals();
-    if (shape.endsWith("-z")) g.rotateZ(Math.PI / 2);
-    return g;
-  };
-  return { panel: geometry(top), relief: geometry(sides) };
-}
 // Asset-key-only construction: dimensions and input Grid never enter this function.
-export function buildCraftedGeometry(assetKey: string): GeometryParts {
+function authoredSurfaces(assetKey: string): GeometryParts {
   if(TRIM_ASSETS[assetKey])return {panel:merged(TRIM_ASSETS[assetKey].boxes16.map(b=>box((b.min[0]+b.max[0])/32,(b.min[1]+b.max[1])/32,(b.min[2]+b.max[2])/32,(b.max[0]-b.min[0])/16,(b.max[1]-b.min[1])/16,(b.max[2]-b.min[2])/16)))};
   const descriptor=FACADE_ASSETS[assetKey as FacadeAssetKey];
   if(descriptor&&'reliefBoxes16' in descriptor)return bandedFacade(descriptor);
@@ -164,18 +106,36 @@ export function buildCraftedGeometry(assetKey: string): GeometryParts {
   if (["crafted.plaster","crafted.roof","crafted.paving","crafted.soffit"].includes(assetKey)) return framed(assetKey.slice(8));
   throw new Error(`Unknown crafted geometry: ${assetKey}`);
 }
+// Stable material slots for a single Mesh: wall = 0, frame/finish = 1, glass = 2.
+export const FACE_MATERIAL_SLOTS = { wall: 0, frame: 1, glass: 2 } as const;
+/** Prototype authoring boundary. Only a catalog key enters; never a placed volume.
+ * Replace this factory's complete-key lookup with Blender single-mesh assets.
+ * Combining fixed demo surfaces here happens once per prototype, never per face.
+ */
+export function buildCraftedGeometry(assetKey: string): THREE.BufferGeometry {
+  const asset = assetKey.startsWith('face-v1|') ? completeFaceAsset(assetKey) : {baseAssetKey: assetKey, finishAssetKeys: []};
+  const base = asset.baseAssetKey === 'unit-panel' ? {panel: new THREE.PlaneGeometry(1, 1)} : authoredSurfaces(asset.baseAssetKey);
+  const surfaces: THREE.BufferGeometry[] = [base.panel], slots: number[] = [0];
+  if (base.relief) { surfaces.push(base.relief); slots.push(1); }
+  if (base.glass) { surfaces.push(base.glass); slots.push(2); }
+  for (const key of asset.finishAssetKeys) { surfaces.push(authoredSurfaces(key).panel); slots.push(1); }
+  const geometry = mergeGeometries(surfaces, true);
+  surfaces.forEach(g => g.dispose());
+  if (!geometry) throw new Error('Incompatible complete face prototype.');
+  geometry.groups.forEach((group, i) => group.materialIndex = slots[i]);
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
 export class CraftedGeometryLibrary {
-  private cache = new Map<string, GeometryParts>();
+  private cache = new Map<string, THREE.BufferGeometry>();
   get size(){return this.cache.size;}
   get(key: string) {
     if (!this.cache.has(key)) this.cache.set(key, buildCraftedGeometry(key));
     return this.cache.get(key)!;
   }
   dispose() {
-    for (const parts of this.cache.values()) {
-      parts.panel.dispose();
-      parts.relief?.dispose();
-      parts.glass?.dispose();
-    }
+    for (const geometry of this.cache.values()) geometry.dispose();
+    this.cache.clear();
   }
 }

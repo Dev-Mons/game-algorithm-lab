@@ -76,6 +76,10 @@ export interface Feature {
   faceIds: string[];
 }
 export interface Placement {
+  /** Derived, fixed complete-face prototype, including accepted mandatory finishes. */
+  faceAssetKey?: string;
+  /** Reservation/decision IDs for finishes owned by this face; never extra render objects. */
+  finishIds?: string[];
   placementId: string;
   tileId: string;
   faceId: string;

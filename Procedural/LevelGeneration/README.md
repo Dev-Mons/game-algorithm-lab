@@ -31,6 +31,8 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 안전성과 결정론
 
+일반 건물은 벽 본체·프레임·유리·난간·채택된 필수 마감까지 포함한 **면당 실제 Mesh 객체 하나**로 렌더링합니다. 지붕·테라스·밑면에도 같은 계약을 적용하며 geometry/재질은 공유합니다. 완성형 에셋 선택·마감 소유·Blender 교체 지점은 [완성형 면 에셋 계약](docs/COMPLETE_FACE_ASSETS.md)에 정리했습니다.
+
 외벽은 `wallKind: regular | rooftop`으로 구분합니다. 각 X/Z 기둥에서 하늘에 노출된 최상단 셀의 외벽이 옥상 외벽이며, 계단형·Setback의 낮은 옥상도 같은 규칙으로 처리합니다. 상부 볼륨으로 덮인 테라스는 제외합니다. 볼륨 추가·제거, Undo/Redo 때 현재 Grid에서 다시 계산하며 Inspector에 판정과 선택 타일을 표시합니다.
 
 공통 타일 룰에서 `rooftop-wall` / `regular-wall` predicate를 사용할 수 있습니다. 건물 스타일 모듈은 선택적 `rooftopAssets`에 기존 `rowAssets`와 같은 행 키를 지정하여 옥상 전용 변형을 선택합니다. 기본 상가형은 낮은 난간 벽, 업무형은 가는 난간을 사용하고 기존 팔레트·창문 연결·출입구를 유지합니다. 난간은 벽 상단보다 4/16셀 높으며 실제 형상 범위를 공간 사전 검사에 포함합니다. 전용 변형이 없는 기존 사용자 스타일은 원래 외벽 타일을 유지합니다.
@@ -43,6 +45,8 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 코드와 검증 자료
 
+설계·개발 계획과 계약 문서는 [docs 폴더](docs/)에 모았습니다.
+
 - `src/core/environment-generation.ts`: 단일 실행과 단계 상태
 - `src/core/environment-contract.ts`, `environment-settings.ts`, `rule-spatial-*`: 입력·사전 공간·공통 예약 계약
 - `spatial-analysis.ts`, `access-graph.ts`, `reservations.ts`: 실제 접근과 공간 공유
@@ -52,4 +56,4 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 - `environment-editor.ts`, `plan-inspector.ts`, `viewer.ts`: 편집·선택·현재 계획 표시
 - `environment-cache.ts`, `measurement.ts`: 제한 FIFO와 결정적 논리 비용/실제 계측 분리
 
-[스타일 계약](BUILDING_STYLE_PLAN.md), [포팅 계약](PORTING_CONTRACT.md), [이슈별 구현·검증 기록](ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.
+[스타일 계약](docs/BUILDING_STYLE_PLAN.md), [포팅 계약](docs/PORTING_CONTRACT.md), [이슈별 구현·검증 기록](docs/ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.

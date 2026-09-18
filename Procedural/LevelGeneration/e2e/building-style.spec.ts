@@ -6,6 +6,7 @@ import {validateAssembly,type Vec3} from '../src/core/generate';
 import {OFFICE_STYLE} from '../src/core/building-style';
 import {emptySceneInputs} from '../src/core/scene-inputs';
 import {box} from '../src/fixtures';
+import {expectCompleteFaces} from './complete-faces';
 async function load(page:Page,input:ReturnType<typeof createDocument>){await page.locator('#file').setInputFiles({name:'banded.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(input))});await expect(page.locator('#status')).toHaveText('OK');}
 async function save(page:Page){const waiting=page.waitForEvent('download');await page.locator('#save').click();const path=await(await waiting).path();const text=await readFile(path!,'utf8');return {text,document:loadDocument(text)};}
 test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared geometry',async({page},info)=>{
@@ -13,7 +14,8 @@ test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared
   const grid=[...box(3,1,4),...box(3,2,4).map(([x,y,z])=>[x+5,y,z] as Vec3),...box(10,12,5).filter(([x,y,z])=>y<8||x>=1&&x<=8&&z<3).map(([x,y,z])=>[x+10,y,z] as Vec3),...box(4,4,5).map(([x,y,z])=>[x+20,y,z] as Vec3)];
   const scene=emptySceneInputs();scene.roads=box(24,1,2).map(([x,y,z])=>[x,y,z+7]);
   const doc=createDocument(grid,42,'shop',undefined,undefined,scene);await load(page,doc);
-  const output=generateDocument(doc);expect(output.modules?.some(m=>m.assetKey.includes('outer-'))).toBe(true);
+  const output=generateDocument(doc);expect(output.placements.some(p=>p.faceAssetKey?.includes('outer-'))).toBe(true);
+  await info.attach('actual-face-meshes',{body:JSON.stringify(await expectCompleteFaces(page,output)),contentType:'application/json'});
   expect(output.placements.some(p=>p.tileId.includes('base-foot'))).toBe(true);expect(output.placements.some(p=>p.tileId.includes('body-repeat'))).toBe(true);expect(output.placements.some(p=>p.tileId.includes('crown-single-cap'))).toBe(true);
   await expect(page.locator('[data-stage="attachments"]')).toHaveAttribute('data-state','ready');
   await page.locator('.layers > summary').click();await page.locator('#environment-inputs').uncheck();await page.locator('#environment-plans').uncheck();await page.locator('#layer-edges').uncheck();
@@ -23,6 +25,7 @@ test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared
 test('current custom band settings, direct edit, JSON and Undo/Redo preserve real facade output',async({page})=>{
   await page.goto('/');const custom=structuredClone(OFFICE_STYLE);custom.bandPolicy.baseCountOverride=2;
   const input=createDocument(box(8,4,4),42,'office',custom);await load(page,input);
+  await expectCompleteFaces(page,generateDocument(input));
   await page.locator('.inspect-details > summary').click();await page.locator('#face').selectOption('3,1,3|PZ');
   await expect(page.locator('#facade-info')).toContainText('층 base');expect(JSON.parse((await page.locator('#trace').textContent())!).selection.tileId).toContain('base-head');
   const before=await save(page);await page.locator('[data-camera="top"]').click();
@@ -31,7 +34,11 @@ test('current custom band settings, direct edit, JSON and Undo/Redo preserve rea
   await page.keyboard.press('q');
   const after=await save(page);expect(after.document.grid).toHaveLength(before.document.grid.length-1);expect(after.document.buildingDefinition).toEqual(custom);
   const result=generateDocument(after.document);validateAssembly(result.surfaces.map(s=>s.faceId),result.placements,result.modules!);
+  await expectCompleteFaces(page,result);
   await canvas.focus();await page.keyboard.press('Control+z');expect((await save(page)).text).toBe(before.text);
+  await expectCompleteFaces(page,generateDocument(before.document));
   await canvas.focus();await page.keyboard.press('Control+Shift+z');expect((await save(page)).text).toBe(after.text);
+  await expectCompleteFaces(page,result);
   await load(page,before.document);expect((await save(page)).text).toBe(before.text);
+  await expectCompleteFaces(page,generateDocument(before.document));
 });

@@ -310,8 +310,9 @@ export function selectFace(id: string, attachmentId?: string) {
     el("region-info").innerHTML =
       `<p class="region-title">${names[region.interpretation]}</p><p class="edit-note">${region.width} × ${region.height} · ${region.faceIds.length}면 · ${region.rectangular ? "직사각형" : "비정형"}<br>인접 높은 벽: ${region.tallBoundarySides.join(", ") || "없음"} · 상부 가림 ${region.coveredFaceCount}면</p>`;
   }
+  const completeFace = currentResult.placements.find(p => p.faceId === id);
   el("inspector").innerHTML =
-    `<div class="role-badge ${trace.role}">${trace.role.toUpperCase()}</div><dl><dt>Tile</dt><dd>${p.tileId}</dd><dt>Rule</dt><dd>${p.ruleId}</dd><dt>Component</dt><dd>${trace.componentId}</dd><dt>Position × 2</dt><dd>${p.position2.join(" / ")}</dd><dt>Orientation</dt><dd>${p.orientationId}</dd><dt>Policy</dt><dd>${trace.policy}</dd>${trace.undersideKind ? `<dt>Underside</dt><dd>${trace.undersideKind}</dd>` : ""}${trace.architecture ? `<dt>Facade</dt><dd>${trace.architecture.facadeElement}</dd><dt>Column / Row</dt><dd>${trace.architecture.column} / ${trace.architecture.row}</dd><dt>Palette</dt><dd>${trace.architecture.palette}</dd>` : ""}</dl>`;
+    `<div class="role-badge ${trace.role}">${trace.role.toUpperCase()}</div><dl><dt>Tile</dt><dd>${p.tileId}</dd><dt>Rule</dt><dd>${p.ruleId}</dd>${completeFace?.faceAssetKey ? `<dt>Face mesh</dt><dd>${completeFace.faceAssetKey}</dd>` : ""}<dt>Component</dt><dd>${trace.componentId}</dd><dt>Position × 2</dt><dd>${p.position2.join(" / ")}</dd><dt>Orientation</dt><dd>${p.orientationId}</dd><dt>Policy</dt><dd>${trace.policy}</dd>${trace.undersideKind ? `<dt>Underside</dt><dd>${trace.undersideKind}</dd>` : ""}${trace.architecture ? `<dt>Facade</dt><dd>${trace.architecture.facadeElement}</dd><dt>Column / Row</dt><dd>${trace.architecture.column} / ${trace.architecture.row}</dd><dt>Palette</dt><dd>${trace.architecture.palette}</dd>` : ""}</dl>`;
   el("trace").textContent = JSON.stringify(
     attachment ? { face: trace, attachment } : trace,
     null,

@@ -18,7 +18,7 @@ base/body/crown은 실제 개구부, 기둥, 하단 받침과 상단 띠 형상�
 
 모듈의 선택적 `rooftopAssets`는 `rowAssets`와 같은 8개 행 키를 가지며 옥상 외벽에서 우선 선택됩니다. 없으면 기존 `rowAssets`/`assetId`를 사용합니다. 연결 그룹의 part·개구부 계약과 팔레트를 유지하며 1층 출입구에도 적용됩니다. 기본 상가형은 낮은 벽, 업무형은 가는 난간을 벽 상단 위 4/16셀까지 포함합니다. 등록된 형상 bounds와 스타일에서 사용하는 옥상 변형의 높이를 필수 구조 preflight에 반영합니다. catalog 2 문서는 정확한 이전 카탈로그를 검증한 뒤 3으로 읽되 저장된 스타일은 변경하지 않습니다.
 
-마감은 actual boundary를 따라 straight/cut/convex/concave terminal을 한 소유자만 생성합니다. raw voxel과 기존 예약을 검증하고 명시된 같은 조립 접합부만 공유합니다. 충돌한 선택 마감은 사유와 함께 생략하며 필수 구조를 제거하지 않습니다.
+마감은 actual boundary를 따라 straight/cut/convex/concave terminal을 한 호스트 면만 소유합니다. raw voxel과 기존 예약을 검증하고 명시된 같은 조립 접합부만 공유합니다. 채택한 마감은 [완성형 면 에셋](COMPLETE_FACE_ASSETS.md)의 고정 변형에 포함하며 별도 부착 Mesh로 출력하지 않습니다. 충돌한 마감은 사유와 함께 해당 부분이 없는 변형을 선택하며 필수 구조를 제거하지 않습니다.
 
 ## 검증
 

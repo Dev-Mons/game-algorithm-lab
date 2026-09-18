@@ -1,6 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createDocument } from '../src/core/document';
 import { box } from '../src/fixtures';
+import { expectCompleteFaces } from './complete-faces';
+import { generateDocument } from '../src/core/generate-document';
 
 async function load(page: Page, document: ReturnType<typeof createDocument>) {
   await page.locator('#file').setInputFiles({ name: 'rooftop.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(document)) });
@@ -20,7 +22,9 @@ test('setback roofs render style variants and live height edits move the rooftop
   await page.goto('/');
   await page.locator('.inspect-details > summary').click();
   for (const profile of ['shop', 'office'] as const) {
-    await load(page, createDocument(box(6,5,4).filter(([x,y]) => y < 2 || x >= 3), 42, profile));
+    const document=createDocument(box(6,5,4).filter(([x,y]) => y < 2 || x >= 3), 42, profile);
+    await load(page, document);
+    await expectCompleteFaces(page,generateDocument(document));
     await inspect(page, '0,1,0|NX', true);
     await inspect(page, '5,4,3|PX', true);
     await inspect(page, '5,3,3|PX', false);
@@ -31,6 +35,8 @@ test('setback roofs render style variants and live height edits move the rooftop
   await page.locator('[data-camera="top"]').click();
   const canvas = page.locator('canvas'), b = (await canvas.boundingBox())!;
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await expect(page.locator('#face')).toHaveValue('0,0,0|PY');
+  await expect(page.locator('#inspector')).toContainText('face-v1|crafted.roof|plain');
   await expect(canvas).toHaveAttribute('data-selection-direction', 'PY');
   await page.keyboard.press('e');
   await inspect(page, '0,0,0|NX', false);
