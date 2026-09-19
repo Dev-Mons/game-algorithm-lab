@@ -16,6 +16,7 @@ import "./style.css";
 import { type Vec3, type GenerationResult } from "./core/generate";
 import {
   createDocument,
+  BUILDING_PROFILES,
   profileData,
   exportDocument,
   loadDocument,
@@ -47,10 +48,10 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <label class="toggle"><input id="layer-voxels" type="checkbox" data-layer="voxels"><span>원본 부피</span><small>VOXELS</small></label>
         <label class="toggle"><input id="layer-surfaces" type="checkbox" data-layer="surfaces"><span>분석된 표면</span><small>SURFACES</small></label>
         <label class="toggle"><input id="layer-placements" type="checkbox" data-layer="placements" checked><span>배치된 타일</span><small>TILES</small></label>
-        <label class="toggle"><input id="layer-edges" type="checkbox" data-layer="edges" checked><span>모서리</span><small>EDGES</small></label>
+        <label class="toggle"><input id="layer-edges" type="checkbox" data-layer="edges"><span>모서리</span><small>EDGES</small></label>
         <label class="toggle"><input id="layer-normals" type="checkbox" data-layer="normals"><span>외향 법선</span><small>NORMALS</small></label>
         <label class="toggle"><input id="layer-regions" type="checkbox" data-layer="regions"><span>선택 영역 경계</span><small>REGION</small></label>
-        <label class="toggle"><input id="environment-inputs" type="checkbox" checked><span>환경 원본 입력</span></label><label class="toggle"><input id="environment-plans" type="checkbox" checked><span>환경 계획·예약</span></label>
+        <label class="toggle"><input id="environment-inputs" type="checkbox"><span>환경 원본 입력</span></label><label class="toggle"><input id="environment-plans" type="checkbox"><span>환경 계획·예약</span></label>
         <label class="toggle"><input id="ground-visible" type="checkbox" checked><span>표시용 지면·그림자</span><small>GROUND</small></label>
       </details>
       <p class="edit-note">분석 표면 색상</p><div class="legend"><span><i class="wall"></i>외벽</span><span><i class="roof"></i>지붕</span><span><i class="terrace"></i>테라스</span><span><i class="underside"></i>하부면</span></div>
@@ -60,7 +61,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       <div class="stage-top"><span class="breadcrumb">WORKSPACE <b>/</b> <span id="scene-name">빈 장면</span></span><span id="status" class="status" role="status">READY</span></div>
       <div id="viewport"></div>
       <div id="error" class="error" role="alert" hidden></div>
-      <div class="camera-bar" aria-label="카메라"><button data-camera="iso" class="active">↗ 전체</button><button data-camera="top">↓ 상부</button><button data-camera="below">↥ 하부</button><label>기준면 Y <input id="ground" type="number" value="0" step="1" aria-label="표시용 기준면 높이"></label></div>
+      <div class="camera-bar" aria-label="카메라"><button data-camera="iso" class="active">↗ 전체</button><button data-camera="front">↗ 입면</button><button data-camera="top">↓ 상부</button><button data-camera="below">↥ 하부</button><label>기준면 Y <input id="ground" type="number" value="0" step="1" aria-label="표시용 기준면 높이"></label></div>
       <div id="selection-status" class="selection-status" role="status">왼쪽 드래그로 영역 선택 · 정사각뿔 드래그 또는 E 추가 / Q 제거</div><div class="stage-bottom"><span>오른쪽 드래그 회전 · W/S 전후 이동 · A/D 좌우 이동 · 휠 확대</span></div>
     </section>
     <aside class="right-panel">
@@ -326,7 +327,7 @@ export function selectFace(id: string, attachmentId?: string) {
     info.id = "facade-info";
     info.textContent = `스타일 ${f.styleId} v${f.styleVersion} · 층 ${f.level} · ${f.facade}\n패턴 ${f.patternId} · 모듈 ${f.moduleId}\n묶음 ${f.groupId ?? "없음"} · 조각 ${f.part ?? "없음"}\n외벽 ${f.wallKind === "rooftop" ? "옥상 외벽" : "일반 외벽"} · 상단 마감 ${f.topBoundary ? "있음" : "없음"}\n${f.reason}\n${f.candidates.map((c) => `${c.id}: ${c.reason}`).join("\n")}`;
     if (f.entranceSpan)
-      info.textContent += `\n출입구 ${f.entranceSpan}칸 · 검증된 접근 경로`;
+      info.textContent += `\n출입구 ${f.entranceSpan}칸 · ${f.portalAccess==='local'?'1층 출입문 · 도로 연결 미확인':'검증된 접근 경로'}`;
     el("inspector").append(info);
   }
   if (module)
@@ -400,8 +401,8 @@ fixture.addEventListener("change", () => {
     createDocument(
       FIXTURES[fixture.value].cells,
       currentDocument.seed,
-      currentDocument.catalog.id,
-      currentDocument.buildingDefinition,
+      FIXTURES[fixture.value].profile??currentDocument.catalog.id,
+      FIXTURES[fixture.value].profile?undefined:currentDocument.buildingDefinition,
       undefined, undefined, currentDocument.environment,
     ),
     true,
@@ -420,16 +421,16 @@ el<HTMLSelectElement>("region").addEventListener("change", () => {
 });
 document
   .querySelectorAll<HTMLInputElement>("[data-layer]")
-  .forEach((input) =>
-    input.addEventListener("change", () =>
-      viewer.setLayer(input.dataset.layer as Layer, input.checked),
-    ),
-  );
+  .forEach((input) => {
+    const sync = () => viewer.setLayer(input.dataset.layer as Layer, input.checked);
+    input.addEventListener("change", sync);
+    sync();
+  });
 document
   .querySelectorAll<HTMLButtonElement>("[data-camera]")
   .forEach((button) =>
     button.addEventListener("click", () => {
-      viewer.setCamera(button.dataset.camera as "iso" | "below" | "top");
+      viewer.setCamera(button.dataset.camera as "iso" | "below" | "top" | "front");
       document
         .querySelectorAll("[data-camera]")
         .forEach((b) => b.classList.toggle("active", b === button));
@@ -442,15 +443,16 @@ el<HTMLInputElement>("ground").addEventListener("change", () => {
 el<HTMLInputElement>("ground-visible").addEventListener("change", () =>
   viewer.setGroundVisible(el<HTMLInputElement>("ground-visible").checked),
 );
-viewer.setGroundVisible(true);
+viewer.setGroundVisible(el<HTMLInputElement>("ground-visible").checked);
+const styleOptions=Object.entries(BUILDING_PROFILES).map(([id,style])=>`<option value="${id}">${style.label}</option>`).join('');
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
   <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">왼쪽 드래그로 지면 영역 선택 후 정사각뿔 드래그 또는 E 추가 / Q 제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>왼쪽 드래그로 도로 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 연결과 차선은 자동으로 바뀝니다.</p>
   <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><label for="facility-kind">외벽 시설 종류</label><select id="facility-kind"><option value="">자동 지상·옥상 시설</option><option value="balcony">발코니 · 표시용</option><option value="fire-escape">외부 계단 · 표시용</option><option value="elevator">엘리베이터 · 표시용</option></select><label><input id="facility-solid" type="checkbox"> 시설 뒤 외벽을 솔리드로 변경</label><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 식생은 한 층일 때 관목, 높이를 쌓으면 각 칸의 나무가 자랍니다.</p></div>
   <div id="building-guide" class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 · 마지막 블록 중앙에 정사각뿔 표시</span></p><p><b>정사각뿔 드래그</b><span>면 바깥쪽으로 추가 · 안쪽으로 제거</span></p><p><b>E / Q</b><span>선택 영역 한 층 추가 / 제거</span></p><p><b>상부 시점</b><span>핸들을 위로 추가 · 아래로 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
-  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option><option value="shop">상가형</option><option value="office">업무형</option><option value="urban-shop">도시형 복합 상가</option><option value="urban-office">도시형 업무</option></select><label for="building-use">용도</label><select id="building-use"><option value="generic">일반</option><option value="retail">상업</option><option value="office">업무</option><option value="residential">주거</option><option value="industrial">산업</option></select><label for="band-setting">수직 디자인</label><select id="band-setting"></select><input id="band-value" type="number"><button id="band-apply">디자인 적용</button><label for="building-design-seed">건물 디자인 Seed</label><input id="building-design-seed" type="number" min="0" max="4294967295"><label for="building-column">세로 기둥 해석</label><select id="building-column"><option value="auto">지지 접합이 있는 줄만 자동</option><option value="building">일반 건물 유지</option><option value="column">고립된 세로 줄을 기둥으로 표시</option></select><div id="urban-overrides"><label for="design-program">수직 프로그램</label><select id="design-program"></select><label for="design-family">입면 bay</label><select id="design-family"></select><label for="design-palette">재료</label><select id="design-palette"><option value="">Seed에서 선택</option><option value="clay">Clay</option><option value="sage">Sage</option><option value="sand">Sand</option></select></div><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option>${styleOptions}</select><label for="building-use">용도</label><select id="building-use"><option value="generic">일반</option><option value="retail">상업</option><option value="office">업무</option><option value="residential">주거</option><option value="industrial">산업</option></select><label for="band-setting">수직 디자인</label><select id="band-setting"></select><input id="band-value" type="number"><button id="band-apply">디자인 적용</button><label for="building-design-seed">건물 디자인 Seed</label><input id="building-design-seed" type="number" min="0" max="4294967295"><label for="building-column">세로 기둥 해석</label><select id="building-column"><option value="auto">지지 접합이 있는 줄만 자동</option><option value="building">일반 건물 유지</option><option value="column">고립된 세로 줄을 기둥으로 표시</option></select><div id="urban-overrides"><label for="design-program">수직 프로그램</label><select id="design-program"></select><label for="design-family">입면 bay</label><select id="design-family"></select><label for="design-palette">재료</label><select id="design-palette"><option value="">Seed에서 선택</option><option value="clay">Clay</option><option value="sage">Sage</option><option value="sand">Sand</option></select></div><label for="building-rule">생성 규칙</label><select id="building-rule"></select></div>
   <details><summary>환경 설정</summary><select id="environment-setting"></select><input id="environment-value" type="number"><button id="environment-apply">설정 적용</button></details>
-  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile"><option value="shop">상가형 · 층/연결 창문</option><option value="office">업무형 · 층/연결 창문</option><option value="urban-shop">도시형 · Retail / Office / Upper</option><option value="urban-office">도시형 · 업무 / 상층 / 설비</option></select></label></div>
+  <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile">${styleOptions}</select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 왼쪽 드래그로 선택한 뒤 정사각뿔 드래그 또는 E / Q로 편집하세요.
 실행 취소 Ctrl+Z · 다시 실행 Ctrl+Shift+Z</p>`;
@@ -690,8 +692,10 @@ el("save-measure").addEventListener("click", () => {
     );
 });
 el<HTMLSelectElement>("profile").value = currentDocument.catalog.id;
-el('environment-inputs').addEventListener('change',()=>viewer.environmentPreview.inputs.visible=el<HTMLInputElement>('environment-inputs').checked);
-el('environment-plans').addEventListener('change',()=>viewer.environmentPreview.plans.visible=el<HTMLInputElement>('environment-plans').checked);
+for(const [id,group] of [['environment-inputs',viewer.environmentPreview.inputs],['environment-plans',viewer.environmentPreview.plans]] as const){
+  const input=el<HTMLInputElement>(id),sync=()=>{group.visible=input.checked;};
+  input.addEventListener('change',sync);sync();
+}
 el('source-select').addEventListener('change',()=>selectSource(el<HTMLSelectElement>('source-select').value?JSON.parse(el<HTMLSelectElement>('source-select').value):undefined));
 for(const [group,fields] of Object.entries(ENVIRONMENT_RANGES))for(const key of Object.keys(fields))el<HTMLSelectElement>('environment-setting').add(new Option(`${group}.${key}`,`${group}.${key}`));
 el<HTMLSelectElement>('environment-setting').add(new Option('units.metersPerCell','units.metersPerCell'));

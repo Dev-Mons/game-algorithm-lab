@@ -151,6 +151,8 @@ export class Viewer {
     light.shadow.camera.bottom = -28;
     light.shadow.camera.far = 100;
     light.shadow.normalBias = 0.015;
+    // Planar roof tiles otherwise shadow themselves in concentric depth bands.
+    light.shadow.bias = -0.0001;
     this.scene.add(light);
     this.groundPlane.rotation.x = -Math.PI / 2;
     this.groundPlane.receiveShadow = true;
@@ -398,9 +400,8 @@ export class Viewer {
     for (const p of result.placements) {
       const tile = tiles.get(p.tileId);
       if (!tile) throw new Error(`Unknown catalog tile: ${p.tileId}`);
-      const palette = tile.palette ?? 'clay';
       this.groups.placements.add(createFaceMesh(p, tile, this.crafted,
-        [this.assets.get(tile), this.assets.frame(palette), this.assets.glass(palette)], this.displayOrigin));
+        this.assets.facadeMaterials(tile), this.displayOrigin));
     }
     // Independent modules, if a rule supplies them, do not stand in for face parts.
     for (const m of result.modules ?? []) {
@@ -547,12 +548,13 @@ export class Viewer {
     this.groundPlane.visible = visible;
     this.grid.visible = !visible;
   }
-  setCamera(preset: "iso" | "below" | "top") {
+  setCamera(preset: "iso" | "below" | "top" | "front") {
     const vector =
       preset === "below"
         ? new THREE.Vector3(1, -0.9, 1)
         : preset === "top"
           ? new THREE.Vector3(0, 1, 0.001)
+          : preset === 'front' ? new THREE.Vector3(.22,.48,1)
           : new THREE.Vector3(1, 0.85, 1);
     this.controls.target.set(0, 0, 0);
     this.camera.position.copy(

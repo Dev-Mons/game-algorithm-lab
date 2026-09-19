@@ -18,7 +18,7 @@ export function planWallFacilities(document:GenerationDocument,surfaces:readonly
   const zones=new Map(vertical.flatMap(v=>v.zones?.flatMap(z=>z.faceIds.map(id=>[id,z.id] as const))??v.faceBands.map(f=>[f.faceId,`band:${f.band}`] as const)));
   for(const input of document.sceneInputs.objects.filter(o=>o.facilityKind)){
     const normal=BASES[input.direction].n,hosts=input.cells.map(c=>faces.get(`${cellId(add(c,normal.map(n=>-n) as Vec3))}|${input.direction}`));
-    let reason=hosts.some(f=>!f)?'NO_WALL_SUPPORT':hosts.some(f=>!zones.has(f!.faceId))?'NO_BUILDING_CAPABILITY':hosts.some(f=>portals.has(f!.faceId))?'PROTECTED_PORTAL':'';
+    let reason=hosts.some(f=>!f)?'NO_WALL_SUPPORT':hosts.some(f=>f!.architecture?.interpretation==='unsupported')?'UNSUPPORTED_FACADE_TOPOLOGY':hosts.some(f=>!zones.has(f!.faceId))?'NO_BUILDING_CAPABILITY':hosts.some(f=>portals.has(f!.faceId))?'PROTECTED_PORTAL':'';
     const us=input.cells.map(c=>c.reduce((n,v,i)=>n+v*BASES[input.direction].u[i],0)),ys=input.cells.map(c=>c[1]),planes=new Set(input.cells.map(c=>c.reduce((n,v,i)=>n+v*normal[i],0)));
     const minU=Math.min(...us),maxU=Math.max(...us),minY=Math.min(...ys),maxY=Math.max(...ys);
     if(planes.size!==1)reason='UNSUPPORTED_FACILITY_DEPTH';

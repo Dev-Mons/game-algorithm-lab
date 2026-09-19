@@ -13,7 +13,7 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 입력과 실행
 
-현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2 / catalog 4**입니다. 동일 schema의 catalog 2/3 문서는 기존 메타데이터를 검증한 뒤 catalog 4으로 읽으며, 저장된 스타일 정의는 유지합니다. 그 외 구버전 로더나 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
+현재 형식은 **schema 5 / environment-plans-v1 / SceneInputs 2 / catalog 10**입니다. 동일 schema의 catalog 2/3/4/5/6/7/8/9 문서는 기존 메타데이터를 검증한 뒤 catalog 10으로 읽으며, 저장된 스타일 정의는 유지합니다. 그 외 구버전 로더나 생성 경로 전환 토글은 없습니다. 저장에는 원본 Grid, 건물별 rule/adapter/design, banded 스타일 정의, 환경 설정과 sceneInputs만 들어갑니다. 계획·예약·증명·계측·Viewer 상태는 파생 결과입니다.
 
 실행 순서는 외피 분석·수직 구간·rule preflight → 공간과 공공 보행900 → 차량 동선800 → 출입구·보행700 → 주차 구획600 → 필수 구조 → 시설500~300 → 선택 마감200 → 검증과 Viewer입니다. 도로·주차만 있거나 건물0개인 문서도 같은 경로를 사용합니다. 실제 미구현 단계는 성공한 빈 계획으로 대체하지 않습니다.
 
@@ -27,6 +27,7 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 - 주차 영역의 합집합·차집합은 보존 anchor를 유지합니다. 건물 분리/병합도 이전 성분의 부피와 숫자 좌표 순서에 따라 design을 상속합니다.
 - 환경 설정, 건물 용도, 수직 구간 설정은 유효성 검사 후 한 번 생성·동기화·이력 반영됩니다. no-op은 재생성하지 않습니다.
 - Ctrl+Z / Ctrl+Shift+Z로 Undo/Redo, JSON 저장·복원이 가능합니다. 잘못된 입력이나 내부 계약 오류에서는 마지막 수락 문서와 화면을 유지합니다. 지지가 사라진 오브젝트 의도는 진단과 함께 남습니다.
+- 비다양체 모서리·꼭짓점은 직접 닿은 면만 기본 패널로 표시합니다. 정상 외벽의 창문·출입문과 다른 건물의 스타일은 유지하며, 원본 부피를 자동으로 바꾸지 않으므로 `DEGRADED`와 해당 진단은 남습니다.
 - 오른쪽 드래그로 카메라를 회전합니다. 뷰어에 포커스가 있을 때 W/S는 바라보는 방향의 앞/뒤, A/D는 카메라 기준 왼쪽/오른쪽으로 이동합니다. 가운데 드래그 이동과 휠 확대도 가능합니다. 입력창 편집 중에는 카메라가 움직이지 않습니다. 표시 지면·입력/계획 레이어는 생성 입력을 바꾸지 않습니다.
 
 ## 안전성과 결정론
@@ -61,3 +62,11 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 - `environment-cache.ts`, `measurement.ts`: 제한 FIFO와 결정적 논리 비용/실제 계측 분리
 
 [스타일 계약](docs/BUILDING_STYLE_PLAN.md), [포팅 계약](docs/PORTING_CONTRACT.md), [이슈별 구현·검증 기록](docs/ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.
+
+건물 4개 스타일의 신규 메쉬·재질과 사진 참고 자료는 [메쉬 업데이트](docs/FACADE_MESH_REFRESH.md)에 정리되어 있습니다.
+
+A 스타일은 밝은 수평 띠와 연속 창 디자인입니다. 예제 선택에서 **A · 수평 띠 트윈 타워**를 고르면 참고 이미지의 중앙 테라스·출입구를 반영한 편집 가능한 건물을 불러옵니다. **입면** 카메라로 정면 비례를 확인할 수 있습니다.
+
+B 스타일은 브론즈 커튼월과 흰 수평 벨트, 어두운 평지붕 디자인입니다. **B · 브론즈 커튼월 오피스** 예제와 [구현 기록](docs/STYLE_B_REFERENCE.md)에서 확인할 수 있습니다.
+
+C 스타일은 밝은 콘크리트 띠와 짙은 수평 연속창, 사선 외장 모서리와 1.5층 높이의 저층부 창 디자인입니다. **C · 저층 수평 띠와 옥탑**, **C · 고층 수평 띠와 옥탑**, **C · 계단형 매스와 높은 개구부** 예제를 추가했습니다. 첨부 이미지 분석과 저층·고층 차이는 [구현 기록](docs/STYLE_C_REFERENCE.md)에 정리했습니다.

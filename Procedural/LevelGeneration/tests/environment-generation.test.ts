@@ -24,7 +24,8 @@ it('executes roadless and ordinary inputs through current explicit stages',()=>{
   expect(result.scenePlacements?.every(p=>p.asset==='parking.paving')).toBe(true);
   const contextual=generateDocument(createDocument([[0,0,0]]),{mode:'development-preview'});
   expect(contextual.placements).toHaveLength(contextual.surfaces.length);
-  expect(contextual.environment?.entrances?.[0].entrances).toEqual([]);
+  expect(contextual.environment?.entrances?.[0].entrances).toHaveLength(1);
+  expect(contextual.environment?.entrances?.[0].entrances[0]).toMatchObject({access:'local',pathCells:[]});
   expect(contextual.environment?.stages.find(s=>s.stage==='preflight')?.state).toBe('ready');
 });
 it('runs preflight before generation, without dry generation or cached output, and rejects bounds escape',()=>{

@@ -2,7 +2,7 @@ import {expect,it} from 'vitest';
 import {createDocument,replaceGrid,exportDocument,loadDocument,canonicalJSON} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
 import {allocateProgram} from '../src/core/architectural-program';
-import {URBAN_SHOP_STYLE,validateBuildingStyle} from '../src/core/building-style';
+import {URBAN_SHOP_STYLE,LEGACY_SHOP_STYLE,validateBuildingStyle} from '../src/core/building-style';
 import {FACADE_ASSETS} from '../src/core/facade-assets';
 import {buildCraftedGeometry} from '../src/crafted-geometry';
 import {DocumentHistory} from '../src/editor';
@@ -30,7 +30,7 @@ it('priority 1: arbitrary semantic IDs, invalid style rejection and predictable 
   const program=URBAN_SHOP_STYLE.programs![0];expect(allocateProgram(1,program)).toEqual({sections:[{id:'retail',count:1}],reasons:['PROGRAM_FALLBACK']});
   const s=structuredClone(URBAN_SHOP_STYLE);s.programs![0].sections[0].max=0;expect(()=>validateBuildingStyle(s)).toThrow('INVALID_ARCHITECTURAL_PROGRAM');
   const valid=structuredClone(URBAN_SHOP_STYLE);valid.bands.work=valid.bands.office;delete valid.bands.office;
-  valid.facadeGrammar!.sections=['work'];
+  if(valid.facadeGrammar)valid.facadeGrammar.sections=['work'];
   valid.programs!.forEach(p=>p.sections.forEach(s=>{if(s.id==='office')s.id='work';}));valid.patterns.forEach(p=>p.roles=p.roles.map(r=>r==='office'?'work':r));valid.alignedFamilies.forEach(f=>{f.patterns.work=f.patterns.office;delete f.patterns.office;});
   expect(generateDocument(createDocument(box(4,6,2),4,'urban-shop',valid)).environment!.vertical![0].bands.some(b=>b.band==='work')).toBe(true);
   const openings=['base','body','crown'].map(b=>FACADE_ASSETS[`facade.banded-shop-${b as 'base'|'body'|'crown'}-repeat-single`].opening16);
@@ -48,7 +48,7 @@ it('priority 1: design intent survives root changes, merge/split, save, cache an
   const shuffled={...next,grid:[...next.grid].reverse()};expect(generateDocument(shuffled,{cache:false})).toEqual(generateDocument(next));
 });
 it('saved catalog 3 designs without a designSeed keep their original intent, and new overrides are validated',()=>{
-  const doc=createDocument(box(4,6,3),17,'shop'),raw=JSON.parse(exportDocument(doc));raw.catalog.version=3;raw.catalog.tiles=raw.catalog.tiles.filter((t:{assetKey:string})=>!t.assetKey.startsWith('facade.urban-'));delete raw.buildings[0].design.designSeed;
+  const doc=createDocument(box(4,6,3),17,'shop',LEGACY_SHOP_STYLE),raw=JSON.parse(exportDocument(doc));raw.catalog.version=3;raw.catalog.tiles=raw.catalog.tiles.filter((t:{assetKey:string})=>!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-')&&!t.assetKey.startsWith('facade.urban-'));delete raw.buildings[0].design.designSeed;
   const loaded=loadDocument(JSON.stringify(raw));expect(loaded.buildings[0].design.designSeed).toBeUndefined();expect(generateDocument(loaded).placements).toEqual(generateDocument(doc).placements);
   const urban=createDocument(box(6,6,3),17,'urban-shop'),edited=applyEnvironmentEdit(urban,{kind:'building-design',targetId:'0,0,0',settingPath:'overrides.palette',value:'sage'}).document;
   expect(generateDocument(edited).placements.every(p=>p.tileId.endsWith('.sage'))).toBe(true);

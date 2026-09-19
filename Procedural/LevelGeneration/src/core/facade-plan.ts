@@ -1,8 +1,8 @@
 import {BASES,type Surface} from './analysis';
 import type {VerticalPlan} from './vertical-design';
 import type {DeepReadonly} from './rule-spatial-contract';
-import {FRAME_ASSETS,type FrameKey} from './urban-facade-assets';
-export interface FacadeGrammar {sections:string[];periodV:number;minWidth:number;minHeight:number;boundaryPolicy:'absolute'|'restart';maxGroups:number}
+import {FRAME_ASSETS,frameAssetKey,type FrameKey} from './urban-facade-assets';
+export interface FacadeGrammar {sections:string[];periodV:number;minWidth:number;minHeight:number;boundaryPolicy:'absolute'|'restart';maxGroups:number;frameStyle?:'shop'|'office'}
 export interface FacadePanel {id:string;faceIds:string[];status:'complete'|'fallback';reason:'COMPLETE'|'INCOMPLETE_MASK'|'FIXED_CONSTRAINT'|'MINIMUM_SIZE'|'BUDGET_EXCEEDED'}
 export interface FacadePlan {
   buildingId:string;panels:FacadePanel[];
@@ -14,7 +14,7 @@ export function planFacade(surfaces:readonly Surface[],vertical:DeepReadonly<Ver
   const band=new Map(vertical.faceBands.map(f=>[f.faceId,f])),caps=new Set(vertical.boundaries.filter(b=>b.kind==='local-cap').map(b=>b.hostFaceId));
   const zone=new Map(vertical.zones?.flatMap(z=>z.faceIds.map(id=>[id,z.id] as const))??[]);
   const width=vertical.alignment.periodCells,height=grammar.periodV;
-  const eligible=surfaces.filter(s=>s.componentId===vertical.buildingId&&s.role==='wall'&&grammar.sections.includes(band.get(s.faceId)?.band??''));
+  const eligible=surfaces.filter(s=>s.componentId===vertical.buildingId&&s.role==='wall'&&s.architecture?.interpretation!=='unsupported'&&grammar.sections.includes(band.get(s.faceId)?.band??''));
   const origin=new Map<string,{u:number;v:number}>();
   const coord=(s:Surface)=>({u:s.cell.reduce((n,x,i)=>n+x*BASES[s.direction].u[i],0),v:s.cell[1],plane:s.cell.reduce((n,x,i)=>n+x*BASES[s.direction].n[i],0)});
   if(grammar.boundaryPolicy==='restart')for(const s of eligible){const {u,v}=coord(s),key=zone.get(s.faceId)??s.architecture!.regionId,prev=origin.get(key);origin.set(key,{u:Math.min(prev?.u??Infinity,u),v:Math.min(prev?.v??Infinity,v)});}
@@ -34,7 +34,7 @@ export function planFacade(surfaces:readonly Surface[],vertical:DeepReadonly<Ver
       else if(g.members.some(m=>fixed.has(m.s.faceId)))panel.reason='FIXED_CONSTRAINT';
       else if(g.members.length===width*height&&zones.size===1&&g.members.every(m=>m.u>=g.u&&m.u<g.u+width&&m.v>=g.v&&m.v<g.v+height&&!caps.has(m.s.faceId)&&m.s.wallKind!=='rooftop')){
         panel.status='complete';panel.reason='COMPLETE';plan.counters.completeGroups++;
-        for(const m of g.members){const u=m.u-g.u,v=m.v-g.v,bits=(u===0?1:0)|(u===width-1?2:0)|(v===0?4:0)|(v===height-1?8:0);plan.faces.push({faceId:m.s.faceId,moduleId:`frame-${bits}`,assetKey:`facade.urban-frame-${bits}` as FrameKey,panelId:id,u,v});}
+        for(const m of g.members){const u=m.u-g.u,v=m.v-g.v,bits=(u===0?1:0)|(u===width-1?2:0)|(v===0?4:0)|(v===height-1?8:0);plan.faces.push({faceId:m.s.faceId,moduleId:`frame-${bits}`,assetKey:frameAssetKey(bits,grammar.frameStyle),panelId:id,u,v});}
       }
     }
     if(panel.status==='fallback')plan.counters.fallbackFaces+=g.members.length;

@@ -55,3 +55,16 @@ test('priority 4 typed facilities and column display render, and building intent
   await page.locator('#file').setInputFiles({name:'columns.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(columns))});
   await expect(page.locator('#status')).toHaveText('OK');await expectCompleteFaces(page,r);await page.screenshot({path:info.outputPath('columns.png')});
 });
+
+test('full-width rooftop columns cover their supporting blocks',async({page},info)=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const cells=[...box(8,3,6),...[3,4,5].flatMap(y=>[[1,y,4],[5,y,4]] as Vec3[])];
+  const doc=createDocument(cells,17,'urban-shop'),result=generateDocument(doc);
+  expect(result.environment!.columns![0].runs.filter(r=>r.accepted)).toHaveLength(2);
+  for(const x of [1,5])expect(result.surfaces.some(s=>s.faceId===`${x},2,4|PY`)).toBe(false);
+  await page.locator('#file').setInputFiles({name:'solid-columns.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
+  await expect(page.locator('#status')).toHaveText('OK');await expectCompleteFaces(page,result);
+  await page.locator('[data-camera="iso"]').click();
+  await page.locator('canvas').screenshot({path:info.outputPath('solid-columns.png')});
+  expect(errors).toEqual([]);
+});

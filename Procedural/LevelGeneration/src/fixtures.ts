@@ -1,4 +1,5 @@
 import type { Vec3 } from "./core/generate";
+import type {Profile} from './core/document';
 export function box(x: number, y: number, z: number): Vec3[] {
   const cells: Vec3[] = [];
   for (let a = 0; a < x; a++)
@@ -25,7 +26,25 @@ for (let row = 0; row < 3; row++)
     if (row === 1 && column === 1)
       quarter.push(...shift(box(2, 2, 3), column * 7 + 4, 0, row * 7));
   }
-export const FIXTURES: Record<string, { label: string; cells: Vec3[] }> = {
+// Reference A: twin wings, a recessed central terrace and a tall entry void.
+// The volume is editable input; facade generation uses the common rule path.
+export const REFERENCE_A_CELLS=box(20,32,9).filter(([x,y,z])=>{
+  if(x>=7&&x<13){
+    if(y<3&&(x===7||x===12))return true;
+    if(y<6)return z<2;
+    if(y>=14)return z<3&&y<28;
+    return z<8;
+  }
+  if(y>=30)return x!==0&&x!==6&&x!==13&&x!==19&&z>0&&z<8;
+  return true;
+});
+export const FIXTURES: Record<string, { label: string; cells: Vec3[];profile?:Profile }> = {
+  referenceCLow:{label:'C · 저층 수평 띠와 옥탑',cells:[...box(10,4,6),...shift(box(5,2,3),2,4,1)],profile:'urban-shop'},
+  referenceCHigh:{label:'C · 고층 수평 띠와 옥탑',cells:[...box(10,10,6),...shift(box(5,3,3),2,10,1)],profile:'urban-shop'},
+  referenceCPortal:{label:'C · 계단형 매스와 높은 개구부',cells:box(11,13,6).filter(([x,y,z])=>
+    (x<5&&y<7)||(x>=3&&x<7&&y<10&&z<5)||(x>=3&&y>=10&&z<5)||(x===10&&y<10&&(z===0||z===4))),profile:'urban-shop'},
+  referenceA:{label:'A · 수평 띠 트윈 타워',cells:REFERENCE_A_CELLS,profile:'shop'},
+  referenceB:{label:'B · 브론즈 커튼월 오피스',cells:box(12,10,9),profile:'office'},
   evenEntrance: {
     label: "Wide frontage · 14칸 외벽",
     cells: box(14, 3, 3),

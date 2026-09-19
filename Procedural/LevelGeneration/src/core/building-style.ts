@@ -7,6 +7,11 @@ import { exactKeys, cloneJSON } from './canonical';
 import {validatePrograms,type ArchitecturalProgram} from './architectural-program';
 import type {MassPolicy} from './mass-relations';
 import type {FacadeGrammar} from './facade-plan';
+import {frameAssetKey} from './urban-facade-assets';
+import {ribbonAKey} from './ribbon-a-assets';
+import {curtainBKey} from './curtain-b-assets';
+import {streamlineCKey,type StreamlineCKey} from './streamline-c-assets';
+import {COLUMN_ASSETS} from './column-prototype';
 export type VerticalBand = string;
 export type FacadeKind = 'front' | 'side';
 export interface BuildingModule {
@@ -34,6 +39,8 @@ export interface BuildingStyle {
   programs?:ArchitecturalProgram[];
   massPolicy?:MassPolicy;
   facadeGrammar?:FacadeGrammar;
+  roofAsset?:FacadeAssetKey;
+  terraceAsset?:FacadeAssetKey;
 }
 export const DEFAULT_BAND_POLICY:BandPolicy={baseRatioPermille:{retail:250,office:200,generic:200,residential:167,industrial:200},crownRatioPermille:100,maxBaseCells:4,maxCrownCells:3};
 export const VERTICAL_BANDS:('base'|'body'|'crown')[]=['base','body','crown'];
@@ -51,15 +58,39 @@ function stockStyle(id:'shop'|'office'):BuildingStyle {
     m.rooftopAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`facade.rooftop-${id}-${suffix}`])) as Record<AssetRow,FacadeAssetKey>;
   }
   const patterns=VERTICAL_BANDS.map((band):FacadePattern=>({id:`${band}-rhythm`,start:[],repeat:[`${band}-left`,`${band}-right`,`${band}-pier`],end:[],minRepeat:1,maxRepeat:32,roles:[band],facades:['front','side'],minWidth:1,priority:100,remainder:`${band}-single`}));
-  return {format:'banded-facade-v1',id,version:5,label:id==='shop'?'상가형':'업무형',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
+  return {format:'banded-facade-v1',id,version:5,label:id==='shop'?'A':'B',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
     bands:Object.fromEntries(VERTICAL_BANDS.map(b=>[b,{moduleSet:['wall','entry','entry-left','entry-right','trim',`${b}-single`,`${b}-left`,`${b}-right`,`${b}-pier`],fallback:`${b}-single`}])) as Record<VerticalBand,BandDefinition>,
     alignedFamilies:[{id:'paired-pier',periodCells:3,priority:100,patterns:{base:['base-rhythm'],body:['body-rhythm'],crown:['crown-rhythm']}}],modules,patterns,fallback:'wall',entrance:'entry',entrancePair:['entry-left','entry-right'],corner:{module:'body-pier',minRunWidth:3},topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0};
 }
-export const SHOP_STYLE=stockStyle('shop');
-export const OFFICE_STYLE=stockStyle('office');
+export const LEGACY_SHOP_STYLE=stockStyle('shop');
+function ribbonStyle():BuildingStyle {
+  const style=stockStyle('shop');style.version=6;
+  for(const m of style.modules){
+    if(m.semantic==='trim')continue;
+    m.assetId=ribbonAKey(m.assetId);
+    for(const variants of [m.rowAssets,m.rooftopAssets])if(variants)
+      for(const row of ASSET_ROWS)variants[row]=ribbonAKey(variants[row]);
+  }
+  return style;
+}
+export const SHOP_STYLE=ribbonStyle();
+export const LEGACY_OFFICE_STYLE=stockStyle('office');
+function curtainStyle():BuildingStyle {
+  const style=stockStyle('office');style.version=7;style.roofAsset='facade.curtain-b-roof';
+  style.bandPolicy.crownRatioPermille=200;
+  for(const m of style.modules){
+    if(m.semantic==='trim')continue;
+    m.assetId=curtainBKey(m.assetId);
+    for(const variants of [m.rowAssets,m.rooftopAssets])if(variants)
+      for(const row of ASSET_ROWS)variants[row]=curtainBKey(variants[row]);
+  }
+  for(const p of style.patterns)p.repeat[2]=`${p.roles[0]}-single`;
+  return style;
+}
+export const OFFICE_STYLE=curtainStyle();
 /** Legacy styles remain exact presets. New urban presets share the same mesh supplier. */
 export function urbanStyle(kind:'shop'|'office'):BuildingStyle {
-  const style=stockStyle(kind);style.id=`urban-${kind}`;style.label=kind==='shop'?'도시형 복합 상가':'도시형 업무';
+  const style=stockStyle(kind);style.id=`urban-${kind}`;style.label=kind==='shop'?'C':'D';
   const roles={retail:'base',office:'body',upper:'crown',mechanical:'body'} as const;
   style.modules.push(module('louver','facade.urban-louver','wall'));
   style.bands={};style.patterns=[];style.alignedFamilies=[];
@@ -79,17 +110,47 @@ export function urbanStyle(kind:'shop'|'office'):BuildingStyle {
     {id:'mechanical',scope:'upper',required:false,min:1,preferred:1,max:1,priority:20,minHeight:12},
   ]}));
   style.massPolicy={minArea:4,minWidth:2,minPersistence:2,changePermille:150};
-  for(let bits=0;bits<16;bits++)style.modules.push(module(`frame-${bits}`,`facade.urban-frame-${bits}` as import('./urban-facade-assets').FrameKey,'window'));
-  style.facadeGrammar={sections:['office'],periodV:2,minWidth:2,minHeight:2,boundaryPolicy:'absolute',maxGroups:4096};
+  for(let bits=0;bits<16;bits++)style.modules.push(module(`frame-${bits}`,frameAssetKey(bits,kind),'window'));
+  style.facadeGrammar={sections:['office'],periodV:2,minWidth:2,minHeight:2,boundaryPolicy:'absolute',maxGroups:4096,frameStyle:kind};
   return style;
 }
-export const URBAN_SHOP_STYLE=urbanStyle('shop');
+export const LEGACY_URBAN_SHOP_STYLE=urbanStyle('shop');
+function streamlineStyle():BuildingStyle {
+  const style=urbanStyle('shop');style.version=8;style.roofAsset='facade.streamline-c-roof';style.terraceAsset='facade.streamline-c-terrace';
+  delete style.facadeGrammar;
+  style.modules=style.modules.filter(m=>!m.id.startsWith('frame-'));
+  for(const m of style.modules){
+    if(m.semantic==='trim')continue;
+    if(m.id.startsWith('base-'))delete m.connection;
+    m.assetId=m.id==='louver'?'facade.streamline-c-wall':streamlineCKey(m.assetId);
+    for(const variants of [m.rowAssets,m.rooftopAssets])if(variants)
+      for(const row of ASSET_ROWS)variants[row]=streamlineCKey(variants[row]);
+  }
+  for(const p of style.patterns)if(p.roles[0]==='mechanical'){
+    p.repeat.fill('crown-single');p.remainder='crown-single';
+  }
+  style.bands.mechanical={moduleSet:[...style.bands.upper.moduleSet],fallback:'crown-single'};
+  for(const program of style.programs!){
+    const base=program.sections.find(s=>s.id==='retail')!;base.preferred=2;base.max=2;
+    // A two-cell building uses the retail fallback, leaving room for the
+    // full lower window plus its half-cell transom before the roof.
+    program.sections.find(s=>s.id==='office')!.minHeight=3;
+  }
+  for(const key of Object.keys(COLUMN_ASSETS))style.modules.push(module(key,key.replace('urban-column','streamline-c-column') as StreamlineCKey,'wall'));
+  return style;
+}
+export const URBAN_SHOP_STYLE=streamlineStyle();
 export const URBAN_OFFICE_STYLE=urbanStyle('office');
+// E reuses the metal prototypes with taller, three-floor glazing groups.
+export const STYLE_E:BuildingStyle={...urbanStyle('office'),id:'style-e',label:'E',
+  facadeGrammar:{...URBAN_OFFICE_STYLE.facadeGrammar!,periodV:3,minHeight:3}};
 export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
   const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);
   const range=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=min&&v<=max;
-  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar']);
+  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar','roofAsset','terraceAsset']);
+  if(style.roofAsset!==undefined){const a=FACADE_ASSETS[style.roofAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='roof')fail();}
+  if(style.terraceAsset!==undefined){const a=FACADE_ASSETS[style.terraceAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='terrace')fail();}
   if(style.massPolicy!==undefined){const p=style.massPolicy;exactKeys(p,['minArea','minWidth','minPersistence','changePermille']);if(!style.programs||!range(p.minArea,1,1024)||!range(p.minWidth,1,32)||!range(p.minPersistence,1,32)||!range(p.changePermille,1,1000))fail();}
   if(style.format!=='banded-facade-v1'||!id(style.id)||!range(style.version,1,0x7fffffff)||typeof style.label!=='string'||style.label.length>120||style.groundY!==0) fail();
   const policy=style.bandPolicy;
@@ -139,7 +200,7 @@ export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const roles=style.programs?Object.keys(style.bands):VERTICAL_BANDS;
   if(!roles.length||roles.length>16||roles.some(r=>!id(r)))fail();
   if(style.programs!==undefined)validatePrograms(style.programs,roles);
-  if(style.facadeGrammar!==undefined){const g=style.facadeGrammar;exactKeys(g,['sections','periodV','minWidth','minHeight','boundaryPolicy','maxGroups']);if(!style.programs||!Array.isArray(g.sections)||!g.sections.length||g.sections.some(r=>!roles.includes(r))||!range(g.periodV,2,8)||!range(g.minWidth,2,8)||!range(g.minHeight,2,g.periodV)||!['absolute','restart'].includes(g.boundaryPolicy)||!range(g.maxGroups,1,16384)||Array.from({length:16},(_,i)=>i).some(i=>mods.get(`frame-${i}`)?.assetId!==`facade.urban-frame-${i}`))fail();}
+  if(style.facadeGrammar!==undefined){const g=style.facadeGrammar;exactKeys(g,['sections','periodV','minWidth','minHeight','boundaryPolicy','maxGroups'],['frameStyle']);if((g.frameStyle!==undefined&&!['shop','office'].includes(g.frameStyle))||!style.programs||!Array.isArray(g.sections)||!g.sections.length||g.sections.some(r=>!roles.includes(r))||!range(g.periodV,2,8)||!range(g.minWidth,2,8)||!range(g.minHeight,2,g.periodV)||!['absolute','restart'].includes(g.boundaryPolicy)||!range(g.maxGroups,1,16384)||Array.from({length:16},(_,i)=>i).some(i=>mods.get(`frame-${i}`)?.assetId!==frameAssetKey(i,g.frameStyle)))fail();}
   const patterns=new Map<string,FacadePattern>();
   for(const p of style.patterns) {
     exactKeys(p,['id','start','repeat','end','minRepeat','maxRepeat','roles','facades','minWidth','priority','remainder']);

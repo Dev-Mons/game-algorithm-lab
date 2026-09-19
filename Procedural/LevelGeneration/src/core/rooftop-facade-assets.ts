@@ -13,7 +13,11 @@ function rooftop(base: BandedFacadeAsset, style: 'shop' | 'office'): BandedFacad
     ? [{ min: [-8, 8, 0], max: [8, 11, 1] }, { min: [-8, 11, 0], max: [8, 12, 2] }]
     : [{ min: [-7, 8, 0], max: [-6, 11, 1] }, { min: [6, 8, 0], max: [7, 11, 1] },
        { min: [-8, 11, 0], max: [8, 12, 1] }];
-  return { ...base, reliefBoxes16: [...base.reliefBoxes16, ...parapet],
+  const accents:Box16[]=style==='shop'
+    ? [{min:[-8,10.5,1],max:[8,10.75,1.25]}]
+    : [{min:[-8,9.375,.25],max:[8,9.625,.625]}];
+  return { ...base, finish:style, reliefBoxes16: [...base.reliefBoxes16, ...parapet],
+    accentBoxes16:[...(base.accentBoxes16??[]),...accents],
     bounds16: { min: [-8, -8, 0], max: [8, 12, 2] } };
 }
 

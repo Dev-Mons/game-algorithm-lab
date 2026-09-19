@@ -3,9 +3,10 @@ import { analyzeVolume, generate, DEFAULT_CATALOG, DEFAULT_RULES, validateCovera
 import { createDocument, replaceGrid, exportDocument, loadDocument } from '../src/core/document';
 import { generateDocument } from '../src/core/generate-document';
 import { EnvironmentCache } from '../src/core/environment-cache';
-import { SHOP_STYLE, OFFICE_STYLE, validateBuildingStyle } from '../src/core/building-style';
+import { SHOP_STYLE, LEGACY_SHOP_STYLE, OFFICE_STYLE, validateBuildingStyle } from '../src/core/building-style';
 import { faceAssetBounds, faceBounds16, containedInUnion, boxesOverlap, cellBox16 } from '../src/core/placement-bounds';
-import { ROOFTOP_FACADE_ASSETS, type RooftopFacadeKey } from '../src/core/rooftop-facade-assets';
+import {FACADE_ASSETS,type FacadeAssetKey} from '../src/core/facade-assets';
+import type {BandedFacadeAsset} from '../src/core/banded-facade-assets';
 import { box } from '../src/fixtures';
 
 const stepped = box(6, 5, 4).filter(([x, y]) => y < 2 || x >= 3);
@@ -48,7 +49,7 @@ it.each(['shop', 'office'] as const)('selects %s rooftop geometry in every palet
     for (const trace of result.traces.filter(t => t.role === 'wall')) {
       const tile = tiles.get(trace.selection.tileId)!;
       expect(tile.assetKey.startsWith('facade.rooftop-'), trace.faceId).toBe(trace.wallKind === 'rooftop');
-      expect(tile.assetKey).toContain(profile);
+      expect(tile.assetKey).toContain(profile==='shop'?'ribbon-a':'curtain-b');
       expect(tile.palette).toBe(trace.architecture!.palette);
       palettes.add(tile.palette!);
       if (trace.wallKind !== 'rooftop') continue;
@@ -56,7 +57,7 @@ it.each(['shop', 'office'] as const)('selects %s rooftop geometry in every palet
       const placement = result.placements.find(p => p.faceId === trace.faceId)!;
       const bounds = faceBounds16(faceAssetBounds(tile.assetKey), placement.position2, placement.orientationId);
       expect(containedInUnion(bounds, result.environment!.preflight[0].envelope.requiredBoxes16)).toBe(true);
-      const descriptor = ROOFTOP_FACADE_ASSETS[tile.assetKey as RooftopFacadeKey];
+      const descriptor = FACADE_ASSETS[tile.assetKey as FacadeAssetKey] as BandedFacadeAsset;
       const parapet = descriptor.reliefBoxes16.filter(b => b.min[1] >= 8);
       expect(parapet.length).toBeGreaterThan(0);
       for (const local of parapet) {
@@ -85,7 +86,7 @@ it('rebuilds roof positions after add/remove, including warm cache and serializa
 });
 
 it('keeps rooftop variants optional for existing styles and validates authored variant groups', () => {
-  const legacy = structuredClone(SHOP_STYLE);
+  const legacy = structuredClone(LEGACY_SHOP_STYLE);
   legacy.version = 4;
   legacy.modules.forEach(m => delete m.rooftopAssets);
   const doc = createDocument(box(2,1,2), 42, 'shop', legacy);
@@ -94,9 +95,9 @@ it('keeps rooftop variants optional for existing styles and validates authored v
   expect(Math.max(...result.environment!.preflight[0].envelope.requiredBoxes16.map(b => b.max[1]))).toBe(16);
   const saved = JSON.parse(JSON.stringify(doc));
   saved.catalog.version = 2;
-  saved.catalog.tiles = saved.catalog.tiles.filter((t: { assetKey: string }) => !t.assetKey.startsWith('facade.rooftop-')&&!t.assetKey.startsWith('facade.urban-'));
+  saved.catalog.tiles = saved.catalog.tiles.filter((t: { assetKey: string }) => !t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-')&&!t.assetKey.startsWith('facade.rooftop-')&&!t.assetKey.startsWith('facade.urban-'));
   const loaded = loadDocument(JSON.stringify(saved));
-  expect(loaded.catalog.version).toBe(4);
+  expect(loaded.catalog.version).toBe(10);
   expect(loaded.buildingDefinition).toEqual(legacy);
   saved.catalog.tiles[0].assetKey = 'unit-panel';
   expect(() => loadDocument(JSON.stringify(saved))).toThrow();

@@ -125,7 +125,7 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   const portalFacesForFacilities=new Set(entrances.flatMap(e=>e.entrances.flatMap(p=>p.faceIds)));
   const wallFacilities=finalBook?planWallFacilities(document,analysis.surfaces,vertical,portalFacesForFacilities,finalBook):undefined;
   const facadeFixed=new Set([...portalFacesForFacilities,...(wallFacilities?.changes.map(c=>c.faceId)??[])]);
-  const columnFixed=new Set([...facadeFixed,...(wallFacilities?.groups.filter(g=>g.accepted).flatMap(g=>g.faceIds)??[])]);
+  const columnFixed=new Set([...facadeFixed,...analysis.surfaces.filter(s=>s.architecture?.interpretation==='unsupported').map(s=>s.faceId),...(wallFacilities?.groups.filter(g=>g.accepted).flatMap(g=>g.faceIds)??[])]);
   const columns=vertical.map(v=>{const b=document.buildings.find(b=>b.componentId===v.buildingId)!,style=b.theme??document.buildingDefinition;return planColumns(v.buildingId,components.find(c=>c.id===v.buildingId)!.cells,analysis.surfaces,b.design.columnMode??(style.programs?'auto':'building'),columnFixed);});
   const columnFaces=new Set(columns.flatMap(c=>c.faces.map(f=>f.faceId)));columnFaces.forEach(id=>facadeFixed.add(id));
   const facades=vertical.flatMap(v=>{const style=document.buildings.find(b=>b.componentId===v.buildingId)!.theme??document.buildingDefinition;return style.facadeGrammar?[planFacade(analysis.surfaces,v,style.facadeGrammar,facadeFixed)]:[];});

@@ -4,6 +4,7 @@ import {
   BASES,
   cellId,
   compareCells,
+  faceCorners,
   DIRECTIONS,
   type Direction,
   type Surface,
@@ -80,7 +81,11 @@ export function analyzeVolume(
     );
   const regions: SurfaceRegion[] = [],
     regionFaces = new Map<string, Surface[]>();
-  const supported = base.diagnostics.length === 0;
+  // A bad contact only invalidates incident faces, not every region/building.
+  const unsupportedFaces = new Set(base.features.filter(e=>e.kind==='unsupported').flatMap(e=>e.faceIds));
+  const unsupportedVertices = new Set(base.diagnostics.filter(d=>d.code==='NON_MANIFOLD_VERTEX').map(d=>d.location));
+  if(unsupportedVertices.size)for(const s of surfaces)
+    if(faceCorners(s.cell,s.direction).some(v=>unsupportedVertices.has(cellId(v))))unsupportedFaces.add(s.faceId);
   const edgesByFace = new Map<string, typeof base.features>();
   for (const edge of base.features)
     for (const id of edge.faceIds) {
@@ -91,6 +96,7 @@ export function analyzeVolume(
     if (seen.has(root.faceId)) continue;
     const { u, v } = BASES[root.direction],
       queue = [root];
+    const supported = !unsupportedFaces.has(root.faceId);
     seen.add(root.faceId);
     for (let i = 0; i < queue.length; i++)
       for (const step of [u, negative(u), v, negative(v)]) {
@@ -100,6 +106,7 @@ export function analyzeVolume(
         if (
           !neighbor ||
           neighbor.componentId !== root.componentId ||
+          unsupportedFaces.has(neighbor.faceId) !== !supported ||
           seen.has(neighbor.faceId)
         )
           continue;

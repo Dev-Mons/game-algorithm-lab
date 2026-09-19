@@ -1,4 +1,5 @@
 import {expect,it} from 'vitest';
+import {DoubleSide,Mesh,MeshBasicMaterial,Raycaster,Vector3} from 'three';
 import {createDocument,replaceGrid,replaceSceneInputs,loadDocument,exportDocument} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
 import {emptySceneInputs,type ObjectInput} from '../src/core/scene-inputs';
@@ -50,7 +51,7 @@ it('priority 4: facility directions, resize and deletion preserve authored kind 
 });
 
 it('priority 4: ambiguous narrow buildings stay buildings; explicit and slab-supported columns keep original cells and face ownership',()=>{
-  const narrow=createDocument(box(1,5,1),3,'urban-office'),normal=generateDocument(narrow);expect(normal.environment!.columns![0].faces).toEqual([]);expect(normal.environment!.columns![0].runs[0].reason).toBe('AMBIGUOUS_NARROW_BUILDING');
+  const narrow=createDocument(box(1,5,1),3,'urban-office'),normal=generateDocument(narrow);expect(normal.environment!.columns![0].faces).toEqual([]);expect(normal.environment!.columns![0].runs[0].reason).toBe('FIXED_FACE_CONSTRAINT');expect(normal.environment!.entrances![0].entrances).toHaveLength(1);
   for(const cells of [box(1,1,1),box(1,5,1),[...box(3,1,3),...[1,2,3,4].map(y=>[1,y,1] as Vec3)], [...box(3,1,3),...[1,2,3].map(y=>[1,y,1] as Vec3),...box(3,1,3).map(([x,,z])=>[x,4,z] as Vec3)]]){
     const doc=createDocument(cells,3,'urban-office');doc.buildings[0].design.columnMode='column';const r=generateDocument(doc),columns=r.environment!.columns![0];expect(columns.faces.length).toBeGreaterThan(0);expect(r.cells).toEqual(doc.grid);expect(new Set(r.placements.map(p=>p.faceId)).size).toBe(r.surfaces.length);
     for(const face of columns.faces){const p=r.placements.find(p=>p.faceId===face.faceId)!;expect(p.faceAssetKey).toContain(face.assetKey);expect(p.finishIds).toEqual([]);expect(p.tileId).not.toContain('rooftop');}
@@ -67,4 +68,20 @@ it('priority 4: all authored facility and column geometries fit declared bounds 
     for(let i=0;i<p.count;i++)for(let a=0;a<3;a++){expect(p.getComponent(i,a)*16,key).toBeGreaterThanOrEqual(asset.bounds16.min[a]-1e-5);expect(p.getComponent(i,a)*16,key).toBeLessThanOrEqual(asset.bounds16.max[a]+1e-5);}
     if(key.startsWith('wall-facility.'))expect(library.get(key)).toBe(g);else g.dispose();
   }library.dispose();
+});
+
+it('column walls and caps close the full voxel face where adjacent slab faces are culled',()=>{
+  const material=new MeshBasicMaterial({side:DoubleSide});
+  for(const key of Object.keys(COLUMN_ASSETS)){
+    const geometry=buildCraftedGeometry(key),mesh=new Mesh(geometry,[material,material,material,material]);
+    // These edge/corner rays passed through the old recessed, quarter-width shaft
+    // and half-width plinth, exposing the omitted face of the supporting block.
+    for(const u of [-.49,-.3,0,.3,.49])for(const v of [-.49,-.4,0,.4,.49]){
+      const hits=new Raycaster(new Vector3(u,v,1),new Vector3(0,0,-1)).intersectObject(mesh,false);
+      expect(hits.length,key).toBeGreaterThan(0);
+      expect(hits[0].point.z,key).toBeCloseTo(0,6);
+    }
+    geometry.dispose();
+  }
+  material.dispose();
 });

@@ -9,6 +9,25 @@ import {box} from '../src/fixtures';
 import {expectCompleteFaces} from './complete-faces';
 async function load(page:Page,input:ReturnType<typeof createDocument>){await page.locator('#file').setInputFiles({name:'banded.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(input))});await expect(page.locator('#status')).toHaveText('OK');}
 async function save(page:Page){const waiting=page.waitForEvent('download');await page.locator('#save').click();const path=await(await waiting).path();const text=await readFile(path!,'utf8');return {text,document:loadDocument(text)};}
+
+test('A–E style menus apply E globally and per building and preserve it on reload',async({page})=>{
+  await page.goto('/');await load(page,createDocument(box(8,10,4),42,'office'));
+  await expect(page.locator('#profile option')).toHaveText(['A','B','C','D','E']);
+  await expect(page.locator('#building-theme option')).toHaveText(['전역 스타일 사용','A','B','C','D','E']);
+  await page.locator('#profile').selectOption({label:'E'});
+  await expect(page.locator('#status')).toHaveText('OK');
+  const saved=await save(page),result=generateDocument(saved.document);
+  expect(saved.document.buildingDefinition.label).toBe('E');
+  expect(saved.document.buildingDefinition.facadeGrammar!.periodV).toBe(3);
+  expect(result.environment!.facades![0].counters.completeGroups).toBeGreaterThan(0);
+  await expectCompleteFaces(page,result);
+  await load(page,saved.document);await expect(page.locator('#profile')).toHaveValue('style-e');
+  await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
+  await page.locator('#building-theme').selectOption({label:'A'});
+  await page.locator('#building-theme').selectOption({label:'E'});
+  const themed=await save(page);expect(themed.document.buildings[0].theme!.label).toBe('E');
+  await load(page,themed.document);await expectCompleteFaces(page,generateDocument(themed.document));
+});
 test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared geometry',async({page},info)=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
   const grid=[...box(3,1,4),...box(3,2,4).map(([x,y,z])=>[x+5,y,z] as Vec3),...box(10,12,5).filter(([x,y,z])=>y<8||x>=1&&x<=8&&z<3).map(([x,y,z])=>[x+10,y,z] as Vec3),...box(4,4,5).map(([x,y,z])=>[x+20,y,z] as Vec3)];

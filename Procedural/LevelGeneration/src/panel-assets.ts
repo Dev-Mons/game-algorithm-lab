@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import {facadeFinish,facadeColors,type FacadeFinish} from './facade-finishes';
 import {
   PANEL_ASSETS,
   PALETTES,
@@ -71,16 +72,10 @@ function paint(asset: Tile["assetKey"], palette: Palette): HTMLCanvasElement {
   rect(0, 248, 256, 8, c.shadow);
   rect(0, 246, 256, 2, c.trim);
   if (asset === "crafted.roof") {
-    rect(0, 0, 256, 256, c.roof);
-    for (let row = 0; row < 8; row++) {
-      const y = row * 32;
-      rect(0, y + 27, 256, 5, c.roofShade);
-      rect(0, y, 256, 3, "#ffffff20");
-      for (let x = (row % 2) * 32 - 64; x < 256; x += 64) {
-        rect(x, y, 3, 27, c.roofShade);
-        rect(x + 4, y + 3, 3, 21, "#ffffff17");
-      }
-    }
+    // Flat commercial roofs use standing seams, not painted pitched-roof tiles.
+    rect(0,0,256,256,palette==='sage'?'#697c80':palette==='sand'?'#89887d':'#827d73');
+    for(let x=0;x<256;x+=128){rect(x,0,2,256,'#00000028');rect(x+2,0,2,256,'#ffffff20');}
+    rect(0,254,256,2,'#00000018');
   } else if (asset === "crafted.paving") {
     rect(0, 0, 256, 256, "#aaa58f");
     for (let y = 0; y < 4; y++)
@@ -119,20 +114,59 @@ export class PanelAssets {
       return this.extraMaterials.get(key)!;
     }
     if (tile.assetKey.startsWith("facade.")) {
-      const key = `facade-wall|${tile.palette}`;
-      if (!this.extraMaterials.has(key))
-        this.extraMaterials.set(
-          key,
-          new THREE.MeshStandardMaterial({
-            color: schemes[tile.palette!].wall,
-            roughness: 0.82,
-            side: THREE.DoubleSide,
-          }),
-        );
-      return this.extraMaterials.get(key)!;
+      return this.facadeMaterial(tile.palette!,facadeFinish(tile.assetKey),'wall');
     }
     const material=this.painted(tile.assetKey,tile.palette!);
     return material;
+  }
+  facadeMaterials(tile:Tile):THREE.Material[]{
+    const palette=tile.palette??'clay',finish=facadeFinish(tile.assetKey);
+    return [this.get(tile),this.facadeMaterial(palette,finish,'frame'),
+      this.facadeMaterial(palette,finish,'glass'),this.facadeMaterial(palette,finish,'metal')];
+  }
+  private facadeMaterial(palette:Palette,finish:FacadeFinish,part:'wall'|'frame'|'glass'|'metal'){
+    const key=`architecture|${finish}|${palette}|${part}`;
+    if(!this.extraMaterials.has(key)){
+      const colors=facadeColors(finish,palette),glass=part==='glass',metal=part==='metal';
+      const material=new THREE.MeshStandardMaterial({color:colors[part],roughness:glass?.19:metal?.34:part==='frame'?.64:.88,metalness:glass?.08:metal?.72:0,side:THREE.DoubleSide});
+      if(part==='wall'||glass){
+        const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
+        const ctx=canvas.getContext('2d')!;
+        ctx.fillStyle='#ffffff';ctx.fillRect(0,0,256,256);
+        if(glass){
+          const gradient=ctx.createLinearGradient(0,0,0,256);
+          if(finish==='curtain-b'){
+            gradient.addColorStop(0,'#c6c0b1');gradient.addColorStop(.55,'#aea393');gradient.addColorStop(1,'#928779');
+          }else if(finish==='streamline-c'){
+            gradient.addColorStop(0,'#c0c1b5');gradient.addColorStop(1,'#96998e');
+          }else if(finish==='ribbon-a'){
+            gradient.addColorStop(0,'#bcb5a6');gradient.addColorStop(1,'#7b786e');
+          }else{
+            gradient.addColorStop(0,'#dcebf0');gradient.addColorStop(.42,'#a3b7bf');
+            gradient.addColorStop(.46,'#91a7af');gradient.addColorStop(1,'#64808d');
+          }
+          ctx.fillStyle=gradient;ctx.fillRect(0,0,256,256);
+          if(finish==='curtain-b'){
+            ctx.fillStyle='#ffffff13';ctx.fillRect(0,0,128,256);
+            ctx.fillStyle='#00000018';ctx.fillRect(128,145,128,111);
+          }else if(finish!=='ribbon-a'&&finish!=='streamline-c'){ctx.fillStyle='#ffffff17';ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(52,0);ctx.lineTo(162,256);ctx.lineTo(132,256);ctx.fill();}
+        }else{
+          // Fixed courses/panel joints; no image dependency or per-face textures.
+          const rows=finish.startsWith('streamline-c')?1:colors.masonry?8:2,step=256/rows;
+          for(let row=0;row<rows;row++){
+            ctx.fillStyle='#00000018';ctx.fillRect(0,row*step,256,1.5);
+            const stride=colors.masonry?64:128;
+            for(let u=(row%2)*stride/2;u<256;u+=stride){
+              ctx.fillStyle='#00000012';ctx.fillRect(u,row*step,1.5,step);
+              ctx.fillStyle=(row+u/stride)%3<1?'#00000007':'#ffffff08';ctx.fillRect(u+2,row*step+2,stride-3,step-3);
+            }
+          }
+        }
+        const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=4;material.map=map;
+      }
+      this.extraMaterials.set(key,material);
+    }
+    return this.extraMaterials.get(key)!;
   }
   dispose() {
     this.plain.dispose();

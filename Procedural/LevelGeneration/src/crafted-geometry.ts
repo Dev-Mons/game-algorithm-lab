@@ -7,11 +7,13 @@ import {
   type FacadeAssetKey,
 } from "./core/facade-assets";
 import {TRIM_ASSETS,type BandedFacadeAsset} from './core/banded-facade-assets';
+import type {Box16} from './core/environment-contract';
 
 interface GeometryParts {
   panel: THREE.BufferGeometry;
   relief?: THREE.BufferGeometry;
   glass?: THREE.BufferGeometry;
+  accent?: THREE.BufferGeometry;
 }
 const box = (
   x: number,
@@ -26,6 +28,43 @@ function merged(parts: THREE.BufferGeometry[]) {
   parts.forEach((g) => g.dispose());
   if (!geometry) throw new Error("Incompatible authored module geometry.");
   return geometry;
+}
+function reliefBox(b:Box16,bevel=0,corner?:BandedFacadeAsset['reliefCorner']):THREE.BufferGeometry {
+  if(corner){
+    // Clip only the projecting cladding, leaving the occupied voxel closed.
+    // Perpendicular faces meet at the same 45-degree line at a convex edge.
+    let points=[[b.min[0],b.min[2]],[b.max[0],b.min[2]],[b.max[0],b.max[2]],[b.min[0],b.max[2]]];
+    for(const sign of corner==='both'?[-1,1]:[corner==='left'?-1:1]){
+      const clipped:number[][]=[];
+      for(let i=0;i<points.length;i++){
+        const a=points[i],c=points[(i+1)%points.length],da=sign*a[0]+a[1]-8,dc=sign*c[0]+c[1]-8;
+        if(da<=0)clipped.push(a);
+        if((da<0&&dc>0)||(da>0&&dc<0)){const t=da/(da-dc);clipped.push([a[0]+t*(c[0]-a[0]),a[1]+t*(c[1]-a[1])]);}
+      }
+      points=clipped;
+    }
+    if(points.length<3){const empty=new THREE.PlaneGeometry(1,1);empty.setIndex([]);return empty;}
+    const shape=new THREE.Shape(points.map(([u,n])=>new THREE.Vector2(u/16,n/16)));
+    const geometry=new THREE.ExtrudeGeometry(shape,{depth:(b.max[1]-b.min[1])/16,bevelEnabled:false,steps:1});
+    geometry.rotateX(Math.PI/2);geometry.translate(0,b.max[1]/16,0);
+    geometry.clearGroups();geometry.setIndex(Array.from({length:geometry.getAttribute('position').count},(_,i)=>i));
+    return geometry;
+  }
+  if(!bevel)return box((b.min[0]+b.max[0])/32,(b.min[1]+b.max[1])/32,(b.min[2]+b.max[2])/32,(b.max[0]-b.min[0])/16,(b.max[1]-b.min[1])/16,(b.max[2]-b.min[2])/16);
+  const [x0,y0,z0]=b.min.map(n=>n/16),[x1,y1,z1]=b.max.map(n=>n/16);
+  const r=Math.min(bevel/16,(x1-x0)/3,(y1-y0)/3,(z1-z0)/3);
+  // Three rectangular rings: back, shoulder, inset front. Flat bevel normals
+  // catch highlights like folded metal/ceramic profiles without subdivision.
+  const ring=(inset:number,z:number)=>[[x0+inset,y0+inset,z],[x1-inset,y0+inset,z],[x1-inset,y1-inset,z],[x0+inset,y1-inset,z]];
+  const vertices=[...ring(0,z0),...ring(0,z1-r),...ring(r,z1)];
+  const indices:number[]=[0,3,2,0,2,1,8,9,10,8,10,11];
+  for(let layer=0;layer<2;layer++)for(let edge=0;edge<4;edge++){
+    const a=layer*4+edge,b=layer*4+(edge+1)%4,c=b+4,d=a+4;indices.push(a,b,c,a,c,d);
+  }
+  const indexed=new THREE.BufferGeometry();indexed.setAttribute('position',new THREE.Float32BufferAttribute(vertices.flat(),3));indexed.setIndex(indices);
+  const geometry=indexed.toNonIndexed();indexed.dispose();geometry.computeVertexNormals();
+  const p=geometry.getAttribute('position');geometry.setAttribute('uv',new THREE.Float32BufferAttribute(Array.from({length:p.count},(_,i)=>[p.getX(i)+.5,p.getY(i)+.5]).flat(),2));
+  geometry.setIndex(Array.from({length:p.count},(_,i)=>i));return geometry;
 }
 function framed(kind: string): GeometryParts {
   const pieces: THREE.BufferGeometry[] = [];
@@ -88,14 +127,40 @@ function facade(asset: FacadeAsset): GeometryParts {
   };
 }
 function bandedFacade(asset:BandedFacadeAsset):GeometryParts {
-  const blocks=asset.reliefBoxes16.map(b=>box((b.min[0]+b.max[0])/32,(b.min[1]+b.max[1])/32,(b.min[2]+b.max[2])/32,(b.max[0]-b.min[0])/16,(b.max[1]-b.min[1])/16,(b.max[2]-b.min[2])/16));
+  const blocks=asset.reliefBoxes16.map(b=>reliefBox(b,asset.reliefBevel16,asset.reliefCorner));
   const opening=asset.opening16;
   const panels:THREE.BufferGeometry[]=[];
   const plate=(u0:number,u1:number,v0:number,v1:number)=>{if(u1>u0&&v1>v0)panels.push(new THREE.PlaneGeometry((u1-u0)/16,(v1-v0)/16).translate((u0+u1)/32,(v0+v1)/32,0));};
   if(asset.displayRects16)for(const r of asset.displayRects16)panels.push(new THREE.PlaneGeometry((r.maxU-r.minU)/16,(r.maxV-r.minV)/16).translate((r.minU+r.maxU)/32,(r.minV+r.maxV)/32,r.n/16));
   else if(opening){plate(-8,opening.minU,-8,8);plate(opening.maxU,8,-8,8);plate(opening.minU,opening.maxU,-8,opening.minV);plate(opening.minU,opening.maxU,opening.maxV,8);}
   else plate(-8,8,-8,8);
-  return {panel:merged(panels),...(blocks.length?{relief:merged(blocks)}:{}),...(opening?{glass:new THREE.PlaneGeometry((opening.maxU-opening.minU)/16,(opening.maxV-opening.minV)/16).translate((opening.minU+opening.maxU)/32,(opening.minV+opening.maxV)/32,1/64)}:{})};
+  const accents=(asset.accentBoxes16??[]).map(b=>reliefBox(b,0,asset.reliefCorner));
+  // Fully glazed inner panels still have the same indexed attribute layout.
+  const empty=new THREE.PlaneGeometry(1,1);empty.setIndex([]);
+  const panel=panels.length?merged(panels):empty;
+  if(panels.length)empty.dispose();
+  // Keep masonry courses aligned across the separate wall strips of a window.
+  const positions=panel.getAttribute('position'),uv=panel.getAttribute('uv');
+  for(let i=0;i<positions.count;i++)uv.setXY(i,positions.getX(i)+.5,positions.getY(i)+.5);
+  let glass:THREE.BufferGeometry|undefined;
+  if(opening){
+    const corner=asset.reliefCorner,n=.25;
+    const us=[opening.minU,opening.maxU];
+    if(corner==='left'||corner==='both')us.push(-8+n);
+    if(corner==='right'||corner==='both')us.push(8-n);
+    const breaks=[...new Set(us.filter(u=>u>=opening.minU&&u<=opening.maxU))].sort((a,b)=>a-b);
+    const strips=breaks.slice(1).map((u1,i)=>{
+      const u0=breaks[i],g=new THREE.PlaneGeometry((u1-u0)/16,(opening.maxV-opening.minV)/16).translate((u0+u1)/32,(opening.minV+opening.maxV)/32,n/16);
+      const p=g.getAttribute('position');
+      for(let j=0;j<p.count;j++){
+        const u=p.getX(j)*16;
+        p.setZ(j,Math.min(n,corner==='left'||corner==='both'?8+u:n,corner==='right'||corner==='both'?8-u:n)/16);
+      }
+      g.computeVertexNormals();return g;
+    });
+    glass=merged(strips);
+  }
+  return {panel,...(blocks.length?{relief:merged(blocks)}:{}),...(accents.length?{accent:merged(accents)}:{}),...(glass?{glass}:{})};
 }
 // Asset-key-only construction: dimensions and input Grid never enter this function.
 function authoredSurfaces(assetKey: string): GeometryParts {
@@ -107,8 +172,8 @@ function authoredSurfaces(assetKey: string): GeometryParts {
   if (["crafted.plaster","crafted.roof","crafted.paving","crafted.soffit"].includes(assetKey)) return framed(assetKey.slice(8));
   throw new Error(`Unknown crafted geometry: ${assetKey}`);
 }
-// Stable material slots for a single Mesh: wall = 0, frame/finish = 1, glass = 2.
-export const FACE_MATERIAL_SLOTS = { wall: 0, frame: 1, glass: 2 } as const;
+// Stable original slots, plus independently shaded metal details.
+export const FACE_MATERIAL_SLOTS = { wall: 0, frame: 1, glass: 2, accent: 3 } as const;
 /** Prototype authoring boundary. Only a catalog key enters; never a placed volume.
  * Replace this factory's complete-key lookup with Blender single-mesh assets.
  * Combining fixed demo surfaces here happens once per prototype, never per face.
@@ -119,7 +184,12 @@ export function buildCraftedGeometry(assetKey: string): THREE.BufferGeometry {
   const surfaces: THREE.BufferGeometry[] = [base.panel], slots: number[] = [0];
   if (base.relief) { surfaces.push(base.relief); slots.push(1); }
   if (base.glass) { surfaces.push(base.glass); slots.push(2); }
-  for (const key of asset.finishAssetKeys) { surfaces.push(authoredSurfaces(key).panel); slots.push(1); }
+  if (base.accent) { surfaces.push(base.accent); slots.push(3); }
+  const descriptor=FACADE_ASSETS[asset.baseAssetKey as FacadeAssetKey];
+  const corner=descriptor&&'reliefCorner' in descriptor?descriptor.reliefCorner:undefined;
+  for (const key of asset.finishAssetKeys) {
+    surfaces.push(corner?merged(TRIM_ASSETS[key].boxes16.map(b=>reliefBox(b,0,corner))):authoredSurfaces(key).panel);slots.push(1);
+  }
   const geometry = mergeGeometries(surfaces, true);
   surfaces.forEach(g => g.dispose());
   if (!geometry) throw new Error('Incompatible complete face prototype.');

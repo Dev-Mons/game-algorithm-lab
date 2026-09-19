@@ -1,5 +1,5 @@
 import {expect,it} from 'vitest';
-import {createDocument,replaceSceneInputs,setBuildingRule} from '../src/core/document';
+import {BUILDING_PROFILES,createDocument,replaceSceneInputs,setBuildingRule,type Profile} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
 import {emptySceneInputs} from '../src/core/scene-inputs';
 import {desiredEntranceCount} from '../src/core/entrance-plan';
@@ -15,7 +15,7 @@ it('counts validated frontage union and limits small-volume buildings',()=>{
   const settings=defaultEnvironmentSettings().entrances;
   expect(desiredEntranceCount(22,1152,settings)).toBe(2);expect(desiredEntranceCount(22,128,settings)).toBe(1);expect(desiredEntranceCount(0,2000,settings)).toBe(0);
 });
-it('builds only planned multi-face portals, shares access paths and removes every portal when roads disappear',()=>{
+it('builds planned road portals and retains a ground entrance when roads disappear',()=>{
   const {document,result}=run(box(24,8,6),box(24,1,1).map(([x,y])=>[x,y,8]));
   const plan=result.environment!.entrances![0];
   expect(plan.entrances.length).toBeGreaterThanOrEqual(2);expect(plan.entrances.filter(e=>e.role==='main')).toHaveLength(1);
@@ -25,8 +25,26 @@ it('builds only planned multi-face portals, shares access paths and removes ever
   expect(new Set(result.placements.map(p=>p.faceId)).size).toBe(result.surfaces.length);
   for(const e of plan.entrances){expect(e.pathCells.length).toBeGreaterThan(0);expect(e.pathCells.length-1).toBeLessThanOrEqual(24);expect(e.faceIds).toHaveLength(e.widthCells);}
   const without=generateDocument(replaceSceneInputs(document,{...document.sceneInputs,roads:[]}),{mode:'development-preview'});
-  expect(without.environment!.entrances![0].entrances).toEqual([]);expect(without.placements.some(p=>p.ruleId==='building.entrance')).toBe(false);
+  expect(without.environment!.entrances![0].entrances).toHaveLength(1);
+  expect(without.environment!.entrances![0].entrances[0]).toMatchObject({access:'local',pathCells:[]});
+  expect(without.environment!.entrances![0].entrances[0].roadTargetCell).toBeUndefined();
+  expect(without.placements.some(p=>p.ruleId==='building.entrance')).toBe(true);
   expect(without.environment!.entrances![0].traces[0].candidates.some(c=>c.reasonCodes.includes('NO_ROAD'))).toBe(true);
+});
+
+it.each(Object.keys(BUILDING_PROFILES) as Profile[])('%s gives every separate ground building a door without inventing road access',profile=>{
+  const grid=[...box(6,5,4),...box(1,3,1).map(([x,y,z])=>[x+10,y,z] as Vec3)];
+  const document=createDocument(grid,42,profile),result=generateDocument(document);
+  const faces=new Map(result.surfaces.map(s=>[s.faceId,s]));
+  expect(result.environment!.entrances).toHaveLength(2);
+  for(const plan of result.environment!.entrances!){
+    expect(plan.entrances).toHaveLength(1);
+    const entry=plan.entrances[0];expect(entry.access).toBe('local');expect(entry.pathCells).toEqual([]);
+    expect(entry.roadTargetCell).toBeUndefined();expect(entry.roadFrontageId).toBeUndefined();
+    for(const id of entry.faceIds){expect(faces.get(id)!.cell[1]).toBe(0);expect(result.placements.find(p=>p.faceId===id)!.ruleId).toBe('building.entrance');}
+    expect(result.environment!.reservations.some(r=>r.id===entry.id&&r.kind==='entrance')).toBe(true);
+  }
+  expect(generateDocument({...document,grid:[...document.grid].reverse()},{cache:false})).toEqual(result);
 });
 it('rejects immediate road landings and incompatible portal height; allows narrow single-cell facades',()=>{
   const ring:Vec3[]=[];for(let n=0;n<3;n++)ring.push([n,0,-1],[n,0,3],[-1,0,n],[3,0,n]);

@@ -20,7 +20,8 @@ it.each(['shop', 'office'] as const)('%s finished faces preserve geometry bounds
     expect(result.placements.length).toBe(result.surfaces.length);
     const reservationIds = new Set(result.environment!.reservations.filter(r => r.kind==='attachment').map(r=>r.id));
     expect(new Set(result.placements.flatMap(p=>p.finishIds!))).toEqual(reservationIds);
-    expect(result.placements.some(p=>p.finishIds!.length>1)).toBe(true);
+    if(profile==='office')expect(result.placements.flatMap(p=>p.finishIds!)).toEqual([]);
+    else expect(result.placements.some(p=>p.finishIds!.length>1)).toBe(true);
     for (const placement of result.placements) {
       const key = placement.faceAssetKey!, descriptor = completeFaceAsset(key), bounds = faceAssetBounds(key);
       const geometry = library.get(key), position = geometry.getAttribute('position');
@@ -46,7 +47,7 @@ it.each(['shop', 'office'] as const)('%s finished faces preserve geometry bounds
 });
 
 it('each placed face is one real Mesh; glass and corner finish hits select its owner in all wall orientations',()=>{
-  const library=new CraftedGeometryLibrary(),materials=[0,1,2].map(()=>new MeshBasicMaterial({side:DoubleSide}));
+  const library=new CraftedGeometryLibrary(),materials=[0,1,2,3].map(()=>new MeshBasicMaterial({side:DoubleSide}));
   const base='facade.banded-shop-body-repeat-single',key=selectCompleteFaceAsset(base,['trim.cap.start','trim.cap.outer-negative']);
   const tile=createDocument([[0,0,0]]).catalog.tiles.find(t=>t.assetKey===base)!;
   for(const direction of ['PX','NX','PZ','NZ'] as const){

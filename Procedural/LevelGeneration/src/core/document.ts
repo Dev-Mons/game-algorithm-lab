@@ -1,4 +1,6 @@
 import { canonicalJSON, exactKeys, cloneJSON } from "./canonical";
+import {isStreamlineCCornerV9} from './streamline-c-assets';
+import {isCurtainBCornerV10} from './curtain-b-assets';
 import { defaultEnvironmentSettings, validateEnvironmentSettings, type EnvironmentSettings } from "./environment-settings";
 import { emptySceneInputs } from "./scene-inputs";
 import { adapterReferenceFor } from "./rule-spatial-adapters";
@@ -8,7 +10,7 @@ import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./bu
 import {
   SHOP_STYLE,
   OFFICE_STYLE,
-  URBAN_SHOP_STYLE, URBAN_OFFICE_STYLE,
+  URBAN_SHOP_STYLE, URBAN_OFFICE_STYLE, STYLE_E,
   validateBuildingStyle,
   type BuildingStyle,
 } from "./building-style";
@@ -37,9 +39,12 @@ export const SETTINGS = {
   padding: 1,
   hash: "h33-u32-v1",
 } as const;
-export type Profile = "shop" | "office" | "urban-shop" | "urban-office";
+// Stable IDs preserve existing files and seed-based designs; labels are A–E.
+export const BUILDING_PROFILES={shop:SHOP_STYLE,office:OFFICE_STYLE,'urban-shop':URBAN_SHOP_STYLE,'urban-office':URBAN_OFFICE_STYLE,'style-e':STYLE_E};
+export type Profile = keyof typeof BUILDING_PROFILES;
+function topAssetRole(key:string){const a=FACADE_ASSETS[key as FacadeAssetKey];return a&&'surfaceRole' in a?a.surfaceRole:undefined;}
 export function profileData(profile: Profile) {
-  if (["shop","office","urban-shop","urban-office"].includes(profile))
+  if (Object.hasOwn(BUILDING_PROFILES,profile))
     return {
       catalog: [
         ...CRAFTED_CATALOG,
@@ -48,8 +53,8 @@ export function profileData(profile: Profile) {
             tileId: `${asset}.${palette}`,
             assetKey: asset as FacadeAssetKey,
             palette: palette as "clay" | "sage" | "sand",
-            roles: (asset.startsWith('facade.urban-column-')?["wall","roof","terrace","underside"]:["wall"]) as Tile["roles"],
-            orientationIds: (asset.startsWith('facade.urban-column-')?["PX","NX","PZ","NZ","PY","NY"]:["PX", "NX", "PZ", "NZ"]) as Tile["orientationIds"],
+            roles: (topAssetRole(asset)?[topAssetRole(asset)]:(asset.startsWith('facade.urban-column-')||asset.startsWith('facade.streamline-c-column-'))?["wall","roof","terrace","underside"]:["wall"]) as Tile["roles"],
+            orientationIds: (topAssetRole(asset)?['PY']:(asset.startsWith('facade.urban-column-')||asset.startsWith('facade.streamline-c-column-'))?["PX","NX","PZ","NZ","PY","NY"]:["PX", "NX", "PZ", "NZ"]) as Tile["orientationIds"],
             footprint: "unit-face" as const,
             pivot: "face-center" as const,
           })),
@@ -59,7 +64,7 @@ export function profileData(profile: Profile) {
       style: "environment-panels",
       rolePolicy: "region-context-v1" as const,
       architecture: JSON.parse(
-        JSON.stringify(profile === "shop" ? SHOP_STYLE : profile==='urban-shop'?URBAN_SHOP_STYLE:profile==='urban-office'?URBAN_OFFICE_STYLE:OFFICE_STYLE),
+        JSON.stringify(BUILDING_PROFILES[profile]),
       ) as BuildingStyle,
     };
   throw new Error("Unknown current building profile.");
@@ -109,7 +114,7 @@ export function createDocument(
     environment: validateEnvironmentSettings(environment),
     grid: cells, seed,
     catalog: {
-      id: profile, version: 4,
+      id: profile, version: 10,
       tiles: canonicalCatalog(profileData("office").catalog),
       modules: cloneJSON(canonicalModules([...FACADE_MODULE_ASSETS])),
     },
@@ -131,7 +136,7 @@ export function loadDocument(text: string): GenerationDocument {
   exactKeys(raw as unknown,["schemaVersion","algorithmVersion","buildingDefinition","sceneInputs","buildings","environment","grid","seed","catalog","ruleSet","style","settings"]);
   if (!Array.isArray(raw.buildings)) throw new Error("INVALID_BUILDINGS");
   for (const b of raw.buildings) exactKeys(b,["componentId","rule","design","spatialAdapterRef"],["theme"]);
-  if (!raw.catalog || !raw.ruleSet || !raw.style || ![2,3,4].includes(raw.catalog.version) || raw.ruleSet.version !== 1 || raw.style.version !== 1)
+  if (!raw.catalog || !raw.ruleSet || !raw.style || ![2,3,4,5,6,7,8,9,10].includes(raw.catalog.version) || raw.ruleSet.version !== 1 || raw.style.version !== 1)
     throw new Error("Unknown catalog, rule or style version.");
   // Only registered immutable metadata is accepted under each ID/version.
   const expected = createDocument(
@@ -160,11 +165,13 @@ export function loadDocument(text: string): GenerationDocument {
         : {}),
     },
   };
-  // Catalog 3 excludes urban prototypes; catalog 2 also excludes rooftop variants.
+  // Catalog 7 excludes C streamline modules; 6 excludes B curtain walls; 5 excludes A ribbons; 4 excludes style-specific frames.
+  // earlier versions also
+  // exclude urban prototypes (3) and rooftop variants (2).
   // Verify it against that exact catalog before upgrading; preserve authored styles.
-  const registered = raw.catalog.version < 4 ? {
+  const registered = raw.catalog.version < 10 ? {
     ...expected, catalog: { ...expected.catalog, version: raw.catalog.version,
-      tiles: expected.catalog.tiles.filter(t => !t.assetKey.startsWith('facade.urban-')&&(raw.catalog.version!==2||!t.assetKey.startsWith('facade.rooftop-'))) },
+      tiles: expected.catalog.tiles.filter(t => !isCurtainBCornerV10(t.assetKey)&&(raw.catalog.version>=9||!isStreamlineCCornerV9(t.assetKey))&&(raw.catalog.version>=8||!t.assetKey.includes('streamline-c-'))&&(raw.catalog.version>=7||!t.assetKey.includes('curtain-b-'))&&(raw.catalog.version>=6||!t.assetKey.includes('ribbon-a-'))&&(raw.catalog.version>=5||!/^facade\.urban-(shop|office)-frame-/.test(t.assetKey))&&(raw.catalog.version>=4||!t.assetKey.startsWith('facade.urban-'))&&(raw.catalog.version!==2||!t.assetKey.startsWith('facade.rooftop-'))) },
   } : expected;
   if (canonicalJSON(normalized) !== canonicalJSON(registered))
     throw new Error(

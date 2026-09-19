@@ -1,0 +1,32 @@
+import {test,expect} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
+import {createDocument} from '../src/core/document';
+import {generateDocument} from '../src/core/generate-document';
+import {LOCAL_CORNER_CELLS} from '../tests/fixtures/local-corner';
+import {expectCompleteFaces} from './complete-faces';
+
+test('edited non-manifold corner retains normal windows and doors while isolating basic faces',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/');
+  const doc=createDocument(LOCAL_CORNER_CELLS,42,'office'),result=generateDocument(doc);
+  await page.locator('#file').setInputFiles({name:'local-corner.city.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
+  await expect(page.locator('#status')).toHaveText('DEGRADED');
+  const report=await expectCompleteFaces(page,result);expect(report.glassFaces).toBeGreaterThan(0);
+  await page.locator('.inspect-details summary').first().click();
+  await page.locator('#face').selectOption('-3,1,-1|NX');
+  await expect(page.locator('#inspector')).toContainText('curtain-b-');
+  await expect(page.locator('#inspector')).not.toContainText('unit-panel');
+  await page.locator('#face').selectOption('1,3,0|PX');
+  await expect(page.locator('#inspector')).toContainText('unit-panel');
+  const entry=result.environment!.entrances![0].entrances[0];
+  await page.locator('#face').selectOption(entry.faceIds[0]);
+  await expect(page.locator('#inspector')).toContainText('building.entrance');
+  await page.locator('.inspect-details summary').first().click();
+  await page.locator('.layers summary').click();
+  for(const id of ['layer-edges','environment-inputs','environment-plans'])await page.locator(`#${id}`).uncheck();
+  await page.locator('.layers summary').click();
+  await page.locator('[data-camera="iso"]').click();await page.mouse.move(0,0);
+  await mkdir('artifacts/local-corner-recovery',{recursive:true});
+  await page.locator('canvas').screenshot({path:'artifacts/local-corner-recovery/recovered.png'});
+  expect(errors).toEqual([]);
+});

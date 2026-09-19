@@ -144,17 +144,14 @@ it("coplanar regions partition only exterior faces; all positions and coverage r
     }
   }
 });
-it("unsupported contacts use basic coverage and remain degraded without architectural inference", () => {
+it("unsupported contacts keep basic coverage only on incident faces", () => {
   for (const name of ["edgeContact", "vertexContact"]) {
     const result = generate(FIXTURES[name].cells, options);
     expect(result.status).toBe("degraded");
     expect(result.placements).toHaveLength(12);
-    expect(result.placements.every((p) => p.tileId.startsWith("panel."))).toBe(
-      true,
-    );
-    expect(
-      result.regions!.every((r) => r.interpretation === "unsupported"),
-    ).toBe(true);
+    const affected=new Set(result.surfaces.filter(s=>s.architecture!.interpretation==='unsupported').map(s=>s.faceId));
+    expect(affected.size).toBeGreaterThan(0);expect(affected.size).toBeLessThan(12);
+    for(const p of result.placements)expect(p.tileId.startsWith('panel.')).toBe(affected.has(p.faceId));
   }
 });
 it("region policy is deterministic under permutations and translations, and saved version is explicit", () => {
