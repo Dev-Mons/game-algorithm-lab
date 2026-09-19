@@ -1,0 +1,39 @@
+name: Level generation
+on:
+  pull_request:
+    paths:
+      - 'Procedural/LevelGeneration/**'
+      - '.github/workflows/level-generation.yml'
+  push:
+    branches: ['codex/facility-volume-assemblies']
+    paths:
+      - 'Procedural/LevelGeneration/**'
+      - '.github/workflows/level-generation.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: Procedural/LevelGeneration
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Procedural/LevelGeneration/package-lock.json
+      - run: npm ci
+      - run: npm run verify
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: level-generation-test-results
+          path: |
+            Procedural/LevelGeneration/test-results/
+            Procedural/LevelGeneration/playwright-report/
+          if-no-files-found: ignore
