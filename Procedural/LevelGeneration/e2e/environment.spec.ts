@@ -86,7 +86,7 @@ test('vertical stage displays H1/H2/H12 bands and connected geometry',async({pag
   await page.screenshot({path:info.outputPath('vertical-preview-h12.png')});
 });
 
-test('common entrance plan produces real facade portals and removes them after road removal',async({page},info)=>{
+test('common entrance plan retains a local ground portal after road removal',async({page},info)=>{
   await page.goto('/');const scene=emptySceneInputs();scene.roads=box(18,1,2).map(([x,y,z])=>[x,y,z+6]);
   const doc=createDocument(box(18,8,4),42,'shop',undefined,undefined,scene);
   await page.locator('#file').setInputFiles({name:'entrances.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
@@ -98,7 +98,13 @@ test('common entrance plan produces real facade portals and removes them after r
   const noRoad=structuredClone(doc);noRoad.sceneInputs.roads=[];
   await page.locator('#file').setInputFiles({name:'without-roads.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(noRoad))});
   await expect(page.locator('#scene-name')).toHaveText('without-roads.json');
-  expect(JSON.parse((await page.locator('canvas').getAttribute('data-entrances'))!)[0].entrances).toEqual([]);
+  const remaining=JSON.parse((await page.locator('canvas').getAttribute('data-entrances'))!)[0].entrances;
+  expect(remaining).toHaveLength(1);
+  expect(remaining[0]).toMatchObject({access:'local',pathCells:[]});
+  expect(remaining[0].roadTargetCell).toBeUndefined();
+  await page.locator('.inspect-details summary').first().click();
+  await page.locator('#face').selectOption(remaining[0].faceIds[0]);
+  await expect(page.locator('#inspector')).toContainText('building.entrance');
 });
 
 test('parking circulation and proven stalls display gates, aisle, walk and protected budgets',async({page},info)=>{

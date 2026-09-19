@@ -38,7 +38,9 @@ test("current styles, city generation and save/load work together", async ({
   expect(doc.schemaVersion).toBe(5);
   expect(result.status).toBe("ok");
   expect(result.modules).toEqual([]);
-  expect(result.placements.some(p=>p.finishIds?.length)).toBe(true);
+  // B now includes its flush belts and parapets in each authored tile.
+  expect(result.placements.flatMap(p=>p.finishIds??[])).toEqual([]);
+  expect(result.placements.some(p=>p.tileId.includes('curtain-b-'))).toBe(true);
   validateAssembly(
     result.surfaces.map((s) => s.faceId),
     result.placements,
@@ -79,6 +81,7 @@ test("current styles, city generation and save/load work together", async ({
     .locator("#viewport canvas")
     .click({ position: { x: viewport.width / 2, y: viewport.height / 2 } });
   await expect(page.locator("#face")).toHaveValue("999999,0,999999|PY");
-  await expect(page.locator("#inspector")).toContainText("architecture.roof");
+  await expect(page.locator("#inspector")).toContainText("building.roof-finish");
+  await expect(page.locator("#inspector")).toContainText("curtain-b-roof");
   expect(errors).toEqual([]);
 });
