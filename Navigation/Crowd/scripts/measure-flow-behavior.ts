@@ -10,7 +10,7 @@ const selected = scenarios.filter((scenario) => !selectedScenario || scenario ==
 const seed = Math.trunc(Number(argument('seed') ?? 42));
 const steps = Math.max(1, Math.trunc(Number(argument('steps') ?? 900)));
 const agents = Math.max(1, Math.trunc(Number(argument('agents') ?? 1000)));
-const dynamicEnabled = argument('dynamic') !== 'false';
+const dynamicEnabled = argument('dynamic') === 'true';
 const records: object[] = [];
 
 for (const scenarioId of selected) {
@@ -21,12 +21,7 @@ for (const scenarioId of selected) {
       seed,
       largeAgentPercent: Number(argument('large-percent') ?? DEFAULT_CONFIG.largeAgentPercent),
       largeAgentScale: Number(argument('large-scale') ?? DEFAULT_CONFIG.largeAgentScale),
-      ...(dynamicEnabled ? {} : {
-        dynamicFlowDensityWeight: 0,
-        dynamicFlowOverloadWeight: 0,
-        dynamicFlowCounterFlowWeight: 0,
-        dynamicFlowWallWeight: 0,
-      }),
+      dynamicRouting: dynamicEnabled,
     },
     getScenario(scenarioId),
   );

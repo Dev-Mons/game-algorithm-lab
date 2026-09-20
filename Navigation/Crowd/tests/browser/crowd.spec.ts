@@ -15,14 +15,14 @@ for (const agents of [1000, 10000]) {
       for (let i=0;i<120;i++) {
         s.step();
         result.push({walls:s.metrics.wallOverlapCount, candidates:s.metrics.candidateChecks,
-          constraints:s.metrics.contactConstraints, count:s.state.count});
+          constraints:s.metrics.contactConstraints, iterations:s.metrics.constraintIterations, count:s.state.count});
       }
       return result;
     });
     for (const sample of samples) {
       expect(sample.walls).toBe(0);
       expect(sample.candidates).toBeLessThanOrEqual(sample.count*24);
-      expect(sample.constraints).toBeLessThanOrEqual(sample.count*8);
+      expect(sample.constraints).toBeLessThanOrEqual(sample.count*8*sample.iterations);
     }
     await expect(page.locator('body')).toHaveAttribute('data-step','360');
     await page.locator('#crowd-canvas').screenshot({path:testInfo.outputPath(`${scenario}-360.png`)});
@@ -37,11 +37,13 @@ test('page opens with the default 1000-agent scenario', async ({ page }) => {
   await expect(page.locator('#crowd-canvas')).toBeVisible();
   await expect(page.locator('#debug-desired')).toBeVisible();
   await expect(page.locator('#debug-recovery')).toBeChecked();
+  await expect(page.locator('#metric-dynamic-rebuild')).toHaveText('고정 · 1개');
+  await expect(page.locator('#dynamic-density-weight')).toHaveCount(0);
 });
 
-test('the flat and three concept scenarios are available; removed URLs fall back to flat', async ({ page }) => {
+test('the baseline and experiment scenarios are available; removed URLs fall back to flat', async ({ page }) => {
   await page.goto('/?scenario=obstacle-field&paused=true&agents=120');
-  await expect(page.locator('#scenario-select option')).toHaveCount(4);
+  await expect(page.locator('#scenario-select option')).toHaveCount(9);
   await expect(page.locator('#scenario-select')).toHaveValue('open-field');
   const result = await page.evaluate(() => ({
     id: window.crowdDebug.simulation().scenario.id,
@@ -55,7 +57,7 @@ test('the flat and three concept scenarios are available; removed URLs fall back
 test('run, pause, single step, and reset controls work', async ({ page }) => {
   await page.goto('/?paused=true&agents=120&seed=9');
   await expect(page.locator('body')).toHaveAttribute('data-step', '0');
-  await page.getByRole('button', { name: '실행' }).click();
+  await page.locator('#run-toggle').click();
   await expect.poll(async () => Number(await page.locator('body').getAttribute('data-step')))
     .toBeGreaterThan(2);
   await page.getByRole('button', { name: '일시정지' }).click();
@@ -171,6 +173,10 @@ for (const [id, name, flows] of [
     await expect(page.locator('body')).toHaveAttribute('data-step', '600');
     const snapshot = await page.evaluate(() => window.crowdDebug.getSnapshot());
     expect(snapshot.metrics.wallOverlapCount).toBe(0);
+    expect(snapshot.metrics.dynamicRebuildCount).toBe(0);
+    expect(snapshot.metrics.dynamicRebuildIntervalSteps).toBe(0);
+    await expect(page.locator('#metric-dynamic-rebuild')).toHaveText('고정 · 1개');
+    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.dynamicRebuildCount)).toBe(0);
     await page.locator('#crowd-canvas').screenshot({ path: testInfo.outputPath(`${id}-600.png`) });
   });
 }

@@ -1,0 +1,389 @@
+{
+  "source": "E:/Project/game-algorithm-lab",
+  "importedAt": "2026-09-20T17:16:08.4122556+09:00",
+  "sourceHead": "0a064ece9818d48cead70f9b3f58feee409a462e",
+  "worktreeHead": "0a064ece9818d48cead70f9b3f58feee409a462e",
+  "note": "One-time import of existing Crowd changes. Source remains untouched. Changes after these hashes belong to this task.",
+  "files": [
+    {
+      "path": "Navigation/Crowd/.gitignore",
+      "importedSha256": "442613DD28889B204B1293811AAC7FA4C9DBD46DACD695095E3D86438587AC2B",
+      "worktreeBeforeSha256": "45C03724DCD85FC20BF1BCDDF105D684B016CBEB2294C2261107CA516C22AD84"
+    },
+    {
+      "path": "Navigation/Crowd/baselines/continuity-10k.json",
+      "importedSha256": "C8409CFD7CA2A921C8F65D74411675E9D21BD66430DCF04ACBAE915B7F2C3BFE",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/baselines/continuity-after.json",
+      "importedSha256": "57F695239FDCDE953941E6A2E7CA30338E72083E5D0B2F53D4B2E0C39E8966B0",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/baselines/continuity-before.json",
+      "importedSha256": "3CBB5B31DFFCC4946DDFC27FD6D183FE99D1A7F83635FA2A3821FFB940EB2C5E",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/compact-crowd.md",
+      "importedSha256": "19905061B93BEFC9ADAE29548FD3597EE9FE084A258F055D488E638CEDB631DA",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/fluid-navigation-implementation.md",
+      "importedSha256": "BC26D633252728DE69B6A32767C065EA184CCFE87B6A7F09B7B5CB4A1756F007",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/fluid-navigation-research.md",
+      "importedSha256": "3C284506FC46794AC8AD2C9C30342663D02E2DFD58F5B513B86D49007C1512F4",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/images/continuity-after.png",
+      "importedSha256": "BAC40FC4EB2D682A8A48D6888C831AF6FE2A3559027021172C1C9837AC1D5D64",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/current-open-1000.json",
+      "importedSha256": "753A3F8107B774599A928124A172753E7BE618FDA8F3A8875386AA68F7E3B2DF",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/current-open-10000.json",
+      "importedSha256": "D71FFF238F158E5CB56379AE810676C2433507F54C0896D9AFA31D7095754813",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/field-probe.gif",
+      "importedSha256": "34D2B231408C76C3AD43756024E8411FC82E352A2DF39E17C1822C3130F73C99",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/field-probe.json",
+      "importedSha256": "7921693D2FA4D3FA79EE913AA3B0B0F34990BF8971C06EBE503DEFFB1776C9CF",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/field-probe.png",
+      "importedSha256": "B1605731BDACF089574676729AB6E66D9FF13685CE743997426608A7F72187F7",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-comparison.png",
+      "importedSha256": "557F1E2190693C6C34E1C816887CD1CCB5A0E790C0F5869A88F965F113B6A71F",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-holdout/summary.json",
+      "importedSha256": "C8B9D5F8C5B6D3E52CC446DDF9C24D87229BCE8568831F3A8E3BA01B509F85C8",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/crack-42-off.json",
+      "importedSha256": "729C9B5A108B610F39DEE86535086173D24CFF74AB35D54F7EABC8C47875381B",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/crack-42-on.json",
+      "importedSha256": "55227F939531F98A3D08DD5B4C2B857C848BCC8A6020248D9BA24FC915CCF475",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/geometry-audit.json",
+      "importedSha256": "4FE8B3CFC7A96D246758BE30A76031EBC93237A5AFCF93E6A872C54E8C007769",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/hole-42-off.json",
+      "importedSha256": "6311A336FB9F3F9842FB7BEAD661D09C42C9824BA194272BD9633A65D12D6C1A",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/hole-42-on.json",
+      "importedSha256": "A5ED8C72C0069847707D83C8574C2E9D92EC3F0010B6C1635F7D9BD6E73F6E04",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/summary.json",
+      "importedSha256": "9BAE152BE8D9AFAEB58B44F904100A4EB0D793519315383329B896F3A0CF4D5C",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/uniform-42-off.json",
+      "importedSha256": "D8FEB34DCABC1EA44131EDC58520B55844B179082355838D45C5F78168A30342",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/particle-results/uniform-42-on.json",
+      "importedSha256": "D6582350CCDFBE22201392436A87D6BE3B7848EB6CA39457301B564830FA3A98",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/research/fluid-navigation/source-manifest.json",
+      "importedSha256": "D7D85E935A0AA0E3A1F60DD07387A21360859D2DEF585741B4B86912DB31B8A7",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/docs/rts-defense-crowd-research-2026-09-20.md",
+      "importedSha256": "8E2CD6E8E94BE5D0D71C06E741FA1FA3B91F91E691C9D756E3E4C6F415E9F1B8",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/field_probe.py",
+      "importedSha256": "2D71EECC5A361B947DD3A027786F59D2157C77BBD4D87F5F419AB42530DB67C4",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/crack-19.json",
+      "importedSha256": "095FAB3C6C1A7D2118640200AB659065A968311A0DC295224EF5A258031F0F30",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/crack-42.json",
+      "importedSha256": "3452A3555B95FE9B7313D42F8A72E0D807D808A38C5DED949AE00A0ADC8413E3",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/crack-7.json",
+      "importedSha256": "5D3A7C8518F12F8A1894C40AEAA4214D9A8EF4CF114138A0620ED5D2A8DE90DF",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/crack-73.json",
+      "importedSha256": "7B3EADF4FC696D9A60481874970FE9D720AE1AF3218285C214A63D6D4C6C302D",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/hole-19.json",
+      "importedSha256": "D5C49DE6AA2420903C84802BEBDA2B87E2845364562BA02B916677EA9EDA4B4D",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/hole-42.json",
+      "importedSha256": "33B956E405DB417BE6388DC25F0FE79B7932FD1608BE06BE222CB2A9C4125F69",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/hole-7.json",
+      "importedSha256": "6EAE0EC6F934A3F568F5267743312CD96FCFDC62D359BD3A9B3C1A5E82D5D68A",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/hole-73.json",
+      "importedSha256": "7417E95B61691A845422542BE8DAE1C8D5B917B21DF0BC3742AEBC6C0EB0767E",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/uniform-19.json",
+      "importedSha256": "7F413F63969A5ACF7573E1D57E22FAC337BBA7ECE076EFEDDEA65F28800802CC",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/uniform-42.json",
+      "importedSha256": "69ABD2860CF2603B9842C5AF73594A1B0304B6ACA4FB37EDDCF3636D1285C06B",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/uniform-7.json",
+      "importedSha256": "A546EF07234DD085C1F6A970C384573F6ED0BB7CA0EF68E596AC0982A20ADAF8",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/fixtures/uniform-73.json",
+      "importedSha256": "AC4EC6E22C2C5BC5CEE79F4DE471320A56CF99D4EEAC2C6F48605C94EFCE3336",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/index.html",
+      "importedSha256": "69A150E017D18A435B066E4913A8D2D43686EE4A6D8FE83174207CFCD298EEFE",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particle-protocol.md",
+      "importedSha256": "E2B2A481B925C598327B5F5E71FE975FAF4F86943F836B5D513F1C1BC0A5289D",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/area-transfer.ts",
+      "importedSha256": "AC9FAF46966C2FC70AE8226F34DFD6A63ED2469CFDA2D2F8CBAAB5725F55CDBD",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/contacts.ts",
+      "importedSha256": "77ED9C9E4DBB93CBE3E482AAF75D71CE258864DF80DB6CF9F4AA93B77F3077C6",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/fixtures.ts",
+      "importedSha256": "D43201FD50A2469B2637D3D7B680C5C66C8CA4FE8E00BDA6099F45C196B85984",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/interior-repair.ts",
+      "importedSha256": "A33134AB077D242441950F49391F8DEB6D774F75B88C58E55B2D800E91EE645A",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/metrics.ts",
+      "importedSha256": "BB9E401BC10CBEF64F89295027D684ABD49F1E6065233579630EBB42F7B607FD",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/projection.ts",
+      "importedSha256": "A3DB615E85D9FD9BEA1A26255E1CD02FEB2A2C353963B32BA995C955AFCEE82B",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/simulation.ts",
+      "importedSha256": "77630B7F59CD71DF70D83859CB5846EB293C8E9BC031F6ED61661EDD40D9C0B1",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/particles/types.ts",
+      "importedSha256": "C69348BE8655D64D09AD924661CACE3FFB5CF84086EE1CFA46AFDEEFC4CED123",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/protocol.md",
+      "importedSha256": "F7FBE840CB7D7948BF55C5001FB05B2665AF64C2E946DE3840CD957CF37997D2",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/requirements.txt",
+      "importedSha256": "562BA45575D0D49315D872B37E9AABDE522DC5ED9AA18E3CB1E2892B3B09D404",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/viewer.ts",
+      "importedSha256": "1304912E9DAA9EE7D0D2C127214F276EF12D6E084F201ED6BE590CF11C8609E2",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/package.json",
+      "importedSha256": "BC360A1C59F32A6DA419277F6A0F7F997068D9432B7A334651AA91C305A0B626",
+      "worktreeBeforeSha256": "8CEE0C38C143FC2CE0FA48BDAB168A56F7C2001870545C77B6FF017D154FDB2E"
+    },
+    {
+      "path": "Navigation/Crowd/README.md",
+      "importedSha256": "08EA97C79ABA43F36F074372BBEEA79F3B4A69A78536FF5F8CE3E3DEE0745C41",
+      "worktreeBeforeSha256": "B3D951FBD6921E9C51CC7EF557672AC01EF2E7AFB3CC19CCCDFF5AC36DD843A6"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/check-repair-replays.ts",
+      "importedSha256": "0F5D6EA29C8CAAB7C786C26FAAF8DA53F94A55D2E69F4734E1FC16ED55929226",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure-flow-behavior.ts",
+      "importedSha256": "B1B6203ECB5FD2DEDE1925ED370B9B4CA2A6BC35FEC01C141FD52CF073B51F0C",
+      "worktreeBeforeSha256": "02735A49E1C83F2F4B5AED03FB4CAE19581E6A818C92754E045E48421D1A1884"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure-repair.ts",
+      "importedSha256": "B49DACC184112A3EA8A2B268B7525B6225067354B4A7AD22F01D1754C2C87FA1",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-movement-solver.ts",
+      "importedSha256": "4FD41130ACD2809A59960A41DD834394517646C629687EF10353F27F5F5A5930",
+      "worktreeBeforeSha256": "A5BC836BECB135C8F52F74D80AE6D2B8E7EE1E6CF09BECFA93DBD2B19048AAB6"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/simulation.ts",
+      "importedSha256": "79036EF4C2F1617CB0B0029A7F7BBD003774A1B30CB002DF7F8484B2C443A266",
+      "worktreeBeforeSha256": "E833FDC1AA3F21D63186CF331BA9AB23F3052714B46602D3F8EE7C1205600F54"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/types.ts",
+      "importedSha256": "81EE43721EBE94542E7A6DE21063007693EE8BD27F5A8CDD19219AB21CEBD600",
+      "worktreeBeforeSha256": "919B6DAF89F0B20AD780239F647BA073DE350C0CE859F81C7FE68B84D3575A37"
+    },
+    {
+      "path": "Navigation/Crowd/src/main.ts",
+      "importedSha256": "E384004C7E729682961868B4ADCB00AE9E68927D16A9285C555DE81F6BA6C301",
+      "worktreeBeforeSha256": "BF630B3846B2DA4C1AA9C975965B67EB0EE9D849DC0EB686F18BB9CFA80B7C55"
+    },
+    {
+      "path": "Navigation/Crowd/src/scenarios/scenarios.ts",
+      "importedSha256": "BCB9D6D061F44256C077B53FC9EAC79F24F0F892D7152AF776376C4C97D44346",
+      "worktreeBeforeSha256": "1B81A1206B441486E65C4B074A95B5A14A226C99B711CBE9BF68B7FD7197E9F4"
+    },
+    {
+      "path": "Navigation/Crowd/src/ui/template.ts",
+      "importedSha256": "01FC44835BB99166665A6FD65C1B1D457E54E18BD111542B53C2BAD0F62B266E",
+      "worktreeBeforeSha256": "5EE8024C760A2C531E68B5635E1AD869D74538B96A893F35EDB4E0692E8B1A30"
+    },
+    {
+      "path": "Navigation/Crowd/tests/behavior/concept-scenarios.test.ts",
+      "importedSha256": "F011300EC9CB19D0FDDB678DDF544260D43F4CEAC4E36BBDBC6DAC68E95DA8F2",
+      "worktreeBeforeSha256": "CE082EBBDEA27E4ADCB809961CB5BE5310B47288ABA25F0E21B2D588EC2113C4"
+    },
+    {
+      "path": "Navigation/Crowd/tests/behavior/multi-flow.test.ts",
+      "importedSha256": "CD0BB5E900046C170293AC3B7A6F39DBA2BCB69064D4EDECBAD91132AB529640",
+      "worktreeBeforeSha256": "ED5775D7D541377DC741A156CE35D7B6114D4EE466301AC3D067D4F4D55A03E4"
+    },
+    {
+      "path": "Navigation/Crowd/tests/browser/crowd.spec.ts",
+      "importedSha256": "05A9950B0956AE331FAB57B4DB4D4B40F847D0F954DF90C2DDCD7A6939E44FF3",
+      "worktreeBeforeSha256": "2E6064BA3C69F88FB48C90325BDED4264099975123B8E3B665E672BDD7210ACC"
+    },
+    {
+      "path": "Navigation/Crowd/tests/browser/particle-repair.spec.ts",
+      "importedSha256": "052E7383E5F647262F9EA8CE6DA6FA0A159759AF745ADBE2CE8F46AF6F4BA903",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/tests/simulation/crowd-field-steering.test.ts",
+      "importedSha256": "428A5028C7BD1BEA19C1425D4218681312BBF41063D4521E9816BDC694F5D0BB",
+      "worktreeBeforeSha256": "3F42AD48647E3847DABA38C19E4557D4FC5FC863515D01CA53803CCA40035B97"
+    },
+    {
+      "path": "Navigation/Crowd/tests/simulation/displaced-navigation.test.ts",
+      "importedSha256": "24142A1EF669EDBBEE11052084ADAE2CABF661332A8DCD24F24FEA4BEB7F09E9",
+      "worktreeBeforeSha256": "77C0E1F1B5E349A42AFC32077397228474E9C39BD1F5A5E2A3A019386A9C2B6D"
+    },
+    {
+      "path": "Navigation/Crowd/tests/simulation/mixed-sizes.test.ts",
+      "importedSha256": "1CEAB3D166AD2E84A3F4343C367496182DBB73D405DCFA378559D97DC4E9AC07",
+      "worktreeBeforeSha256": "86688D239DF95249CDABFECE1E687948DED95C9BB389940F0126111F4001CB09"
+    },
+    {
+      "path": "Navigation/Crowd/tests/simulation/movement-v2.test.ts",
+      "importedSha256": "7E7947C4DDA80CC63F6BDE9624F30C780E3ED62ED9AF4716C87E3A1FDE3AB724",
+      "worktreeBeforeSha256": "3652C57927EAF101109673C59A0AEBD9ABE00C728E761E6BFE72E3FAEB49C585"
+    },
+    {
+      "path": "Navigation/Crowd/tests/unit/map-document.test.ts",
+      "importedSha256": "BE204B7E5CE8485CE361113181DBD63AD98C3AE6C665C791DA251567BA6F387C",
+      "worktreeBeforeSha256": "EDFD2C0D7B94BA53377205D6D5038FB53E66421A009D511044DD9B942739DB37"
+    },
+    {
+      "path": "Navigation/Crowd/tests/unit/particle-repair.test.ts",
+      "importedSha256": "93741A2CDD6AD358BACD42ADB1AB4FB9871A3FB4FE937AB1D105E7FDCBB739EB",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/tsconfig.app.json",
+      "importedSha256": "75C18110786DC795B1D97A44548C5EA8DD82AC7945A5AD11D5B0A82D600E16C3",
+      "worktreeBeforeSha256": "131FD5E00CD64B6BBDC46DDFF69DB397592FF226B59EEBB47136EAF3E685AA8B"
+    },
+    {
+      "path": "Navigation/Crowd/tsconfig.json",
+      "importedSha256": "A810AC7E30E6677F70A5CF53A912A7B535E0DBA9D5D781189E512475FC90E14C",
+      "worktreeBeforeSha256": "AD28D132EE48D6E23917CF5827CACE785D0FC01A44CA68B0DDA51CC8C3FD3F52"
+    },
+    {
+      "path": "Navigation/Crowd/tsconfig.research.json",
+      "importedSha256": "AA1913CE20366C3E7AF1A93E458DDEDCD258C14539D72629F62853FB881B2A45",
+      "worktreeBeforeSha256": null
+    },
+    {
+      "path": "Navigation/Crowd/vite.config.ts",
+      "importedSha256": "CC66B7ABC06EF051135D37DE3CBD6580E8D8D65B346FDD63DEEC6B8CC3BCE90C",
+      "worktreeBeforeSha256": "FCBD0B9D145103E0E027A800B45C1A58CC68B20EC010A9EF72FD015678584742"
+    }
+  ]
+}

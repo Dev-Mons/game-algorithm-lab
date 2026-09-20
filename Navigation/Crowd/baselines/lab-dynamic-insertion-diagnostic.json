@@ -1,0 +1,416 @@
+{
+  "schema": "crowd-lab-measurements-v1",
+  "createdAt": "2026-09-20T08:32:25.334Z",
+  "source": {
+    "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+    "sourceSha256": "2da7e7944bc01a149d2a599c63b80a5b804cd554b9e115d3db577fdb2bd78776",
+    "executionSourceSha256": "6c3317b26dccb7518db88d43df8a81a295d54358510628b428e2a470c056b6d0",
+    "files": {
+      "package-lock.json": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f",
+      "package.json": "2bf3bcf205ce3babefdfb0bec3bd690ff64e19d88513e8d88a0c8340a35b376f",
+      "scripts/measure-lab.ts": "a90cae82dc9fe84b05efb19af4a0b3edb7874a1d1a6e9a67fb27650dc7d459cc",
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab-motion/local-motion.ts": "ab8e6d52ffa300d119593b6ae42ab2066c5c7e0b78f2947ca9b1009892784712",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "5c3829a66a9ebdadf0b060ea698dd48cc407a51428f82f53bc671acbd2a1a436",
+      "src/algorithms/lab/registry.ts": "371b1002ff3d7f541f930d7acad680d8e84430af1639e2a4249389468064bcc0",
+      "src/algorithms/lab/traffic.ts": "c41e50fc6f5343d5e6573e3a3c301e1ae908f611cb270f49ed07bdbed4e051a6",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "fa4b48f59230703f230ca4461587df8b5f79d0b64add0127cb779e548ae77beb",
+      "src/core/agent-size.ts": "4dca25ed568c364f4c90906adff5013adf5566cafaf0b7992ebdcf0d0d1a2d0f",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "d97812599355e261aa149b160836d104b1918afcd1f75c615b870c85930ea6ba",
+      "src/core/crowd-field.ts": "d845c20d052ced07e2382452c3743bbac9225243187ba6441f5e87fe55cce5dc",
+      "src/core/crowd-flow-solver.ts": "8ca2b3e4b6556b7e08d528c320e5683f01596ba28f27d756c54ba2e8f69bfc5c",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "a41e411ea03215630ee61504e94f28760ffc62e73b3e61e4299dc47bdf71e4f2",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "1b08f3c2e63878d085644f65c21ff0887dd16d7d33976a5324319d49aa173625",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "770d2a963de351668c65d77708652078172b59fa2b7a0797a60c41eadf56adda",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "c20c97362c45f9de35ee0445ada92512dbc9b6b8f54f70a4d9a2ed5015d58bb2",
+      "src/core/spawn-layout.ts": "ea6313a5c115ec8f5129e62c251a5025c7fca559acf8a0d9b863e719c79e026b",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "5975174e5ce85162062634db232a34a1d94c16c1e8097817cd6433ca7da0577b",
+      "src/editor/map-editor.ts": "545d92d77ea7ba90437db3e8edca21962d55d57da86c19d1da9485a3aba555b3",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "28005e34d0937b0c5113a2858aeb24082e73a766b1b0288889ea87ab50d8b47c",
+      "src/scenarios/lab-scenarios.ts": "1deab6772c9a2c5397b943a65d78d9462bc183a043fcff0fd99980622dc0fe6e",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/styles.css": "66c7d41264f29af9376e59d63af75761d7b45b2a356259136fae7716e89eaa6f",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    }
+  },
+  "environment": {
+    "node": "v22.22.0",
+    "v8": "12.4.254.21-node.33",
+    "os": "win32",
+    "osRelease": "10.0.26200",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "logicalCpus": 32,
+    "systemMemoryBytes": 66156453888,
+    "freeSystemMemoryBytesAtStart": 33915957248,
+    "simulationThreads": 1,
+    "runtime": "Node + vite-node (TypeScript transformed); no production-browser/JIT equivalence claimed",
+    "gpu": "unused",
+    "render": "headless; canvas, browser layout and full frame timing excluded",
+    "powerClock": "not controlled"
+  },
+  "contract": {
+    "args": [
+      "--presets=B1",
+      "--agents=1000",
+      "--scenario=dynamic-blocking",
+      "--steps=181",
+      "--warmup=180",
+      "--quality=1",
+      "--timeout=30",
+      "--output=baselines/lab-dynamic-insertion-diagnostic.json"
+    ],
+    "steps": 181,
+    "warmupSteps": 180,
+    "qualityAuditEverySteps": 1,
+    "seed": 42,
+    "scale": true,
+    "densityPolicy": "World and scenario geometry scaled by sqrt(N/1000); physical radius/gap/speed/dt/grid cell sizes unchanged.",
+    "destinations": "scenario-defined",
+    "walltimeLimitSecondsPerCase": 30,
+    "qualification": "Finite engineering comparison, not the research 10s warmup + 60s duration + 5 seed acceptance protocol.",
+    "observerScope": "Step timing excludes command dispatch, recorder/audit, process-memory sampling and JSON output. These overheads are reported separately.",
+    "memoryScope": "Independent child per case, no cross-case heap retention. Observed memory peak is sampled, not guaranteed high-water mark."
+  },
+  "records": [
+    {
+      "case": {
+        "preset": "B1",
+        "scenario": "dynamic-blocking",
+        "agents": 1000
+      },
+      "executionSourceSha256": "6c3317b26dccb7518db88d43df8a81a295d54358510628b428e2a470c056b6d0",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 880.9273000000001,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:32:26.986Z",
+        "preset": "B1",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "B1"
+        },
+        "scenario": {
+          "id": "dynamic-blocking",
+          "name": "동적 길막",
+          "description": "Step 180에 중앙 벽 설치, 540에 철거. 같은 명령을 모든 preset에 재생합니다.",
+          "spawn": {
+            "x": 48,
+            "y": 96,
+            "width": 300,
+            "height": 528
+          },
+          "goal": {
+            "x": 1110,
+            "y": 360
+          },
+          "obstacles": []
+        },
+        "commands": [
+          {
+            "step": 180,
+            "type": "obstacles",
+            "obstacles": [
+              {
+                "x": 576,
+                "y": 132,
+                "width": 48,
+                "height": 456
+              }
+            ]
+          },
+          {
+            "step": 540,
+            "type": "obstacles",
+            "obstacles": []
+          }
+        ],
+        "seed": 42,
+        "step": 181,
+        "hash": "62fcd721",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 1000,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 1000,
+        "activeMaximum": 1000,
+        "moving": 954,
+        "waiting": 46,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 23.588100000000054,
+          "warmupSteps": 180,
+          "measuredSteps": 1,
+          "stepMs": {
+            "samples": 1,
+            "mean": 19.223999999999933,
+            "p50": 19.223999999999933,
+            "p95": 19.223999999999933,
+            "p99": 19.223999999999933,
+            "max": 19.223999999999933
+          },
+          "simulationCapacityHz": 52.01831044527692,
+          "achievedHzIncludingAudit": 46.33727045674663,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 1,
+              "mean": 0.5032999999998538,
+              "p50": 0.5032999999998538,
+              "p95": 0.5032999999998538,
+              "p99": 0.5032999999998538,
+              "max": 0.5032999999998538
+            },
+            "desired": {
+              "samples": 1,
+              "mean": 1.7267000000001644,
+              "p50": 1.7267000000001644,
+              "p95": 1.7267000000001644,
+              "p99": 1.7267000000001644,
+              "max": 1.7267000000001644
+            },
+            "avoidance": {
+              "samples": 1,
+              "mean": 12.859199999999873,
+              "p50": 12.859199999999873,
+              "p95": 12.859199999999873,
+              "p99": 12.859199999999873,
+              "max": 12.859199999999873
+            },
+            "contact": {
+              "samples": 1,
+              "mean": 0.9808000000000447,
+              "p50": 0.9808000000000447,
+              "p95": 0.9808000000000447,
+              "p99": 0.9808000000000447,
+              "max": 0.9808000000000447
+            },
+            "density": {
+              "samples": 1,
+              "mean": 0.20869999999990796,
+              "p50": 0.20869999999990796,
+              "p95": 0.20869999999990796,
+              "p99": 0.20869999999990796,
+              "max": 0.20869999999990796
+            },
+            "queue": {
+              "samples": 1,
+              "mean": 0.004699999999957072,
+              "p50": 0.004699999999957072,
+              "p95": 0.004699999999957072,
+              "p99": 0.004699999999957072,
+              "max": 0.004699999999957072
+            },
+            "spatial": {
+              "samples": 1,
+              "mean": 0.013500000000021828,
+              "p50": 0.013500000000021828,
+              "p95": 0.013500000000021828,
+              "p99": 0.013500000000021828,
+              "max": 0.013500000000021828
+            },
+            "integration": {
+              "samples": 1,
+              "mean": 1.92899999999986,
+              "p50": 1.92899999999986,
+              "p95": 1.92899999999986,
+              "p99": 1.92899999999986,
+              "max": 1.92899999999986
+            },
+            "total": {
+              "samples": 1,
+              "mean": 19.220399999999927,
+              "p50": 19.220399999999927,
+              "p95": 19.220399999999927,
+              "p99": 19.220399999999927,
+              "max": 19.220399999999927
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 1,
+          "auditedSteps": 1,
+          "auditMs": 1.9544000000000779,
+          "coverage": "Every measured tick, all spatial candidates; swept test is the chord between published states (substep paths not exposed).",
+          "maximumOverlapPairs": 0,
+          "maximumPenetration": 0,
+          "maximumSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 46,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 0,
+          "lateralFlipsPerAgentSecond": 0,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.5032999999998538,
+            "desired": 1.7267000000001644,
+            "avoidance": 12.859199999999873,
+            "contact": 0.9808000000000447,
+            "density": 0.20869999999990796,
+            "queue": 0.004699999999957072,
+            "spatial": 0.013500000000021828,
+            "integration": 1.92899999999986,
+            "total": 19.220399999999927
+          },
+          "activeCount": 1000,
+          "movingCount": 954,
+          "waitingCount": 46,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 46,
+          "cacheHits": 1998,
+          "fieldBuilds": 2,
+          "queuePassed": 0,
+          "replans": 46,
+          "directionFlips": 0,
+          "neighborTruncations": 11216,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 46,
+          "unavailableSlots": 0,
+          "terrainVersion": 1,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 181,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 954,
+            "waiting": 46,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 19.223999999999933
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 4.260600000001091,
+        "commandMs": 9.049500000000762,
+        "measuredWallMs": 29.996900000000096,
+        "measuredHz": 33.33677813374038,
+        "snapshotProtocolMs": 0.453499999999849
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109129728,
+          "heapUsed": 27380176,
+          "heapTotal": 58720256,
+          "external": 5467871,
+          "arrayBuffers": 1022257
+        },
+        "afterInitialization": {
+          "rss": 122167296,
+          "heapUsed": 35794808,
+          "heapTotal": 60293120,
+          "external": 6826823,
+          "arrayBuffers": 2403705
+        },
+        "observedPeak": {
+          "rss": 124157952,
+          "heapUsed": 41530432,
+          "heapTotal": 61603840,
+          "external": 7395459,
+          "arrayBuffers": 2972341
+        },
+        "end": {
+          "rss": 124157952,
+          "heapUsed": 38174856,
+          "heapTotal": 61603840,
+          "external": 7395459,
+          "arrayBuffers": 2972341
+        }
+      }
+    }
+  ]
+}

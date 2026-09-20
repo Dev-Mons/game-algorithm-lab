@@ -59,7 +59,8 @@ describe('navigation after contact displacement', () => {
       simulation.step();
       expect(simulation.metrics.wallOverlapCount).toBe(0);
       expect(simulation.metrics.candidateChecks).toBeLessThanOrEqual(simulation.state.count * 24);
-      expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(simulation.state.count * 8);
+      expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(
+        simulation.state.count * 8 * simulation.metrics.constraintIterations);
     }
     // Arrival slowdown can settle a body on the goal-region boundary. This
     // regression checks that no body is left behind at any obstacle instead.

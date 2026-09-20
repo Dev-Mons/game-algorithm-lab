@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": { "composite": true, "types": ["node"] },
+  "include": ["scripts/measure-repair.ts", "scripts/check-repair-replays.ts", "experiments/fluid-navigation/particles", "src/core/random.ts"]
+}

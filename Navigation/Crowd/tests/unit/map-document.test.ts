@@ -87,7 +87,7 @@ describe('custom map documents', () => {
       a.step(); b.step();
       expect(a.metrics.wallOverlapCount).toBe(0);
       expect(a.metrics.candidateChecks).toBeLessThanOrEqual(a.state.count * 24);
-      expect(a.metrics.contactConstraints).toBeLessThanOrEqual(a.state.count * 8);
+      expect(a.metrics.contactConstraints).toBeLessThanOrEqual(a.state.count * 8 * a.metrics.constraintIterations);
     }
     expect(a.stateHash()).toBe(b.stateHash());
   });

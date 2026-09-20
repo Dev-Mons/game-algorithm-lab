@@ -142,6 +142,6 @@ test('a corrupt saved library leaves built-in maps usable', async ({ page }) => 
   await page.addInitScript(() => localStorage.setItem('crowd-lab.maps.v1', '{invalid'));
   await page.goto('/?paused=true');
   await expect(page.locator('#map-library-status')).toBeVisible();
-  await expect(page.locator('#scenario-select option')).toHaveCount(4);
+  await expect(page.locator('#scenario-select option')).toHaveCount(9);
   await expect(page.locator('#crowd-canvas')).toBeVisible();
 });

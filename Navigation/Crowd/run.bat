@@ -28,14 +28,25 @@ if not exist "node_modules\vite\bin\vite.js" (
     )
 )
 
-echo Starting Crowd Navigation Lab...
+title Crowd Navigation Lab
+echo Starting Crowd Navigation Lab from this folder:
+echo   "%CD%"
+echo Development mode serves the source directly; no build is required.
 echo Press Ctrl+C to stop the server.
-call npm run dev -- --open
+node scripts\start-dev.mjs %*
 
 if errorlevel 1 (
     echo [ERROR] The development server stopped with an error.
     pause
     exit /b 1
+)
+
+rem Explorer closes the console after a successful existing-server reuse.
+rem Keep the no-argument, double-click launch visible; CLI runs can return normally.
+if "%~1"=="" (
+    echo.
+    echo The server status and browser address are shown above.
+    pause
 )
 
 endlocal

@@ -1,0 +1,414 @@
+{
+  "schema": "crowd-corner-diagnostic-v1",
+  "createdAt": "2026-09-20T09:44:16.297Z",
+  "source": {
+    "root": "C:\\Users\\cdkec\\AppData\\Local\\Temp\\crowd-corners-before-20260920-184050",
+    "sha256": "d89eeeb51640ca077a05ae30d9ea5e03fb2e1989d4e1a2b89fb78a828905c542",
+    "files": {
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "3cbe33fd025e9cac9f6d86010372a43825b3096c5c9aaa47115f58399e998b30",
+      "src/algorithms/lab/registry.ts": "371b1002ff3d7f541f930d7acad680d8e84430af1639e2a4249389468064bcc0",
+      "src/algorithms/lab/traffic.ts": "c41e50fc6f5343d5e6573e3a3c301e1ae908f611cb270f49ed07bdbed4e051a6",
+      "src/algorithms/lab-motion/local-motion.ts": "b51d1b59c330fbb9b1ed1e632d433b9b6049beb6d9b8cbd575fc037bad291e9f",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "c24d226791ca53cf667a15f34bcffa3e23c33cd834a781570f67bf6909c7dd35",
+      "src/core/agent-size.ts": "d19865ee56191cb74daba905a88daf8b5189ff3db27a4a019c73a24ec7eb0716",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "77ac74d03c820051242155f454f065acdb33259666b71113e2b38647de36f652",
+      "src/core/crowd-field.ts": "32cf53ba2ba29c05593f84e453861cc9fa118bb533a0dcc3ac437beb21e14736",
+      "src/core/crowd-flow-solver.ts": "19e3c27f26748473684f3af2e9a0146be860739860ca1c38722d39d2c6592eca",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "775100df23ab23e8c375c932972c92be60c12881cc7d08b40a5358b03a7e9f18",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "1b08f3c2e63878d085644f65c21ff0887dd16d7d33976a5324319d49aa173625",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "1549b76e17327e619d5dcc439ace3df2f7a1f1af354866658be6463bd9456e77",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "f4ceebf330a52fbc3e3dd9f6055cd4d8a120bf6c0a83ada8d7c52b7aced896cc",
+      "src/core/spawn-layout.ts": "e7d05dfb0a4e3ca6523b239bc88350ae345bedfd78fd8855404612cb6d680dd9",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "421bd936ed21c02557be9a57db48792da85e056ca17ecb55814abe7e92d2b111",
+      "src/editor/map-editor.ts": "a20785e23ae1cecb1c52540b986989666f46da2da8706bc09d4632883531f4d2",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "ae70967e8fa4a0fb4f5148618b759274c07d67a937fe30a4f1e0d83983cdf823",
+      "src/scenarios/lab-scenarios.ts": "d3c3fcd59358ae7c08d3fb44e929a64f5b349895248eef667b11c403000be046",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    },
+    "diagnosticSha256": "b4dd07e29189201650eea74f738089345f30dfa167b46abc8fe97a8d6199c678",
+    "changedDuringRun": []
+  },
+  "environment": {
+    "node": "v22.22.0",
+    "v8": "12.4.254.21-node.33",
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "scope": "Single-thread headless diagnostic; source snapshot imports; no rendering/performance qualification."
+  },
+  "contract": {
+    "args": [
+      "--source=C:/Users/cdkec/AppData/Local/Temp/crowd-corners-before-20260920-184050",
+      "--presets=B0",
+      "--agents=1",
+      "--ticks=1",
+      "--audit-every=1",
+      "--output=baselines/corners-runner-smoke.json"
+    ],
+    "agents": 1,
+    "ticks": 1,
+    "seed": 42,
+    "auditEvery": 1,
+    "gates": [
+      {
+        "id": "wall-1-lower",
+        "x": 408,
+        "minY": 504,
+        "maxY": 720
+      },
+      {
+        "id": "wall-2-upper",
+        "x": 672,
+        "minY": 0,
+        "maxY": 216
+      },
+      {
+        "id": "wall-3-lower",
+        "x": 936,
+        "minY": 504,
+        "maxY": 720
+      }
+    ],
+    "passage": "Unique directional centre crossings interpolated at actual obstacle-end x lines; ordered count requires preceding gates. targetBeyondPassed counts only agents whose assigned goal x is beyond that gate.",
+    "capacity": "Retained slots may legitimately lie before a later gate. Compare targetBeyondPassed/targetBeyond, unavailableSlots and arrivals; do not require every retained goal to cross all three gates.",
+    "audit": "Every 1 ticks plus final: all candidate pairs from an independent index; published-step chords, not hidden substep paths. Finite and runtime walls checked every tick.",
+    "stalled": "Low-speed duration proxy, not proof of deadlock. Exemplars are longest-stalled active agents, then ID, with observed debug preferred velocity."
+  },
+  "records": [
+    {
+      "preset": "B0",
+      "status": "completed",
+      "sourceHash": "d89eeeb51640ca077a05ae30d9ea5e03fb2e1989d4e1a2b89fb78a828905c542",
+      "requested": 1,
+      "wallMs": 15.687099999999987,
+      "progress": [
+        {
+          "tick": 0,
+          "seconds": 0,
+          "active": 1,
+          "arrived": 0,
+          "moving": 0,
+          "waiting": 1,
+          "stalled": 0,
+          "unavailableSlots": 0,
+          "invalidStaticStarts": 0,
+          "runtimeWalls": 0,
+          "finite": true,
+          "gateProgress": [
+            {
+              "id": "wall-1-lower",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            },
+            {
+              "id": "wall-2-upper",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            },
+            {
+              "id": "wall-3-lower",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            }
+          ],
+          "stageActive": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "exemplar": [
+            {
+              "agent": 0,
+              "x": 180.40000000000006,
+              "y": 157.20150942321524,
+              "vx": 0,
+              "vy": 0,
+              "speed": 0,
+              "stalledSeconds": 0,
+              "desiredX": 0,
+              "desiredY": 0,
+              "desiredSpeed": 0,
+              "intentX": 0.4232186716705951,
+              "intentY": 0.90602756908903,
+              "goalX": 1116,
+              "goalY": 612,
+              "goalDistance": 1040.2831475280764,
+              "highestGatePassed": 0,
+              "radius": 3.2
+            }
+          ]
+        },
+        {
+          "tick": 1,
+          "seconds": 0.016666666666666666,
+          "active": 1,
+          "arrived": 0,
+          "moving": 1,
+          "waiting": 0,
+          "stalled": 0,
+          "unavailableSlots": 0,
+          "invalidStaticStarts": 0,
+          "runtimeWalls": 0,
+          "finite": true,
+          "gateProgress": [
+            {
+              "id": "wall-1-lower",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            },
+            {
+              "id": "wall-2-upper",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            },
+            {
+              "id": "wall-3-lower",
+              "forwardUnique": 0,
+              "reverseUnique": 0,
+              "orderedUnique": 0,
+              "targetBeyond": 1,
+              "targetBeyondPassed": 0
+            }
+          ],
+          "stageActive": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "exemplar": [
+            {
+              "agent": 0,
+              "x": 180.42468775584751,
+              "y": 157.2543610314121,
+              "vx": 1.4812653508471385,
+              "vy": 3.171096491810772,
+              "speed": 3.499999999999269,
+              "stalledSeconds": 0,
+              "desiredX": 36.39680576367118,
+              "desiredY": 77.91837094165658,
+              "desiredSpeed": 85.99999999999999,
+              "intentX": 0.4232186716705951,
+              "intentY": 0.90602756908903,
+              "goalX": 1116,
+              "goalY": 612,
+              "goalDistance": 1040.2378386896396,
+              "highestGatePassed": 0,
+              "radius": 3.2
+            }
+          ]
+        }
+      ],
+      "initMs": 11.850099999999998,
+      "config": {
+        "width": 1200,
+        "height": 720,
+        "navCellSize": 24,
+        "crowdFieldCellSize": 24,
+        "contactCellSize": 24,
+        "agentCount": 1,
+        "seed": 42,
+        "maxSpeed": 86,
+        "maxAcceleration": 210,
+        "agentRadius": 3.2,
+        "largeAgentPercent": 0,
+        "largeAgentScale": 2,
+        "neighborRadius": 28,
+        "agentGap": 0.4,
+        "wallMargin": 0.35,
+        "crowdPressureRelaxationTime": 0.25,
+        "goalRadius": 58,
+        "fixedDelta": 0.016666666666666666,
+        "arrivalSlowRadius": 90,
+        "stallSeconds": 2.5,
+        "crowdPressureIterations": 8,
+        "pressureThreshold": 12,
+        "crowdVelocityBlend": 0.68,
+        "contactCompliance": 0.00001,
+        "contactFriction": 0.08,
+        "maximumContactCorrection": 1.25,
+        "dynamicRouting": false,
+        "dynamicFlowRebuildInterval": 8,
+        "dynamicFlowTargetDensity": 0.75,
+        "dynamicFlowDensityWeight": 72,
+        "dynamicFlowOverloadWeight": 0.35,
+        "dynamicFlowCounterFlowWeight": 2.5,
+        "dynamicFlowWallWeight": 0.15,
+        "dynamicFlowCostSmoothing": 0.35,
+        "dynamicFlowDirectionHysteresis": 0.2,
+        "directGoalLowDensity": 0.15,
+        "directGoalCounterFlow": 0.1,
+        "directGoalMinimumClearance": 36,
+        "preset": "B0"
+      },
+      "scenario": {
+        "id": "winding-corners",
+        "name": "연속 코너",
+        "description": "좌측 상단에서 출발해 아래→위→아래로 이어지는 세 장벽의 코너를 돌아 우측 하단에 도착합니다.",
+        "goal": {
+          "x": 1116,
+          "y": 612
+        },
+        "spawn": {
+          "x": 48,
+          "y": 48,
+          "width": 240,
+          "height": 288
+        },
+        "obstacles": [
+          {
+            "x": 360,
+            "y": 0,
+            "width": 48,
+            "height": 504
+          },
+          {
+            "x": 624,
+            "y": 216,
+            "width": 48,
+            "height": 504
+          },
+          {
+            "x": 888,
+            "y": 0,
+            "width": 48,
+            "height": 504
+          }
+        ]
+      },
+      "options": {
+        "planner": "individual-astar",
+        "steering": "seek",
+        "avoidance": "separation",
+        "contact": "pbd",
+        "density": false,
+        "congestion": false,
+        "queue": false,
+        "destination": "exit",
+        "maxNeighbors": 12,
+        "contactIterations": 4,
+        "timeHorizon": 1.5,
+        "groupSize": 32
+      },
+      "spawned": 1,
+      "unspawned": 0,
+      "final": {
+        "tick": 1,
+        "seconds": 0.016666666666666666,
+        "active": 1,
+        "arrived": 0,
+        "moving": 1,
+        "waiting": 0,
+        "stalled": 0,
+        "unavailableSlots": 0,
+        "invalidStaticStarts": 0,
+        "runtimeWalls": 0,
+        "finite": true,
+        "gateProgress": [
+          {
+            "id": "wall-1-lower",
+            "forwardUnique": 0,
+            "reverseUnique": 0,
+            "orderedUnique": 0,
+            "targetBeyond": 1,
+            "targetBeyondPassed": 0
+          },
+          {
+            "id": "wall-2-upper",
+            "forwardUnique": 0,
+            "reverseUnique": 0,
+            "orderedUnique": 0,
+            "targetBeyond": 1,
+            "targetBeyondPassed": 0
+          },
+          {
+            "id": "wall-3-lower",
+            "forwardUnique": 0,
+            "reverseUnique": 0,
+            "orderedUnique": 0,
+            "targetBeyond": 1,
+            "targetBeyondPassed": 0
+          }
+        ],
+        "stageActive": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "exemplar": [
+          {
+            "agent": 0,
+            "x": 180.42468775584751,
+            "y": 157.2543610314121,
+            "vx": 1.4812653508471385,
+            "vy": 3.171096491810772,
+            "speed": 3.499999999999269,
+            "stalledSeconds": 0,
+            "desiredX": 36.39680576367118,
+            "desiredY": 77.91837094165658,
+            "desiredSpeed": 85.99999999999999,
+            "intentX": 0.4232186716705951,
+            "intentY": 0.90602756908903,
+            "goalX": 1116,
+            "goalY": 612,
+            "goalDistance": 1040.2378386896396,
+            "highestGatePassed": 0,
+            "radius": 3.2
+          }
+        ]
+      },
+      "finalHash": "71754811",
+      "maxima": {
+        "runtimeWalls": 0,
+        "invalidStaticStarts": 0,
+        "invalidStartTicks": 0,
+        "stalled": 0
+      },
+      "audit": {
+        "samples": 1,
+        "everyTicks": 1,
+        "milliseconds": 0.932200000000023,
+        "maxPairs": 0,
+        "maxPenetration": 0,
+        "maxSweptPenetration": 0,
+        "maxWalls": 0,
+        "tunnelingPairs": 0,
+        "candidateChecks": 0,
+        "coverage": "Sampled full candidate search; endpoint chord only."
+      }
+    }
+  ]
+}

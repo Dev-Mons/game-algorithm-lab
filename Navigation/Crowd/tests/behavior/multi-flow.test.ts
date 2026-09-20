@@ -3,12 +3,12 @@ import { FlowBehaviorTracker, RouteUtilizationTracker } from '../../src/core/flo
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { getTestScenario } from '../fixtures/navigation-scenarios';
 
-describe('generic multi-flow scenarios', () => {
+describe('opt-in legacy dynamic multi-flow scenarios', () => {
   it.each(['merge-500-500', 'crossing-500-500'])(
     'keeps both streams moving in %s',
     (scenarioId) => {
       const simulation = new CrowdSimulation(
-        { ...DEFAULT_CONFIG, agentCount: 400, seed: 42 },
+        { ...DEFAULT_CONFIG, dynamicRouting: true, agentCount: 400, seed: 42 },
         getTestScenario(scenarioId),
       );
       const tracker = new FlowBehaviorTracker(simulation, 180);
@@ -27,7 +27,7 @@ describe('generic multi-flow scenarios', () => {
   );
 
   it('replays independent flow goals with the same state hash', () => {
-    const config = { ...DEFAULT_CONFIG, agentCount: 200, seed: 73 };
+    const config = { ...DEFAULT_CONFIG, dynamicRouting: true, agentCount: 200, seed: 73 };
     const first = new CrowdSimulation({ ...config }, getTestScenario('crossing-500-500'));
     const second = new CrowdSimulation({ ...config }, getTestScenario('crossing-500-500'));
     for (let step = 0; step < 360; step += 1) {
@@ -39,13 +39,16 @@ describe('generic multi-flow scenarios', () => {
 
   it('increases alternate-gate use after the initially favored equal gate becomes congested', () => {
     const scenario = getTestScenario('equal-capacity-congested-gates');
+    // Lower the physical capacity to create an actual queue. The compact
+    // default can carry this population through the favored gate smoothly.
+    const congestedConfig = { ...DEFAULT_CONFIG, pressureThreshold: 8 };
     const dynamic = new CrowdSimulation(
-      { ...DEFAULT_CONFIG, agentCount: 1000, seed: 42 },
+      { ...congestedConfig, dynamicRouting: true, agentCount: 1000, seed: 42 },
       scenario,
     );
     const staticOnly = new CrowdSimulation(
       {
-        ...DEFAULT_CONFIG,
+        ...congestedConfig,
         agentCount: 1000,
         seed: 42,
         dynamicFlowDensityWeight: 0,
@@ -78,7 +81,7 @@ describe('generic multi-flow scenarios', () => {
     ['opposing-occupied-corridor', 0.9],
   ] as const)('uses both declared routes without wall penetration in %s', (scenarioId, fairness) => {
     const simulation = new CrowdSimulation(
-      { ...DEFAULT_CONFIG, agentCount: 400, seed: 42 },
+      { ...DEFAULT_CONFIG, dynamicRouting: true, agentCount: 400, seed: 42 },
       getTestScenario(scenarioId),
     );
     const routes = new RouteUtilizationTracker(simulation);

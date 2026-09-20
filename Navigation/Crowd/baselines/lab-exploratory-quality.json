@@ -1,0 +1,5757 @@
+{
+  "schema": "crowd-lab-measurements-v1",
+  "createdAt": "2026-09-20T08:25:36.056Z",
+  "source": {
+    "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+    "sourceSha256": "ac78e5dca71a4214437f8f8f8980e4d83f201be2847f81f368ce858c4c183149",
+    "executionSourceSha256": "ec968587ceb7cb4ea7d64f0dcc46f8a8e76eef51a6dfa6c06066551caac36a7b",
+    "files": {
+      "package-lock.json": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f",
+      "package.json": "2bf3bcf205ce3babefdfb0bec3bd690ff64e19d88513e8d88a0c8340a35b376f",
+      "scripts/measure-lab.ts": "7ff8bb55a494d48d7af5b420cd60d8df8727ab28b7c8a8e34771756f8817ff50",
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab-motion/local-motion.ts": "4b65e9c0c02fc7ef25f7f332e183e26802fb45afe7af492efcf017e923d5ee46",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "e582807a7203ccf2ce9995aa3d5abac7834780a3eee5f47826c37d8c29b9e2b1",
+      "src/algorithms/lab/registry.ts": "c1f5ae51befdf96ed5a7cd53d81c4d9b6c972f607e7f7041d5ff69f3b18526a7",
+      "src/algorithms/lab/traffic.ts": "03ee09f8011f2dd950c398e4a40388ce3428345ad4a52c5f1f68a17c4e86d97c",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "fa4b48f59230703f230ca4461587df8b5f79d0b64add0127cb779e548ae77beb",
+      "src/core/agent-size.ts": "4dca25ed568c364f4c90906adff5013adf5566cafaf0b7992ebdcf0d0d1a2d0f",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "d97812599355e261aa149b160836d104b1918afcd1f75c615b870c85930ea6ba",
+      "src/core/crowd-field.ts": "d845c20d052ced07e2382452c3743bbac9225243187ba6441f5e87fe55cce5dc",
+      "src/core/crowd-flow-solver.ts": "8ca2b3e4b6556b7e08d528c320e5683f01596ba28f27d756c54ba2e8f69bfc5c",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "a41e411ea03215630ee61504e94f28760ffc62e73b3e61e4299dc47bdf71e4f2",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "7f94a5d3be7919964c8972e34d6eb31f1870343700ae466fe9ec3817d2026be5",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "770d2a963de351668c65d77708652078172b59fa2b7a0797a60c41eadf56adda",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "07dcdcbf361b95ab8fea4c036f4d9bf18478906e3ef130661f98a0fc6073af4b",
+      "src/core/spawn-layout.ts": "ea6313a5c115ec8f5129e62c251a5025c7fca559acf8a0d9b863e719c79e026b",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "5975174e5ce85162062634db232a34a1d94c16c1e8097817cd6433ca7da0577b",
+      "src/editor/map-editor.ts": "545d92d77ea7ba90437db3e8edca21962d55d57da86c19d1da9485a3aba555b3",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "28005e34d0937b0c5113a2858aeb24082e73a766b1b0288889ea87ab50d8b47c",
+      "src/scenarios/lab-scenarios.ts": "1deab6772c9a2c5397b943a65d78d9462bc183a043fcff0fd99980622dc0fe6e",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/styles.css": "41c5f15e523eda4f8dfac2157df0b74dc5b5216d8f878425a43bd7b1089d271b",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    }
+  },
+  "environment": {
+    "node": "v22.22.0",
+    "v8": "12.4.254.21-node.33",
+    "os": "win32",
+    "osRelease": "10.0.26200",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "logicalCpus": 32,
+    "systemMemoryBytes": 66156453888,
+    "freeSystemMemoryBytesAtStart": 35032633344,
+    "simulationThreads": 1,
+    "runtime": "Node + vite-node (TypeScript transformed); no production-browser/JIT equivalence claimed",
+    "gpu": "unused",
+    "render": "headless; canvas, browser layout and full frame timing excluded",
+    "powerClock": "not controlled"
+  },
+  "contract": {
+    "args": [
+      "--presets=R,Q,D",
+      "--agents=1000",
+      "--scenario=bidirectional-corridor,crowded-goal",
+      "--steps=600",
+      "--warmup=60",
+      "--quality=10",
+      "--scale=true",
+      "--timeout=50",
+      "--output=baselines/lab-exploratory-quality.json"
+    ],
+    "steps": 600,
+    "warmupSteps": 60,
+    "qualityAuditEverySteps": 10,
+    "seed": 42,
+    "scale": true,
+    "densityPolicy": "World and scenario geometry scaled by sqrt(N/1000); physical radius/gap/speed/dt/grid cell sizes unchanged.",
+    "destinations": "scenario-defined",
+    "walltimeLimitSecondsPerCase": 50,
+    "qualification": "Finite engineering comparison, not the research 10s warmup + 60s duration + 5 seed acceptance protocol.",
+    "observerScope": "Step timing excludes command dispatch, recorder/audit, process-memory sampling and JSON output. These overheads are reported separately.",
+    "memoryScope": "Independent child per case, no cross-case heap retention. Observed memory peak is sampled, not guaranteed high-water mark."
+  },
+  "records": [
+    {
+      "case": {
+        "preset": "R",
+        "scenario": "bidirectional-corridor",
+        "agents": 1000
+      },
+      "executionSourceSha256": "ec968587ceb7cb4ea7d64f0dcc46f8a8e76eef51a6dfa6c06066551caac36a7b",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 6393.1384,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:25:43.220Z",
+        "preset": "R",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "R"
+        },
+        "scenario": {
+          "id": "bidirectional-corridor",
+          "name": "양방향 통로",
+          "description": "반대 목표를 가진 50:50 흐름. Q의 방향별 대기·점유와 회피만의 결과를 비교합니다.",
+          "spawn": {
+            "x": 36,
+            "y": 96,
+            "width": 300,
+            "height": 528
+          },
+          "goal": {
+            "x": 1110,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 432,
+              "y": 0,
+              "width": 336,
+              "height": 324
+            },
+            {
+              "x": 432,
+              "y": 396,
+              "width": 336,
+              "height": 324
+            }
+          ],
+          "flows": [
+            {
+              "id": "east",
+              "spawn": {
+                "x": 36,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 1110,
+                "y": 360
+              }
+            },
+            {
+              "id": "west",
+              "spawn": {
+                "x": 864,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 90,
+                "y": 360
+              }
+            }
+          ],
+          "routeGates": [
+            {
+              "id": "corridor",
+              "region": {
+                "x": 416,
+                "y": 324,
+                "width": 368,
+                "height": 72
+              }
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "73a9d5f9",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 1000,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 1000,
+        "activeMaximum": 1000,
+        "moving": 858,
+        "waiting": 142,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 40.269000000000005,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 10.453494074074063,
+            "p50": 10.613299999999981,
+            "p95": 12.949599999999919,
+            "p99": 14.186200000000099,
+            "max": 21.329799999999977
+          },
+          "simulationCapacityHz": 95.66179431622979,
+          "achievedHzIncludingAudit": 94.32566824320958,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.23431111111111577,
+              "p50": 0.17950000000018917,
+              "p95": 0.6929999999988468,
+              "p99": 1.0423000000005231,
+              "max": 1.5148000000003776
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 1.4120388888888926,
+              "p50": 1.352299999999559,
+              "p95": 1.95699999999988,
+              "p99": 2.352100000000064,
+              "max": 3.0040999999998803
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 5.336051666666655,
+              "p50": 5.394800000000032,
+              "p95": 6.715299999999843,
+              "p99": 7.014000000000124,
+              "max": 12.801000000000158
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 1.7643749999999971,
+              "p50": 1.828099999999722,
+              "p95": 2.4534999999996217,
+              "p99": 2.6766000000006898,
+              "max": 2.920799999999872
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.12714333333331784,
+              "p50": 0.11560000000008586,
+              "p95": 0.16190000000005966,
+              "p99": 0.4552000000003318,
+              "max": 1.4524999999998727
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.0037250000000030752,
+              "p50": 0.003200000000106229,
+              "p95": 0.007300000000213913,
+              "p99": 0.010800000000017462,
+              "max": 0.019100000000435102
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.017768888888904006,
+              "p50": 0.01650000000017826,
+              "p95": 0.02359999999998763,
+              "p99": 0.029600000000300497,
+              "max": 0.43679999999994834
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 1.2432987037036953,
+              "p50": 1.3170000000000073,
+              "p95": 1.909400000000005,
+              "p99": 2.1661000000003696,
+              "max": 3.788400000000138
+            },
+            "total": {
+              "samples": 540,
+              "mean": 10.448069444444455,
+              "p50": 10.608099999999467,
+              "p95": 12.942699999999604,
+              "p99": 14.176000000000386,
+              "max": 21.324400000000196
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 44.14180000000374,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 2,
+          "maximumPenetration": 0.020668972113248252,
+          "maximumSweptPenetration": 0.020668972113248252,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 1,
+          "stalledMax": 7,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 4433,
+          "lateralFlipsPerAgentSecond": 0.4925555555555556,
+          "gateCrossings": {
+            "corridor:-": 24,
+            "corridor:+": 49
+          },
+          "gateAgentsPerSecond": {
+            "corridor:-": 2.6666666666666665,
+            "corridor:+": 5.444444444444445
+          }
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.24250000000029104,
+            "desired": 1.475999999999658,
+            "avoidance": 6.681300000000192,
+            "contact": 2.1877000000004045,
+            "density": 0.13889999999992142,
+            "queue": 0.0030000000006111804,
+            "spatial": 0.021800000000439468,
+            "integration": 0.5988999999999578,
+            "total": 11.645899999999529
+          },
+          "activeCount": 1000,
+          "movingCount": 858,
+          "waitingCount": 142,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 1173,
+          "cacheHits": 968,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 1141,
+          "directionFlips": 25,
+          "neighborTruncations": 44486,
+          "orcaInfeasibleCount": 773,
+          "invalidStaticStarts": 1,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.2917999999999665
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.818899999999985
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.942199999999957
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.377799999999979
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.42489999999998
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.918300000000045
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 11.975599999999986
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 997,
+            "waiting": 3,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.483400000000074
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 988,
+            "waiting": 12,
+            "arrived": 0,
+            "contactActive": 3,
+            "stepMs": 8.773499999999785
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 992,
+            "waiting": 8,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.180200000000241
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 981,
+            "waiting": 19,
+            "arrived": 0,
+            "contactActive": 17,
+            "stepMs": 9.774500000000444
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 988,
+            "waiting": 12,
+            "arrived": 0,
+            "contactActive": 6,
+            "stepMs": 9.584699999999884
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 984,
+            "waiting": 16,
+            "arrived": 0,
+            "contactActive": 20,
+            "stepMs": 9.852899999999863
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 973,
+            "waiting": 27,
+            "arrived": 0,
+            "contactActive": 16,
+            "stepMs": 8.465400000000045
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 956,
+            "waiting": 44,
+            "arrived": 0,
+            "contactActive": 27,
+            "stepMs": 11.78819999999996
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 982,
+            "waiting": 18,
+            "arrived": 0,
+            "contactActive": 7,
+            "stepMs": 8.111100000000079
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 968,
+            "waiting": 32,
+            "arrived": 0,
+            "contactActive": 16,
+            "stepMs": 10.52390000000014
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 980,
+            "waiting": 20,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 11.58660000000009
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 975,
+            "waiting": 25,
+            "arrived": 0,
+            "contactActive": 3,
+            "stepMs": 12.192999999999756
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 975,
+            "waiting": 25,
+            "arrived": 0,
+            "contactActive": 9,
+            "stepMs": 10.433899999999994
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 969,
+            "waiting": 31,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 10.237900000000081
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 970,
+            "waiting": 30,
+            "arrived": 0,
+            "contactActive": 20,
+            "stepMs": 9.63570000000027
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 961,
+            "waiting": 39,
+            "arrived": 0,
+            "contactActive": 20,
+            "stepMs": 10.19210000000021
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 947,
+            "waiting": 53,
+            "arrived": 0,
+            "contactActive": 9,
+            "stepMs": 11.179000000000087
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 942,
+            "waiting": 58,
+            "arrived": 0,
+            "contactActive": 7,
+            "stepMs": 12.505299999999806
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 953,
+            "waiting": 47,
+            "arrived": 0,
+            "contactActive": 15,
+            "stepMs": 10.453199999999924
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 934,
+            "waiting": 66,
+            "arrived": 0,
+            "contactActive": 16,
+            "stepMs": 10.508600000000115
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 921,
+            "waiting": 79,
+            "arrived": 0,
+            "contactActive": 25,
+            "stepMs": 12.560100000000148
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 899,
+            "waiting": 101,
+            "arrived": 0,
+            "contactActive": 17,
+            "stepMs": 11.825699999999415
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 890,
+            "waiting": 110,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 10.497699999999895
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 877,
+            "waiting": 123,
+            "arrived": 0,
+            "contactActive": 10,
+            "stepMs": 11.27350000000024
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 881,
+            "waiting": 119,
+            "arrived": 0,
+            "contactActive": 18,
+            "stepMs": 12.931100000000697
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 881,
+            "waiting": 119,
+            "arrived": 0,
+            "contactActive": 18,
+            "stepMs": 11.334000000000742
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 871,
+            "waiting": 129,
+            "arrived": 0,
+            "contactActive": 27,
+            "stepMs": 12.520499999999629
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 842,
+            "waiting": 158,
+            "arrived": 0,
+            "contactActive": 17,
+            "stepMs": 11.700400000000627
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 830,
+            "waiting": 170,
+            "arrived": 0,
+            "contactActive": 10,
+            "stepMs": 12.699300000000221
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 813,
+            "waiting": 187,
+            "arrived": 0,
+            "contactActive": 15,
+            "stepMs": 12.784099999999853
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 777,
+            "waiting": 223,
+            "arrived": 0,
+            "contactActive": 32,
+            "stepMs": 11.75340000000051
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 756,
+            "waiting": 244,
+            "arrived": 0,
+            "contactActive": 18,
+            "stepMs": 11.733600000000479
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 732,
+            "waiting": 268,
+            "arrived": 0,
+            "contactActive": 18,
+            "stepMs": 11.010400000000118
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 738,
+            "waiting": 262,
+            "arrived": 0,
+            "contactActive": 6,
+            "stepMs": 12.04660000000058
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 713,
+            "waiting": 287,
+            "arrived": 0,
+            "contactActive": 4,
+            "stepMs": 9.546799999999166
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 716,
+            "waiting": 284,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 11.264499999999316
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 726,
+            "waiting": 274,
+            "arrived": 0,
+            "contactActive": 3,
+            "stepMs": 9.556299999999283
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 745,
+            "waiting": 255,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 9.822500000000218
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 745,
+            "waiting": 255,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 10.811899999999696
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 783,
+            "waiting": 217,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 10.782999999999447
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 821,
+            "waiting": 179,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.472600000000057
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 797,
+            "waiting": 203,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 12.848299999999654
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 813,
+            "waiting": 187,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 10.726200000000063
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 830,
+            "waiting": 170,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.626000000000204
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 845,
+            "waiting": 155,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 11.238800000000083
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 854,
+            "waiting": 146,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 9.936399999999594
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 863,
+            "waiting": 137,
+            "arrived": 0,
+            "contactActive": 3,
+            "stepMs": 11.783799999999246
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 858,
+            "waiting": 142,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 11.64810000000034
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 78.191300000007,
+        "commandMs": 1.9447999999895274,
+        "measuredWallMs": 5724.954,
+        "measuredHz": 94.32390199117758,
+        "snapshotProtocolMs": 1.0222999999996318
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 108949504,
+          "heapUsed": 27194648,
+          "heapTotal": 58974208,
+          "external": 5450469,
+          "arrayBuffers": 1006919
+        },
+        "afterInitialization": {
+          "rss": 125763584,
+          "heapUsed": 33803512,
+          "heapTotal": 60022784,
+          "external": 6800395,
+          "arrayBuffers": 2379341
+        },
+        "observedPeak": {
+          "rss": 129929216,
+          "heapUsed": 45315120,
+          "heapTotal": 64479232,
+          "external": 7174523,
+          "arrayBuffers": 2753469
+        },
+        "end": {
+          "rss": 128036864,
+          "heapUsed": 43051592,
+          "heapTotal": 64479232,
+          "external": 7174523,
+          "arrayBuffers": 2753469
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "Q",
+        "scenario": "bidirectional-corridor",
+        "agents": 1000
+      },
+      "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 5629.5741,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:25:49.575Z",
+        "preset": "Q",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": true,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "Q"
+        },
+        "scenario": {
+          "id": "bidirectional-corridor",
+          "name": "양방향 통로",
+          "description": "반대 목표를 가진 50:50 흐름. Q의 방향별 대기·점유와 회피만의 결과를 비교합니다.",
+          "spawn": {
+            "x": 36,
+            "y": 96,
+            "width": 300,
+            "height": 528
+          },
+          "goal": {
+            "x": 1110,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 432,
+              "y": 0,
+              "width": 336,
+              "height": 324
+            },
+            {
+              "x": 432,
+              "y": 396,
+              "width": 336,
+              "height": 324
+            }
+          ],
+          "flows": [
+            {
+              "id": "east",
+              "spawn": {
+                "x": 36,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 1110,
+                "y": 360
+              }
+            },
+            {
+              "id": "west",
+              "spawn": {
+                "x": 864,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 90,
+                "y": 360
+              }
+            }
+          ],
+          "routeGates": [
+            {
+              "id": "corridor",
+              "region": {
+                "x": 416,
+                "y": 324,
+                "width": 368,
+                "height": 72
+              }
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "78aacb4f",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 1000,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 1000,
+        "activeMaximum": 1000,
+        "moving": 689,
+        "waiting": 311,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 32.19180000000006,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 9.347906296296292,
+            "p50": 9.408199999999852,
+            "p95": 11.636800000000221,
+            "p99": 12.913799999999355,
+            "max": 19.850799999999936
+          },
+          "simulationCapacityHz": 106.97582627632961,
+          "achievedHzIncludingAudit": 105.56210855151016,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.31948240740741596,
+              "p50": 0.2735000000002401,
+              "p95": 0.8401999999996406,
+              "p99": 1.1237999999993917,
+              "max": 1.3900999999996202
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 1.2452879629629554,
+              "p50": 1.1699000000003252,
+              "p95": 1.7871000000000095,
+              "p99": 2.24369999999999,
+              "max": 2.75669999999991
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 4.673850370370359,
+              "p50": 4.682600000000093,
+              "p95": 5.7093000000004395,
+              "p99": 6.501800000000003,
+              "max": 12.67509999999993
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 1.711829814814821,
+              "p50": 1.777900000000045,
+              "p95": 2.304899999999634,
+              "p99": 2.658100000000559,
+              "max": 3.315099999999802
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.10604925925926587,
+              "p50": 0.0930999999998221,
+              "p95": 0.1414999999997235,
+              "p99": 0.22119999999995343,
+              "max": 1.1163000000001375
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.18773203703700828,
+              "p50": 0.119499999999789,
+              "p95": 0.42339999999967404,
+              "p99": 0.9605000000001382,
+              "max": 1.9057999999995445
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.014048148148167962,
+              "p50": 0.011999999999716238,
+              "p95": 0.020300000000133878,
+              "p99": 0.02250000000003638,
+              "max": 0.060199999999895226
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 0.8206937037037122,
+              "p50": 0.6863000000003012,
+              "p95": 1.5136999999999716,
+              "p99": 1.772200000000339,
+              "max": 3.2386999999998807
+            },
+            "total": {
+              "samples": 540,
+              "mean": 9.34442148148149,
+              "p50": 9.404499999999643,
+              "p95": 11.63379999999961,
+              "p99": 12.90689999999995,
+              "max": 19.84849999999983
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 39.06589999999915,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 3,
+          "maximumPenetration": 0.04043562150949853,
+          "maximumSweptPenetration": 0.04043562150949853,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 0,
+          "stalledMax": 160,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 2166,
+          "lateralFlipsPerAgentSecond": 0.24066666666666667,
+          "gateCrossings": {
+            "corridor:+": 2
+          },
+          "gateAgentsPerSecond": {
+            "corridor:+": 0.2222222222222222
+          }
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.35379999999986467,
+            "desired": 1.2366999999994732,
+            "avoidance": 4.998499999999694,
+            "contact": 2.150899999998728,
+            "density": 0.1077000000004773,
+            "queue": 0.2981999999992695,
+            "spatial": 0.019099999999525608,
+            "integration": 0.6247000000003027,
+            "total": 10.034599999999955
+          },
+          "activeCount": 1000,
+          "movingCount": 689,
+          "waitingCount": 311,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 1677,
+          "cacheHits": 968,
+          "fieldBuilds": 0,
+          "queuePassed": 2,
+          "replans": 1645,
+          "directionFlips": 1,
+          "neighborTruncations": 40030,
+          "orcaInfeasibleCount": 661,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.701199999999972
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 995,
+            "waiting": 5,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.517000000000053
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 990,
+            "waiting": 10,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 7.419399999999996
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 983,
+            "waiting": 17,
+            "arrived": 0,
+            "contactActive": 2,
+            "stepMs": 7.893700000000081
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 975,
+            "waiting": 25,
+            "arrived": 0,
+            "contactActive": 4,
+            "stepMs": 6.917400000000043
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 969,
+            "waiting": 31,
+            "arrived": 0,
+            "contactActive": 4,
+            "stepMs": 6.63390000000004
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 961,
+            "waiting": 39,
+            "arrived": 0,
+            "contactActive": 13,
+            "stepMs": 8.736499999999978
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 938,
+            "waiting": 62,
+            "arrived": 0,
+            "contactActive": 21,
+            "stepMs": 7.861700000000155
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 921,
+            "waiting": 79,
+            "arrived": 0,
+            "contactActive": 44,
+            "stepMs": 7.850599999999986
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 912,
+            "waiting": 88,
+            "arrived": 0,
+            "contactActive": 27,
+            "stepMs": 8.635700000000043
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 918,
+            "waiting": 82,
+            "arrived": 0,
+            "contactActive": 10,
+            "stepMs": 8.666500000000042
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 907,
+            "waiting": 93,
+            "arrived": 0,
+            "contactActive": 35,
+            "stepMs": 9.063499999999976
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 901,
+            "waiting": 99,
+            "arrived": 0,
+            "contactActive": 15,
+            "stepMs": 9.051000000000386
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 905,
+            "waiting": 95,
+            "arrived": 0,
+            "contactActive": 31,
+            "stepMs": 9.804599999999937
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 894,
+            "waiting": 106,
+            "arrived": 0,
+            "contactActive": 15,
+            "stepMs": 10.06020000000035
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 862,
+            "waiting": 138,
+            "arrived": 0,
+            "contactActive": 16,
+            "stepMs": 10.116500000000087
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 873,
+            "waiting": 127,
+            "arrived": 0,
+            "contactActive": 15,
+            "stepMs": 9.724699999999757
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 869,
+            "waiting": 131,
+            "arrived": 0,
+            "contactActive": 8,
+            "stepMs": 9.933899999999994
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 863,
+            "waiting": 137,
+            "arrived": 0,
+            "contactActive": 16,
+            "stepMs": 9.892399999999725
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 863,
+            "waiting": 137,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.709100000000035
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 829,
+            "waiting": 171,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.95620000000008
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 816,
+            "waiting": 184,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.760800000000017
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 778,
+            "waiting": 222,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.091800000000148
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 772,
+            "waiting": 228,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.789200000000164
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 745,
+            "waiting": 255,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.270599999999831
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 762,
+            "waiting": 238,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.218399999999747
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 759,
+            "waiting": 241,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.285500000000411
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 755,
+            "waiting": 245,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.036999999999807
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 747,
+            "waiting": 253,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.847000000000207
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 740,
+            "waiting": 260,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.104899999999816
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 743,
+            "waiting": 257,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.677099999999882
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 737,
+            "waiting": 263,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.673899999999776
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 733,
+            "waiting": 267,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.343900000000303
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 737,
+            "waiting": 263,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.894599999999627
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 739,
+            "waiting": 261,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.399000000000342
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 733,
+            "waiting": 267,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.25500000000011
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 725,
+            "waiting": 275,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.456699999999728
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 728,
+            "waiting": 272,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.603299999999763
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 730,
+            "waiting": 270,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.733500000000276
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 729,
+            "waiting": 271,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.922599999999875
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 723,
+            "waiting": 277,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 12.913799999999355
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 716,
+            "waiting": 284,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.184399999999187
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 716,
+            "waiting": 284,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 12.059299999999894
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 707,
+            "waiting": 293,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 11.891000000000531
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 703,
+            "waiting": 297,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 11.479599999999664
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 691,
+            "waiting": 309,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.086299999999937
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 690,
+            "waiting": 310,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.466500000000451
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 699,
+            "waiting": 301,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.048300000000381
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 684,
+            "waiting": 316,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.042100000000573
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 699,
+            "waiting": 301,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.907799999999952
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 699,
+            "waiting": 301,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 13.258499999999913
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 696,
+            "waiting": 304,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.957099999999627
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 692,
+            "waiting": 308,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.111399999999776
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 692,
+            "waiting": 308,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.824899999999616
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 689,
+            "waiting": 311,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 10.035799999999654
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 65.86640000000432,
+        "commandMs": 1.2233999999945127,
+        "measuredWallMs": 5115.5605000000005,
+        "measuredHz": 105.56028024690549,
+        "snapshotProtocolMs": 0.8918000000003303
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109776896,
+          "heapUsed": 27277816,
+          "heapTotal": 58974208,
+          "external": 5471257,
+          "arrayBuffers": 1027707
+        },
+        "afterInitialization": {
+          "rss": 126885888,
+          "heapUsed": 33895136,
+          "heapTotal": 60022784,
+          "external": 6837037,
+          "arrayBuffers": 2415983
+        },
+        "observedPeak": {
+          "rss": 133148672,
+          "heapUsed": 45187544,
+          "heapTotal": 65003520,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        },
+        "end": {
+          "rss": 133148672,
+          "heapUsed": 33128496,
+          "heapTotal": 65003520,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "D",
+        "scenario": "bidirectional-corridor",
+        "agents": 1000
+      },
+      "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 3339.0723000000003,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:25:53.580Z",
+        "preset": "D",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": true,
+          "congestion": true,
+          "queue": true,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "D"
+        },
+        "scenario": {
+          "id": "bidirectional-corridor",
+          "name": "양방향 통로",
+          "description": "반대 목표를 가진 50:50 흐름. Q의 방향별 대기·점유와 회피만의 결과를 비교합니다.",
+          "spawn": {
+            "x": 36,
+            "y": 96,
+            "width": 300,
+            "height": 528
+          },
+          "goal": {
+            "x": 1110,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 432,
+              "y": 0,
+              "width": 336,
+              "height": 324
+            },
+            {
+              "x": 432,
+              "y": 396,
+              "width": 336,
+              "height": 324
+            }
+          ],
+          "flows": [
+            {
+              "id": "east",
+              "spawn": {
+                "x": 36,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 1110,
+                "y": 360
+              }
+            },
+            {
+              "id": "west",
+              "spawn": {
+                "x": 864,
+                "y": 96,
+                "width": 300,
+                "height": 528
+              },
+              "goal": {
+                "x": 90,
+                "y": 360
+              }
+            }
+          ],
+          "routeGates": [
+            {
+              "id": "corridor",
+              "region": {
+                "x": 416,
+                "y": 324,
+                "width": 368,
+                "height": 72
+              }
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "d4499f1f",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 1000,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 1000,
+        "activeMaximum": 1000,
+        "moving": 709,
+        "waiting": 291,
+        "arrived": 0,
+        "contactActive": 49,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 24.736900000000105,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 5.5363366666666645,
+            "p50": 5.397699999999986,
+            "p95": 7.125700000000052,
+            "p99": 8.841499999999996,
+            "max": 20.797599999999875
+          },
+          "simulationCapacityHz": 180.62485361860828,
+          "achievedHzIncludingAudit": 176.92634703611506,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.2095911111111114,
+              "p50": 0.0001999999999497959,
+              "p95": 1.4048999999999978,
+              "p99": 1.8357999999998356,
+              "max": 2.294099999999844
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 0.6329277777777867,
+              "p50": 0.5794999999998254,
+              "p95": 0.9050999999999476,
+              "p99": 1.2352000000000771,
+              "max": 1.5282000000001972
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 2.134713518518526,
+              "p50": 2.0959000000000287,
+              "p95": 2.662199999999757,
+              "p99": 2.8832000000002154,
+              "max": 13.240600000000086
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 1.0877883333333187,
+              "p50": 1.0709999999999127,
+              "p95": 1.4277999999999338,
+              "p99": 1.6042999999999665,
+              "max": 2.3592000000001008
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.09973203703703651,
+              "p50": 0.0909999999998945,
+              "p95": 0.13519999999971333,
+              "p99": 0.17249999999989996,
+              "max": 0.31150000000002365
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.12277277777777705,
+              "p50": 0.09699999999997999,
+              "p95": 0.3125,
+              "p99": 0.5026000000000295,
+              "max": 0.733600000000024
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.01385629629628974,
+              "p50": 0.011999999999716238,
+              "p95": 0.020099999999956708,
+              "p99": 0.022099999999909414,
+              "max": 0.04149999999981446
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 0.9749779629629557,
+              "p50": 0.9890999999997803,
+              "p95": 1.3344999999999345,
+              "p99": 1.6424999999999272,
+              "max": 4.845499999999902
+            },
+            "total": {
+              "samples": 540,
+              "mean": 5.534183148148146,
+              "p50": 5.396300000000338,
+              "p95": 7.123699999999644,
+              "p99": 8.838600000000042,
+              "max": 20.79430000000002
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 31.74849999999867,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 0,
+          "maximumPenetration": 0.000005481321013078855,
+          "maximumSweptPenetration": 0.000018621168613286443,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 0,
+          "stalledMax": 87,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 10852,
+          "lateralFlipsPerAgentSecond": 1.2057777777777778,
+          "gateCrossings": {
+            "corridor:+": 37,
+            "corridor:-": 15
+          },
+          "gateAgentsPerSecond": {
+            "corridor:+": 4.111111111111111,
+            "corridor:-": 1.6666666666666667
+          }
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.15770000000020445,
+            "desired": 0.7177999999998974,
+            "avoidance": 2.1830999999997402,
+            "contact": 1.262300000000323,
+            "density": 0.11380000000008295,
+            "queue": 0.08780000000024302,
+            "spatial": 0.01749999999992724,
+            "integration": 0.7622000000001208,
+            "total": 5.546200000000226
+          },
+          "activeCount": 1000,
+          "movingCount": 709,
+          "waitingCount": 291,
+          "arrivedCount": 0,
+          "contactActiveCount": 49,
+          "pathRequests": 216,
+          "cacheHits": 998,
+          "fieldBuilds": 152,
+          "queuePassed": 1,
+          "replans": 216,
+          "directionFlips": 0,
+          "neighborTruncations": 15653,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.3454000000000406
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 994,
+            "waiting": 6,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.905899999999974
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 989,
+            "waiting": 11,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.216800000000035
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 981,
+            "waiting": 19,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.0982000000001335
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 970,
+            "waiting": 30,
+            "arrived": 0,
+            "contactActive": 6,
+            "stepMs": 4.847000000000207
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 960,
+            "waiting": 40,
+            "arrived": 0,
+            "contactActive": 6,
+            "stepMs": 4.411499999999933
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 953,
+            "waiting": 47,
+            "arrived": 0,
+            "contactActive": 12,
+            "stepMs": 4.213700000000017
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 942,
+            "waiting": 58,
+            "arrived": 0,
+            "contactActive": 20,
+            "stepMs": 5.386400000000094
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 939,
+            "waiting": 61,
+            "arrived": 0,
+            "contactActive": 24,
+            "stepMs": 4.938599999999951
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 922,
+            "waiting": 78,
+            "arrived": 0,
+            "contactActive": 41,
+            "stepMs": 4.867600000000039
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 906,
+            "waiting": 94,
+            "arrived": 0,
+            "contactActive": 56,
+            "stepMs": 5.977399999999989
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 882,
+            "waiting": 118,
+            "arrived": 0,
+            "contactActive": 84,
+            "stepMs": 20.797599999999875
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 872,
+            "waiting": 128,
+            "arrived": 0,
+            "contactActive": 89,
+            "stepMs": 5.929100000000062
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 883,
+            "waiting": 117,
+            "arrived": 0,
+            "contactActive": 89,
+            "stepMs": 5.56919999999991
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 887,
+            "waiting": 113,
+            "arrived": 0,
+            "contactActive": 96,
+            "stepMs": 6.298499999999876
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 876,
+            "waiting": 124,
+            "arrived": 0,
+            "contactActive": 81,
+            "stepMs": 5.514599999999973
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 894,
+            "waiting": 106,
+            "arrived": 0,
+            "contactActive": 69,
+            "stepMs": 6.18549999999982
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 871,
+            "waiting": 129,
+            "arrived": 0,
+            "contactActive": 88,
+            "stepMs": 6.024699999999939
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 889,
+            "waiting": 111,
+            "arrived": 0,
+            "contactActive": 78,
+            "stepMs": 5.536200000000008
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 882,
+            "waiting": 118,
+            "arrived": 0,
+            "contactActive": 74,
+            "stepMs": 5.679899999999861
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 882,
+            "waiting": 118,
+            "arrived": 0,
+            "contactActive": 61,
+            "stepMs": 5.158199999999852
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 883,
+            "waiting": 117,
+            "arrived": 0,
+            "contactActive": 63,
+            "stepMs": 5.134300000000167
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 874,
+            "waiting": 126,
+            "arrived": 0,
+            "contactActive": 50,
+            "stepMs": 4.994200000000092
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 889,
+            "waiting": 111,
+            "arrived": 0,
+            "contactActive": 56,
+            "stepMs": 5.40099999999984
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 878,
+            "waiting": 122,
+            "arrived": 0,
+            "contactActive": 58,
+            "stepMs": 5.397699999999986
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 858,
+            "waiting": 142,
+            "arrived": 0,
+            "contactActive": 58,
+            "stepMs": 5.623500000000149
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 830,
+            "waiting": 170,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 5.117300000000341
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 833,
+            "waiting": 167,
+            "arrived": 0,
+            "contactActive": 66,
+            "stepMs": 5.379899999999907
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 820,
+            "waiting": 180,
+            "arrived": 0,
+            "contactActive": 66,
+            "stepMs": 5.33809999999994
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 808,
+            "waiting": 192,
+            "arrived": 0,
+            "contactActive": 70,
+            "stepMs": 5.020199999999932
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 792,
+            "waiting": 208,
+            "arrived": 0,
+            "contactActive": 68,
+            "stepMs": 5.871000000000095
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 810,
+            "waiting": 190,
+            "arrived": 0,
+            "contactActive": 60,
+            "stepMs": 5.395199999999932
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 799,
+            "waiting": 201,
+            "arrived": 0,
+            "contactActive": 53,
+            "stepMs": 4.436099999999897
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 789,
+            "waiting": 211,
+            "arrived": 0,
+            "contactActive": 56,
+            "stepMs": 4.752800000000207
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 767,
+            "waiting": 233,
+            "arrived": 0,
+            "contactActive": 53,
+            "stepMs": 5.800299999999879
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 768,
+            "waiting": 232,
+            "arrived": 0,
+            "contactActive": 50,
+            "stepMs": 4.98299999999972
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 763,
+            "waiting": 237,
+            "arrived": 0,
+            "contactActive": 47,
+            "stepMs": 5.195799999999963
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 765,
+            "waiting": 235,
+            "arrived": 0,
+            "contactActive": 47,
+            "stepMs": 4.7824999999998
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 761,
+            "waiting": 239,
+            "arrived": 0,
+            "contactActive": 49,
+            "stepMs": 5.58620000000019
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 738,
+            "waiting": 262,
+            "arrived": 0,
+            "contactActive": 48,
+            "stepMs": 6.085199999999986
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 735,
+            "waiting": 265,
+            "arrived": 0,
+            "contactActive": 48,
+            "stepMs": 5.776800000000094
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 740,
+            "waiting": 260,
+            "arrived": 0,
+            "contactActive": 57,
+            "stepMs": 7.2270000000003165
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 750,
+            "waiting": 250,
+            "arrived": 0,
+            "contactActive": 62,
+            "stepMs": 5.216399999999794
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 711,
+            "waiting": 289,
+            "arrived": 0,
+            "contactActive": 52,
+            "stepMs": 5.784900000000107
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 703,
+            "waiting": 297,
+            "arrived": 0,
+            "contactActive": 56,
+            "stepMs": 5.516699999999673
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 694,
+            "waiting": 306,
+            "arrived": 0,
+            "contactActive": 62,
+            "stepMs": 5.258199999999761
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 707,
+            "waiting": 293,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 5.213400000000092
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 713,
+            "waiting": 287,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 8.841499999999996
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 713,
+            "waiting": 287,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 6.79340000000002
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 722,
+            "waiting": 278,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 5.584799999999632
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 705,
+            "waiting": 295,
+            "arrived": 0,
+            "contactActive": 60,
+            "stepMs": 5.795399999999972
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 705,
+            "waiting": 295,
+            "arrived": 0,
+            "contactActive": 59,
+            "stepMs": 5.658900000000358
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 708,
+            "waiting": 292,
+            "arrived": 0,
+            "contactActive": 62,
+            "stepMs": 5.651800000000094
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 705,
+            "waiting": 295,
+            "arrived": 0,
+            "contactActive": 56,
+            "stepMs": 5.940000000000055
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 709,
+            "waiting": 291,
+            "arrived": 0,
+            "contactActive": 49,
+            "stepMs": 5.546799999999621
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 61.3553999999981,
+        "commandMs": 0.753899999999021,
+        "measuredWallMs": 3052.2042,
+        "measuredHz": 176.92132131919612,
+        "snapshotProtocolMs": 0.8771999999994478
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109899776,
+          "heapUsed": 27338584,
+          "heapTotal": 58974208,
+          "external": 5457019,
+          "arrayBuffers": 1013469
+        },
+        "afterInitialization": {
+          "rss": 124751872,
+          "heapUsed": 31634576,
+          "heapTotal": 60022784,
+          "external": 7100299,
+          "arrayBuffers": 2679245
+        },
+        "observedPeak": {
+          "rss": 134631424,
+          "heapUsed": 47788064,
+          "heapTotal": 66838528,
+          "external": 7474427,
+          "arrayBuffers": 3053373
+        },
+        "end": {
+          "rss": 130736128,
+          "heapUsed": 34536304,
+          "heapTotal": 66838528,
+          "external": 7474427,
+          "arrayBuffers": 3053373
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "R",
+        "scenario": "crowded-goal",
+        "agents": 1000
+      },
+      "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 4517.965,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:25:58.759Z",
+        "preset": "R",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "R"
+        },
+        "scenario": {
+          "id": "crowded-goal",
+          "name": "목적지 밀집",
+          "description": "작은 목적지 주변. exit는 제거, slots는 도착자 점유 유지·수용량 부족 대기를 구분합니다.",
+          "spawn": {
+            "x": 48,
+            "y": 84,
+            "width": 384,
+            "height": 552
+          },
+          "goal": {
+            "x": 1020,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 936,
+              "y": 168,
+              "width": 240,
+              "height": 48
+            },
+            {
+              "x": 936,
+              "y": 504,
+              "width": 240,
+              "height": 48
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "669a2dbd",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 955,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 955,
+        "activeMaximum": 1000,
+        "moving": 947,
+        "waiting": 8,
+        "arrived": 45,
+        "contactActive": 0,
+        "arrivalRate": 0.045,
+        "timing": {
+          "initMs": 19.699100000000044,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 7.503641666666668,
+            "p50": 7.16170000000011,
+            "p95": 9.76589999999942,
+            "p99": 12.007200000000012,
+            "max": 33.24299999999994
+          },
+          "simulationCapacityHz": 133.26862401256278,
+          "achievedHzIncludingAudit": 131.25508248847194,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.00011148148147581364,
+              "p50": 0.00009999999997489795,
+              "p95": 0.00020000000040454324,
+              "p99": 0.0003999999998995918,
+              "max": 0.0007000000000516593
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 0.7339805555555848,
+              "p50": 0.7131000000001677,
+              "p95": 1.0829000000001088,
+              "p99": 1.439300000000003,
+              "max": 2.146099999999933
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 4.379161296296322,
+              "p50": 4.260999999999967,
+              "p95": 5.421500000000378,
+              "p99": 6.249499999999898,
+              "max": 21.015899999999874
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 1.3173790740740616,
+              "p50": 1.2581000000004678,
+              "p95": 1.8701000000000931,
+              "p99": 2.328299999999217,
+              "max": 4.756000000000313
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.10486907407407375,
+              "p50": 0.09510000000000218,
+              "p95": 0.13990000000012515,
+              "p99": 0.16380000000026484,
+              "max": 0.3182999999999083
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.00319444444444996,
+              "p50": 0.003000000000156433,
+              "p95": 0.005500000000211003,
+              "p99": 0.010999999999967258,
+              "max": 0.16940000000022337
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.014187407407387212,
+              "p50": 0.012299999999413558,
+              "p95": 0.020500000000083674,
+              "p99": 0.022599999999783904,
+              "max": 0.06849999999985812
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 0.6992592592592637,
+              "p50": 0.5094999999996617,
+              "p95": 1.4961000000002969,
+              "p99": 1.8479999999999563,
+              "max": 6.874299999999948
+            },
+            "total": {
+              "samples": 540,
+              "mean": 7.5012518518518405,
+              "p50": 7.159700000000157,
+              "p95": 9.763100000000122,
+              "p99": 12.00149999999985,
+              "max": 33.240200000000186
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 33.54829999999993,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 0,
+          "maximumPenetration": 0.007442912791086442,
+          "maximumSweptPenetration": 0.007442912791086442,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 1990,
+          "lateralFlipsPerAgentSecond": 0.22111111111111112,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0,
+            "desired": 0.4355999999997948,
+            "avoidance": 4.778400000000147,
+            "contact": 1.4525000000003274,
+            "density": 0.09210000000075524,
+            "queue": 0.002300000000104774,
+            "spatial": 0.012799999999515421,
+            "integration": 0.6397999999999229,
+            "total": 7.628999999999905
+          },
+          "activeCount": 955,
+          "movingCount": 947,
+          "waitingCount": 8,
+          "arrivedCount": 45,
+          "contactActiveCount": 0,
+          "pathRequests": 32,
+          "cacheHits": 968,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 4,
+          "neighborTruncations": 31467,
+          "orcaInfeasibleCount": 470,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.242600000000039
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.8759000000000015
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.4625999999998385
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.9336000000000695
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.908300000000054
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.1875
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.807900000000018
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.172199999999975
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.193899999999985
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.630499999999984
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.649200000000064
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.266399999999976
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.458399999999983
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.20679999999993
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.1965000000000146
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.46510000000012
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.897300000000087
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.357099999999718
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.615600000000086
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.6246000000001
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.602600000000166
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.538699999999608
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.773599999999988
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.8100000000004
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.532400000000052
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.24330000000009
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.885099999999966
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.065599999999904
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.555499999999938
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.925899999999729
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.00819999999976
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 999,
+            "moving": 999,
+            "waiting": 0,
+            "arrived": 1,
+            "contactActive": 0,
+            "stepMs": 9.239800000000287
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 999,
+            "moving": 999,
+            "waiting": 0,
+            "arrived": 1,
+            "contactActive": 0,
+            "stepMs": 8.485999999999876
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 998,
+            "moving": 998,
+            "waiting": 0,
+            "arrived": 2,
+            "contactActive": 0,
+            "stepMs": 7.384900000000016
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 997,
+            "moving": 997,
+            "waiting": 0,
+            "arrived": 3,
+            "contactActive": 0,
+            "stepMs": 7.8323999999997795
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 995,
+            "moving": 995,
+            "waiting": 0,
+            "arrived": 5,
+            "contactActive": 0,
+            "stepMs": 7.285100000000057
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 993,
+            "moving": 993,
+            "waiting": 0,
+            "arrived": 7,
+            "contactActive": 0,
+            "stepMs": 8.388100000000122
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 991,
+            "moving": 991,
+            "waiting": 0,
+            "arrived": 9,
+            "contactActive": 0,
+            "stepMs": 7.726199999999608
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 987,
+            "moving": 987,
+            "waiting": 0,
+            "arrived": 13,
+            "contactActive": 0,
+            "stepMs": 7.122100000000046
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 987,
+            "moving": 987,
+            "waiting": 0,
+            "arrived": 13,
+            "contactActive": 0,
+            "stepMs": 7.276800000000094
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 985,
+            "moving": 985,
+            "waiting": 0,
+            "arrived": 15,
+            "contactActive": 0,
+            "stepMs": 8.084799999999632
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 983,
+            "moving": 983,
+            "waiting": 0,
+            "arrived": 17,
+            "contactActive": 0,
+            "stepMs": 7.232500000000073
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 980,
+            "moving": 977,
+            "waiting": 3,
+            "arrived": 20,
+            "contactActive": 3,
+            "stepMs": 8.003600000000006
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 980,
+            "moving": 971,
+            "waiting": 9,
+            "arrived": 20,
+            "contactActive": 13,
+            "stepMs": 9.767899999999827
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 977,
+            "moving": 968,
+            "waiting": 9,
+            "arrived": 23,
+            "contactActive": 14,
+            "stepMs": 8.639000000000124
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 975,
+            "moving": 948,
+            "waiting": 27,
+            "arrived": 25,
+            "contactActive": 36,
+            "stepMs": 9.466800000000148
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 973,
+            "moving": 944,
+            "waiting": 29,
+            "arrived": 27,
+            "contactActive": 35,
+            "stepMs": 9.632799999999406
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 972,
+            "moving": 962,
+            "waiting": 10,
+            "arrived": 28,
+            "contactActive": 0,
+            "stepMs": 7.7664999999997235
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 969,
+            "moving": 965,
+            "waiting": 4,
+            "arrived": 31,
+            "contactActive": 5,
+            "stepMs": 8.344500000000153
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 967,
+            "moving": 963,
+            "waiting": 4,
+            "arrived": 33,
+            "contactActive": 0,
+            "stepMs": 7.469500000000153
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 963,
+            "moving": 960,
+            "waiting": 3,
+            "arrived": 37,
+            "contactActive": 3,
+            "stepMs": 8.156200000000354
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 958,
+            "moving": 946,
+            "waiting": 12,
+            "arrived": 42,
+            "contactActive": 9,
+            "stepMs": 8.57509999999911
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 956,
+            "moving": 945,
+            "waiting": 11,
+            "arrived": 44,
+            "contactActive": 12,
+            "stepMs": 8.274000000000342
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 956,
+            "moving": 945,
+            "waiting": 11,
+            "arrived": 44,
+            "contactActive": 7,
+            "stepMs": 8.629300000000512
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 955,
+            "moving": 947,
+            "waiting": 8,
+            "arrived": 45,
+            "contactActive": 0,
+            "stepMs": 7.630799999999908
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 60.770299999999224,
+        "commandMs": 0.8664999999989504,
+        "measuredWallMs": 4114.2304,
+        "measuredHz": 131.25176460705748,
+        "snapshotProtocolMs": 1.0229999999983193
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109826048,
+          "heapUsed": 27293280,
+          "heapTotal": 58974208,
+          "external": 5471257,
+          "arrayBuffers": 1027707
+        },
+        "afterInitialization": {
+          "rss": 121200640,
+          "heapUsed": 32647808,
+          "heapTotal": 59760640,
+          "external": 6837037,
+          "arrayBuffers": 2415983
+        },
+        "observedPeak": {
+          "rss": 128319488,
+          "heapUsed": 44131728,
+          "heapTotal": 62906368,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        },
+        "end": {
+          "rss": 126590976,
+          "heapUsed": 41754472,
+          "heapTotal": 62906368,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "Q",
+        "scenario": "crowded-goal",
+        "agents": 1000
+      },
+      "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 4677.6602,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:26:04.155Z",
+        "preset": "Q",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": true,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "Q"
+        },
+        "scenario": {
+          "id": "crowded-goal",
+          "name": "목적지 밀집",
+          "description": "작은 목적지 주변. exit는 제거, slots는 도착자 점유 유지·수용량 부족 대기를 구분합니다.",
+          "spawn": {
+            "x": 48,
+            "y": 84,
+            "width": 384,
+            "height": 552
+          },
+          "goal": {
+            "x": 1020,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 936,
+              "y": 168,
+              "width": 240,
+              "height": 48
+            },
+            {
+              "x": 936,
+              "y": 504,
+              "width": 240,
+              "height": 48
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "669a2dbd",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 955,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 955,
+        "activeMaximum": 1000,
+        "moving": 947,
+        "waiting": 8,
+        "arrived": 45,
+        "contactActive": 0,
+        "arrivalRate": 0.045,
+        "timing": {
+          "initMs": 18.795600000000036,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 7.779492407407409,
+            "p50": 7.617400000000089,
+            "p95": 10.118799999999283,
+            "p99": 12.345299999999952,
+            "max": 29.78819999999996
+          },
+          "simulationCapacityHz": 128.54309094097562,
+          "achievedHzIncludingAudit": 126.62285359607732,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.00012296296296662385,
+              "p50": 0.00010000000020227162,
+              "p95": 0.00029999999992469384,
+              "p99": 0.0004000000008090865,
+              "max": 0.0007000000000516593
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 0.7997188888888916,
+              "p50": 0.7540000000003602,
+              "p95": 1.2581999999997606,
+              "p99": 1.540299999999661,
+              "max": 1.8557000000000698
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 4.541898888888902,
+              "p50": 4.507599999999911,
+              "p95": 5.765500000000429,
+              "p99": 6.549099999999726,
+              "max": 17.22699999999986
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 1.343581111111103,
+              "p50": 1.2942000000007283,
+              "p95": 1.8932000000004336,
+              "p99": 2.470100000000457,
+              "max": 4.957000000000335
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.10593740740740082,
+              "p50": 0.0966000000000804,
+              "p95": 0.14530000000013388,
+              "p99": 0.2033000000001266,
+              "max": 0.33339999999998327
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.004186666666668805,
+              "p50": 0.0031000000003587047,
+              "p95": 0.009700000000066211,
+              "p99": 0.015300000000024738,
+              "max": 0.25939999999991414
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.01444351851851193,
+              "p50": 0.012500000000045475,
+              "p95": 0.020899999999983265,
+              "p99": 0.022599999999783904,
+              "max": 0.023799999999937427
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 0.7159194444444539,
+              "p50": 0.5348999999996522,
+              "p95": 1.5300999999999476,
+              "p99": 2.279700000000048,
+              "max": 7.130000000000109
+            },
+            "total": {
+              "samples": 540,
+              "mean": 7.776713888888888,
+              "p50": 7.615499999999884,
+              "p95": 10.115600000000086,
+              "p99": 12.343700000000354,
+              "max": 29.784099999999853
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 34.35069999999905,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 0,
+          "maximumPenetration": 0.007442912791086442,
+          "maximumSweptPenetration": 0.007442912791086442,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 1990,
+          "lateralFlipsPerAgentSecond": 0.22111111111111112,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00010000000020227162,
+            "desired": 0.429800000000796,
+            "avoidance": 4.278800000000047,
+            "contact": 1.631999999999607,
+            "density": 0.0878999999995358,
+            "queue": 0.0009000000000014552,
+            "spatial": 0.011800000000221189,
+            "integration": 0.47960000000057335,
+            "total": 7.115200000000186
+          },
+          "activeCount": 955,
+          "movingCount": 947,
+          "waitingCount": 8,
+          "arrivedCount": 45,
+          "contactActiveCount": 0,
+          "pathRequests": 32,
+          "cacheHits": 968,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 4,
+          "neighborTruncations": 31467,
+          "orcaInfeasibleCount": 470,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.642300000000205
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 5.5815000000000055
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.623000000000047
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.126999999999953
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.964499999999816
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.773899999999912
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.601499999999987
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.615099999999984
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.389699999999948
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.741800000000012
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.832100000000082
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.076999999999998
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.320199999999886
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.636600000000044
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.427500000000009
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.798899999999776
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.80560000000014
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.056599999999889
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.750500000000102
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.83829999999989
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.66130000000021
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.630300000000261
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.957499999999982
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.6129000000000815
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.940099999999802
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.886300000000119
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.588900000000194
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 6.878600000000006
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 7.512299999999868
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 9.476100000000315
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 8.679000000000087
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 999,
+            "moving": 999,
+            "waiting": 0,
+            "arrived": 1,
+            "contactActive": 0,
+            "stepMs": 9.86120000000028
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 999,
+            "moving": 999,
+            "waiting": 0,
+            "arrived": 1,
+            "contactActive": 0,
+            "stepMs": 7.284300000000258
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 998,
+            "moving": 998,
+            "waiting": 0,
+            "arrived": 2,
+            "contactActive": 0,
+            "stepMs": 9.691800000000057
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 997,
+            "moving": 997,
+            "waiting": 0,
+            "arrived": 3,
+            "contactActive": 0,
+            "stepMs": 7.849499999999807
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 995,
+            "moving": 995,
+            "waiting": 0,
+            "arrived": 5,
+            "contactActive": 0,
+            "stepMs": 8.569500000000062
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 993,
+            "moving": 993,
+            "waiting": 0,
+            "arrived": 7,
+            "contactActive": 0,
+            "stepMs": 8.083399999999983
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 991,
+            "moving": 991,
+            "waiting": 0,
+            "arrived": 9,
+            "contactActive": 0,
+            "stepMs": 7.669300000000021
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 987,
+            "moving": 987,
+            "waiting": 0,
+            "arrived": 13,
+            "contactActive": 0,
+            "stepMs": 8.000700000000052
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 987,
+            "moving": 987,
+            "waiting": 0,
+            "arrived": 13,
+            "contactActive": 0,
+            "stepMs": 7.399400000000242
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 985,
+            "moving": 985,
+            "waiting": 0,
+            "arrived": 15,
+            "contactActive": 0,
+            "stepMs": 7.794399999999769
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 983,
+            "moving": 983,
+            "waiting": 0,
+            "arrived": 17,
+            "contactActive": 0,
+            "stepMs": 7.9365999999999985
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 980,
+            "moving": 977,
+            "waiting": 3,
+            "arrived": 20,
+            "contactActive": 3,
+            "stepMs": 7.884500000000116
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 980,
+            "moving": 971,
+            "waiting": 9,
+            "arrived": 20,
+            "contactActive": 13,
+            "stepMs": 11.26010000000042
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 977,
+            "moving": 968,
+            "waiting": 9,
+            "arrived": 23,
+            "contactActive": 14,
+            "stepMs": 9.610399999999572
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 975,
+            "moving": 948,
+            "waiting": 27,
+            "arrived": 25,
+            "contactActive": 36,
+            "stepMs": 9.52980000000025
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 973,
+            "moving": 944,
+            "waiting": 29,
+            "arrived": 27,
+            "contactActive": 35,
+            "stepMs": 8.762800000000425
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 972,
+            "moving": 962,
+            "waiting": 10,
+            "arrived": 28,
+            "contactActive": 0,
+            "stepMs": 7.768500000000131
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 969,
+            "moving": 965,
+            "waiting": 4,
+            "arrived": 31,
+            "contactActive": 5,
+            "stepMs": 8.41570000000047
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 967,
+            "moving": 963,
+            "waiting": 4,
+            "arrived": 33,
+            "contactActive": 0,
+            "stepMs": 7.745299999999588
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 963,
+            "moving": 960,
+            "waiting": 3,
+            "arrived": 37,
+            "contactActive": 3,
+            "stepMs": 8.455899999999929
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 958,
+            "moving": 946,
+            "waiting": 12,
+            "arrived": 42,
+            "contactActive": 9,
+            "stepMs": 7.979599999999664
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 956,
+            "moving": 945,
+            "waiting": 11,
+            "arrived": 44,
+            "contactActive": 12,
+            "stepMs": 12.036599999999453
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 956,
+            "moving": 945,
+            "waiting": 11,
+            "arrived": 44,
+            "contactActive": 7,
+            "stepMs": 8.908900000000358
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 955,
+            "moving": 947,
+            "waiting": 8,
+            "arrived": 45,
+            "contactActive": 0,
+            "stepMs": 7.11580000000049
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 62.01319999999305,
+        "commandMs": 0.9718000000034408,
+        "measuredWallMs": 4264.709000000001,
+        "measuredHz": 126.62059709114969,
+        "snapshotProtocolMs": 1.127600000000939
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109703168,
+          "heapUsed": 27350008,
+          "heapTotal": 58712064,
+          "external": 5471257,
+          "arrayBuffers": 1027707
+        },
+        "afterInitialization": {
+          "rss": 120713216,
+          "heapUsed": 32794976,
+          "heapTotal": 60022784,
+          "external": 6837037,
+          "arrayBuffers": 2415983
+        },
+        "observedPeak": {
+          "rss": 127844352,
+          "heapUsed": 44027968,
+          "heapTotal": 62906368,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        },
+        "end": {
+          "rss": 126377984,
+          "heapUsed": 31148616,
+          "heapTotal": 62906368,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "D",
+        "scenario": "crowded-goal",
+        "agents": 1000
+      },
+      "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 2756.6128000000003,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:26:07.574Z",
+        "preset": "D",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": true,
+          "congestion": true,
+          "queue": true,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 1200,
+          "height": 720,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 1000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "D"
+        },
+        "scenario": {
+          "id": "crowded-goal",
+          "name": "목적지 밀집",
+          "description": "작은 목적지 주변. exit는 제거, slots는 도착자 점유 유지·수용량 부족 대기를 구분합니다.",
+          "spawn": {
+            "x": 48,
+            "y": 84,
+            "width": 384,
+            "height": 552
+          },
+          "goal": {
+            "x": 1020,
+            "y": 360
+          },
+          "obstacles": [
+            {
+              "x": 936,
+              "y": 168,
+              "width": 240,
+              "height": 48
+            },
+            {
+              "x": 936,
+              "y": 504,
+              "width": 240,
+              "height": 48
+            }
+          ]
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 600,
+        "hash": "5287f749",
+        "requested": 1000,
+        "spawned": 1000,
+        "unspawned": 0,
+        "active": 643,
+        "activeAtFirstSample": 1000,
+        "activeMinimum": 643,
+        "activeMaximum": 1000,
+        "moving": 643,
+        "waiting": 0,
+        "arrived": 357,
+        "contactActive": 0,
+        "arrivalRate": 0.357,
+        "timing": {
+          "initMs": 27.41560000000004,
+          "warmupSteps": 60,
+          "measuredSteps": 540,
+          "stepMs": {
+            "samples": 540,
+            "mean": 4.410887222222226,
+            "p50": 4.35310000000004,
+            "p95": 5.46140000000014,
+            "p99": 6.190600000000359,
+            "max": 7.663800000000265
+          },
+          "simulationCapacityHz": 226.71175879581776,
+          "achievedHzIncludingAudit": 222.16344490587244,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 540,
+              "mean": 0.11416351851852559,
+              "p50": 0.00010000000020227162,
+              "p95": 0.9587000000001353,
+              "p99": 1.0876000000000658,
+              "max": 1.2606000000000677
+            },
+            "desired": {
+              "samples": 540,
+              "mean": 0.6079805555555596,
+              "p50": 0.5778000000000247,
+              "p95": 0.8299999999999272,
+              "p99": 0.9634999999998399,
+              "max": 1.181999999999789
+            },
+            "avoidance": {
+              "samples": 540,
+              "mean": 2.024625000000008,
+              "p50": 2.0320999999999003,
+              "p95": 2.483299999999872,
+              "p99": 2.7096999999998843,
+              "max": 3.085199999999986
+            },
+            "contact": {
+              "samples": 540,
+              "mean": 0.9165396296296378,
+              "p50": 0.9121000000000095,
+              "p95": 1.2300000000000182,
+              "p99": 1.3930999999997766,
+              "max": 1.503099999999904
+            },
+            "density": {
+              "samples": 540,
+              "mean": 0.09722814814814076,
+              "p50": 0.08979999999996835,
+              "p95": 0.13390000000003965,
+              "p99": 0.14269999999987704,
+              "max": 0.3045999999999367
+            },
+            "queue": {
+              "samples": 540,
+              "mean": 0.002453148148150477,
+              "p50": 0.002399999999852298,
+              "p95": 0.0036000000000058208,
+              "p99": 0.010099999999965803,
+              "max": 0.15340000000014697
+            },
+            "spatial": {
+              "samples": 540,
+              "mean": 0.013954999999998143,
+              "p50": 0.012200000000120781,
+              "p95": 0.020599999999944885,
+              "p99": 0.021999999999934516,
+              "max": 0.03650000000016007
+            },
+            "integration": {
+              "samples": 540,
+              "mean": 0.41913092592591744,
+              "p50": 0.3999000000003434,
+              "p95": 0.5799999999999272,
+              "p99": 0.6854999999995925,
+              "max": 0.86200000000008
+            },
+            "total": {
+              "samples": 540,
+              "mean": 4.409077222222221,
+              "p50": 4.351700000000164,
+              "p95": 5.460399999999936,
+              "p99": 6.189100000000053,
+              "max": 7.661999999999807
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 10,
+          "auditedSteps": 54,
+          "auditMs": 26.10909999999899,
+          "coverage": "Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.",
+          "maximumOverlapPairs": 0,
+          "maximumPenetration": 0,
+          "maximumSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 307,
+          "lateralFlipsPerAgentSecond": 0.03411111111111111,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00010000000020227162,
+            "desired": 0.56899999999996,
+            "avoidance": 1.652599999999893,
+            "contact": 0.6488000000003922,
+            "density": 0.09369999999989886,
+            "queue": 0.001099999999951251,
+            "spatial": 0.018099999999776628,
+            "integration": 0.2838000000001557,
+            "total": 3.4549999999999272
+          },
+          "activeCount": 643,
+          "movingCount": 643,
+          "waitingCount": 0,
+          "arrivedCount": 357,
+          "contactActiveCount": 0,
+          "pathRequests": 0,
+          "cacheHits": 999,
+          "fieldBuilds": 76,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 12652,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 61,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.521600000000035
+          },
+          {
+            "step": 70,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.607499999999959
+          },
+          {
+            "step": 80,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.8780000000000427
+          },
+          {
+            "step": 90,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.77110000000016
+          },
+          {
+            "step": 100,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.9383000000000266
+          },
+          {
+            "step": 110,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.6059000000000196
+          },
+          {
+            "step": 120,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.832499999999982
+          },
+          {
+            "step": 130,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.017100000000028
+          },
+          {
+            "step": 140,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.8139000000001033
+          },
+          {
+            "step": 150,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.022500000000036
+          },
+          {
+            "step": 160,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.280499999999847
+          },
+          {
+            "step": 170,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.149800000000141
+          },
+          {
+            "step": 180,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.010299999999916
+          },
+          {
+            "step": 190,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.604000000000042
+          },
+          {
+            "step": 200,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.6458999999999833
+          },
+          {
+            "step": 210,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.252300000000105
+          },
+          {
+            "step": 220,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.061700000000201
+          },
+          {
+            "step": 230,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.903099999999995
+          },
+          {
+            "step": 240,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.8660999999999603
+          },
+          {
+            "step": 250,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 3.8672999999998865
+          },
+          {
+            "step": 260,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.526599999999917
+          },
+          {
+            "step": 270,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.154800000000023
+          },
+          {
+            "step": 280,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.419200000000046
+          },
+          {
+            "step": 290,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.781600000000026
+          },
+          {
+            "step": 300,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.5917000000001735
+          },
+          {
+            "step": 310,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.512699999999995
+          },
+          {
+            "step": 320,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.683500000000095
+          },
+          {
+            "step": 330,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.546800000000076
+          },
+          {
+            "step": 340,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.700900000000274
+          },
+          {
+            "step": 350,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.494100000000344
+          },
+          {
+            "step": 360,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.6098000000001775
+          },
+          {
+            "step": 370,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 1000,
+            "moving": 1000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 4.555699999999888
+          },
+          {
+            "step": 380,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 997,
+            "moving": 997,
+            "waiting": 0,
+            "arrived": 3,
+            "contactActive": 0,
+            "stepMs": 5.572700000000168
+          },
+          {
+            "step": 390,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 992,
+            "moving": 992,
+            "waiting": 0,
+            "arrived": 8,
+            "contactActive": 0,
+            "stepMs": 6.369200000000092
+          },
+          {
+            "step": 400,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 985,
+            "moving": 985,
+            "waiting": 0,
+            "arrived": 15,
+            "contactActive": 0,
+            "stepMs": 4.852899999999863
+          },
+          {
+            "step": 410,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 977,
+            "moving": 977,
+            "waiting": 0,
+            "arrived": 23,
+            "contactActive": 0,
+            "stepMs": 4.833799999999883
+          },
+          {
+            "step": 420,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 967,
+            "moving": 967,
+            "waiting": 0,
+            "arrived": 33,
+            "contactActive": 0,
+            "stepMs": 4.203500000000076
+          },
+          {
+            "step": 430,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 953,
+            "moving": 953,
+            "waiting": 0,
+            "arrived": 47,
+            "contactActive": 0,
+            "stepMs": 5.1556000000000495
+          },
+          {
+            "step": 440,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 940,
+            "moving": 940,
+            "waiting": 0,
+            "arrived": 60,
+            "contactActive": 0,
+            "stepMs": 4.794200000000274
+          },
+          {
+            "step": 450,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 929,
+            "moving": 929,
+            "waiting": 0,
+            "arrived": 71,
+            "contactActive": 0,
+            "stepMs": 4.362699999999677
+          },
+          {
+            "step": 460,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 911,
+            "moving": 911,
+            "waiting": 0,
+            "arrived": 89,
+            "contactActive": 0,
+            "stepMs": 4.688299999999799
+          },
+          {
+            "step": 470,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 895,
+            "moving": 895,
+            "waiting": 0,
+            "arrived": 105,
+            "contactActive": 0,
+            "stepMs": 4.390400000000227
+          },
+          {
+            "step": 480,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 877,
+            "moving": 877,
+            "waiting": 0,
+            "arrived": 123,
+            "contactActive": 0,
+            "stepMs": 4.502599999999802
+          },
+          {
+            "step": 490,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 861,
+            "moving": 861,
+            "waiting": 0,
+            "arrived": 139,
+            "contactActive": 0,
+            "stepMs": 3.9807999999998174
+          },
+          {
+            "step": 500,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 842,
+            "moving": 842,
+            "waiting": 0,
+            "arrived": 158,
+            "contactActive": 0,
+            "stepMs": 4.04280000000017
+          },
+          {
+            "step": 510,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 824,
+            "moving": 824,
+            "waiting": 0,
+            "arrived": 176,
+            "contactActive": 2,
+            "stepMs": 5.719600000000355
+          },
+          {
+            "step": 520,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 807,
+            "moving": 807,
+            "waiting": 0,
+            "arrived": 193,
+            "contactActive": 0,
+            "stepMs": 4.1840000000001965
+          },
+          {
+            "step": 530,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 786,
+            "moving": 786,
+            "waiting": 0,
+            "arrived": 214,
+            "contactActive": 0,
+            "stepMs": 3.8236000000001695
+          },
+          {
+            "step": 540,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 769,
+            "moving": 769,
+            "waiting": 0,
+            "arrived": 231,
+            "contactActive": 0,
+            "stepMs": 3.63779999999997
+          },
+          {
+            "step": 550,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 748,
+            "moving": 748,
+            "waiting": 0,
+            "arrived": 252,
+            "contactActive": 0,
+            "stepMs": 3.5625
+          },
+          {
+            "step": 560,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 729,
+            "moving": 729,
+            "waiting": 0,
+            "arrived": 271,
+            "contactActive": 0,
+            "stepMs": 3.951599999999871
+          },
+          {
+            "step": 570,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 710,
+            "moving": 710,
+            "waiting": 0,
+            "arrived": 290,
+            "contactActive": 0,
+            "stepMs": 3.8924999999999272
+          },
+          {
+            "step": 580,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 688,
+            "moving": 688,
+            "waiting": 0,
+            "arrived": 312,
+            "contactActive": 0,
+            "stepMs": 3.5599999999999454
+          },
+          {
+            "step": 590,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 667,
+            "moving": 667,
+            "waiting": 0,
+            "arrived": 333,
+            "contactActive": 0,
+            "stepMs": 3.7743000000000393
+          },
+          {
+            "step": 600,
+            "requested": 1000,
+            "spawned": 1000,
+            "active": 643,
+            "moving": 643,
+            "waiting": 0,
+            "arrived": 357,
+            "contactActive": 0,
+            "stepMs": 3.455699999999979
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 47.79919999999527,
+        "commandMs": 0.6447000000016487,
+        "measuredWallMs": 2430.7181,
+        "measuredHz": 222.15657175548245,
+        "snapshotProtocolMs": 0.8864999999990459
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 109514752,
+          "heapUsed": 27224960,
+          "heapTotal": 58974208,
+          "external": 5471257,
+          "arrayBuffers": 1027707
+        },
+        "afterInitialization": {
+          "rss": 124968960,
+          "heapUsed": 26328368,
+          "heapTotal": 60022784,
+          "external": 6837037,
+          "arrayBuffers": 2415983
+        },
+        "observedPeak": {
+          "rss": 129044480,
+          "heapUsed": 44852568,
+          "heapTotal": 64479232,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        },
+        "end": {
+          "rss": 128589824,
+          "heapUsed": 34267560,
+          "heapTotal": 64479232,
+          "external": 7211165,
+          "arrayBuffers": 2790111
+        }
+      }
+    }
+  ],
+  "sourceChangedDuringRun": true,
+  "executionSourceChangedDuringRun": true,
+  "sourceAfter": {
+    "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+    "sourceSha256": "6cef4e74fd326d970f719837fb8a7c5bfdd1776f7d648f63e6845b9ddbee19ab",
+    "executionSourceSha256": "31b49370bfd530a3ae61153604defe70dbb5419d45af969eaf81a6fa74ac392a",
+    "files": {
+      "package-lock.json": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f",
+      "package.json": "2bf3bcf205ce3babefdfb0bec3bd690ff64e19d88513e8d88a0c8340a35b376f",
+      "scripts/measure-lab.ts": "7ff8bb55a494d48d7af5b420cd60d8df8727ab28b7c8a8e34771756f8817ff50",
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab-motion/local-motion.ts": "4b65e9c0c02fc7ef25f7f332e183e26802fb45afe7af492efcf017e923d5ee46",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "cda4236321a9955daeb5ef450432794e86506ace4636141b762350ff29415603",
+      "src/algorithms/lab/registry.ts": "c1f5ae51befdf96ed5a7cd53d81c4d9b6c972f607e7f7041d5ff69f3b18526a7",
+      "src/algorithms/lab/traffic.ts": "f55d838b8f1e4c076bb3e66bb3bd2fd9a019485f60e0993e2dacfa59cd665f5d",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "fa4b48f59230703f230ca4461587df8b5f79d0b64add0127cb779e548ae77beb",
+      "src/core/agent-size.ts": "4dca25ed568c364f4c90906adff5013adf5566cafaf0b7992ebdcf0d0d1a2d0f",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "d97812599355e261aa149b160836d104b1918afcd1f75c615b870c85930ea6ba",
+      "src/core/crowd-field.ts": "d845c20d052ced07e2382452c3743bbac9225243187ba6441f5e87fe55cce5dc",
+      "src/core/crowd-flow-solver.ts": "8ca2b3e4b6556b7e08d528c320e5683f01596ba28f27d756c54ba2e8f69bfc5c",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "a41e411ea03215630ee61504e94f28760ffc62e73b3e61e4299dc47bdf71e4f2",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "7f94a5d3be7919964c8972e34d6eb31f1870343700ae466fe9ec3817d2026be5",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "770d2a963de351668c65d77708652078172b59fa2b7a0797a60c41eadf56adda",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "07dcdcbf361b95ab8fea4c036f4d9bf18478906e3ef130661f98a0fc6073af4b",
+      "src/core/spawn-layout.ts": "ea6313a5c115ec8f5129e62c251a5025c7fca559acf8a0d9b863e719c79e026b",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "5975174e5ce85162062634db232a34a1d94c16c1e8097817cd6433ca7da0577b",
+      "src/editor/map-editor.ts": "545d92d77ea7ba90437db3e8edca21962d55d57da86c19d1da9485a3aba555b3",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "28005e34d0937b0c5113a2858aeb24082e73a766b1b0288889ea87ab50d8b47c",
+      "src/scenarios/lab-scenarios.ts": "1deab6772c9a2c5397b943a65d78d9462bc183a043fcff0fd99980622dc0fe6e",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/styles.css": "41c5f15e523eda4f8dfac2157df0b74dc5b5216d8f878425a43bd7b1089d271b",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    }
+  }
+}

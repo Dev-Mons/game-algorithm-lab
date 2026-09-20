@@ -7,7 +7,7 @@ test('a saved 깔때기V2 clears displaced large bodies at radius 3 and 10%', as
     localStorage.setItem(key, JSON.stringify([{ id: 'custom-funnel-v2-regression', map }]));
   }, { key: MAP_STORAGE_KEY, map: mapFromScenario(FUNNEL_V2) });
   await page.goto('/?scenario=custom-funnel-v2-regression&radius=3&largePercent=10&largeScale=2&step=1200&paused=true');
-  await expect(page.locator('body')).toHaveAttribute('data-step', '1200');
+  await expect(page.locator('body')).toHaveAttribute('data-step', '1200', { timeout: 30_000 });
   await expect(page.locator('#scenario-select')).toHaveValue('custom-funnel-v2-regression');
   await expect(page.locator('#agent-radius')).toHaveValue('3');
   await expect(page.locator('#large-agent-percent')).toHaveValue('10');

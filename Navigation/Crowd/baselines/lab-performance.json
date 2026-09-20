@@ -1,0 +1,5804 @@
+{
+  "schema": "crowd-lab-measurements-v1",
+  "createdAt": "2026-09-20T08:35:32.877Z",
+  "source": {
+    "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+    "sourceSha256": "33fa74434358b781169c0026b12049eb7a5721dd42a22984e70fceb670e6d366",
+    "executionSourceSha256": "0d59d3370bbcc4ff206f79009d5f8c2e787d2cd85b1e759a3b07bffb756f0f88",
+    "files": {
+      "package-lock.json": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f",
+      "package.json": "2bf3bcf205ce3babefdfb0bec3bd690ff64e19d88513e8d88a0c8340a35b376f",
+      "scripts/measure-lab.ts": "a90cae82dc9fe84b05efb19af4a0b3edb7874a1d1a6e9a67fb27650dc7d459cc",
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab-motion/local-motion.ts": "ab8e6d52ffa300d119593b6ae42ab2066c5c7e0b78f2947ca9b1009892784712",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "10b7714e05914d287962bb6aa3a838836eabec70bb46a011924871020742dbd8",
+      "src/algorithms/lab/registry.ts": "371b1002ff3d7f541f930d7acad680d8e84430af1639e2a4249389468064bcc0",
+      "src/algorithms/lab/traffic.ts": "c41e50fc6f5343d5e6573e3a3c301e1ae908f611cb270f49ed07bdbed4e051a6",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "fa4b48f59230703f230ca4461587df8b5f79d0b64add0127cb779e548ae77beb",
+      "src/core/agent-size.ts": "4dca25ed568c364f4c90906adff5013adf5566cafaf0b7992ebdcf0d0d1a2d0f",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "d97812599355e261aa149b160836d104b1918afcd1f75c615b870c85930ea6ba",
+      "src/core/crowd-field.ts": "d845c20d052ced07e2382452c3743bbac9225243187ba6441f5e87fe55cce5dc",
+      "src/core/crowd-flow-solver.ts": "8ca2b3e4b6556b7e08d528c320e5683f01596ba28f27d756c54ba2e8f69bfc5c",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "a41e411ea03215630ee61504e94f28760ffc62e73b3e61e4299dc47bdf71e4f2",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "1b08f3c2e63878d085644f65c21ff0887dd16d7d33976a5324319d49aa173625",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "770d2a963de351668c65d77708652078172b59fa2b7a0797a60c41eadf56adda",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "f4ceebf330a52fbc3e3dd9f6055cd4d8a120bf6c0a83ada8d7c52b7aced896cc",
+      "src/core/spawn-layout.ts": "ea6313a5c115ec8f5129e62c251a5025c7fca559acf8a0d9b863e719c79e026b",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "5975174e5ce85162062634db232a34a1d94c16c1e8097817cd6433ca7da0577b",
+      "src/editor/map-editor.ts": "545d92d77ea7ba90437db3e8edca21962d55d57da86c19d1da9485a3aba555b3",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "28005e34d0937b0c5113a2858aeb24082e73a766b1b0288889ea87ab50d8b47c",
+      "src/scenarios/lab-scenarios.ts": "d3c3fcd59358ae7c08d3fb44e929a64f5b349895248eef667b11c403000be046",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/styles.css": "66c7d41264f29af9376e59d63af75761d7b45b2a356259136fae7716e89eaa6f",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    }
+  },
+  "environment": {
+    "node": "v22.22.0",
+    "v8": "12.4.254.21-node.33",
+    "os": "win32",
+    "osRelease": "10.0.26200",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "logicalCpus": 32,
+    "systemMemoryBytes": 66156453888,
+    "freeSystemMemoryBytesAtStart": 41573638144,
+    "simulationThreads": 1,
+    "runtime": "Node + vite-node (TypeScript transformed); no production-browser/JIT equivalence claimed",
+    "gpu": "unused",
+    "render": "headless; canvas, browser layout and full frame timing excluded",
+    "powerClock": "not controlled"
+  },
+  "contract": {
+    "args": [
+      "--presets=legacy,B0,B1,R,Q,D",
+      "--agents=10000,50000",
+      "--scenario=open-field",
+      "--steps=180",
+      "--warmup=30",
+      "--quality=0",
+      "--scale=true",
+      "--timeout=90",
+      "--output=baselines/lab-performance.json"
+    ],
+    "steps": 180,
+    "warmupSteps": 30,
+    "qualityAuditEverySteps": 0,
+    "seed": 42,
+    "scale": true,
+    "densityPolicy": "World and scenario geometry scaled by sqrt(N/1000); physical radius/gap/speed/dt/grid cell sizes unchanged.",
+    "destinations": "scenario-defined",
+    "walltimeLimitSecondsPerCase": 90,
+    "qualification": "Finite engineering comparison, not the research 10s warmup + 60s duration + 5 seed acceptance protocol.",
+    "observerScope": "Step timing excludes command dispatch, recorder/audit, process-memory sampling and JSON output. These overheads are reported separately.",
+    "memoryScope": "Independent child per case, no cross-case heap retention. Observed memory peak is sampled, not guaranteed high-water mark."
+  },
+  "records": [
+    {
+      "case": {
+        "preset": "legacy",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "0d59d3370bbcc4ff206f79009d5f8c2e787d2cd85b1e759a3b07bffb756f0f88",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 3077.4825,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:35:36.508Z",
+        "preset": "legacy",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "legacy"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "86d8f93d",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 7852,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 61.81639999999993,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 16.157503333333317,
+            "p50": 15.878199999999879,
+            "p95": 17.77520000000004,
+            "p99": 18.30109999999968,
+            "max": 18.89529999999968
+          },
+          "simulationCapacityHz": 61.89075003543252,
+          "achievedHzIncludingAudit": 60.941309212708966,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0009966666666650782,
+              "p50": 0.0007999999997991836,
+              "p95": 0.0019999999999527063,
+              "p99": 0.008199999999987995,
+              "max": 0.013599999999996726
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.0555626666666558,
+              "p50": 1.0107000000000426,
+              "p95": 1.3188999999997577,
+              "p99": 1.437199999999848,
+              "max": 1.5051999999996042
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 5.785476666666652,
+              "p50": 5.745300000000043,
+              "p95": 6.4465999999999894,
+              "p99": 7.179200000000037,
+              "max": 7.271799999999985
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 7.4950573333333415,
+              "p50": 7.344899999999825,
+              "p95": 8.30540000000019,
+              "p99": 8.657600000000002,
+              "max": 9.12310000000025
+            },
+            "density": {
+              "samples": 150,
+              "mean": 0.9117013333333261,
+              "p50": 0.8731999999999971,
+              "p95": 1.097400000000107,
+              "p99": 1.2730999999998858,
+              "max": 1.3049999999998363
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "total": {
+              "samples": 150,
+              "mean": 16.15616933333333,
+              "p50": 15.877299999999877,
+              "p95": 17.77430000000004,
+              "p99": 18.30020000000013,
+              "max": 18.893999999999778
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 0,
+          "lateralFlipsPerAgentSecond": 0,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.0010000000002037268,
+            "desired": 1.1908000000003085,
+            "avoidance": 6.309799999999996,
+            "contact": 8.25149999999985,
+            "density": 1.0873000000001412,
+            "queue": 0,
+            "spatial": 0,
+            "integration": 0,
+            "total": 17.72499999999991
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 7852,
+          "pathRequests": 0,
+          "cacheHits": 0,
+          "fieldBuilds": 1,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 0,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7811,
+            "stepMs": 18.038700000000063
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7838,
+            "stepMs": 15.62110000000007
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7842,
+            "stepMs": 15.537800000000061
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7853,
+            "stepMs": 15.865500000000111
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7854,
+            "stepMs": 15.721000000000004
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7858,
+            "stepMs": 16.134700000000066
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7855,
+            "stepMs": 15.806499999999687
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7855,
+            "stepMs": 15.165399999999863
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7858,
+            "stepMs": 15.271799999999985
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7852,
+            "stepMs": 15.696100000000115
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7854,
+            "stepMs": 15.859699999999975
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7856,
+            "stepMs": 16.112500000000182
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7851,
+            "stepMs": 17.464500000000044
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7856,
+            "stepMs": 16.60779999999977
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7854,
+            "stepMs": 17.177700000000186
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 7852,
+            "stepMs": 17.72609999999986
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 37.4313999999988,
+        "commandMs": 0.42399999999997817,
+        "measuredWallMs": 2461.4836999999998,
+        "measuredHz": 60.93885569910539,
+        "snapshotProtocolMs": 0.3148999999996249
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118292480,
+          "heapUsed": 29614720,
+          "heapTotal": 59514880,
+          "external": 5646940,
+          "arrayBuffers": 1162682
+        },
+        "afterInitialization": {
+          "rss": 149835776,
+          "heapUsed": 45664544,
+          "heapTotal": 66949120,
+          "external": 25731657,
+          "arrayBuffers": 21305483
+        },
+        "observedPeak": {
+          "rss": 154009600,
+          "heapUsed": 47745656,
+          "heapTotal": 67997696,
+          "external": 28099849,
+          "arrayBuffers": 23673675
+        },
+        "end": {
+          "rss": 153468928,
+          "heapUsed": 36021640,
+          "heapTotal": 67997696,
+          "external": 28099849,
+          "arrayBuffers": 23673675
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "B0",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "0d59d3370bbcc4ff206f79009d5f8c2e787d2cd85b1e759a3b07bffb756f0f88",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 6355.9006,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:35:43.442Z",
+        "preset": "B0",
+        "options": {
+          "planner": "individual-astar",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "B0"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "592d53a3",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 48.52159999999992,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 34.65142266666668,
+            "p50": 35.431800000000294,
+            "p95": 38.09889999999996,
+            "p99": 42.34429999999975,
+            "max": 45.2502999999997
+          },
+          "simulationCapacityHz": 28.85884396781091,
+          "achievedHzIncludingAudit": 28.668410253895274,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.00022733333335357505,
+              "p50": 0.0001999999999497959,
+              "p95": 0.000699999999596912,
+              "p99": 0.0009999999997489795,
+              "max": 0.0010000000002037268
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.3976773333333161,
+              "p50": 1.3114000000000487,
+              "p95": 1.7948000000005777,
+              "p99": 2.2138999999997395,
+              "max": 2.341099999999642
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 19.91034466666664,
+              "p50": 20.346599999999853,
+              "p95": 21.853000000000065,
+              "p99": 26.53519999999935,
+              "max": 27.750999999999294
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 7.670601333333342,
+              "p50": 7.840599999999995,
+              "p95": 8.302599999999984,
+              "p99": 8.847599999999147,
+              "max": 9.925199999999677
+            },
+            "density": {
+              "samples": 150,
+              "mean": 0.9932106666666671,
+              "p50": 0.9329999999999927,
+              "p95": 1.2190999999997985,
+              "p99": 1.4270000000005894,
+              "max": 1.4335000000000946
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.008200666666677231,
+              "p50": 0.008399999999710417,
+              "p95": 0.010599999999612919,
+              "p99": 0.014000000000123691,
+              "max": 0.01410000000009859
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.12907999999998385,
+              "p50": 0.11680000000023938,
+              "p95": 0.16610000000036962,
+              "p99": 0.1768000000001848,
+              "max": 0.1878999999998996
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 3.023349333333334,
+              "p50": 2.9880999999995765,
+              "p95": 3.4823999999998705,
+              "p99": 4.121099999999842,
+              "max": 4.274500000000444
+            },
+            "total": {
+              "samples": 150,
+              "mean": 34.645511333333346,
+              "p50": 35.426000000000386,
+              "p95": 38.092099999999846,
+              "p99": 42.336999999999534,
+              "max": 45.24369999999999
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 7288,
+          "lateralFlipsPerAgentSecond": 0.29152,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00010000000020227162,
+            "desired": 1.1660000000001673,
+            "avoidance": 20.938999999999396,
+            "contact": 8.137900000000627,
+            "density": 1.170100000000275,
+            "queue": 0.008100000000013097,
+            "spatial": 0.11530000000038854,
+            "integration": 3.2314000000005763,
+            "total": 36.330700000000434
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 10000,
+          "cacheHits": 0,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 79712,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9994,
+            "waiting": 6,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 31.748599999999897
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.443300000000136
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.66730000000007
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 31.138300000000072
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.94549999999981
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 34.73180000000002
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.22019999999975
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.21950000000015
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.76939999999922
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.35750000000007
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.104200000000674
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.94210000000021
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.08800000000065
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.200699999999415
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.859300000000076
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.33719999999994
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 34.12160000000142,
+        "commandMs": 0.5342000000013059,
+        "measuredWallMs": 5232.3411,
+        "measuredHz": 28.667855771100246,
+        "snapshotProtocolMs": 0.31069999999954234
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118935552,
+          "heapUsed": 29794960,
+          "heapTotal": 59514880,
+          "external": 5646940,
+          "arrayBuffers": 1162682
+        },
+        "afterInitialization": {
+          "rss": 151433216,
+          "heapUsed": 41183240,
+          "heapTotal": 66686976,
+          "external": 26630126,
+          "arrayBuffers": 22203952
+        },
+        "observedPeak": {
+          "rss": 157802496,
+          "heapUsed": 51599432,
+          "heapTotal": 71143424,
+          "external": 27699582,
+          "arrayBuffers": 23273408
+        },
+        "end": {
+          "rss": 157802496,
+          "heapUsed": 38630336,
+          "heapTotal": 71143424,
+          "external": 27699582,
+          "arrayBuffers": 23273408
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "B1",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "0d59d3370bbcc4ff206f79009d5f8c2e787d2cd85b1e759a3b07bffb756f0f88",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 6523.7562,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:35:50.548Z",
+        "preset": "B1",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "B1"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "592d53a3",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 75.80849999999998,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 35.60261866666667,
+            "p50": 36.16939999999977,
+            "p95": 42.04860000000008,
+            "p99": 48.43050000000039,
+            "max": 49.414400000000114
+          },
+          "simulationCapacityHz": 28.087821554998722,
+          "achievedHzIncludingAudit": 27.89717458531687,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.00018533333330954824,
+              "p50": 0.00019999999949504854,
+              "p95": 0.0003999999998995918,
+              "p99": 0.000600000000304135,
+              "max": 0.0010000000002037268
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.2363693333333565,
+              "p50": 1.1480000000001382,
+              "p95": 1.7439000000003944,
+              "p99": 2.08390000000054,
+              "max": 2.2312000000001717
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 20.65967533333335,
+              "p50": 20.901300000000447,
+              "p95": 25.38779999999997,
+              "p99": 28.216099999999642,
+              "max": 29.04930000000013
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 7.865731999999956,
+              "p50": 7.917799999999261,
+              "p95": 9.684799999999996,
+              "p99": 10.941899999999805,
+              "max": 11.11200000000008
+            },
+            "density": {
+              "samples": 150,
+              "mean": 1.0431479999999889,
+              "p50": 0.9967000000001462,
+              "p95": 1.3782999999998538,
+              "p99": 1.4708999999993466,
+              "max": 1.5427999999997155
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.009523999999964871,
+              "p50": 0.010000000000218279,
+              "p95": 0.013099999999212741,
+              "p99": 0.014400000000023283,
+              "max": 0.017600000000129512
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.1341940000000295,
+              "p50": 0.11769999999978609,
+              "p95": 0.19160000000010768,
+              "p99": 0.2197000000001026,
+              "max": 0.23949999999967986
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 3.0998266666666554,
+              "p50": 3.063199999999597,
+              "p95": 3.849999999999909,
+              "p99": 4.349799999999959,
+              "max": 4.450399999999718
+            },
+            "total": {
+              "samples": 150,
+              "mean": 35.59614933333336,
+              "p50": 36.16310000000067,
+              "p95": 42.04069999999956,
+              "p99": 48.42410000000018,
+              "max": 49.4070999999999
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 7288,
+          "lateralFlipsPerAgentSecond": 0.29152,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00010000000020227162,
+            "desired": 1.0052999999998065,
+            "avoidance": 21.505600000000413,
+            "contact": 8.035499999999956,
+            "density": 1.1858999999994921,
+            "queue": 0.012700000000222644,
+            "spatial": 0.12460000000010041,
+            "integration": 3.0682999999999083,
+            "total": 36.528299999999945
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 0,
+          "cacheHits": 9999,
+          "fieldBuilds": 1,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 79712,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9994,
+            "waiting": 6,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.635600000000068
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.769199999999955
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.476599999999962
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.869700000000194
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.593199999999797
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.214800000000196
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 41.90449999999964
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.314600000000155
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.84739999999965
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.3752999999997
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.55709999999999
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 41.34259999999995
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.30410000000029
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.77480000000014
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.85429999999997
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.53439999999955
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 36.05120000000613,
+        "commandMs": 0.5538999999960197,
+        "measuredWallMs": 5376.9825,
+        "measuredHz": 27.896687407853754,
+        "snapshotProtocolMs": 0.3114000000005035
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118476800,
+          "heapUsed": 29559296,
+          "heapTotal": 58990592,
+          "external": 5632902,
+          "arrayBuffers": 1148644
+        },
+        "afterInitialization": {
+          "rss": 153706496,
+          "heapUsed": 39889208,
+          "heapTotal": 69046272,
+          "external": 26616088,
+          "arrayBuffers": 22189914
+        },
+        "observedPeak": {
+          "rss": 155156480,
+          "heapUsed": 50631816,
+          "heapTotal": 70356992,
+          "external": 27685544,
+          "arrayBuffers": 23259370
+        },
+        "end": {
+          "rss": 155156480,
+          "heapUsed": 40026008,
+          "heapTotal": 70356992,
+          "external": 27685544,
+          "arrayBuffers": 23259370
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "R",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "0d59d3370bbcc4ff206f79009d5f8c2e787d2cd85b1e759a3b07bffb756f0f88",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 9308.6092,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:36:00.434Z",
+        "preset": "R",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "R"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "8eb0ef9a",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 61.30729999999994,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 52.26825866666664,
+            "p50": 52.79500000000007,
+            "p95": 56.65689999999995,
+            "p99": 57.55029999999988,
+            "max": 59.031199999999444
+          },
+          "simulationCapacityHz": 19.13207031398075,
+          "achievedHzIncludingAudit": 19.02898465765277,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0004413333333165307,
+              "p50": 0.0003999999998995918,
+              "p95": 0.0009000000000014552,
+              "p99": 0.001299999999901047,
+              "max": 0.001399999999193824
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.9730326666666709,
+              "p50": 1.945299999999861,
+              "p95": 2.5898999999990338,
+              "p99": 2.7492999999999483,
+              "max": 2.8909000000001015
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 34.85156399999994,
+              "p50": 35.16559999999981,
+              "p95": 38.09039999999959,
+              "p99": 39.3809999999994,
+              "max": 39.73369999999977
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 9.187027333333416,
+              "p50": 9.247199999999793,
+              "p95": 10.053800000001502,
+              "p99": 11.227799999999661,
+              "max": 11.274499999999534
+            },
+            "density": {
+              "samples": 150,
+              "mean": 1.0030606666666668,
+              "p50": 0.9688000000005559,
+              "p95": 1.29529999999977,
+              "p99": 1.3883999999998196,
+              "max": 1.534400000000005
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.011546666666645252,
+              "p50": 0.011199999999917054,
+              "p95": 0.016000000000076398,
+              "p99": 0.018500000000130967,
+              "max": 0.019100000001344597
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.13476866666671866,
+              "p50": 0.11950000000024374,
+              "p95": 0.18170000000100117,
+              "p99": 0.19070000000101572,
+              "max": 0.1916999999998552
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 3.2751980000000094,
+              "p50": 3.281199999999899,
+              "p95": 3.7163000000000466,
+              "p99": 4.005799999998999,
+              "max": 4.165500000000975
+            },
+            "total": {
+              "samples": 150,
+              "mean": 52.26269133333335,
+              "p50": 52.789600000000064,
+              "p95": 56.652900000000045,
+              "p99": 57.544299999999566,
+              "max": 59.026600000001054
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 3392,
+          "lateralFlipsPerAgentSecond": 0.13568,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00020000000040454324,
+            "desired": 1.9439000000002125,
+            "avoidance": 35.585399999999936,
+            "contact": 9.914600000000064,
+            "density": 0.8820999999988999,
+            "queue": 0.011099999999714782,
+            "spatial": 0.16220000000066648,
+            "integration": 3.654500000000553,
+            "total": 54.00830000000133
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 313,
+          "cacheHits": 9687,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 108133,
+          "orcaInfeasibleCount": 2281,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 48.975799999999936
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 44.778499999999894
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 45.458300000000236
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 51.23829999999998
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.02610000000004
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 51.02000000000044
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 52.73610000000008
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 52.72019999999975
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 56.75770000000011
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.288799999999355
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 52.80159999999978
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.37710000000061
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 55.721699999999146
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.0627999999997
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 59.031199999999444
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.012000000000626
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 41.968299999996475,
+        "commandMs": 0.5414999999967449,
+        "measuredWallMs": 7882.805800000001,
+        "measuredHz": 19.028757501548494,
+        "snapshotProtocolMs": 0.32090000000107466
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 116731904,
+          "heapUsed": 35885952,
+          "heapTotal": 58728448,
+          "external": 5964236,
+          "arrayBuffers": 1465210
+        },
+        "afterInitialization": {
+          "rss": 151965696,
+          "heapUsed": 38557992,
+          "heapTotal": 68390912,
+          "external": 26478756,
+          "arrayBuffers": 22200314
+        },
+        "observedPeak": {
+          "rss": 155598848,
+          "heapUsed": 50833648,
+          "heapTotal": 70225920,
+          "external": 27548212,
+          "arrayBuffers": 23269770
+        },
+        "end": {
+          "rss": 155271168,
+          "heapUsed": 38320608,
+          "heapTotal": 70225920,
+          "external": 27548212,
+          "arrayBuffers": 23269770
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "Q",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "8d836b936f692c8115208b76f95b3913bac26a5404724930290e7d485341a769",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 9282.6466,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:36:10.295Z",
+        "preset": "Q",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": true,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "Q"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "8eb0ef9a",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 60.00170000000003,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 52.22558533333335,
+            "p50": 52.90679999999975,
+            "p95": 57.66889999999967,
+            "p99": 62.040100000000166,
+            "max": 64.13910000000033
+          },
+          "simulationCapacityHz": 19.147703058135818,
+          "achievedHzIncludingAudit": 19.046464892311544,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0005806666666831006,
+              "p50": 0.0005000000001018634,
+              "p95": 0.00120000000060827,
+              "p99": 0.0016999999998006388,
+              "max": 0.001900000000205182
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.9708226666666406,
+              "p50": 1.957600000000184,
+              "p95": 2.499699999999393,
+              "p99": 2.993399999999383,
+              "max": 3.0115999999998166
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 34.77197533333336,
+              "p50": 35.14519999999993,
+              "p95": 38.78529999999955,
+              "p99": 42.76340000000073,
+              "max": 42.88839999999982
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 8.955055999999878,
+              "p50": 8.99619999999959,
+              "p95": 9.828699999998207,
+              "p99": 10.758700000000317,
+              "max": 11.24200000000019
+            },
+            "density": {
+              "samples": 150,
+              "mean": 1.0070313333332979,
+              "p50": 0.9794000000001688,
+              "p95": 1.244699999999284,
+              "p99": 1.3692000000000917,
+              "max": 1.47229999999945
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.01155800000000454,
+              "p50": 0.011499999999614374,
+              "p95": 0.016000000000076398,
+              "p99": 0.018299999999726424,
+              "max": 0.021899999999732245
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.13133666666667826,
+              "p50": 0.11670000000003711,
+              "p95": 0.17150000000037835,
+              "p99": 0.21200000000044383,
+              "max": 0.22330000000056316
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 3.259923333333251,
+              "p50": 3.2599999999983993,
+              "p95": 3.6588999999994485,
+              "p99": 4.346000000000458,
+              "max": 4.6698999999998705
+            },
+            "total": {
+              "samples": 150,
+              "mean": 52.22066199999992,
+              "p50": 52.901199999999335,
+              "p95": 57.663399999999456,
+              "p99": 62.03470000000016,
+              "max": 64.13360000000011
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 3392,
+          "lateralFlipsPerAgentSecond": 0.13568,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00029999999969732016,
+            "desired": 2.0002999999996973,
+            "avoidance": 35.598400000000765,
+            "contact": 9.322799999999916,
+            "density": 0.9117999999998574,
+            "queue": 0.011899999999513966,
+            "spatial": 0.11939999999958673,
+            "integration": 3.5850999999984197,
+            "total": 53.68469999999979
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 313,
+          "cacheHits": 9687,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 108133,
+          "orcaInfeasibleCount": 2281,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 43.47310000000016
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 44.49649999999974
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 44.80209999999988
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 52.827400000000125
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 51.58999999999969
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 57.41790000000037
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.07940000000053
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.29349999999977
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.49369999999999
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.70430000000033
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.154199999999946
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 64.13910000000033
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 54.615999999999985
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 52.51630000000114
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 51.868099999999686
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 53.688500000000204
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 41.23220000001015,
+        "commandMs": 0.5156999999970822,
+        "measuredWallMs": 7875.587399999999,
+        "measuredHz": 19.046198382612072,
+        "snapshotProtocolMs": 0.3080999999992855
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118468608,
+          "heapUsed": 29639864,
+          "heapTotal": 58990592,
+          "external": 5647161,
+          "arrayBuffers": 1162903
+        },
+        "afterInitialization": {
+          "rss": 154038272,
+          "heapUsed": 47485776,
+          "heapTotal": 69029888,
+          "external": 26640126,
+          "arrayBuffers": 22213952
+        },
+        "observedPeak": {
+          "rss": 158306304,
+          "heapUsed": 52039456,
+          "heapTotal": 71389184,
+          "external": 27709582,
+          "arrayBuffers": 23283408
+        },
+        "end": {
+          "rss": 158306304,
+          "heapUsed": 50949592,
+          "heapTotal": 71389184,
+          "external": 27709582,
+          "arrayBuffers": 23283408
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "D",
+        "scenario": "open-field",
+        "agents": 10000
+      },
+      "executionSourceSha256": "8d836b936f692c8115208b76f95b3913bac26a5404724930290e7d485341a769",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 6794.7046,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:36:17.667Z",
+        "preset": "D",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": true,
+          "congestion": true,
+          "queue": true,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 3794.7331922020553,
+          "height": 2276.839915321233,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 10000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "D"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 3415.25987298185,
+            "y": 1138.4199576606165
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 221.35943621178657,
+            "y": 284.60498941515414,
+            "width": 1043.5516278555651,
+            "height": 1707.629936490925
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "9a6b28b1",
+        "requested": 10000,
+        "spawned": 10000,
+        "unspawned": 0,
+        "active": 10000,
+        "activeAtFirstSample": 10000,
+        "activeMinimum": 10000,
+        "activeMaximum": 10000,
+        "moving": 10000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 76.43649999999991,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 36.85761866666665,
+            "p50": 36.103200000000015,
+            "p95": 47.09180000000015,
+            "p99": 53.27480000000014,
+            "max": 62.64939999999933
+          },
+          "simulationCapacityHz": 27.131432690858606,
+          "achievedHzIncludingAudit": 26.935710600139487,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 1.1825999999999628,
+              "p50": 0.0007999999997991836,
+              "p95": 9.121799999999894,
+              "p99": 13.060099999999693,
+              "max": 13.503200000000106
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 1.777906000000033,
+              "p50": 1.6370999999999185,
+              "p95": 2.5570999999999913,
+              "p99": 3.668300000000272,
+              "max": 7.720099999999547
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 20.345646666666685,
+              "p50": 20.439100000000508,
+              "p95": 24.48319999999967,
+              "p99": 27.96309999999994,
+              "max": 28.347000000000662
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 7.761076666666621,
+              "p50": 7.795600000000377,
+              "p95": 8.938500000000204,
+              "p99": 10.918399999999565,
+              "max": 11.384799999999814
+            },
+            "density": {
+              "samples": 150,
+              "mean": 1.0605759999999722,
+              "p50": 0.9940000000001419,
+              "p95": 1.4402000000000044,
+              "p99": 1.64850000000024,
+              "max": 2.711899999999332
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.01076333333334939,
+              "p50": 0.011000000000422006,
+              "p95": 0.014700000000630098,
+              "p99": 0.018199999999524152,
+              "max": 0.01929999999993015
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.13579666666670315,
+              "p50": 0.11819999999988795,
+              "p95": 0.1959999999999127,
+              "p99": 0.2270000000003165,
+              "max": 0.24320000000079744
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 3.0235013333333125,
+              "p50": 2.9896999999996297,
+              "p95": 3.540100000000166,
+              "p99": 4.237099999999373,
+              "max": 4.443299999999908
+            },
+            "total": {
+              "samples": 150,
+              "mean": 36.85182133333333,
+              "p50": 36.097499999999854,
+              "p95": 47.08640000000014,
+              "p99": 53.26770000000033,
+              "max": 62.64229999999952
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 6950,
+          "lateralFlipsPerAgentSecond": 0.278,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00019999999949504854,
+            "desired": 1.6945999999998094,
+            "avoidance": 21.37039999999979,
+            "contact": 8.701599999999416,
+            "density": 0.8670000000001892,
+            "queue": 0.011500000000523869,
+            "spatial": 0.1617999999998574,
+            "integration": 3.1831999999994878,
+            "total": 37.557700000000295
+          },
+          "activeCount": 10000,
+          "movingCount": 10000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 0,
+          "cacheHits": 9999,
+          "fieldBuilds": 24,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 79093,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 9994,
+            "waiting": 6,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.870599999999968
+          },
+          {
+            "step": 40,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.855199999999968
+          },
+          {
+            "step": 50,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 31.086299999999937
+          },
+          {
+            "step": 60,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 30.63640000000032
+          },
+          {
+            "step": 70,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.240800000000036
+          },
+          {
+            "step": 80,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.264900000000125
+          },
+          {
+            "step": 90,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 34.46379999999999
+          },
+          {
+            "step": 100,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.496000000000095
+          },
+          {
+            "step": 110,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 41.560599999999795
+          },
+          {
+            "step": 120,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.461999999999534
+          },
+          {
+            "step": 130,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 35.99300000000039
+          },
+          {
+            "step": 140,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 36.21429999999964
+          },
+          {
+            "step": 150,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 44.44769999999971
+          },
+          {
+            "step": 160,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 38.014500000000226
+          },
+          {
+            "step": 170,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 48.14649999999983
+          },
+          {
+            "step": 180,
+            "requested": 10000,
+            "spawned": 10000,
+            "active": 10000,
+            "moving": 10000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 37.563600000000406
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 39.701899999994794,
+        "commandMs": 0.5641000000032363,
+        "measuredWallMs": 5568.9187,
+        "measuredHz": 26.935210959355537,
+        "snapshotProtocolMs": 0.3232000000007247
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118984704,
+          "heapUsed": 29607552,
+          "heapTotal": 59514880,
+          "external": 5647161,
+          "arrayBuffers": 1162903
+        },
+        "afterInitialization": {
+          "rss": 153812992,
+          "heapUsed": 40876440,
+          "heapTotal": 68784128,
+          "external": 26630126,
+          "arrayBuffers": 22203952
+        },
+        "observedPeak": {
+          "rss": 163991552,
+          "heapUsed": 54518120,
+          "heapTotal": 76910592,
+          "external": 27699582,
+          "arrayBuffers": 23273408
+        },
+        "end": {
+          "rss": 159670272,
+          "heapUsed": 37455944,
+          "heapTotal": 72359936,
+          "external": 25592821,
+          "arrayBuffers": 21383555
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "legacy",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "8d836b936f692c8115208b76f95b3913bac26a5404724930290e7d485341a769",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 17393.068000000003,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:36:35.636Z",
+        "preset": "legacy",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "legacy"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "e1580230",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 38924,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 157.96159999999998,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 95.02352266666661,
+            "p50": 94.19280000000072,
+            "p95": 102.77129999999852,
+            "p99": 108.42729999999938,
+            "max": 111.89150000000063
+          },
+          "simulationCapacityHz": 10.523710045015948,
+          "achievedHzIncludingAudit": 10.388997519709953,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0017166666667253593,
+              "p50": 0.001299999999901047,
+              "p95": 0.0033000000003085006,
+              "p99": 0.011499999999614374,
+              "max": 0.016700000000128057
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 6.031457999999963,
+              "p50": 5.952199999999721,
+              "p95": 6.736200000000281,
+              "p99": 8.95969999999943,
+              "max": 9.38630000000012
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 33.48719533333343,
+              "p50": 33.26130000000012,
+              "p95": 37.396200000001045,
+              "p99": 41.03060000000005,
+              "max": 41.32650000000103
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 45.460429333333195,
+              "p50": 44.98949999999968,
+              "p95": 49.67160000000058,
+              "p99": 54.8104000000003,
+              "max": 57.47600000000057
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.188949333333309,
+              "p50": 5.100899999999456,
+              "p95": 5.821800000001531,
+              "p99": 7.457399999999325,
+              "max": 7.544200000000274
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 0,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "max": 0
+            },
+            "total": {
+              "samples": 150,
+              "mean": 95.02047933333318,
+              "p50": 94.1893,
+              "p95": 102.76720000000023,
+              "p99": 108.42410000000018,
+              "max": 111.88920000000053
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 0,
+          "lateralFlipsPerAgentSecond": 0,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.0012000000024272595,
+            "desired": 5.742999999998574,
+            "avoidance": 31.52190000000337,
+            "contact": 43.7416000000012,
+            "density": 4.883300000001327,
+            "queue": 0,
+            "spatial": 0,
+            "integration": 0,
+            "total": 90.8263999999981
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 38924,
+          "pathRequests": 0,
+          "cacheHits": 0,
+          "fieldBuilds": 1,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 0,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38605,
+            "stepMs": 101.98599999999988
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38748,
+            "stepMs": 92.89289999999983
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38812,
+            "stepMs": 96.48689999999988
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38850,
+            "stepMs": 95.91180000000077
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38871,
+            "stepMs": 95.51689999999962
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38879,
+            "stepMs": 97.27659999999923
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38891,
+            "stepMs": 92.96299999999974
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38900,
+            "stepMs": 89.59259999999995
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38902,
+            "stepMs": 97.76650000000154
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38905,
+            "stepMs": 92.35399999999936
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38920,
+            "stepMs": 90.04409999999916
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38916,
+            "stepMs": 89.50410000000011
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38914,
+            "stepMs": 96.84419999999955
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38916,
+            "stepMs": 95.66059999999925
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38915,
+            "stepMs": 94.16140000000087
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 38924,
+            "stepMs": 90.82779999999912
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 184.35989999998753,
+        "commandMs": 0.5217000000001235,
+        "measuredWallMs": 14438.4608,
+        "measuredHz": 10.38891901829314,
+        "snapshotProtocolMs": 0.3396999999977197
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 116793344,
+          "heapUsed": 29632792,
+          "heapTotal": 59252736,
+          "external": 5647154,
+          "arrayBuffers": 1162896
+        },
+        "afterInitialization": {
+          "rss": 201789440,
+          "heapUsed": 59140136,
+          "heapTotal": 90206208,
+          "external": 108729240,
+          "arrayBuffers": 104519974
+        },
+        "observedPeak": {
+          "rss": 270303232,
+          "heapUsed": 71061632,
+          "heapTotal": 91779072,
+          "external": 120537432,
+          "arrayBuffers": 116328166
+        },
+        "end": {
+          "rss": 270303232,
+          "heapUsed": 68851360,
+          "heapTotal": 91779072,
+          "external": 120537432,
+          "arrayBuffers": 116328166
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "B0",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 35121.5707,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:37:11.342Z",
+        "preset": "B0",
+        "options": {
+          "planner": "individual-astar",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "B0"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "f72e1d25",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 126.98929999999996,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 191.06760733333323,
+            "p50": 190.755799999999,
+            "p95": 206.4402000000009,
+            "p99": 230.13839999999982,
+            "max": 238.77089999999953
+          },
+          "simulationCapacityHz": 5.233749529586234,
+          "achievedHzIncludingAudit": 5.205662412785591,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0007373333334423174,
+              "p50": 0.0007000000005064066,
+              "p95": 0.001299999999901047,
+              "p99": 0.0017000000007101335,
+              "max": 0.0019999999985884642
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 6.771600666666734,
+              "p50": 6.659299999999348,
+              "p95": 7.570000000003347,
+              "p99": 12.31039999999848,
+              "max": 12.725099999999657
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 112.96577666666681,
+              "p50": 112.72570000000269,
+              "p95": 121.51050000000032,
+              "p99": 132.83450000000084,
+              "max": 133.9339
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 40.70405333333359,
+              "p50": 40.21399999999994,
+              "p95": 47.15030000000115,
+              "p99": 50.855100000000675,
+              "max": 56.09150000000227
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.743338666666599,
+              "p50": 5.654500000000553,
+              "p95": 6.615499999999884,
+              "p99": 7.639100000000326,
+              "max": 8.406100000000151
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.013062666666670945,
+              "p50": 0.012599999998201383,
+              "p95": 0.01629999999931897,
+              "p99": 0.022499999999126885,
+              "max": 0.023700000001554145
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.700000666666862,
+              "p50": 0.665499999999156,
+              "p95": 0.8838999999998123,
+              "p99": 1.116600000001199,
+              "max": 1.2047999999995227
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 16.220818666666734,
+              "p50": 15.89429999999993,
+              "p95": 18.568600000000515,
+              "p99": 22.48649999999907,
+              "max": 23.316100000000006
+            },
+            "total": {
+              "samples": 150,
+              "mean": 191.0608580000001,
+              "p50": 190.7497000000003,
+              "p95": 206.43179999999847,
+              "p99": 230.130799999999,
+              "max": 238.76369999999952
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 38283,
+          "lateralFlipsPerAgentSecond": 0.306264,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.000800000001618173,
+            "desired": 6.237999999997555,
+            "avoidance": 107.50179999999818,
+            "contact": 39.29729999999836,
+            "density": 5.395099999994272,
+            "queue": 0.01209999999991851,
+            "spatial": 0.6846999999979744,
+            "integration": 15.171400000006543,
+            "total": 181.51550000000134
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 50000,
+          "cacheHits": 0,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 379554,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49974,
+            "waiting": 26,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 193.9445999999998
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 185.2469000000001
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 182.60549999999967
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 181.39449999999852
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 192.46210000000065
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 181.73509999999987
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 183.58109999999942
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 212.9258000000009
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 203.36469999999827
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 196.89310000000114
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.25030000000334
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 197.61839999999938
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 188.85429999999906
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.755799999999
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 184.5159000000058
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 181.5213999999978
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 153.98569999997972,
+        "commandMs": 0.6603999999582584,
+        "measuredWallMs": 28814.872799999997,
+        "measuredHz": 5.205645051468005,
+        "snapshotProtocolMs": 0.3238000000055763
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118554624,
+          "heapUsed": 29796672,
+          "heapTotal": 59514880,
+          "external": 5647175,
+          "arrayBuffers": 1162917
+        },
+        "afterInitialization": {
+          "rss": 226381824,
+          "heapUsed": 82824184,
+          "heapTotal": 108326912,
+          "external": 113217510,
+          "arrayBuffers": 109008244
+        },
+        "observedPeak": {
+          "rss": 233951232,
+          "heapUsed": 89793312,
+          "heapTotal": 110161920,
+          "external": 118530530,
+          "arrayBuffers": 114321264
+        },
+        "end": {
+          "rss": 233951232,
+          "heapUsed": 84071096,
+          "heapTotal": 110161920,
+          "external": 118530530,
+          "arrayBuffers": 114321264
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "B1",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 35025.3595,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:37:46.956Z",
+        "preset": "B1",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "B1"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "f72e1d25",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 185.01930000000004,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 189.81743866666653,
+            "p50": 190.02270000000135,
+            "p95": 203.76410000000033,
+            "p99": 213.47069999999803,
+            "max": 219.75830000000133
+          },
+          "simulationCapacityHz": 5.2682198591672815,
+          "achievedHzIncludingAudit": 5.239881330660877,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0006420000000434812,
+              "p50": 0.0005999999993946403,
+              "p95": 0.00120000000060827,
+              "p99": 0.0014000000010128133,
+              "max": 0.0015000000003055902
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 7.161545999999889,
+              "p50": 7.080699999998615,
+              "p95": 8.673800000000483,
+              "p99": 10.623799999997573,
+              "max": 11.101700000002893
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 112.02183733333337,
+              "p50": 111.95740000000114,
+              "p95": 118.64319999999861,
+              "p99": 127.55189999999857,
+              "max": 137.92409999999836
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 40.55618333333322,
+              "p50": 40.160499999999956,
+              "p95": 46.094300000004296,
+              "p99": 50.640299999999115,
+              "max": 51.51879999999801
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.149227333333353,
+              "p50": 5.077900000000227,
+              "p95": 5.948600000001534,
+              "p99": 6.772300000000541,
+              "max": 6.932699999999386
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.014326666666802339,
+              "p50": 0.013800000000628643,
+              "p95": 0.017399999998815474,
+              "p99": 0.0239000000001397,
+              "max": 0.025900000000547152
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.6953740000000895,
+              "p50": 0.6502000000000407,
+              "p95": 0.8905000000013388,
+              "p99": 1.0705999999991036,
+              "max": 1.1365000000005239
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 16.37689666666675,
+              "p50": 16.196399999998903,
+              "p95": 18.14769999999953,
+              "p99": 19.123399999998583,
+              "max": 20.838299999999435
+            },
+            "total": {
+              "samples": 150,
+              "mean": 189.81089733333334,
+              "p50": 190.01650000000154,
+              "p95": 203.75800000000163,
+              "p99": 213.46470000000045,
+              "max": 219.7520999999997
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 38283,
+          "lateralFlipsPerAgentSecond": 0.306264,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.0005999999993946403,
+            "desired": 8.19840000000113,
+            "avoidance": 116.41090000000258,
+            "contact": 46.87229999999545,
+            "density": 5.381000000001222,
+            "queue": 0.02320000000327127,
+            "spatial": 0.6154000000024098,
+            "integration": 15.891999999999825,
+            "total": 203.92949999999837
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 0,
+          "cacheHits": 49999,
+          "fieldBuilds": 1,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 379554,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49974,
+            "waiting": 26,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 194.6282999999994
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 192.83749999999964
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 188.1864000000005
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 195.34929999999986
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 194.77549999999974
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.6652000000031
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 180.84869999999864
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 179.76900000000023
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 179.89110000000073
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 181.63739999999962
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 185.1788000000015
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 189.79859999999826
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.94959999999992
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 203.76410000000033
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 198.36359999999695
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 203.93689999999333
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 153.29190000003484,
+        "commandMs": 0.7086999999751242,
+        "measuredWallMs": 28626.711600000002,
+        "measuredHz": 5.2398613608137925,
+        "snapshotProtocolMs": 0.39580000000023574
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118644736,
+          "heapUsed": 29750640,
+          "heapTotal": 58990592,
+          "external": 5647175,
+          "arrayBuffers": 1162917
+        },
+        "afterInitialization": {
+          "rss": 219840512,
+          "heapUsed": 76507792,
+          "heapTotal": 102043648,
+          "external": 113217510,
+          "arrayBuffers": 109008244
+        },
+        "observedPeak": {
+          "rss": 228515840,
+          "heapUsed": 83962920,
+          "heapTotal": 103616512,
+          "external": 118530530,
+          "arrayBuffers": 114321264
+        },
+        "end": {
+          "rss": 228515840,
+          "heapUsed": 71554376,
+          "heapTotal": 103616512,
+          "external": 118530530,
+          "arrayBuffers": 114321264
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "R",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 48805.433,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:38:36.344Z",
+        "preset": "R",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": false,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "R"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "988441bb",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 175.79970000000003,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 271.7282773333335,
+            "p50": 269.7929000000004,
+            "p95": 288.5514000000039,
+            "p99": 302.0709999999999,
+            "max": 303.3256999999976
+          },
+          "simulationCapacityHz": 3.680146982911476,
+          "achievedHzIncludingAudit": 3.663271041533969,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0011826666668396987,
+              "p50": 0.0012999999962630682,
+              "p95": 0.0018000000000029104,
+              "p99": 0.002499999995052349,
+              "max": 0.002500000000509317
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 12.247653999999832,
+              "p50": 12.070699999996577,
+              "p95": 14.898999999997613,
+              "p99": 17.222600000000966,
+              "max": 17.50300000000425
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 178.20244599999953,
+              "p50": 177.13540000000103,
+              "p95": 189.86260000000038,
+              "p99": 203.82949999999983,
+              "max": 210.48699999999917
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 45.123072000000235,
+              "p50": 44.62119999999777,
+              "p95": 48.438200000002325,
+              "p99": 51.21220000000176,
+              "max": 53.84820000000764
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.041469333333419,
+              "p50": 4.945899999998801,
+              "p95": 5.638699999999517,
+              "p99": 7.310900000000402,
+              "max": 7.607299999999668
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.014952666666601241,
+              "p50": 0.014599999998608837,
+              "p95": 0.017899999998917338,
+              "p99": 0.020600000003469177,
+              "max": 0.02119999999558786
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.6820800000002055,
+              "p50": 0.637300000002142,
+              "p95": 0.8230000000003201,
+              "p99": 1.0394999999989523,
+              "max": 1.105199999998149
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 16.81944400000027,
+              "p50": 16.531400000001668,
+              "p95": 18.761100000003353,
+              "p99": 21.392299999999523,
+              "max": 21.924800000000687
+            },
+            "total": {
+              "samples": 150,
+              "mean": 271.72241600000007,
+              "p50": 269.78779999999824,
+              "p95": 288.5452000000005,
+              "p99": 302.065700000001,
+              "max": 303.3197
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 14827,
+          "lateralFlipsPerAgentSecond": 0.118616,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.00009999999747378752,
+            "desired": 11.433799999998882,
+            "avoidance": 175.76169999999547,
+            "contact": 44.74919999999838,
+            "density": 4.6097999999983585,
+            "queue": 0.014600000002246816,
+            "spatial": 0.6146999999982654,
+            "integration": 16.895500000005995,
+            "total": 266.8513000000021
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 1563,
+          "cacheHits": 48437,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 497540,
+          "orcaInfeasibleCount": 10647,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 263.9445999999989
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49997,
+            "waiting": 3,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 302.0709999999999
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 277.71350000000166
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 257.11139999999796
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 267.97639999999956
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 263.6270999999979
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 272.2487000000001
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 265.2144999999982
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 266.13690000000133
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 264.3029999999999
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 282.4939000000013
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 284.815499999997
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 276.1849000000002
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 280.1756000000023
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 274.63210000000254
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 266.85599999999977
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 187.0898999999763,
+        "commandMs": 0.6673000000009779,
+        "measuredWallMs": 40947.116200000004,
+        "measuredHz": 3.6632616389234265,
+        "snapshotProtocolMs": 0.35560000000259606
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 113483776,
+          "heapUsed": 33920544,
+          "heapTotal": 58990592,
+          "external": 5959355,
+          "arrayBuffers": 1412265
+        },
+        "afterInitialization": {
+          "rss": 228798464,
+          "heapUsed": 83735576,
+          "heapTotal": 110669824,
+          "external": 113267510,
+          "arrayBuffers": 109058244
+        },
+        "observedPeak": {
+          "rss": 236994560,
+          "heapUsed": 90852424,
+          "heapTotal": 112504832,
+          "external": 118580530,
+          "arrayBuffers": 114371264
+        },
+        "end": {
+          "rss": 236994560,
+          "heapUsed": 90229488,
+          "heapTotal": 112504832,
+          "external": 118580530,
+          "arrayBuffers": 114371264
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "Q",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 49150.1999,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:39:26.084Z",
+        "preset": "Q",
+        "options": {
+          "planner": "group-corridor",
+          "steering": "formation",
+          "avoidance": "orca",
+          "contact": "pbd",
+          "density": false,
+          "congestion": false,
+          "queue": true,
+          "destination": "slots",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "Q"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "988441bb",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 183.40550000000007,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 274.0886026666667,
+            "p50": 268.3809000000001,
+            "p95": 326.1376999999993,
+            "p99": 342.91619999999966,
+            "max": 351.98889999999665
+          },
+          "simulationCapacityHz": 3.6484552450221783,
+          "achievedHzIncludingAudit": 3.631655188808337,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 0.0011266666669447053,
+              "p50": 0.0010999999976775143,
+              "p95": 0.0019000000029336661,
+              "p99": 0.0022000000026309863,
+              "max": 0.0023999999975785613
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 12.194465333333198,
+              "p50": 11.709600000001956,
+              "p95": 16.454300000004878,
+              "p99": 17.10450000000128,
+              "max": 20.66479999999865
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 179.61578066666678,
+              "p50": 176.02900000000227,
+              "p95": 212.32740000000194,
+              "p99": 228.94450000000506,
+              "max": 233.03929999999673
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 45.85656000000014,
+              "p50": 44.67059999999947,
+              "p95": 54.11059999999998,
+              "p99": 58.09499999999389,
+              "max": 58.529899999994086
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.09628733333336,
+              "p50": 4.910799999997835,
+              "p95": 6.517099999999118,
+              "p99": 7.710899999998219,
+              "max": 7.986499999999069
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.01579333333337369,
+              "p50": 0.014899999994668178,
+              "p95": 0.023199999999633292,
+              "p99": 0.029499999996914994,
+              "max": 0.030899999997927807
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.686232666666389,
+              "p50": 0.6467000000011467,
+              "p95": 0.9162999999989552,
+              "p99": 1.0048999999999069,
+              "max": 1.0607999999992899
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 16.991243999999753,
+              "p50": 16.275300000001153,
+              "p95": 20.667199999996228,
+              "p99": 23.726999999998952,
+              "max": 24.967799999998533
+            },
+            "total": {
+              "samples": 150,
+              "mean": 274.0824893333333,
+              "p50": 268.375,
+              "p95": 326.1307000000015,
+              "p99": 342.90989999999874,
+              "max": 351.9804000000004
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 14827,
+          "lateralFlipsPerAgentSecond": 0.118616,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.0012000000060652383,
+            "desired": 10.343000000000757,
+            "avoidance": 178.1140000000014,
+            "contact": 46.92930000000342,
+            "density": 4.487499999995634,
+            "queue": 0.014200000005075708,
+            "spatial": 0.7229000000006636,
+            "integration": 16.54840000000695,
+            "total": 270.0278000000035
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 1563,
+          "cacheHits": 48437,
+          "fieldBuilds": 0,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 497540,
+          "orcaInfeasibleCount": 10647,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 263.02350000000115
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49997,
+            "waiting": 3,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 270.76980000000003
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 266.0653999999995
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49998,
+            "waiting": 2,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 261.5488999999998
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 268.3809000000001
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 272.2363000000005
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 257.84439999999813
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49999,
+            "waiting": 1,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 258.143799999998
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 271.76840000000084
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 261.6777000000002
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 286.33580000000075
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 262.1606000000029
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 291.39770000000135
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 286.09010000000126
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 269.6570999999967
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 270.03349999999773
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 189.59890000001167,
+        "commandMs": 0.6352000000032376,
+        "measuredWallMs": 41303.581000000006,
+        "measuredHz": 3.631646369838973,
+        "snapshotProtocolMs": 0.31739999999990687
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118472704,
+          "heapUsed": 29641160,
+          "heapTotal": 59514880,
+          "external": 5630591,
+          "arrayBuffers": 1146333
+        },
+        "afterInitialization": {
+          "rss": 230285312,
+          "heapUsed": 91673240,
+          "heapTotal": 111992832,
+          "external": 113267510,
+          "arrayBuffers": 109058244
+        },
+        "observedPeak": {
+          "rss": 230285312,
+          "heapUsed": 91673240,
+          "heapTotal": 111992832,
+          "external": 113267510,
+          "arrayBuffers": 109058244
+        },
+        "end": {
+          "rss": 215728128,
+          "heapUsed": 48913432,
+          "heapTotal": 78438400,
+          "external": 109930530,
+          "arrayBuffers": 105721264
+        }
+      }
+    },
+    {
+      "case": {
+        "preset": "D",
+        "scenario": "open-field",
+        "agents": 50000
+      },
+      "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+      "setupCommands": [],
+      "status": "completed",
+      "elapsedWallMs": 40000.973300000005,
+      "result": {
+        "schema": "crowd-lab-result-v1",
+        "createdAt": "2026-09-20T08:40:06.666Z",
+        "preset": "D",
+        "options": {
+          "planner": "shared-flow",
+          "steering": "seek",
+          "avoidance": "separation",
+          "contact": "pbd",
+          "density": true,
+          "congestion": true,
+          "queue": true,
+          "destination": "exit",
+          "maxNeighbors": 12,
+          "contactIterations": 4,
+          "timeHorizon": 1.5,
+          "groupSize": 32
+        },
+        "config": {
+          "width": 8485.28137423857,
+          "height": 5091.168824543142,
+          "navCellSize": 24,
+          "crowdFieldCellSize": 24,
+          "contactCellSize": 24,
+          "agentCount": 50000,
+          "seed": 42,
+          "maxSpeed": 86,
+          "maxAcceleration": 210,
+          "agentRadius": 3.2,
+          "largeAgentPercent": 0,
+          "largeAgentScale": 2,
+          "neighborRadius": 28,
+          "agentGap": 0.4,
+          "wallMargin": 0.35,
+          "crowdPressureRelaxationTime": 0.25,
+          "goalRadius": 58,
+          "fixedDelta": 0.016666666666666666,
+          "arrivalSlowRadius": 90,
+          "stallSeconds": 2.5,
+          "crowdPressureIterations": 8,
+          "pressureThreshold": 12,
+          "crowdVelocityBlend": 0.68,
+          "contactCompliance": 0.00001,
+          "contactFriction": 0.08,
+          "maximumContactCorrection": 1.25,
+          "dynamicRouting": false,
+          "dynamicFlowRebuildInterval": 8,
+          "dynamicFlowTargetDensity": 0.75,
+          "dynamicFlowDensityWeight": 72,
+          "dynamicFlowOverloadWeight": 0.35,
+          "dynamicFlowCounterFlowWeight": 2.5,
+          "dynamicFlowWallWeight": 0.15,
+          "dynamicFlowCostSmoothing": 0.35,
+          "dynamicFlowDirectionHysteresis": 0.2,
+          "directGoalLowDensity": 0.15,
+          "directGoalCounterFlow": 0.1,
+          "directGoalMinimumClearance": 36,
+          "preset": "D"
+        },
+        "scenario": {
+          "id": "open-field",
+          "name": "Open Field",
+          "description": "장애물 없는 넓은 공간에서 기본 군집 흐름을 확인합니다.",
+          "goal": {
+            "x": 7636.753236814713,
+            "y": 2545.584412271571
+          },
+          "obstacles": [],
+          "spawn": {
+            "x": 494.9747468305833,
+            "y": 636.3961030678928,
+            "width": 2333.452377915607,
+            "height": 3818.3766184073565
+          }
+        },
+        "commands": [],
+        "seed": 42,
+        "step": 180,
+        "hash": "d0388fb2",
+        "requested": 50000,
+        "spawned": 50000,
+        "unspawned": 0,
+        "active": 50000,
+        "activeAtFirstSample": 50000,
+        "activeMinimum": 50000,
+        "activeMaximum": 50000,
+        "moving": 50000,
+        "waiting": 0,
+        "arrived": 0,
+        "contactActive": 0,
+        "arrivalRate": 0,
+        "timing": {
+          "initMs": 184.29409999999996,
+          "warmupSteps": 30,
+          "measuredSteps": 150,
+          "stepMs": {
+            "samples": 150,
+            "mean": 221.0170606666667,
+            "p50": 220.82810000000245,
+            "p95": 273.8862999999983,
+            "p99": 303.3004000000001,
+            "max": 330.8230999999996
+          },
+          "simulationCapacityHz": 4.524537594444706,
+          "achievedHzIncludingAudit": 4.500226937444,
+          "frameIntervalMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "renderMs": {
+            "samples": 0,
+            "mean": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0
+          },
+          "passes": {
+            "navigation": {
+              "samples": 150,
+              "mean": 6.47857733333336,
+              "p50": 0.0010000000002037268,
+              "p95": 51.81290000000081,
+              "p99": 63.92870000000039,
+              "max": 65.74049999999988
+            },
+            "desired": {
+              "samples": 150,
+              "mean": 12.405797999999947,
+              "p50": 12.090899999999237,
+              "p95": 17.981900000000678,
+              "p99": 20.16660000000047,
+              "max": 21.770800000000236
+            },
+            "avoidance": {
+              "samples": 150,
+              "mean": 124.46545133333328,
+              "p50": 125.65079999999944,
+              "p95": 145.6261999999988,
+              "p99": 154.8664000000008,
+              "max": 156.13810000000012
+            },
+            "contact": {
+              "samples": 150,
+              "mean": 44.992627999999954,
+              "p50": 45.648699999997916,
+              "p95": 53.48620000000119,
+              "p99": 56.40559999999823,
+              "max": 59.29369999999835
+            },
+            "density": {
+              "samples": 150,
+              "mean": 5.674060000000136,
+              "p50": 5.527000000001863,
+              "p95": 7.481599999999162,
+              "p99": 8.112699999997858,
+              "max": 9.607200000000375
+            },
+            "queue": {
+              "samples": 150,
+              "mean": 0.015563333333545112,
+              "p50": 0.01479999999719439,
+              "p95": 0.02380000000266591,
+              "p99": 0.027099999999336433,
+              "max": 0.027399999999033753
+            },
+            "spatial": {
+              "samples": 150,
+              "mean": 0.7982333333333675,
+              "p50": 0.7049000000006345,
+              "p95": 1.0735999999997148,
+              "p99": 1.2214999999996508,
+              "max": 7.686299999999392
+            },
+            "integration": {
+              "samples": 150,
+              "mean": 17.73782666666666,
+              "p50": 17.675499999997555,
+              "p95": 21.445400000000518,
+              "p99": 22.613499999999476,
+              "max": 23.32049999999981
+            },
+            "total": {
+              "samples": 150,
+              "mean": 221.00928466666622,
+              "p50": 220.8214999999982,
+              "p95": 273.8780000000006,
+              "p99": 303.29469999999856,
+              "max": 330.8166000000001
+            }
+          }
+        },
+        "memory": null,
+        "quality": {
+          "auditEverySteps": 0,
+          "auditedSteps": 0,
+          "auditMs": 0,
+          "coverage": "Quality audit disabled; runtime overlap diagnostics are solver-dependent.",
+          "maximumOverlapPairs": null,
+          "maximumPenetration": null,
+          "maximumSweptPenetration": null,
+          "tunnelingPairs": null,
+          "maximumWallCount": 0,
+          "stalledMax": 0,
+          "stalledLabel": "Low-speed duration proxy; includes legitimate queues, not certified deadlock.",
+          "lateralSignFlips": 36026,
+          "lateralFlipsPerAgentSecond": 0.288208,
+          "gateCrossings": {},
+          "gateAgentsPerSecond": {}
+        },
+        "stats": {
+          "passMs": {
+            "navigation": 0.000800000001618173,
+            "desired": 9.10620000000199,
+            "avoidance": 105.82949999999983,
+            "contact": 40.24500000000262,
+            "density": 4.576399999998102,
+            "queue": 0.013500000000931323,
+            "spatial": 0.5841000000000349,
+            "integration": 14.795899999997346,
+            "total": 181.82249999999476
+          },
+          "activeCount": 50000,
+          "movingCount": 50000,
+          "waitingCount": 0,
+          "arrivedCount": 0,
+          "contactActiveCount": 0,
+          "pathRequests": 0,
+          "cacheHits": 49999,
+          "fieldBuilds": 24,
+          "queuePassed": 0,
+          "replans": 0,
+          "directionFlips": 0,
+          "neighborTruncations": 377202,
+          "orcaInfeasibleCount": 0,
+          "invalidStaticStarts": 0,
+          "unavailableSlots": 0,
+          "terrainVersion": 0,
+          "substeps": 1
+        },
+        "ticks": [
+          {
+            "step": 31,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 49987,
+            "waiting": 13,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.3036000000002
+          },
+          {
+            "step": 40,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 244.6916000000001
+          },
+          {
+            "step": 50,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 199.27500000000146
+          },
+          {
+            "step": 60,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 240.34490000000005
+          },
+          {
+            "step": 70,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 231.46980000000258
+          },
+          {
+            "step": 80,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 234.0671000000002
+          },
+          {
+            "step": 90,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 190.31820000000153
+          },
+          {
+            "step": 100,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 210.42369999999937
+          },
+          {
+            "step": 110,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 226.40160000000105
+          },
+          {
+            "step": 120,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 214.39910000000236
+          },
+          {
+            "step": 130,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 225.25020000000222
+          },
+          {
+            "step": 140,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 183.13910000000033
+          },
+          {
+            "step": 150,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 185.88590000000113
+          },
+          {
+            "step": 160,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 185.3454999999958
+          },
+          {
+            "step": 170,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 182.73830000000453
+          },
+          {
+            "step": 180,
+            "requested": 50000,
+            "spawned": 50000,
+            "active": 50000,
+            "moving": 50000,
+            "waiting": 0,
+            "arrived": 0,
+            "contactActive": 0,
+            "stepMs": 181.82909999999538
+          }
+        ]
+      },
+      "instrumentation": {
+        "observerMs": 178.3067999999871,
+        "commandMs": 0.7943999999894231,
+        "measuredWallMs": 33331.77,
+        "measuredHz": 4.500211059898709,
+        "snapshotProtocolMs": 0.3333000000038737
+      },
+      "processMemory": {
+        "scope": "Node child process, including Vite transform/runtime and all simulation buffers; sampled every 10 ticks, not true peak or solver-only allocation.",
+        "beforeInitialization": {
+          "rss": 118272000,
+          "heapUsed": 29670864,
+          "heapTotal": 59514880,
+          "external": 5647175,
+          "arrayBuffers": 1162917
+        },
+        "afterInitialization": {
+          "rss": 218730496,
+          "heapUsed": 76896504,
+          "heapTotal": 102305792,
+          "external": 113217510,
+          "arrayBuffers": 109008244
+        },
+        "observedPeak": {
+          "rss": 240291840,
+          "heapUsed": 89771064,
+          "heapTotal": 116985856,
+          "external": 118522338,
+          "arrayBuffers": 114313072
+        },
+        "end": {
+          "rss": 226291712,
+          "heapUsed": 59283776,
+          "heapTotal": 91021312,
+          "external": 109930530,
+          "arrayBuffers": 105721264
+        }
+      }
+    }
+  ],
+  "sourceChangedDuringRun": true,
+  "executionSourceChangedDuringRun": true,
+  "sourceAfter": {
+    "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+    "sourceSha256": "9d65060a73dbc32e50e7edd1f450a16088a503398dd91aaaf678221f873cb67b",
+    "executionSourceSha256": "2e581a336a7961f4dde179f28499a9f2b1cc43688085bdb4cc8361a9bd30559c",
+    "files": {
+      "package-lock.json": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f",
+      "package.json": "2bf3bcf205ce3babefdfb0bec3bd690ff64e19d88513e8d88a0c8340a35b376f",
+      "scripts/measure-lab.ts": "a90cae82dc9fe84b05efb19af4a0b3edb7874a1d1a6e9a67fb27650dc7d459cc",
+      "src/algorithms/flow-field/flow-field.ts": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842",
+      "src/algorithms/lab-motion/local-motion.ts": "b51d1b59c330fbb9b1ed1e632d433b9b6049beb6d9b8cbd575fc037bad291e9f",
+      "src/algorithms/lab-motion/orca.ts": "0e8b4d1f7b30ae14ce80f8963024c8966e489a082b6eaa75e0ea276baef00323",
+      "src/algorithms/lab/contracts.ts": "bb1f91ac23fe857ad08f0bb342bf7691511d05521699fe050ecf1a9019c2d049",
+      "src/algorithms/lab/grid-astar.ts": "9a0c9786bdc53f245830c9b914459b5a89dcb053135078ed6da6909d0469ab63",
+      "src/algorithms/lab/pipeline.ts": "3cbe33fd025e9cac9f6d86010372a43825b3096c5c9aaa47115f58399e998b30",
+      "src/algorithms/lab/registry.ts": "371b1002ff3d7f541f930d7acad680d8e84430af1639e2a4249389468064bcc0",
+      "src/algorithms/lab/traffic.ts": "c41e50fc6f5343d5e6573e3a3c301e1ae908f611cb270f49ed07bdbed4e051a6",
+      "src/algorithms/spatial-hash/spatial-hash.ts": "fa4b48f59230703f230ca4461587df8b5f79d0b64add0127cb779e548ae77beb",
+      "src/core/agent-size.ts": "4dca25ed568c364f4c90906adff5013adf5566cafaf0b7992ebdcf0d0d1a2d0f",
+      "src/core/agent-state.ts": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2",
+      "src/core/crowd-continuity-metrics.ts": "d97812599355e261aa149b160836d104b1918afcd1f75c615b870c85930ea6ba",
+      "src/core/crowd-field.ts": "d845c20d052ced07e2382452c3743bbac9225243187ba6441f5e87fe55cce5dc",
+      "src/core/crowd-flow-solver.ts": "8ca2b3e4b6556b7e08d528c320e5683f01596ba28f27d756c54ba2e8f69bfc5c",
+      "src/core/crowd-movement-solver.ts": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930",
+      "src/core/crowd-quality-metrics.ts": "a41e411ea03215630ee61504e94f28760ffc62e73b3e61e4299dc47bdf71e4f2",
+      "src/core/fixed-clock.ts": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870",
+      "src/core/flow-behavior-metrics.ts": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f",
+      "src/core/lab-results.ts": "1b08f3c2e63878d085644f65c21ff0887dd16d7d33976a5324319d49aa173625",
+      "src/core/math.ts": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6",
+      "src/core/metrics.ts": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb",
+      "src/core/obstacle-collision.ts": "770d2a963de351668c65d77708652078172b59fa2b7a0797a60c41eadf56adda",
+      "src/core/random.ts": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98",
+      "src/core/simulation.ts": "f4ceebf330a52fbc3e3dd9f6055cd4d8a120bf6c0a83ada8d7c52b7aced896cc",
+      "src/core/spawn-layout.ts": "ea6313a5c115ec8f5129e62c251a5025c7fca559acf8a0d9b863e719c79e026b",
+      "src/core/types.ts": "617f65f0f4778f42bc9975763a66572623f87af0b8a8fdc1e6168207176c8c4e",
+      "src/editor/map-document.ts": "5975174e5ce85162062634db232a34a1d94c16c1e8097817cd6433ca7da0577b",
+      "src/editor/map-editor.ts": "545d92d77ea7ba90437db3e8edca21962d55d57da86c19d1da9485a3aba555b3",
+      "src/main.ts": "27c152f58fe61ecb981e7f173b7598752d72d0bd0dcc1fa1e4da80c8273a27aa",
+      "src/rendering/canvas-renderer.ts": "4879a237935e39506991193eb1e42e236621c4b79fde74a26dca8c880e8c312c",
+      "src/rendering/debug-drawing.ts": "28005e34d0937b0c5113a2858aeb24082e73a766b1b0288889ea87ab50d8b47c",
+      "src/scenarios/lab-scenarios.ts": "d3c3fcd59358ae7c08d3fb44e929a64f5b349895248eef667b11c403000be046",
+      "src/scenarios/scenarios.ts": "71fc6c9ceb5412289f5a8d442eb297e2b09129f1e1683be3fa5814c15d34ed9d",
+      "src/ui/lab-panel.ts": "f89966a7b86373b28228ec636edcbef1bb3fb00000f2f4470c482564e3569e84",
+      "src/ui/styles.css": "66c7d41264f29af9376e59d63af75761d7b45b2a356259136fae7716e89eaa6f",
+      "src/ui/template.ts": "e22cba113f89a58645d136a5662b1a7c2b9e92bb435679b5d1fe2e8a4dffa357"
+    }
+  }
+}

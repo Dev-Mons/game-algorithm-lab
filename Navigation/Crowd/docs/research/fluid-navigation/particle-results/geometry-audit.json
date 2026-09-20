@@ -1,0 +1,229 @@
+{
+  "note": "Independent raster-resolution check of recorded world coordinates. Replay coordinates round to 1e-6 d; runtime geometry uses Float64.",
+  "records": [
+    {
+      "file": "hole-42-off.json",
+      "target": 8,
+      "coarseRecovery": 0,
+      "fineRecovery": 0,
+      "difference": 0,
+      "passed": true,
+      "coarse": [
+        {
+          "voidArea": 20.75,
+          "largestVoidArea": 20.75,
+          "maxEmptyRadius": 2.090505961098139,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        },
+        {
+          "voidArea": 20.75,
+          "largestVoidArea": 20.75,
+          "maxEmptyRadius": 2.0905059610980845,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        }
+      ],
+      "fine": [
+        {
+          "voidArea": 20.53125,
+          "largestVoidArea": 20.53125,
+          "maxEmptyRadius": 2.0861310096783576,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        },
+        {
+          "voidArea": 20.53125,
+          "largestVoidArea": 20.53125,
+          "maxEmptyRadius": 2.086131009678444,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        }
+      ]
+    },
+    {
+      "file": "hole-42-on.json",
+      "target": 8,
+      "coarseRecovery": 0.9307228915662651,
+      "fineRecovery": 0.8896499238964992,
+      "difference": 0.04107296766976587,
+      "passed": true,
+      "coarse": [
+        {
+          "voidArea": 20.75,
+          "largestVoidArea": 20.75,
+          "maxEmptyRadius": 2.090505961098139,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        },
+        {
+          "voidArea": 1.4375,
+          "largestVoidArea": 1.4375,
+          "maxEmptyRadius": 0.5244147681172908,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 8.594658691407631e-7
+        }
+      ],
+      "fine": [
+        {
+          "voidArea": 20.53125,
+          "largestVoidArea": 20.53125,
+          "maxEmptyRadius": 2.0861310096783576,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 0
+        },
+        {
+          "voidArea": 2.265625,
+          "largestVoidArea": 2.265625,
+          "maxEmptyRadius": 0.5544176263630303,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 372.2787294503936,
+          "penetration": 8.594658691407631e-7
+        }
+      ]
+    },
+    {
+      "file": "crack-42-off.json",
+      "target": 10,
+      "coarseRecovery": 0,
+      "fineRecovery": 0,
+      "difference": 0,
+      "passed": true,
+      "coarse": [
+        {
+          "voidArea": 23.8125,
+          "largestVoidArea": 23.8125,
+          "maxEmptyRadius": 1.1627210478592012,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        },
+        {
+          "voidArea": 23.8125,
+          "largestVoidArea": 23.8125,
+          "maxEmptyRadius": 1.1627210478588343,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        }
+      ],
+      "fine": [
+        {
+          "voidArea": 22.890625,
+          "largestVoidArea": 22.890625,
+          "maxEmptyRadius": 1.20617343285904,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        },
+        {
+          "voidArea": 22.890625,
+          "largestVoidArea": 22.890625,
+          "maxEmptyRadius": 1.2061734328586682,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        }
+      ]
+    },
+    {
+      "file": "crack-42-on.json",
+      "target": 10,
+      "coarseRecovery": 1,
+      "fineRecovery": 1,
+      "difference": 0,
+      "passed": true,
+      "coarse": [
+        {
+          "voidArea": 23.8125,
+          "largestVoidArea": 23.8125,
+          "maxEmptyRadius": 1.1627210478592012,
+          "voidCount": 1,
+          "footprintArea": 538,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        },
+        {
+          "voidArea": 0,
+          "largestVoidArea": 0,
+          "maxEmptyRadius": 0,
+          "voidCount": 0,
+          "footprintArea": 541.875,
+          "extentX": 23.474142,
+          "extentY": 23.822403,
+          "mass": 370.70793312359865,
+          "penetration": 5.171636305867366e-7
+        }
+      ],
+      "fine": [
+        {
+          "voidArea": 22.890625,
+          "largestVoidArea": 22.890625,
+          "maxEmptyRadius": 1.20617343285904,
+          "voidCount": 1,
+          "footprintArea": 534.46875,
+          "extentX": 23.474142,
+          "extentY": 23.382855999999997,
+          "mass": 370.70793312359865,
+          "penetration": 0
+        },
+        {
+          "voidArea": 0,
+          "largestVoidArea": 0,
+          "maxEmptyRadius": 0,
+          "voidCount": 0,
+          "footprintArea": 542.1875,
+          "extentX": 23.474142,
+          "extentY": 23.822403,
+          "mass": 370.70793312359865,
+          "penetration": 5.171636305867366e-7
+        }
+      ]
+    }
+  ]
+}

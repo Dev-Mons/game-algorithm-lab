@@ -3,3 +3,4 @@ dist/
 test-results/
 playwright-report/
 *.tsbuildinfo
+docs/research/fluid-navigation/particle-dev/

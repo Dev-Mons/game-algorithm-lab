@@ -82,7 +82,7 @@ describe('mixed body sizes', () => {
     simulation.state.x.set([300, 309]);
     simulation.state.y.set([300, 300]);
     simulation.step();
-    expect(simulation.metrics.contactConstraints).toBe(1);
+    expect(simulation.metrics.contactConstraints).toBe(simulation.metrics.constraintIterations);
     for (let step = 0; step < 10; step++) simulation.step();
     expect(Math.hypot(simulation.state.x[0]! - simulation.state.x[1]!,
       simulation.state.y[0]! - simulation.state.y[1]!)).toBeGreaterThan(9.59);
@@ -105,7 +105,8 @@ describe('mixed body sizes', () => {
         replay.step();
         expect(simulation.metrics.wallOverlapCount).toBe(0);
         expect(simulation.metrics.candidateChecks).toBeLessThanOrEqual(simulation.state.count * 24);
-        expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(simulation.state.count * 8);
+        expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(
+          simulation.state.count * 8 * simulation.metrics.constraintIterations);
         if (step % 60 === 0) assertStaticSafety(simulation);
       }
       let largeMoved = 0;

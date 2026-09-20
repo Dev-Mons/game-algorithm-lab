@@ -1,0 +1,147 @@
+{
+  "note": "Captured after measurement; product source was not edited during this research. Existing uncommitted changes are included in these file hashes.",
+  "capturedUtc": "2026-09-20T07:19:30.9684145Z",
+  "head": "0a064ece9818d48cead70f9b3f58feee409a462e",
+  "files": [
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/field_probe.py",
+      "sha256": "2d71eecc5a361b947dd3a027786f59d2157c77bbd4d87f5f419ab42530db67c4"
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/protocol.md",
+      "sha256": "f7fbe840cb7d7948bf55c5001fb05b2665af64c2e946de3840cd957cf37997d2"
+    },
+    {
+      "path": "Navigation/Crowd/experiments/fluid-navigation/requirements.txt",
+      "sha256": "562ba45575d0d49315d872b37e9aabde522dc5ed9aa18e3cb1e2892b3b09d404"
+    },
+    {
+      "path": "Navigation/Crowd/package-lock.json",
+      "sha256": "d9b7e14a1ff62d172c0d6f074b76fc8d726618f40a8ab25632a641e00b85319f"
+    },
+    {
+      "path": "Navigation/Crowd/package.json",
+      "sha256": "e2269472865236b4ebe0934cc2623cecf56970866cd38ee457720a925a675771"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure-flow-behavior.ts",
+      "sha256": "855d87aeb40fde24f489995eeaae925c36e7d6faa870abd910f5d78a04e8ecf2"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure-fluid.ts",
+      "sha256": "b04d20fde656de70b9dcea618f1e06de330e4dbab134e31928d42405e20dda71"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure-quality.ts",
+      "sha256": "5feb4f514c3a51b5472af248835ef0dd9b3b0c4359558e43f0d45d372fd57611"
+    },
+    {
+      "path": "Navigation/Crowd/scripts/measure.ts",
+      "sha256": "c286d21d6993eb71b2fd0ad96f44bbcf7b275d2b7ed3b7ed9153464c2d199626"
+    },
+    {
+      "path": "Navigation/Crowd/src/algorithms/flow-field/flow-field.ts",
+      "sha256": "d613ce37419253654c117472ee58608666717500b7cd81ac936907630fd04842"
+    },
+    {
+      "path": "Navigation/Crowd/src/algorithms/spatial-hash/spatial-hash.ts",
+      "sha256": "c24d226791ca53cf667a15f34bcffa3e23c33cd834a781570f67bf6909c7dd35"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/agent-size.ts",
+      "sha256": "d19865ee56191cb74daba905a88daf8b5189ff3db27a4a019c73a24ec7eb0716"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/agent-state.ts",
+      "sha256": "c8d5150c95fc17a25e4dce1f3e5bef5baaf8fa09010b8494f42741f01a5689c2"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-continuity-metrics.ts",
+      "sha256": "77ac74d03c820051242155f454f065acdb33259666b71113e2b38647de36f652"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-field.ts",
+      "sha256": "32cf53ba2ba29c05593f84e453861cc9fa118bb533a0dcc3ac437beb21e14736"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-flow-solver.ts",
+      "sha256": "19e3c27f26748473684f3af2e9a0146be860739860ca1c38722d39d2c6592eca"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-movement-solver.ts",
+      "sha256": "4fd41130acd2809a59960a41dd834394517646c629687ef10353f27f5f5a5930"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/crowd-quality-metrics.ts",
+      "sha256": "775100df23ab23e8c375c932972c92be60c12881cc7d08b40a5358b03a7e9f18"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/fixed-clock.ts",
+      "sha256": "6fa0edc5c10a3e7a17004d9ff23dd14f009a1c7c6af360154a6db2933c6dc870"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/flow-behavior-metrics.ts",
+      "sha256": "a88716d2c78889e35727aeba8a1427d9333a322b8ebb10ef0e6f0f721e5c105f"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/math.ts",
+      "sha256": "c58939666b5a73d7c69d551181d64aa7131a594d1a8f2248f36bd5b3e0f5a3f6"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/metrics.ts",
+      "sha256": "3d3111b145e24da0046d3c9684ef76be956abfca0ae3594718a87d3da2e9c5eb"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/obstacle-collision.ts",
+      "sha256": "1549b76e17327e619d5dcc439ace3df2f7a1f1af354866658be6463bd9456e77"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/random.ts",
+      "sha256": "8a49fd474bb9c2a33e7622ef2f86003c0161fcffc081a727ca1ddac692b10e98"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/simulation.ts",
+      "sha256": "bfd6d9df9df7dd61f872f7989f9faba3370e45d6647a196e26097a75707ded82"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/spawn-layout.ts",
+      "sha256": "e7d05dfb0a4e3ca6523b239bc88350ae345bedfd78fd8855404612cb6d680dd9"
+    },
+    {
+      "path": "Navigation/Crowd/src/core/types.ts",
+      "sha256": "919b6daf89f0b20ad780239f647ba073de350c0ce859f81c7fe68b84d3575a37"
+    },
+    {
+      "path": "Navigation/Crowd/src/editor/map-document.ts",
+      "sha256": "421bd936ed21c02557be9a57db48792da85e056ca17ecb55814abe7e92d2b111"
+    },
+    {
+      "path": "Navigation/Crowd/src/editor/map-editor.ts",
+      "sha256": "a20785e23ae1cecb1c52540b986989666f46da2da8706bc09d4632883531f4d2"
+    },
+    {
+      "path": "Navigation/Crowd/src/main.ts",
+      "sha256": "b0ac31755e5480bbbcf004f389c7059c438654ebd19c6e0f92003b400b231339"
+    },
+    {
+      "path": "Navigation/Crowd/src/rendering/canvas-renderer.ts",
+      "sha256": "b9dc43390ecc31ef0a28f8a377a899e6af887de03a8b15259669b7840b352e50"
+    },
+    {
+      "path": "Navigation/Crowd/src/rendering/debug-drawing.ts",
+      "sha256": "ae70967e8fa4a0fb4f5148618b759274c07d67a937fe30a4f1e0d83983cdf823"
+    },
+    {
+      "path": "Navigation/Crowd/src/scenarios/scenarios.ts",
+      "sha256": "2f5ead3743dd4e993d1bbabbaa1a1124372062dcf6b3bf9905c00407010a91d0"
+    },
+    {
+      "path": "Navigation/Crowd/src/ui/styles.css",
+      "sha256": "9f3739ac6979569ac9163bef1ea9742ee259ec57c1e5b8a6efee6939f5504feb"
+    },
+    {
+      "path": "Navigation/Crowd/src/ui/template.ts",
+      "sha256": "c7420fda70d87a2197b1e02b8267663f0beb9c440a11436f23b1548a45aee5bd"
+    }
+  ]
+}
