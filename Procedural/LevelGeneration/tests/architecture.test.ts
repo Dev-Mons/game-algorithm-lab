@@ -184,7 +184,7 @@ it("region policy is deterministic under permutations and translations, and save
     ]),
   );
   const input = createDocument(grid, 42, "office");
-  expect(input.schemaVersion).toBe(5);
+  expect(input.schemaVersion).toBe(6);
   expect(input.algorithmVersion).toBe("environment-plans-v1");
   const loaded = loadDocument(exportDocument(input));
   expect(

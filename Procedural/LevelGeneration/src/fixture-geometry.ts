@@ -16,7 +16,13 @@ export function buildFixtureGeometry(id:FixturePrototypeId):THREE.BufferGeometry
   else if(id==='raised-barrier-post'){box(0,4,0,4,8,4);box(0,12,0,1,8,1);box(0,9,1,2,1,1);}
   else if(id.startsWith('lamp-')){const h=descriptor.size16[1];cylinder(0,(h-3)/2,0,.65,h-3);box(0,h-2,0,4,2,4);box(0,h-.5,0,3,1,3);}
   else if(id==='utility-cabinet'){box(0,6,0,12,12,11.5);box(3,6,5.9,.5,2,.2);for(let y=2;y<10;y+=2)box(-2,y,5.9,5,.3,.2);}
-  else if(id==='air-conditioner'){box(0,4,0,12,8,11.5);for(let x=-4;x<=4;x+=2)box(x,4,5.9,.5,6,.2);}
+  else if(id==='air-conditioner'){
+    box(0,3.7,0,12,7.4,11.5);
+    for(let x=-4;x<=4;x+=2)box(x,3.7,5.9,.5,6,.2);
+    // Rooftop condenser fan/rim observed in CityRenderLab; stays within 8/16 height.
+    parts.push(new THREE.TorusGeometry(3,.18,6,20).rotateX(Math.PI/2).translate(0,7.65,0));
+    for(const z of [-2,-1,0,1,2])box(0,7.65,z,2*Math.sqrt(9-z*z),.15,.2);
+  }
   else if(id==='water-tank'){cylinder(0,13,0,6,22);for(const x of [-4,4])box(x,1,0,1,2,4);}
   else if(id==='wall-lamp'){box(0,3,-.75,4,6,.5);box(0,3,.25,3,4,1.5);}
   const merged=mergeGeometries(parts,false);parts.forEach(p=>p.dispose());if(!merged)throw new Error('FIXTURE_GEOMETRY_BUILD_FAILED');

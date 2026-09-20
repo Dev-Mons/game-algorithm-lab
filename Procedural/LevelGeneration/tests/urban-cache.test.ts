@@ -1,5 +1,6 @@
 import {expect,it} from 'vitest';
-import {createDocument,replaceGrid,replaceSceneInputs} from '../src/core/document';
+import {replaceGrid,replaceSceneInputs} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {EnvironmentCache} from '../src/core/environment-cache';
 import {emptySceneInputs} from '../src/core/scene-inputs';
@@ -11,7 +12,7 @@ it('32³ urban plans do not evict document/analysis for irrelevant panel-templat
 },15000);
 it('template reuse retains palette, row, geometry and approved constraint dependency correctness',()=>{
   const cache=new EnvironmentCache(),doc=createDocument(box(8,10,4),17,'urban-office');generateDocument(doc,{cache});
-  const palette=structuredClone(doc);palette.buildings[0].design.overrides={palette:'sage',familyId:'bay-4'};
+  const palette=structuredClone(doc);palette.seed=43;
   const cut=replaceGrid(palette,palette.grid.filter(c=>c.join(',')!=='4,5,3'));
   const facility=replaceSceneInputs(cut,{...emptySceneInputs(),objects:[{id:'attachment',category:'facility',facilityKind:'balcony',facadeRequest:'solid',direction:'PZ',cells:[[2,2,4]]}]});
   for(const input of [palette,cut,facility,doc])expect(generateDocument(input,{cache})).toEqual(generateDocument(input,{cache:false}));

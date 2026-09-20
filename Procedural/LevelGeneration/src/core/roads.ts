@@ -47,22 +47,41 @@ export function roadPlacements(cells: Vec3[]): ScenePlacement[] {
   return analyzeRoads(cells).flatMap(m=>{
     const [x,,z]=m.origin,[w,,d]=m.size, center:Vec3=[x+w/2,.04,z+d/2];
     const make=(asset:string,at:Vec3,size:Vec3,color:string):ScenePlacement=>({id:`${m.id}:${asset}`,kind:"road",asset,center:at,size,color,context:`${m.width}-lane:${m.ports.join(",")}`});
-    const result=[make(`road.${m.shape}.${m.width}-lane`,center,m.size,"#46515a")];
+    const result=[make(`road.${m.shape}.${m.width}-lane`,center,m.size,"#4d514e")];
     const horizontal=m.ports.includes("east")||m.ports.includes("west")||w>d;
     if(m.shape === "straight" || m.shape === "end") {
       const span=horizontal?d:w;
-      for(let lane=1;lane<span;lane++) result.push(make(`lane-${lane}`,horizontal?[center[0],.087,z+lane]:[x+lane,.087,center[2]],horizontal?[w*.85,.012,.045]:[.045,.012,d*.85],lane===span/2?"#e5c46c":"#dde2df"));
+      for(let lane=1;lane<span;lane++){
+        const length=horizontal?w:d;
+        // World-cell cadence stays continuous across module boundaries.
+        for(let dash=0;dash<length;dash++)result.push(make(`lane-${lane}-dash-${dash}`,
+          horizontal?[x+dash+.5,.087,z+lane]:[x+lane,.087,z+dash+.5],
+          horizontal?[.58,.012,.04]:[.04,.012,.58],lane===span/2?'#c5aa6f':'#c9c8b8'));
+      }
     } else {
       // Junction markings stop inside the junction; corner ports form an L.
       for(const port of m.ports) {
         const h=port === "east"||port === "west", positive=port === "east"||port === "north";
-        const at:Vec3=[center[0]+(h?(positive?1:-1)*w/4:0),.087,center[2]+(!h?(positive?1:-1)*d/4:0)];
-        result.push(make(`junction-${port}`,at,h?[w/2,.012,.045]:[.045,.012,d/2],"#e5c46c"));
+        const crossing=m.width>=2&&(m.shape==='tee'||m.shape==='cross');
+        const length=Math.max(.1,(h?w:d)/2-(crossing?.8:0));
+        const at:Vec3=[center[0]+(h?(positive?1:-1)*length/2:0),.087,center[2]+(!h?(positive?1:-1)*length/2:0)];
+        result.push(make(`junction-${port}`,at,h?[length,.012,.045]:[.045,.012,length],"#c5aa6f"));
+        if(m.width>=2&&(m.shape==='tee'||m.shape==='cross')){
+          const span=h?d:w, edge=h?(positive?x+w:x):(positive?z+d:z);
+          const inward=positive?-1:1;
+          for(let stripe=0;stripe<Math.floor((span-.4)/.28);stripe++){
+            const across=(h?z:x)+.28+stripe*.28;
+            result.push(make(`crosswalk-${port}-${stripe}`,h?[edge+inward*.3,.098,across]:[across,.098,edge+inward*.3],
+              h?[.36,.012,.14]:[.14,.012,.36],'#c9c8b8'));
+          }
+          result.push(make(`stop-${port}`,h?[edge+inward*.6,.099,center[2]]:[center[0],.099,edge+inward*.6],
+            h?[.045,.012,span-.4]:[span-.4,.012,.045],'#c9c8b8'));
+        }
       }
     }
     for(const [side] of sides) if(!m.ports.includes(side)) {
       const h=side === "east"||side === "west";
-      result.push(make(`edge-${side}`,h?[side==="east"?x+w-.04:x+.04,.088,center[2]]:[center[0],.088,side==="north"?z+d-.04:z+.04],h?[.04,.014,d]:[w,.014,.04],"#d3d7d2"));
+      result.push(make(`edge-${side}`,h?[side==="east"?x+w-.04:x+.04,.088,center[2]]:[center[0],.088,side==="north"?z+d-.04:z+.04],h?[.08,.04,d]:[w,.04,.08],"#96988b"));
     }
     return result;
   });

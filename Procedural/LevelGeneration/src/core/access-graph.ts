@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {add,cellId,compareCells,type Vec3} from './analysis';
 import type {VolumeAnalysis} from './regions';
 import type {GenerationDocument} from './document';
@@ -36,7 +37,7 @@ export function buildAccessGraph(document:GenerationDocument,analysis:VolumeAnal
   for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++)addNode([x,0,z],'ground');
   for(const face of analysis.surfaces)if(face.direction==='PY')addNode(add(face.cell,[0,1,0]),'roof',face.componentId);
   result.counters.nodeCandidates=candidates.size;
-  const settings=document.environment.access;
+  const settings=ENVIRONMENT.access;
   for(const node of [...candidates.values()].sort((a,b)=>compareCells(a.foot,b.foot)))if(!road.has(node.id)&&!solid.query(bodyBox16(node.foot,settings)).length)result.walkNodes.push(node);
   const nodes=new Map(result.walkNodes.map(n=>[n.id,n]));
   for(const node of result.walkNodes)for(let h=0;h<4;h++){
@@ -63,7 +64,7 @@ export class AccessSearch {
   readonly counters={nodeVisits:0,edgeChecks:0};private publicWalk?:Vec3[];
   get publicWalkCells(){return this.publicWalk??=this.book.snapshot().filter(r=>r.kind==='walk'&&r.priority===900).flatMap(r=>r.cells);}
   constructor(readonly graph:AccessGraphData,readonly document:GenerationDocument,readonly book:ReservationBook,readonly solid:BoundsIndex<string>) {
-    const settings=document.environment.access,certificates=book.crossingSnapshot();
+    const settings=ENVIRONMENT.access,certificates=book.crossingSnapshot();
     const walk=(box:Box16):Reservation=>({id:'query',ownerId:'query',sourceRefs:[],kind:'walk',priority:700,cells:[],boxes16:[box],...(certificates.find(c=>c.boxes16.some(b=>boxesOverlap(box,b)))?{crossingId:certificates.find(c=>c.boxes16.some(b=>boxesOverlap(box,b)))!.id}:{})});
     const all=new Map(graph.walkNodes.map(n=>[n.id,n]));
     for(const c of certificates)for(const foot of c.cells)if(!all.has(cellId(foot)))all.set(cellId(foot),{id:cellId(foot),foot,support:'ground'});
@@ -86,8 +87,8 @@ export class AccessSearch {
   }
   /** The immutable search remains valid for certification against the same base snapshot. */
   withBook(book:ReservationBook):AccessSearch {return Object.assign(Object.create(AccessSearch.prototype),this,{book});}
-  reachable(foot:Vec3,maxDistance=this.document.environment.access.maxWalkDistanceCells){const distance=this.distances.get(cellId(foot));return !!this.document.sceneInputs.roads.length&&distance!==undefined&&distance<=maxDistance;}
-  query(foot:Vec3,maxDistance=this.document.environment.access.maxWalkDistanceCells):AccessResult {
+  reachable(foot:Vec3,maxDistance=ENVIRONMENT.access.maxWalkDistanceCells){const distance=this.distances.get(cellId(foot));return !!this.document.sceneInputs.roads.length&&distance!==undefined&&distance<=maxDistance;}
+  query(foot:Vec3,maxDistance=ENVIRONMENT.access.maxWalkDistanceCells):AccessResult {
     const failure=(...reasonCodes:string[]):AccessResult=>({reachable:false,path:[],reasonCodes});
     if(!this.document.sceneInputs.roads.length)return failure('NO_ROAD');
     const id=cellId(foot);

@@ -10,22 +10,22 @@ import {expectCompleteFaces} from './complete-faces';
 async function load(page:Page,input:ReturnType<typeof createDocument>){await page.locator('#file').setInputFiles({name:'banded.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(input))});await expect(page.locator('#status')).toHaveText('OK');}
 async function save(page:Page){const waiting=page.waitForEvent('download');await page.locator('#save').click();const path=await(await waiting).path();const text=await readFile(path!,'utf8');return {text,document:loadDocument(text)};}
 
-test('A–E style menus apply E globally and per building and preserve it on reload',async({page})=>{
+test('A–D style menus apply C globally and per building and preserve it on reload',async({page})=>{
   await page.goto('/');await load(page,createDocument(box(8,10,4),42,'office'));
-  await expect(page.locator('#profile option')).toHaveText(['A','B','C','D','E']);
-  await expect(page.locator('#building-theme option')).toHaveText(['전역 스타일 사용','A','B','C','D','E']);
-  await page.locator('#profile').selectOption({label:'E'});
+  await expect(page.locator('#profile option')).toHaveText(Array.from({length:4},(_,i)=>String.fromCharCode(65+i)));
+  await expect(page.locator('#building-theme option')).toHaveText(['전역 스타일 사용',...Array.from({length:4},(_,i)=>String.fromCharCode(65+i))]);
+  await page.locator('#profile').selectOption({label:'C'});
   await expect(page.locator('#status')).toHaveText('OK');
   const saved=await save(page),result=generateDocument(saved.document);
-  expect(saved.document.buildingDefinition.label).toBe('E');
-  expect(saved.document.buildingDefinition.facadeGrammar!.periodV).toBe(3);
-  expect(result.environment!.facades![0].counters.completeGroups).toBeGreaterThan(0);
+  expect(saved.document.buildingDefinition.label).toBe('C');
+  expect(saved.document.buildingDefinition.roofAsset).toBe('facade.streamline-c-roof');
+  expect(result.placements.some(p=>p.tileId.includes('streamline-c-'))).toBe(true);
   await expectCompleteFaces(page,result);
-  await load(page,saved.document);await expect(page.locator('#profile')).toHaveValue('style-e');
+  await load(page,saved.document);await expect(page.locator('#profile')).toHaveValue('urban-shop');
   await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
   await page.locator('#building-theme').selectOption({label:'A'});
-  await page.locator('#building-theme').selectOption({label:'E'});
-  const themed=await save(page);expect(themed.document.buildings[0].theme!.label).toBe('E');
+  await page.locator('#building-theme').selectOption({label:'C'});
+  const themed=await save(page);expect(themed.document.buildings[0].theme!.label).toBe('C');
   await load(page,themed.document);await expectCompleteFaces(page,generateDocument(themed.document));
 });
 test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared geometry',async({page},info)=>{
@@ -41,9 +41,9 @@ test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared
   await page.screenshot({path:info.outputPath('banded-gallery.png')});
   await page.locator('[data-camera="top"]').click();await page.screenshot({path:info.outputPath('banded-joints-top.png')});expect(errors).toEqual([]);
 });
-test('current custom band settings, direct edit, JSON and Undo/Redo preserve real facade output',async({page})=>{
-  await page.goto('/');const custom=structuredClone(OFFICE_STYLE);custom.bandPolicy.baseCountOverride=2;
-  const input=createDocument(box(8,4,4),42,'office',custom);await load(page,input);
+test('preset bands, direct edit, JSON and Undo/Redo preserve real facade output',async({page})=>{
+  await page.goto('/');const custom=structuredClone(OFFICE_STYLE);
+  const input=createDocument(box(8,8,4),42,'office',custom);await load(page,input);
   await expectCompleteFaces(page,generateDocument(input));
   await page.locator('.inspect-details > summary').click();await page.locator('#face').selectOption('3,1,3|PZ');
   await expect(page.locator('#facade-info')).toContainText('층 base');expect(JSON.parse((await page.locator('#trace').textContent())!).selection.tileId).toContain('base-head');

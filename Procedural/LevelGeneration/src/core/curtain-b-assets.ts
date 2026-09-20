@@ -1,5 +1,6 @@
 import {ASSET_ROWS,portalDescriptor,type AssetBand,type AssetPart,type AssetRow,type BandedFacadeAsset} from './banded-facade-assets';
 import type {Box16} from './environment-contract';
+import {cityRoof} from './city-facade-assets';
 
 export type CurtainBKey=`facade.${''|'rooftop-'}curtain-b-${AssetBand}-${AssetRow}-${AssetPart}${''|'-edge-left'|'-edge-right'|'-edge-both'}`
   | `facade.${''|'rooftop-'}curtain-b-${'wall'|'portal-single'|'portal-left'|'portal-right'}${''|'-edge-left'|'-edge-right'|'-edge-both'}` | 'facade.curtain-b-roof';
@@ -48,7 +49,7 @@ for(const part of ['single','left','right'] as const){
 const wall:BandedFacadeAsset={finish:'curtain-b',integratedTrims:true,structural:true,railWidth16:.125,edgeProfile:'plain',bounds16:{min:[-8,-8,0],max:[8,8,2]},reliefBoxes16:[]};
 CURTAIN_B_ASSETS['facade.curtain-b-wall']=wall;
 CURTAIN_B_ASSETS['facade.rooftop-curtain-b-wall']=rooftop(wall);
-CURTAIN_B_ASSETS['facade.curtain-b-roof']={...wall,finish:'curtain-b-roof',surfaceRole:'roof',bounds16:{min:[-8,-8,-1],max:[8,8,0]}};
+CURTAIN_B_ASSETS['facade.curtain-b-roof']=cityRoof('curtain-b-roof');
 
 // Select only at an actual convex building edge, independently of window
 // rhythm. Short returns can have a pillar at both ends of the same tile.

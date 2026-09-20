@@ -1,6 +1,7 @@
 import {expect,it} from 'vitest';
 import {DoubleSide,Mesh,MeshBasicMaterial,Raycaster,Vector3} from 'three';
-import {createDocument,replaceGrid,replaceSceneInputs,loadDocument,exportDocument} from '../src/core/document';
+import {replaceGrid,replaceSceneInputs,loadDocument,exportDocument} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {emptySceneInputs,type ObjectInput} from '../src/core/scene-inputs';
 import {planWallFacilities} from '../src/core/wall-facilities';
@@ -50,10 +51,10 @@ it('priority 4: facility directions, resize and deletion preserve authored kind 
   for(const direction of ['PX','NX','PZ','NZ'] as const){const host:Vec3=direction==='PX'?[7,3,1]:direction==='NX'?[0,3,1]:direction==='PZ'?[3,3,3]:[3,3,0];const input={...facility('fire-escape',1,1),direction,cells:[host.map((n,i)=>n+BASES[direction].n[i]) as Vec3]};expect(generateDocument(replaceSceneInputs(base,{...emptySceneInputs(),objects:[input]})).environment!.wallFacilities!.placements).toHaveLength(1);}
 });
 
-it('priority 4: ambiguous narrow buildings stay buildings; explicit and slab-supported columns keep original cells and face ownership',()=>{
+it('priority 4: ambiguous narrow buildings stay buildings; slab-supported columns keep original cells and face ownership',()=>{
   const narrow=createDocument(box(1,5,1),3,'urban-office'),normal=generateDocument(narrow);expect(normal.environment!.columns![0].faces).toEqual([]);expect(normal.environment!.columns![0].runs[0].reason).toBe('FIXED_FACE_CONSTRAINT');expect(normal.environment!.entrances![0].entrances).toHaveLength(1);
-  for(const cells of [box(1,1,1),box(1,5,1),[...box(3,1,3),...[1,2,3,4].map(y=>[1,y,1] as Vec3)], [...box(3,1,3),...[1,2,3].map(y=>[1,y,1] as Vec3),...box(3,1,3).map(([x,,z])=>[x,4,z] as Vec3)]]){
-    const doc=createDocument(cells,3,'urban-office');doc.buildings[0].design.columnMode='column';const r=generateDocument(doc),columns=r.environment!.columns![0];expect(columns.faces.length).toBeGreaterThan(0);expect(r.cells).toEqual(doc.grid);expect(new Set(r.placements.map(p=>p.faceId)).size).toBe(r.surfaces.length);
+  for(const cells of [[...box(3,1,3),...[1,2,3,4].map(y=>[1,y,1] as Vec3)], [...box(3,1,3),...[1,2,3].map(y=>[1,y,1] as Vec3),...box(3,1,3).map(([x,,z])=>[x,4,z] as Vec3)]]){
+    const doc=createDocument(cells,3,'urban-office');const r=generateDocument(doc),columns=r.environment!.columns![0];expect(columns.faces.length).toBeGreaterThan(0);expect(r.cells).toEqual(doc.grid);expect(new Set(r.placements.map(p=>p.faceId)).size).toBe(r.surfaces.length);
     for(const face of columns.faces){const p=r.placements.find(p=>p.faceId===face.faceId)!;expect(p.faceAssetKey).toContain(face.assetKey);expect(p.finishIds).toEqual([]);expect(p.tileId).not.toContain('rooftop');}
     expect(generateDocument(loadDocument(exportDocument(doc)))).toEqual(r);
   }

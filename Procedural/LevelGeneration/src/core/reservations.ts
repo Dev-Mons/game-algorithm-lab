@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import { walkSweep16, type AccessSearch } from "./access-graph";
 import {HEADING_VECTORS} from "./environment-contract";
 import { add, cellId, compareCells, type Vec3 } from "./analysis";
@@ -137,10 +138,10 @@ export function authorizeCrossing(request:CrossingRequest,search:AccessSearch):C
     const rear=[...first.rear] as Vec3;rear[tangent]=value;
     for(const c of [rear,add(rear,HEADING_VECTORS[first.heading])])if(!vehicle.has(cellId(c))||search.solid.query(cellBox16(c)).length)return undefined;
   }
-  for(const c of cells)if(!vehicle.has(cellId(c))||search.solid.query(cellBox16(c)).length||request.intersectionKeepout.some(k=>Math.abs(k[0]-c[0])+Math.abs(k[2]-c[2])<=search.document.environment.fixtures.intersectionKeepoutCells))return undefined;
+  for(const c of cells)if(!vehicle.has(cellId(c))||search.solid.query(cellBox16(c)).length||request.intersectionKeepout.some(k=>Math.abs(k[0]-c[0])+Math.abs(k[2]-c[2])<=ENVIRONMENT.fixtures.intersectionKeepoutCells))return undefined;
   // Walk every crossing edge with the same body/sweep model used by ordinary access.
   const step=Math.sign(b[axis]-a[axis]),current=[...a] as Vec3;
-  while(current[axis]!==b[axis]){const next=[...current] as Vec3;next[axis]+=step;if(search.solid.query(walkSweep16(current,next,search.document.environment.access)).length)return undefined;current[axis]=next[axis];}
+  while(current[axis]!==b[axis]){const next=[...current] as Vec3;next[axis]+=step;if(search.solid.query(walkSweep16(current,next,ENVIRONMENT.access)).length)return undefined;current[axis]=next[axis];}
   const certificate:CrossingCertificate={id:request.id,cells,boxes16:cells.map(cellBox16)};
   search.book.applyCrossing(certificate,CROSSING_PROOF);
   return certificate;

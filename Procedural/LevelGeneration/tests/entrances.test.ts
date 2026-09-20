@@ -1,9 +1,9 @@
+import {ENVIRONMENT} from '../src/core/environment-settings';
 import {expect,it} from 'vitest';
 import {BUILDING_PROFILES,createDocument,replaceSceneInputs,setBuildingRule,type Profile} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
 import {emptySceneInputs} from '../src/core/scene-inputs';
 import {desiredEntranceCount} from '../src/core/entrance-plan';
-import {defaultEnvironmentSettings} from '../src/core/environment-settings';
 import {registerBuildingRule} from '../src/core/building-rules';
 import {registerRuleSpatialAdapter} from '../src/core/rule-spatial-adapters';
 import {CONTEXTUAL_SPATIAL_ADAPTER} from '../src/core/contextual-building-rule';
@@ -12,7 +12,7 @@ import {faceCenter2,type Vec3} from '../src/core/analysis';
 import {box} from '../src/fixtures';
 const run=(grid:Vec3[],roads:Vec3[])=>{const scene=emptySceneInputs();scene.roads=roads;const document=createDocument(grid,42,'shop',undefined,undefined,scene);return {document,result:generateDocument(document,{mode:'development-preview'})};};
 it('counts validated frontage union and limits small-volume buildings',()=>{
-  const settings=defaultEnvironmentSettings().entrances;
+  const settings=ENVIRONMENT.entrances;
   expect(desiredEntranceCount(22,1152,settings)).toBe(2);expect(desiredEntranceCount(22,128,settings)).toBe(1);expect(desiredEntranceCount(0,2000,settings)).toBe(0);
 });
 it('builds planned road portals and retains a ground entrance when roads disappear',()=>{
@@ -46,12 +46,10 @@ it.each(Object.keys(BUILDING_PROFILES) as Profile[])('%s gives every separate gr
   }
   expect(generateDocument({...document,grid:[...document.grid].reverse()},{cache:false})).toEqual(result);
 });
-it('rejects immediate road landings and incompatible portal height; allows narrow single-cell facades',()=>{
+it('rejects immediate road landings; allows narrow single-cell facades',()=>{
   const ring:Vec3[]=[];for(let n=0;n<3;n++)ring.push([n,0,-1],[n,0,3],[-1,0,n],[3,0,n]);
   const direct=run(box(3,3,3),ring).result.environment!.entrances![0];expect(direct.entrances).toEqual([]);expect(direct.traces[0].candidates.some(c=>c.reasonCodes.includes('NO_LANDING_SETBACK'))).toBe(true);
   const narrow=run([[0,0,0]],[[0,0,2]]);expect(narrow.result.environment!.entrances![0].entrances).toHaveLength(1);expect(narrow.result.environment!.entrances![0].entrances[0].widthCells).toBe(1);
-  const high=structuredClone(narrow.document);high.environment.access.pedestrianHeight16=16;
-  const rejected=generateDocument(high,{mode:'development-preview'}).environment!.entrances![0];expect(rejected.entrances).toEqual([]);expect(rejected.traces[0].candidates.every(c=>c.reasonCodes.includes('NO_COMPATIBLE_PORTAL_ASSET'))).toBe(true);
 });
 it('does not connect floating landings or clip paired windows next to portals',()=>{
   const floating=run(box(4,2,3).map(([x,y,z])=>[x,y+2,z]),[[0,0,5]]).result;expect(floating.environment!.entrances![0].entrances).toEqual([]);

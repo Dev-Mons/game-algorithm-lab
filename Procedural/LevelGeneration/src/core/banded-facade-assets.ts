@@ -4,7 +4,7 @@ export type AssetRow='foot'|'repeat'|'head'|'single'|'foot-cap'|'repeat-cap'|'he
 export type AssetPart='single'|'left'|'right'|'pier';
 export type BandedFacadeKey=`facade.banded-${'shop'|'office'}-${AssetBand}-${AssetRow}-${AssetPart}`;
 export interface BandedFacadeAsset {
-  finish?:'shop'|'office'|'urban-shop'|'urban-office'|'ribbon-a'|'curtain-b'|'curtain-b-roof'|'streamline-c'|'streamline-c-roof';
+  finish?:'tower11-d'|'city-roof'|'shop'|'office'|'urban-shop'|'urban-office'|'ribbon-a'|'curtain-b'|'curtain-b-roof'|'streamline-c'|'streamline-c-roof';
   reliefCorner?:'left'|'right'|'both';
   integratedTrims?:boolean;
   cornerAssets?:Partial<Record<'left'|'right'|'both',string>>;

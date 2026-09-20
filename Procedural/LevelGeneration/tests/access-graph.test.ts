@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from '../src/core/environment-settings';
 import {expect,it} from 'vitest';
 import {spatialFixture} from './spatial-fixture';
 import {AccessSearch,bodyBox16,walkSweep16,authorizeCrossing} from '../src/core/access-graph';
@@ -13,7 +14,7 @@ it('uses a deterministic actual detour, fails when enclosed, and counts edges ra
   expect(spatialFixture([...open].reverse(),[...road].reverse()).search.query([3,0,3])).toEqual(a);
   expect(fixture.search.query([3,0,3],2).reasonCodes).toEqual(['PATH_TOO_LONG']);
   expect(spatialFixture(wall,road).search.query([3,0,3])).toMatchObject({reachable:false,reasonCodes:['NO_REACHABLE_ROAD']});
-  for(let i=1;i<a.path.length;i++){const p=a.path[i-1],q=a.path[i];expect(Math.abs(p[0]-q[0])+Math.abs(p[2]-q[2])).toBe(1);expect(fixture.solidIndex.query(walkSweep16(p,q,fixture.document.environment.access))).toEqual([]);}
+  for(let i=1;i<a.path.length;i++){const p=a.path[i-1],q=a.path[i];expect(Math.abs(p[0]-q[0])+Math.abs(p[2]-q[2])).toBe(1);expect(fixture.solidIndex.query(walkSweep16(p,q,ENVIRONMENT.access))).toEqual([]);}
 });
 it('never connects height changes, merges duplicate ground support, and excludes median arrivals',()=>{
   const roof=spatialFixture([[0,0,0]],[[2,0,0]]);
@@ -30,9 +31,9 @@ it('keeps a one-cell passage open with relief and refuses a fixture in the prote
   const walls=[...box(1,1,5),...box(1,1,5).map(([x,y,z])=>[x+2,y,z] as Vec3)];
   const f=spatialFixture(walls,[[1,0,6]]);
   f.solidIndex.add({min:[16,0,0],max:[18,16,80]},'relief');
-  expect(f.solidIndex.query(bodyBox16([1,0,2],f.document.environment.access))).toEqual([]);
+  expect(f.solidIndex.query(bodyBox16([1,0,2],ENVIRONMENT.access))).toEqual([]);
   const path=f.search.query([1,0,2]);expect(path.reachable).toBe(true);
-  expect(f.book.tryReserveBatch([{id:'path',ownerId:'door',sourceRefs:[],kind:'walk',priority:700,cells:path.path,boxes16:path.path.map(c=>bodyBox16(c,f.document.environment.access))}]).accepted).toBe(true);
+  expect(f.book.tryReserveBatch([{id:'path',ownerId:'door',sourceRefs:[],kind:'walk',priority:700,cells:path.path,boxes16:path.path.map(c=>bodyBox16(c,ENVIRONMENT.access))}]).accepted).toBe(true);
   expect(f.book.tryReserveBatch([{id:'fixture',ownerId:'object',sourceRefs:[],kind:'fixture',priority:300,cells:[[1,0,2]],boxes16:[cellBox16([1,0,2])]}]).accepted).toBe(false);
 });
 it('handles absent roads, empty scenes and bounded coordinate-limit halos',()=>{

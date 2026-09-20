@@ -95,9 +95,9 @@ it('keeps rooftop variants optional for existing styles and validates authored v
   expect(Math.max(...result.environment!.preflight[0].envelope.requiredBoxes16.map(b => b.max[1]))).toBe(16);
   const saved = JSON.parse(JSON.stringify(doc));
   saved.catalog.version = 2;
-  saved.catalog.tiles = saved.catalog.tiles.filter((t: { assetKey: string }) => !t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-')&&!t.assetKey.startsWith('facade.rooftop-')&&!t.assetKey.startsWith('facade.urban-'));
+  saved.catalog.tiles = saved.catalog.tiles.filter((t: { assetKey: string }) => !t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-')&&!t.assetKey.startsWith('facade.rooftop-')&&!t.assetKey.startsWith('facade.urban-'));
   const loaded = loadDocument(JSON.stringify(saved));
-  expect(loaded.catalog.version).toBe(10);
+  expect(loaded.catalog.version).toBe(13);
   expect(loaded.buildingDefinition).toEqual(legacy);
   saved.catalog.tiles[0].assetKey = 'unit-panel';
   expect(() => loadDocument(JSON.stringify(saved))).toThrow();

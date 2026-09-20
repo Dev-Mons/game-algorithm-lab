@@ -17,7 +17,7 @@ it('B keeps wall and horizontal roof ownership separate and round-trips its priv
   }
   expect(generateDocument(loadDocument(exportDocument(doc)))).toEqual(result);
   for(const [id,style] of Object.entries(BUILDING_PROFILES))if(id!=='office'&&id!=='urban-shop'){
-    expect(style.roofAsset).toBeUndefined();expect(style.modules.some(m=>m.assetId.includes('curtain-b-'))).toBe(false);
+    expect(style.roofAsset).toBe('facade.city-roof');expect(style.modules.some(m=>m.assetId.includes('curtain-b-'))).toBe(false);
   }
 });
 
@@ -39,8 +39,8 @@ it('B renders opaque gray spandrels below glass, flush edges and a continuous ta
 it('catalog 6 B documents keep their previous facade and roof after loading',()=>{
   const old=createDocument(box(5,6,4),42,'office',LEGACY_OFFICE_STYLE);
   const before=generateDocument(old);old.catalog.version=6;
-  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-'));
-  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(10);
+  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-'));
+  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(13);
   expect(loaded.buildingDefinition).toEqual(old.buildingDefinition);
   expect(generateDocument(loaded).placements).toEqual(before.placements);
 });
@@ -83,8 +83,8 @@ it('B puts thin white pillars only on convex tile ends, including short returns'
 
 it('catalog 9 B documents upgrade corner prototypes while retaining authored style and doors',()=>{
   const old=createDocument(box(6,6,4),42,'office');old.catalog.version=9;
-  old.catalog.tiles=old.catalog.tiles.filter(t=>!isCurtainBCornerV10(t.assetKey));
-  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(10);
+  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!isCurtainBCornerV10(t.assetKey));
+  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(13);
   expect(loaded.buildingDefinition).toEqual(old.buildingDefinition);
   const result=generateDocument(loaded);
   expect(result.placements.some(p=>p.tileId.includes('-edge-'))).toBe(true);

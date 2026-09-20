@@ -1,5 +1,7 @@
 import type { Vec3 } from "./core/generate";
 import type {Profile} from './core/document';
+import type {SceneInputs} from './core/scene-inputs';
+import {CONCEPT_NAMES} from './core/city-concepts';
 export function box(x: number, y: number, z: number): Vec3[] {
   const cells: Vec3[] = [];
   for (let a = 0; a < x; a++)
@@ -38,7 +40,30 @@ export const REFERENCE_A_CELLS=box(20,32,9).filter(([x,y,z])=>{
   if(y>=30)return x!==0&&x!==6&&x!==13&&x!==19&&z>0&&z<8;
   return true;
 });
-export const FIXTURES: Record<string, { label: string; cells: Vec3[];profile?:Profile }> = {
+// Tower11's 1 + 14 + 7 + 7 floor rhythm and two centered setbacks.
+// Horizontal dimensions are quantized to editable, whole grid cells.
+export const REFERENCE_D_CELLS=[...box(10,15,10),...shift(box(8,7,8),1,15,1),...shift(box(6,7,6),2,22,2),...shift(box(2,1,2),3,29,3)];
+function cityConceptFixtures(){
+  return Object.fromEntries(Object.entries(CONCEPT_NAMES).map(([profile,name],index)=>{
+    if(profile==='tower11-d'){
+      const roads:Vec3[]=[];
+      for(let x=-3;x<13;x++)for(let z=-3;z<13;z++)if(x< -1||x>10||z< -1||z>10)roads.push([x,0,z]);
+      const sceneInputs:SceneInputs={version:2,roads,parkingAreas:[],objects:[{id:'roof-plant',category:'facility',direction:'PY',cells:[[6,29,3],[6,29,4],[6,29,5]]}]};
+      return ['cityD',{label:`D · 도시 컨셉 — ${name}`,cells:REFERENCE_D_CELLS,profile:profile as Profile,sceneInputs}];
+    }
+    const height=6+index%4*2;
+    const cells=[...box(6,height,5),...shift(box(2,1,2),1,height,1)];
+    const roads:Vec3[]=[];
+    for(let x=-4;x<10;x++)for(let z=-4;z<9;z++)
+      if((x>=-3&&x<=-2)||(x>=7&&x<=8)||(z>=-3&&z<=-2)||(z>=6&&z<=7))roads.push([x,0,z]);
+    const sceneInputs:SceneInputs={version:2,roads,parkingAreas:[],objects:[
+      {id:'roof-plant',category:'facility',direction:'PY',cells:[[4,height,1],[4,height,2],[4,height,3]]},
+    ]};
+    return [`city${String.fromCharCode(65+index)}`,{label:`${String.fromCharCode(65+index)} · 도시 컨셉 — ${name}`,cells,profile:profile as Profile,sceneInputs}];
+  }));
+}
+export const FIXTURES: Record<string, { label: string; cells: Vec3[];profile?:Profile;sceneInputs?:SceneInputs }> = {
+  ...cityConceptFixtures(),
   referenceCLow:{label:'C · 저층 수평 띠와 옥탑',cells:[...box(10,4,6),...shift(box(5,2,3),2,4,1)],profile:'urban-shop'},
   referenceCHigh:{label:'C · 고층 수평 띠와 옥탑',cells:[...box(10,10,6),...shift(box(5,3,3),2,10,1)],profile:'urban-shop'},
   referenceCPortal:{label:'C · 계단형 매스와 높은 개구부',cells:box(11,13,6).filter(([x,y,z])=>

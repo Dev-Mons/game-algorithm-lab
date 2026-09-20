@@ -28,7 +28,8 @@ test("edit stepped volume, inspect overhang, save/reload, display invariance and
     .filter({ hasText: "선택 Trace · 전체 근거" })
     .click();
   const trace = await page.locator("#trace").textContent();
-  expect(JSON.parse(trace!).selection.ruleId).toBe("architecture.paving");
+  expect(JSON.parse(trace!).selection.ruleId).toBe("building.roof-finish");
+  expect(JSON.parse(trace!).selection.tileId).toContain("facade.city-terrace.");
   await importGrid([[0,0,0],[1,0,0],[1,1,0],[2,1,0]]);
   await page.locator("#face").selectOption("2,1,0|NY");
   await expect(page.locator("#inspector")).toContainText("overhang");

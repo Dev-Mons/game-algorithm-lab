@@ -33,7 +33,7 @@ test('environment pipeline loads inputs and real supported structure; invalid lo
   expect(errors).toEqual([]);
 });
 
-test('parking area drag, source selection, settings, no-op and history share one accepted transaction',async({page},info)=>{
+test('parking area drag, source selection and history work with internal defaults',async({page},info)=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
   await page.locator('#edit-mode').selectOption('parking');await page.locator('[data-camera="top"]').click();
   const canvas=page.locator('canvas'),b=(await canvas.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
@@ -45,15 +45,10 @@ test('parking area drag, source selection, settings, no-op and history share one
   await page.locator('#source-select').selectOption(JSON.stringify({kind:'parking',id:area.id}));
   await page.locator('#plan-inspector summary').filter({hasText:'선택 · 탈락 근거'}).click();
   await expect(page.locator('#plan-inspector')).toContainText('NO_ROAD');
-  await page.getByText('환경 설정',{exact:true}).click();
-  await page.locator('#environment-setting').selectOption('access.maxWalkDistanceCells');await page.locator('#environment-value').fill('31');await page.locator('#environment-apply').click();
-  counts=JSON.parse((await page.locator('#viewport').getAttribute('data-execution-counts'))!);expect(counts.generationCount).toBe(3);expect(counts.historyCommitCount).toBe(2);
-  await page.locator('#environment-apply').click();expect(JSON.parse((await page.locator('#viewport').getAttribute('data-edit-record'))!).changed).toBe(false);
-  expect(JSON.parse((await page.locator('#viewport').getAttribute('data-execution-counts'))!)).toEqual(counts);
-  await page.locator('#environment-value').fill('100');await page.locator('#environment-apply').click();await expect(page.locator('#edit-note')).toContainText('INVALID_ENVIRONMENT_SETTING');
-  const settings=await savedDocument(page);expect(settings.environment.access.maxWalkDistanceCells).toBe(31);expect(settings.sceneInputs.parkingAreas).toEqual(first.sceneInputs.parkingAreas);
-  await canvas.focus();await page.keyboard.press('Control+z');expect((await savedDocument(page)).environment.access.maxWalkDistanceCells).toBe(24);
-  await canvas.focus();await page.keyboard.press('Control+Shift+z');expect((await savedDocument(page)).environment.access.maxWalkDistanceCells).toBe(31);
+  await expect(page.locator('#environment-setting, #environment-value, #environment-apply')).toHaveCount(0);
+  expect(await savedDocument(page)).not.toHaveProperty('environment');
+  await canvas.focus();await page.keyboard.press('Control+z');expect((await savedDocument(page)).sceneInputs.parkingAreas).toEqual([]);
+  await canvas.focus();await page.keyboard.press('Control+Shift+z');expect(await savedDocument(page)).toEqual(first);
   await page.screenshot({path:info.outputPath('environment-editor.png')});expect(errors).toEqual([]);
 });
 

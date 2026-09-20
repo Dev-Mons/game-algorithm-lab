@@ -27,8 +27,8 @@ it('new A geometry round-trips while existing A documents and B–E retain their
   expect(generateDocument(loadDocument(exportDocument(doc)))).toEqual(a);
   for(const [id,style] of Object.entries(BUILDING_PROFILES))if(id!=='shop')expect(style.modules.some(m=>m.assetId.includes('ribbon-a-'))).toBe(false);
   const old=createDocument(box(8,8,4),42,'shop',LEGACY_SHOP_STYLE);
-  old.catalog.version=5;old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-'));
-  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(10);
+  old.catalog.version=5;old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-'));
+  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(13);
   expect(loaded.buildingDefinition).toEqual(old.buildingDefinition);
   expect(generateDocument(loaded).placements.some(p=>p.tileId.includes('ribbon-a-'))).toBe(false);
 });

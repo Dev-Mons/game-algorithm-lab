@@ -1,19 +1,16 @@
 import {expect,it} from 'vitest';
 import {verticalCounts,planVertical} from '../src/core/vertical-design';
-import {DEFAULT_BAND_POLICY,SHOP_STYLE,OFFICE_STYLE} from '../src/core/building-style';
+import {SHOP_STYLE,OFFICE_STYLE} from '../src/core/building-style';
 import {createDocument,documentOptions,replaceGrid} from '../src/core/document';
 import {analyzeVolume,BASES,type Vec3} from '../src/core/generate';
 import {selectTiles} from '../src/core/selection';
 import {box} from '../src/fixtures';
 it.each([[1,1,0,0],[2,1,1,0],[3,1,2,0],[8,2,5,1],[12,3,8,1]])('retail H%i has the required integer bands',(h,b,m,c)=>{
-  expect(verticalCounts(h,'retail',DEFAULT_BAND_POLICY)).toMatchObject({base:b,body:m,crown:c});
+  expect(verticalCounts(h,SHOP_STYLE)).toMatchObject({base:b,body:m,crown:c});
 });
-it('preserves height, tall minimum, explicit overrides, and resize clamping',()=>{
-  expect(verticalCounts(16,'office',DEFAULT_BAND_POLICY)).toMatchObject({base:3,body:11,crown:2});
-  for(let h=1;h<=32;h++){const v=verticalCounts(h,'office',DEFAULT_BAND_POLICY);expect(v.base+v.body+v.crown).toBe(h);if(h>=8)expect(v.base).toBeGreaterThanOrEqual(2);}
-  expect(verticalCounts(12,'office',{...DEFAULT_BAND_POLICY,baseCountOverride:1,crownCountOverride:0})).toMatchObject({base:1,body:11,crown:0});
-  expect(verticalCounts(4,'office',{...DEFAULT_BAND_POLICY,baseCountOverride:16,crownCountOverride:8})).toMatchObject({base:2,body:1,crown:1,requestedBase:16,requestedCrown:8,reasonCodes:['BAND_COUNTS_CLAMPED']});
-  expect(verticalCounts(2,'office',{...DEFAULT_BAND_POLICY,baseCountOverride:16})).toMatchObject({base:1,body:1,crown:0,reasonCodes:['SHORT_BUILDING_COLLAPSE']});
+it('preserves height, tall minimum, preset proportions, and resize clamping',()=>{
+  expect(verticalCounts(16,OFFICE_STYLE)).toMatchObject({base:3,body:10,crown:3});
+  for(let h=1;h<=32;h++){const v=verticalCounts(h,OFFICE_STYLE);expect(v.base+v.body+v.crown).toBe(h);if(h>=8)expect(v.base).toBeGreaterThanOrEqual(2);}
 });
 function selection(grid:Vec3[],document=createDocument(grid,42,'shop')){
   const analysis=analyzeVolume(grid,'region-context-v1'),b=document.buildings[0];
@@ -79,6 +76,6 @@ it('never clips a connected pair at a missing wall cell',()=>{
 });
 
 it('empty volume has an empty vertical plan rather than a fictitious band',()=>{
- const doc=createDocument([]),plan=planVertical('empty',[],[],{version:1,use:'office',anchor:[0,0,0]},doc.buildingDefinition);
+ const doc=createDocument([]),plan=planVertical('empty',[],[],{version:1,anchor:[0,0,0]},doc.buildingDefinition);
  expect(plan.heightCells).toBe(0);expect(plan.bands).toEqual([]);expect(plan.faceBands).toEqual([]);expect(plan.boundaries).toEqual([]);
 });

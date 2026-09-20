@@ -21,7 +21,7 @@ it('counts key and result memory, protects stored values, and uses FIFO rather t
 it('rebuilds current facade traces and validates preflight on hits, settings changes and geometry edits',()=>{
  const cache=new EnvironmentCache(),doc=createDocument(box(6,8,4),42);
  const compare=(input:typeof doc)=>{const expected=generateDocument(input,{cache:false});expect(generateDocument(input,{cache})).toEqual(expected);const hit=generateDocument(input,{cache});expect(hit).toEqual(expected);expect(hit.environment!.counters.preflightCalls).toBe(1);};
- compare(doc);compare(replaceGrid(doc,doc.grid.filter(c=>c[0]!==0)));const changed=structuredClone(doc);changed.buildings[0].design.use='retail';compare(changed);
+ compare(doc);compare(replaceGrid(doc,doc.grid.filter(c=>c[0]!==0)));const changed=structuredClone(doc);changed.seed=43;compare(changed);
  expect(cache.stats().bytes).toBeLessThanOrEqual(16*1024*1024);
 });
 

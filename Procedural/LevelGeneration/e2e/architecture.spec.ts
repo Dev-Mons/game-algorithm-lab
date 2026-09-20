@@ -12,7 +12,7 @@ test('regions, shared facade plans, picking and current document persistence',as
  expect(JSON.parse((await page.locator('#trace').textContent())!).direction).toBe('PY');
  await page.locator('#seed').fill('12345');await page.locator('#seed').press('Tab');await page.locator('#face').selectOption('1,0,2|PZ');const trace=await page.locator('#trace').textContent();
  const save=async()=>{const w=page.waitForEvent('download');await page.locator('#save').click();return readFile((await(await w).path())!,'utf8');};
- const text=await save(),doc=loadDocument(text);expect(doc.schemaVersion).toBe(5);expect(JSON.parse(trace!)).toEqual(generateDocument(doc).traces.find(t=>t.faceId==='1,0,2|PZ'));
+ const text=await save(),doc=loadDocument(text);expect(doc.schemaVersion).toBe(6);expect(JSON.parse(trace!)).toEqual(generateDocument(doc).traces.find(t=>t.faceId==='1,0,2|PZ'));
  await page.locator('#new').click();await page.locator('#file').setInputFiles({name:'current.json',mimeType:'application/json',buffer:Buffer.from(text)});await page.locator('#face').selectOption('1,0,2|PZ');expect(await page.locator('#trace').textContent()).toBe(trace);expect(await save()).toBe(text);
  await page.screenshot({path:info.outputPath('current-architecture.png')});expect(errors).toEqual([]);
 });

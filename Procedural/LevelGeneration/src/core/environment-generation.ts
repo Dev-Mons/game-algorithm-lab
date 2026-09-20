@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {contextualBase,contextualOutput,contextualTemplates,contextualTemplateDependencies} from './contextual-building-rule';
 import type {BuildingRuleInput} from './building-rule-contract';
 import {environmentCache,type EnvironmentCache,type ExecutionTelemetry} from './environment-cache';
@@ -68,7 +69,7 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   const report=(stage:EnvironmentStage,state:StageReport["state"],...reasonCodes:string[])=>reports.set(stage,{stage,state,reasonCodes});
   const contextual=document.buildings.some(b=>b.rule.definition.portals==="planned");
   const vertical=measure('vertical',()=>components.filter(c=>document.buildings.find(b=>b.componentId===c.id)!.rule.definition.portals==='planned').map(c=>{
-    const b=document.buildings.find(b=>b.componentId===c.id)!;return planVertical(c.id,c.cells,analysis.surfaces,b.design,b.theme??document.buildingDefinition);
+    const b=document.buildings.find(b=>b.componentId===c.id)!;return planVertical(c.id,c.cells,analysis.surfaces,b.design,b.theme??document.buildingDefinition,document.seed);
   }));
   report('vertical',vertical.length?'ready':'not-applicable');
   const preflight:NonNullable<GenerationResult["environment"]>["preflight"]=[];
@@ -95,7 +96,7 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   report('spatial',!hasSpatial?'not-applicable':spatialReady?'ready':'blocked',...(spatialReady?[]:['PREFLIGHT_NOT_READY']));
   const parkingGraphKey=spatialRun?{walkNodes:spatialRun.spatial.walkNodes,walkEdges:spatialRun.spatial.walkEdges,roadArrivals:spatialRun.spatial.roadArrivals}:undefined;
   const circulation=spatialRun&&hasParking?measure('parkingCirculation',()=>{
-    const key=cache?.key('circulation',{areas:document.sceneInputs.parkingAreas,roads:document.sceneInputs.roads,settings:{parking:document.environment.parking,access:document.environment.access,intersectionKeepoutCells:document.environment.fixtures.intersectionKeepoutCells},spatial:parkingGraphKey,reservations:spatialRun.book.snapshot()});
+    const key=cache?.key('circulation',{areas:document.sceneInputs.parkingAreas,roads:document.sceneInputs.roads,settings:{parking:ENVIRONMENT.parking,access:ENVIRONMENT.access,intersectionKeepoutCells:ENVIRONMENT.fixtures.intersectionKeepoutCells},spatial:parkingGraphKey,reservations:spatialRun.book.snapshot()});
     type Cached={areas:ReturnType<typeof planParkingCirculation>['areas'];book:typeof spatialRun.book};
     const hit=key?cache!.get<Cached>(key):undefined;if(hit)return {...hit,domains:undefined};
     const run=planParkingCirculation(document,spatialRun.spatial,spatialRun.book,spatialRun.solidIndex);
@@ -107,11 +108,11 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   const search=spatialRun?new AccessSearch(spatialRun.spatial,document,activeBook!,spatialRun.solidIndex):undefined;
   const probeInputs=[...document.sceneInputs.objects.map(o=>({ref:{kind:'object' as const,id:o.id},cell:o.cells[0]})),...document.sceneInputs.parkingAreas.map(p=>({ref:{kind:'parking' as const,id:p.id},cell:p.cells[0]}))];
   const probes=search?probeInputs.map(p=>({...p,access:search.query(p.cell)})):[];
-  const entrances=spatialRun&&activeBook?measure('entrances',()=>document.buildings.filter(b=>b.rule.definition.portals==='planned').sort((a,b)=>compareCells(a.design.anchor,b.design.anchor)||compareCells(components.find(c=>c.id===a.componentId)!.cells[0],components.find(c=>c.id===b.componentId)!.cells[0])).map(b=>planEntrances(document,b,components.find(c=>c.id===b.componentId)!.cells,analysis.surfaces,spatialRun.spatial,activeBook,spatialRun.solidIndex,circulation?.areas??[]))):[];
+  const entrances=spatialRun&&activeBook?measure('entrances',()=>document.buildings.filter(b=>b.rule.definition.portals==='planned').sort((a,b)=>compareCells(a.design.anchor,b.design.anchor)||compareCells(components.find(c=>c.id===a.componentId)!.cells[0],components.find(c=>c.id===b.componentId)!.cells[0])).map(b=>planEntrances(document,b,components.find(c=>c.id===b.componentId)!.cells,analysis.surfaces,spatialRun.spatial,activeBook,spatialRun.solidIndex))):[];
   report('entrances',!contextual?'not-applicable':spatialRun?'ready':'blocked',...(contextual&&!spatialRun?['SPATIAL_PLAN_NOT_READY']:[]));
   let finalBook=activeBook;
   const parking=circulation&&spatialRun&&activeBook?measure('parkingStalls',()=>{
-    const key=cache?.key('stalls',{roads:document.sceneInputs.roads,areas:document.sceneInputs.parkingAreas,settings:document.environment.access,circulation:circulation.areas,spatial:parkingGraphKey,reservations:activeBook.snapshot()});
+    const key=cache?.key('stalls',{roads:document.sceneInputs.roads,areas:document.sceneInputs.parkingAreas,settings:ENVIRONMENT.access,circulation:circulation.areas,spatial:parkingGraphKey,reservations:activeBook.snapshot()});
     type Cached={plans:ReturnType<typeof planParkingStalls>;book:typeof activeBook};
     const hit=key?cache!.get<Cached>(key):undefined;if(hit){finalBook=hit.book;return hit.plans;}
     const plans=planParkingStalls(document,circulation.areas,spatialRun.spatial,activeBook,spatialRun.solidIndex,circulation.domains);
@@ -126,7 +127,7 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
   const wallFacilities=finalBook?planWallFacilities(document,analysis.surfaces,vertical,portalFacesForFacilities,finalBook):undefined;
   const facadeFixed=new Set([...portalFacesForFacilities,...(wallFacilities?.changes.map(c=>c.faceId)??[])]);
   const columnFixed=new Set([...facadeFixed,...analysis.surfaces.filter(s=>s.architecture?.interpretation==='unsupported').map(s=>s.faceId),...(wallFacilities?.groups.filter(g=>g.accepted).flatMap(g=>g.faceIds)??[])]);
-  const columns=vertical.map(v=>{const b=document.buildings.find(b=>b.componentId===v.buildingId)!,style=b.theme??document.buildingDefinition;return planColumns(v.buildingId,components.find(c=>c.id===v.buildingId)!.cells,analysis.surfaces,b.design.columnMode??(style.programs?'auto':'building'),columnFixed);});
+  const columns=vertical.map(v=>{const b=document.buildings.find(b=>b.componentId===v.buildingId)!,style=b.theme??document.buildingDefinition;return planColumns(v.buildingId,components.find(c=>c.id===v.buildingId)!.cells,analysis.surfaces,style.programs?'auto':'building',columnFixed);});
   const columnFaces=new Set(columns.flatMap(c=>c.faces.map(f=>f.faceId)));columnFaces.forEach(id=>facadeFixed.add(id));
   const facades=vertical.flatMap(v=>{const style=document.buildings.find(b=>b.componentId===v.buildingId)!.theme??document.buildingDefinition;return style.facadeGrammar?[planFacade(analysis.surfaces,v,style.facadeGrammar,facadeFixed)]:[];});
   const generated:GenerationResult[]=[];

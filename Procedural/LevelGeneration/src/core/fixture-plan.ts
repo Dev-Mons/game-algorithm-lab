@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {add,BASES,cellId,compareCells,type Vec3,type Direction} from './analysis';
 import type {GenerationDocument} from './document';
 import type {VolumeAnalysis} from './regions';
@@ -52,7 +53,7 @@ function makePatches(document:GenerationDocument,analysis:VolumeAnalysis):Patch[
 export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,parking:ParkingAreaPlan[],wallMounts:Map<string,{outset16:number;ownerId:string}>=new Map()):FixturePlan {
   const counters:FixturePlan['counters']={slots:0,emptySlots:0,candidates:0,accepted:0,maxVariantsPerAnchor:0,companionCandidates:0,neighborChecks:0},placements:ScenePlacement[]=[],reservations:Reservation[]=[],traces:DecisionTrace[]=[];
   const exposedFaces=new Set(analysis.surfaces.map(s=>s.faceId));
-  const settings=document.environment.fixtures,search=new AccessSearch(spatial,document,book,solid),fixed=book.snapshot(),protectedWalk=new Set(fixed.filter(r=>r.kind==='walk'&&(r.priority===900||r.priority===700)).flatMap(r=>r.cells.map(cellId))),roadSet=new Set(document.sceneInputs.roads.map(cellId));
+  const settings=ENVIRONMENT.fixtures,search=new AccessSearch(spatial,document,book,solid),fixed=book.snapshot(),protectedWalk=new Set(fixed.filter(r=>r.kind==='walk'&&(r.priority===900||r.priority===700)).flatMap(r=>r.cells.map(cellId))),roadSet=new Set(document.sceneInputs.roads.map(cellId));
   const trees=document.sceneInputs.objects.filter(o=>o.category==='vegetation'&&fixed.some(r=>r.kind==='solid'&&r.ownerId===o.id)).flatMap(o=>{const y=Math.min(...o.cells.map(c=>c[1]));return o.cells.filter(c=>c[1]===y).map(cell=>({cell,id:o.id}));});
   const areas=document.sceneInputs.parkingAreas.map(a=>({...a,mask:new Set(a.cells.map(cellId)),plans:parking.find(p=>p.areaId===a.id)?.plans??[]}));
   const keepout=analyzeRoads(document.sceneInputs.roads).filter(r=>r.shape==='tee'||r.shape==='cross').flatMap(r=>r.cells);
@@ -71,7 +72,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     if(roads.length&&Number.isFinite(roads[0].distance)){context.roadDistanceCells=roads[0].distance;context.roadHeading=horizontalHeading(roads[0].cell,cell);}
     const adjacent=HEADING_VECTORS.map(d=>roadSet.has(cellId(add(cell,d))));context.median=adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3];
     const nearby=trees.map(t=>({...t,distance:sameHeightDistance(cell,t.cell)})).filter(t=>t.distance<=settings.vegetationRadiusCells).sort((a,b)=>a.distance-b.distance||compareCells(a.cell,b.cell));
-    const tree=nearby.find(t=>!segmentOccluded(cell,t.cell,solid,document.environment.access.pedestrianWidth16,document.environment.access.pedestrianHeight16,new Set([`solid:object:${t.id}`])));
+    const tree=nearby.find(t=>!segmentOccluded(cell,t.cell,solid,ENVIRONMENT.access.pedestrianWidth16,ENVIRONMENT.access.pedestrianHeight16,new Set([`solid:object:${t.id}`])));
     if(tree){context.vegetationDistanceCells=tree.distance;context.vegetationDirection=horizontalHeading(cell,tree.cell);}
     return context;
   };
@@ -115,17 +116,17 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   }
   const bodyClear=(box:Box16,bodies:Box16[])=>!bodies.some(b=>boxesOverlap(box,b));
   const publicAccess=(start:Vec3,bodies:Box16[])=>{
-    const id=cellId(start);if(!search.nodes.has(id)||!bodyClear(bodyBox16(start,document.environment.access),bodies))return undefined;
+    const id=cellId(start);if(!search.nodes.has(id)||!bodyClear(bodyBox16(start,ENVIRONMENT.access),bodies))return undefined;
     const queue=[{id,path:[start]}],seen=new Set([id]);
     for(let i=0;i<queue.length;i++){const node=queue[i];if(protectedWalk.has(node.id))return node.path;if(node.path.length>2)continue;
-      for(const next of search.neighbors.get(node.id)??[]){const foot=search.nodes.get(next)!.foot;if(seen.has(next)||!bodyClear(bodyBox16(foot,document.environment.access),bodies)||!bodyClear(walkSweep16(node.path[node.path.length-1],foot,document.environment.access),bodies))continue;seen.add(next);queue.push({id:next,path:[...node.path,foot]});}
+      for(const next of search.neighbors.get(node.id)??[]){const foot=search.nodes.get(next)!.foot;if(seen.has(next)||!bodyClear(bodyBox16(foot,ENVIRONMENT.access),bodies)||!bodyClear(walkSweep16(node.path[node.path.length-1],foot,ENVIRONMENT.access),bodies))continue;seen.add(next);queue.push({id:next,path:[...node.path,foot]});}
     }return undefined;
   };
   const localPocket=(start:Vec3,bodies:Box16[])=>{
     for(const dx of [-1,0])for(const dz of [-1,0]){const cells:Vec3[]=[[start[0]+dx,start[1],start[2]+dz],[start[0]+dx,start[1],start[2]+dz+1],[start[0]+dx+1,start[1],start[2]+dz],[start[0]+dx+1,start[1],start[2]+dz+1]];
       if(cells.some(c=>!search.nodes.has(cellId(c))))continue;
-      const boxes=cells.map(c=>bodyBox16(c,document.environment.access));let valid=true;
-      for(const [a,b] of [[0,1],[0,2],[1,3],[2,3]]){if(!search.neighbors.get(cellId(cells[a]))?.includes(cellId(cells[b]))){valid=false;break;}boxes.push(walkSweep16(cells[a],cells[b],document.environment.access));}
+      const boxes=cells.map(c=>bodyBox16(c,ENVIRONMENT.access));let valid=true;
+      for(const [a,b] of [[0,1],[0,2],[1,3],[2,3]]){if(!search.neighbors.get(cellId(cells[a]))?.includes(cellId(cells[b]))){valid=false;break;}boxes.push(walkSweep16(cells[a],cells[b],ENVIRONMENT.access));}
       if(valid&&boxes.every(box=>bodyClear(box,bodies)))return {cells,boxes};
     }return undefined;
   };
@@ -156,18 +157,18 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
       // Maintenance access is informational, not a permanent empty cell beside every painted light.
       context.accessMode=publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])?'public':'service-unverified';
     }else if(publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])){
-      context.accessMode='public';serviceCells=publicPath;publicDistance=publicPath.length-1;useBoxes=publicPath.map(p=>bodyBox16(p,document.environment.access));for(let i=1;i<publicPath.length;i++)useBoxes.push(walkSweep16(publicPath[i-1],publicPath[i],document.environment.access));
+      context.accessMode='public';serviceCells=publicPath;publicDistance=publicPath.length-1;useBoxes=publicPath.map(p=>bodyBox16(p,ENVIRONMENT.access));for(let i=1;i<publicPath.length;i++)useBoxes.push(walkSweep16(publicPath[i-1],publicPath[i],ENVIRONMENT.access));
     }else if(prototype==='bench'||prototype==='bin'){
       if(document.sceneInputs.roads.length||context.vegetationDistanceCells===undefined)return {reason:'NO_PUBLIC_ACCESS'};
       const pocket=localPocket(use,bodies);if(!pocket)return {reason:'NO_USE_CLEARANCE'};context.accessMode='local-only';serviceCells=pocket.cells;useBoxes=pocket.boxes;
     }else if(slot.patch.support==='roof'||slot.patch.support==='wall'){
-      if(search.nodes.has(cellId(use))&&bodyClear(bodyBox16(use,document.environment.access),bodies)){serviceCells=[use];useBoxes=[bodyBox16(use,document.environment.access)];}
+      if(search.nodes.has(cellId(use))&&bodyClear(bodyBox16(use,ENVIRONMENT.access),bodies)){serviceCells=[use];useBoxes=[bodyBox16(use,ENVIRONMENT.access)];}
       else if(slot.patch.support!=='wall')return {reason:'NO_USE_CLEARANCE'};
       context.accessMode='service-unverified';
     }else return {reason:'NO_PUBLIC_ACCESS'};
     if(intersects(bodies,useBoxes))return {reason:'NO_USE_CLEARANCE'};
     let frontFree=0;const tangent=HEADING_VECTORS[(heading+1)%4];
-    for(let forward=0;forward<=1;forward++)for(let side=-1;side<=1;side++){const cell:Vec3=[use[0]+forward*d[0]+side*tangent[0],use[1],use[2]+forward*d[2]+side*tangent[2]];if(search.nodes.has(cellId(cell))&&bodyClear(bodyBox16(cell,document.environment.access),bodies))frontFree++;}
+    for(let forward=0;forward<=1;forward++)for(let side=-1;side<=1;side++){const cell:Vec3=[use[0]+forward*d[0]+side*tangent[0],use[1],use[2]+forward*d[2]+side*tangent[2]];if(search.nodes.has(cellId(cell))&&bodyClear(bodyBox16(cell,ENVIRONMENT.access),bodies))frontFree++;}
     const refs:SourceRef[]=slot.patch.inputs.filter(input=>bodies.some(b=>input.cells.some(cell=>occupiedCells(b).some(c=>cellId(c)===cellId(cell))))).map(input=>({kind:'object' as const,id:input.id})).sort((a,b)=>ascii(a.id,b.id));
     if(supportOwner)refs.push({kind:'building',id:supportOwner});refs.sort((a,b)=>ascii(a.kind,b.kind)||ascii(a.id,b.id));
     const rankHash=hash33(document.seed,`fixtures-v1|${cellId(c)}|${slot.patch.footY}|${prototype}`),id=`fixture:${prototype}:${cellId(c)}:${heading}:${offset}`;

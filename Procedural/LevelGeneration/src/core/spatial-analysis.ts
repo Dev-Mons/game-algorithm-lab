@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {add,BASES,cellId,compareCells,type Direction,type Vec3} from './analysis';
 import type {VolumeAnalysis} from './regions';
 import type {GenerationDocument} from './document';
@@ -58,9 +59,9 @@ export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalys
   if(document.sceneInputs.roads.length)fixed.push({id:'public:roads',ownerId:'roads',sourceRefs:[{kind:'road',id:'roads'}],kind:'public-vehicle',priority:900,cells:document.sceneInputs.roads,boxes16:document.sceneInputs.roads.map(cellBox16)});
   const arrivals=new Set(graph.roadArrivals.map(a=>a.nodeId));
   const publicNodes=graph.walkNodes.filter(n=>arrivals.has(n.id));
-  const boxes=publicNodes.map(n=>bodyBox16(n.foot,document.environment.access));
+  const boxes=publicNodes.map(n=>bodyBox16(n.foot,ENVIRONMENT.access));
   const byId=new Map(graph.walkNodes.map(n=>[n.id,n]));
-  for(const [a,b] of graph.walkEdges)if(arrivals.has(a)&&arrivals.has(b))boxes.push(walkSweep16(byId.get(a)!.foot,byId.get(b)!.foot,document.environment.access));
+  for(const [a,b] of graph.walkEdges)if(arrivals.has(a)&&arrivals.has(b))boxes.push(walkSweep16(byId.get(a)!.foot,byId.get(b)!.foot,ENVIRONMENT.access));
   if(boxes.length)fixed.push({id:'public:walk',ownerId:'roads',sourceRefs:[{kind:'road',id:'roads'}],kind:'walk',priority:900,cells:publicNodes.map(n=>n.foot),boxes16:boxes});
   const buildingRuns:BoundaryRun[]=[];
   for(const b of document.buildings){
@@ -89,7 +90,7 @@ export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalys
   ];
   const byCell=new Map<string,Set<number>>();
   sources.forEach((source,i)=>source.cells.forEach(c=>{const key=`${c[0]},${c[2]}`;let owners=byCell.get(key);if(!owners)byCell.set(key,owners=new Set());owners.add(i);}));
-  const radius=Math.max(document.environment.fixtures.vegetationRadiusCells,document.environment.fixtures.roadsideRadiusCells);
+  const radius=Math.max(ENVIRONMENT.fixtures.vegetationRadiusCells,ENVIRONMENT.fixtures.roadsideRadiusCells);
   sources.forEach((source,i)=>{
     if(source.ref.kind!=='object')return;
     const near=new Set<number>();

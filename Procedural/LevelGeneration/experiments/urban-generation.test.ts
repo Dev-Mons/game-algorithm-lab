@@ -1,6 +1,7 @@
 import {it,expect} from 'vitest';
 import {writeFileSync} from 'node:fs';
-import {createDocument,replaceGrid,canonicalJSON} from '../src/core/document';
+import {replaceGrid,canonicalJSON} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {EnvironmentCache} from '../src/core/environment-cache';
 import {URBAN_FIXTURES} from '../src/urban-fixtures';
@@ -18,7 +19,7 @@ it('records measured urban generation, diversity, repair and deterministic work'
     for(const p of pairs.values())expect(p.sort()).toEqual(['left','right']);
     samples.push({name,seed,cells:cells.length,faces:result.surfaces.length,coldMs,warmMs,profile:v.profile,slices:v.mass!.slices.length,scopes:v.mass!.scopes.length,overlapChecks:v.mass!.counters.overlapChecks,...f.counters,frameFaceShare:f.faces.length/v.faceBands.length,fillerFaces:result.traces.filter(t=>t.facade?.patternId==='single-fallback').length});
   }
-  const doc=createDocument(box(14,12,4),17,'urban-office');doc.buildings[0].design.overrides={familyId:'bay-3'};
+  const doc=createDocument(box(14,12,4),17,'urban-office');
   const a=generateDocument(doc),next=replaceGrid(doc,doc.grid.filter(c=>c.join(',')!=='4,5,3')),t=performance.now(),b=generateDocument(next),editMs=performance.now()-t,map=new Map(b.placements.map(p=>[p.faceId,p]));
   const changed=a.placements.filter(p=>map.has(p.faceId)&&map.get(p.faceId)!.faceAssetKey!==p.faceAssetKey).map(p=>p.faceId),far=changed.filter(id=>{const [x,y,z]=id.split('|')[0].split(',').map(Number);return Math.abs(x-4)>4||Math.abs(y-5)>2||z===0;});
   expect(far).toEqual([]);

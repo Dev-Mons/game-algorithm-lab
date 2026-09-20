@@ -1,5 +1,6 @@
 import {expect,it} from 'vitest';
-import {createDocument,replaceGrid,exportDocument,loadDocument,canonicalJSON} from '../src/core/document';
+import {replaceGrid,exportDocument,loadDocument,canonicalJSON} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {allocateProgram} from '../src/core/architectural-program';
 import {URBAN_SHOP_STYLE,LEGACY_SHOP_STYLE,validateBuildingStyle} from '../src/core/building-style';
@@ -38,7 +39,7 @@ it('priority 1: arbitrary semantic IDs, invalid style rejection and predictable 
 });
 
 it('priority 1: design intent survives root changes, merge/split, save, cache and undo/redo',()=>{
-  const doc=createDocument(box(6,8,2),17,'urban-shop');doc.buildings[0].design.overrides={programId:'mixed-2',familyId:'bay-4',palette:'sage'};
+  const doc=createDocument(box(6,8,2),17,'urban-shop');
   const next=replaceGrid(doc,[...doc.grid,[-1,0,0]]),profile=generateDocument(doc).environment!.vertical![0].profile;
   expect(generateDocument(next).environment!.vertical![0].profile).toEqual(profile);
   expect(generateDocument(loadDocument(exportDocument(next)),{cache:false})).toEqual(generateDocument(next));
@@ -47,10 +48,10 @@ it('priority 1: design intent survives root changes, merge/split, save, cache an
   expect(replaceGrid(split,next.grid).buildings[0].design).toEqual(doc.buildings[0].design);
   const shuffled={...next,grid:[...next.grid].reverse()};expect(generateDocument(shuffled,{cache:false})).toEqual(generateDocument(next));
 });
-it('saved catalog 3 designs without a designSeed keep their original intent, and new overrides are validated',()=>{
-  const doc=createDocument(box(4,6,3),17,'shop',LEGACY_SHOP_STYLE),raw=JSON.parse(exportDocument(doc));raw.catalog.version=3;raw.catalog.tiles=raw.catalog.tiles.filter((t:{assetKey:string})=>!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('curtain-b-')&&!t.assetKey.includes('ribbon-a-')&&!t.assetKey.startsWith('facade.urban-'));delete raw.buildings[0].design.designSeed;
-  const loaded=loadDocument(JSON.stringify(raw));expect(loaded.buildings[0].design.designSeed).toBeUndefined();expect(generateDocument(loaded).placements).toEqual(generateDocument(doc).placements);
-  const urban=createDocument(box(6,6,3),17,'urban-shop'),edited=applyEnvironmentEdit(urban,{kind:'building-design',targetId:'0,0,0',settingPath:'overrides.palette',value:'sage'}).document;
-  expect(generateDocument(edited).placements.every(p=>p.tileId.endsWith('.sage'))).toBe(true);
-  const bad=JSON.parse(exportDocument(urban));bad.buildings[0].design.overrides=null;expect(()=>loadDocument(JSON.stringify(bad))).toThrow('INVALID_FIELDS');
+it('current documents reject retired design fields instead of applying hidden overrides',()=>{
+  const doc=createDocument(box(4,6,3),17,'urban-shop');
+  for(const [key,value] of Object.entries({use:'retail',designSeed:5,columnMode:'column',overrides:{palette:'sage'}})){
+    const raw=JSON.parse(exportDocument(doc));raw.buildings[0].design[key]=value;
+    expect(()=>loadDocument(JSON.stringify(raw))).toThrow('INVALID_FIELDS');
+  }
 });

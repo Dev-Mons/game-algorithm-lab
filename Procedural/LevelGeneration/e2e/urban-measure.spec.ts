@@ -2,7 +2,8 @@ import {test,expect} from '@playwright/test';
 import {writeFile,mkdir,readdir,readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import os from 'node:os';
-import {createDocument} from '../src/core/document';
+
+import {createDocument} from '../tests/custom-frame-document';
 import {box} from '../src/fixtures';
 import type {MeasurementSample} from '../src/measurement';
 test.use({screenshot:'off',trace:'off'});

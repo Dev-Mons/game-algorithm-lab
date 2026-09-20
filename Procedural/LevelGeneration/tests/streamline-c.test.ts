@@ -34,7 +34,7 @@ it('both faces of convex C corners agree across 1/2-cell returns, offsets, caps 
   // the second starts on its negative U side, regardless of the facade run.
   const pairs:[Direction,Direction][]=[['PZ','PX'],['PX','NZ'],['NZ','NX'],['NX','PZ']];
   for(const grid of grids){
-    const doc=createDocument(grid,42,'urban-shop');doc.buildings[0].design.columnMode='building';
+    const doc=createDocument(grid,42,'urban-shop');
     const result=generateDocument(doc),placements=new Map(result.placements.map(p=>[p.faceId,p]));
     const tiles=new Map(doc.catalog.tiles.map(t=>[t.tileId,t]));
     for(const cell of grid)for(const [a,b] of pairs){
@@ -67,8 +67,8 @@ it('C solid facade overrides keep the same convex corners and integrated coping'
 
 it('catalog 8 C documents upgrade missing short-return variants and remain editable',()=>{
   const old=createDocument(box(2,5,2),42,'urban-shop');old.catalog.version=8;
-  old.catalog.tiles=old.catalog.tiles.filter(t=>!isStreamlineCCornerV9(t.assetKey)&&!t.assetKey.includes('-edge-'));
-  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(10);
+  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!isStreamlineCCornerV9(t.assetKey)&&!t.assetKey.includes('-edge-'));
+  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(13);
   expect(loaded.grid).toEqual(old.grid);expect(loaded.buildingDefinition).toEqual(old.buildingDefinition);
   const result=generateDocument(loaded);
   expect(result.placements.filter(p=>p.faceId.endsWith('|PZ')&&p.faceId.includes(',2,')).every(p=>p.tileId.includes('-cut-'))).toBe(true);
@@ -93,15 +93,15 @@ it('C bevels convex cladding corners without cutting concave walls or repeating 
 it('saved C catalog 7 keeps its authored frames while new C uses independent modules',()=>{
   const old=createDocument(box(6,5,4),42,'urban-shop',LEGACY_URBAN_SHOP_STYLE);
   const before=generateDocument(old);old.catalog.version=7;
-  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('-edge-'));
-  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(10);
+  old.catalog.tiles=old.catalog.tiles.filter(t=>!t.assetKey.startsWith('facade.tower11-d-')&&!t.assetKey.startsWith('facade.city-')&&!t.assetKey.includes('streamline-c-')&&!t.assetKey.includes('-edge-'));
+  const loaded=loadDocument(JSON.stringify(old));expect(loaded.catalog.version).toBe(13);
   expect(loaded.buildingDefinition).toEqual(old.buildingDefinition);
   expect(generateDocument(loaded).placements).toEqual(before.placements);
 });
 
 it.each([2,3,8])('C height %i joins a full-cell ground window to a half-cell transom without a concrete seam',height=>{
   const doc=createDocument(box(8,height,4),42,'urban-shop');
-  doc.buildings[0].design.overrides={familyId:'bay-2'};
+
   const result=generateDocument(doc),materials=[0,1,2,3].map(()=>new MeshBasicMaterial({side:DoubleSide}));
   for(const y of [0,1]){
     // Check an ordinary shopfront bay beside the new central ground entrance.

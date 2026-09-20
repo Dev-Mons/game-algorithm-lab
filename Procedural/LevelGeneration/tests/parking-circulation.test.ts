@@ -28,7 +28,7 @@ it('plans two positive disconnected components with unique reservations under on
 it('allows a two-cell straight connector only within the configured reach and rejects a solid barrier',()=>{
   const roads=road(12).map(([x,y,z])=>[x,y,z-2] as Vec3),cells=box(12,1,12),f=spatialFixture([],roads,[],cells);
   const yes=planParkingCirculation(f.document,f.spatial,f.book,f.solidIndex).areas[0].components[0];expect(yes.gates.length).toBeGreaterThan(0);expect(yes.gates[0].connectorCells.length).toBe(8);
-  const short=spatialFixture([],roads,[],cells);short.document.environment.parking.maxConnectorDistanceCells=1;
+  const short=spatialFixture([],road(12).map(([x,y,z])=>[x,y,z-5] as Vec3),[],cells);
   expect(planParkingCirculation(short.document,short.spatial,short.book,short.solidIndex).areas[0].components[0].reasonCodes).toContain('NO_ROAD_GATE');
   const blocked=spatialFixture(box(12,1,1).map(([x,y])=>[x,y,-2] as Vec3),roads,[],cells);
   expect(planParkingCirculation(blocked.document,blocked.spatial,blocked.book,blocked.solidIndex).areas[0].components[0].gates).toEqual([]);

@@ -137,6 +137,8 @@ export class PanelAssets {
           const gradient=ctx.createLinearGradient(0,0,0,256);
           if(finish==='curtain-b'){
             gradient.addColorStop(0,'#c6c0b1');gradient.addColorStop(.55,'#aea393');gradient.addColorStop(1,'#928779');
+          }else if(finish==='tower11-d'){
+            gradient.addColorStop(0,'#b7bdbc');gradient.addColorStop(1,'#747f80');
           }else if(finish==='streamline-c'){
             gradient.addColorStop(0,'#c0c1b5');gradient.addColorStop(1,'#96998e');
           }else if(finish==='ribbon-a'){
@@ -149,10 +151,19 @@ export class PanelAssets {
           if(finish==='curtain-b'){
             ctx.fillStyle='#ffffff13';ctx.fillRect(0,0,128,256);
             ctx.fillStyle='#00000018';ctx.fillRect(128,145,128,111);
-          }else if(finish!=='ribbon-a'&&finish!=='streamline-c'){ctx.fillStyle='#ffffff17';ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(52,0);ctx.lineTo(162,256);ctx.lineTo(132,256);ctx.fill();}
+          }else if(finish!=='ribbon-a'&&finish!=='streamline-c'&&finish!=='tower11-d'){ctx.fillStyle='#ffffff17';ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(52,0);ctx.lineTo(162,256);ctx.lineTo(132,256);ctx.fill();}
+        }else if(finish.endsWith('-roof')){
+          // Staggered membrane laps and pale service-strip joints.
+          for(let y=0;y<256;y+=128){
+            ctx.fillStyle='#00000032';ctx.fillRect(0,y,256,2);
+            for(let x=(y/128%2)*64;x<256;x+=128){
+              ctx.fillStyle='#00000024';ctx.fillRect(x,y,2,128);
+              ctx.fillStyle='#ffffff0a';ctx.fillRect(x+3,y+3,124,124);
+            }
+          }
         }else{
           // Fixed courses/panel joints; no image dependency or per-face textures.
-          const rows=finish.startsWith('streamline-c')?1:colors.masonry?8:2,step=256/rows;
+          const rows=finish==='tower11-d'||finish.startsWith('streamline-c')?1:colors.masonry?8:2,step=256/rows;
           for(let row=0;row<rows;row++){
             ctx.fillStyle='#00000018';ctx.fillRect(0,row*step,256,1.5);
             const stride=colors.masonry?64:128;

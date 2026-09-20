@@ -9,7 +9,7 @@ it.each([SHOP_STYLE,OFFICE_STYLE])("persists current banded $id definitions", st
 });
 it("rejects missing formats, fixed levels, mismatched periods and incomplete connected groups",()=>{
   for(const mutate of [
-    (s:any)=>delete s.format,(s:any)=>s.levels=[],(s:any)=>s.bandPolicy.maxBaseCells=1,
+    (s:any)=>delete s.format,(s:any)=>s.levels=[],(s:any)=>s.bandPolicy={maxBaseCells:1},
     (s:any)=>s.alignedFamilies[0].periodCells=2,(s:any)=>s.patterns[0].repeat=['base-left','base-pier'],
     (s:any)=>s.bands.base.fallback='missing',(s:any)=>s.modules[0].extra=true,
   ]) {const s=structuredClone(SHOP_STYLE);mutate(s);expect(()=>validateBuildingStyle(s)).toThrow();}

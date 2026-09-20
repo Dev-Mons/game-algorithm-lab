@@ -35,7 +35,7 @@ test("current styles, city generation and save/load work together", async ({
   const saved = await save("city-v3.json"),
     doc = loadDocument(saved.text),
     result = generateDocument(doc);
-  expect(doc.schemaVersion).toBe(5);
+  expect(doc.schemaVersion).toBe(6);
   expect(result.status).toBe("ok");
   expect(result.modules).toEqual([]);
   // B now includes its flush belts and parapets in each authored tile.

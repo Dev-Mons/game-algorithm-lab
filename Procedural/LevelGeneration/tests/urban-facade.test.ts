@@ -1,5 +1,6 @@
 import {expect,it} from 'vitest';
-import {createDocument,replaceGrid,exportDocument,loadDocument} from '../src/core/document';
+import {replaceGrid,exportDocument,loadDocument} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {planFacade,validateFacadeJoints} from '../src/core/facade-plan';
 import {FRAME_ASSETS} from '../src/core/urban-facade-assets';
@@ -9,7 +10,7 @@ import {URBAN_FIXTURES} from '../src/urban-fixtures';
 import type {Vec3} from '../src/core/analysis';
 
 it.each([2,3,4])('priority 3: period %i produces actual multi-floor meshes with compatible U/V joins',period=>{
-  const d=createDocument(box(14,12,4),17,'urban-office');d.buildings[0].design.overrides={familyId:`bay-${period}`};
+  const d=createDocument(box(14,12,4),17,'urban-office');d.buildingDefinition.alignedFamilies=d.buildingDefinition.alignedFamilies.filter(f=>f.periodCells===period);
   const r=generateDocument(d,{cache:false}),plan=r.environment!.facades![0];expect(plan.counters.completeGroups).toBeGreaterThan(0);validateFacadeJoints(plan);
   expect(plan.counters.faceChecks).toBeLessThanOrEqual(r.surfaces.length);
   const placements=new Map(r.placements.map(p=>[p.faceId,p]));
@@ -28,7 +29,7 @@ it('priority 3: actual frame geometry has matching rails on both horizontal and 
 });
 
 it('priority 3: a deleted face repairs its complete group and preserves distant groups and the opposite wall',()=>{
-  const doc=createDocument(box(14,12,4),17,'urban-office');doc.buildings[0].design.overrides={familyId:'bay-3'};
+  const doc=createDocument(box(14,12,4),17,'urban-office');
   const before=generateDocument(doc),next=replaceGrid(doc,doc.grid.filter(c=>c.join(',')!=='4,5,3')),after=generateDocument(next,{cache:false});
   const a=before.environment!.facades![0],b=after.environment!.facades![0],changed=a.faces.find(f=>f.faceId==='4,5,3|PZ')!;
   expect(changed).toBeDefined();expect(b.faces.some(f=>f.panelId===changed.panelId)).toBe(false);

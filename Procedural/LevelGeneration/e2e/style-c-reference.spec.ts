@@ -58,7 +58,7 @@ test('C full-height ground glazing and half-height transom render on low and tal
   await page.locator('.layers summary').click();
   const directory='artifacts/style-c-reference';await mkdir(directory,{recursive:true});
   for(const height of [1,2,8]){
-    const doc=createDocument(box(8,height,4),42,'urban-shop');doc.buildings[0].design.overrides={familyId:'bay-2'};
+    const doc=createDocument(box(8,height,4),42,'urban-shop');
     await page.locator('#file').setInputFiles({name:`C-shopfront-${height}.json`,mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
     await expect(page.locator('#status')).toHaveText('OK');await expectCompleteFaces(page,generateDocument(doc));
     await page.locator('[data-camera="front"]').click();

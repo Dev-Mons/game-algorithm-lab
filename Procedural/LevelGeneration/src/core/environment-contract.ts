@@ -1,11 +1,9 @@
 import type { Vec3 } from "./analysis";
 import type { RuleSpatialEnvelope } from "./rule-spatial-contract";
 
-export type BuildingUse = "generic" | "retail" | "office" | "residential" | "industrial";
-export const BUILDING_USES: BuildingUse[] = ["generic", "retail", "office", "residential", "industrial"];
 export type Heading = 0 | 1 | 2 | 3;
 export const HEADING_VECTORS: readonly Vec3[] = [[0,0,1],[1,0,0],[0,0,-1],[-1,0,0]];
-export interface BuildingDesignV1 { version: 1; use: BuildingUse; anchor: Vec3; designSeed?:number; overrides?:import('./design-profile').DesignOverrides;columnMode?:'auto'|'building'|'column' }
+export interface BuildingDesignV1 { version: 1; anchor: Vec3 }
 export interface ParkingAreaInput { id: string; cells: Vec3[]; anchor: Vec3 }
 export interface Box16 { min: Vec3; max: Vec3 }
 export interface SourceRef { kind: "building" | "object" | "road" | "parking"; id: string }
@@ -34,7 +32,7 @@ export interface ParkingBudgetLedger {
 }
 export interface InputDelta {
   buildingCells: Vec3[]; roadCells: Vec3[]; objectIds: string[];
-  parkingIds: string[]; settingKeys: string[];
+  parkingIds: string[];
 }
 /** Plans are added by their owning stages. Missing is distinct from an empty plan. */
 export interface BuildingContextPlan {

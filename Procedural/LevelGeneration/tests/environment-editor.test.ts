@@ -24,22 +24,21 @@ it('rejects overlapping independent masks, unsupported heights and unknown setti
     {kind:'parking-add',cells:[[0,0,0]]},{kind:'parking-add',cells:[[0,1,0]]},
     {kind:'setting',settingPath:'parking.stallDepthCells',value:3},{kind:'setting',settingPath:'unknown.value',value:1},
     {kind:'setting',settingPath:'__proto__.polluted',value:true},
-  ] as const)expect(()=>applyEnvironmentEdit(a,command as Parameters<typeof applyEnvironmentEdit>[1])).toThrow();
+  ] as const)expect(()=>applyEnvironmentEdit(a,command as unknown as Parameters<typeof applyEnvironmentEdit>[1])).toThrow();
   expect(exportDocument(a)).toBe(before);
 });
 it('records actual road deltas and no-op signatures, and preserves settings across later input changes',()=>{
-  const a=applyEnvironmentEdit(createDocument([]),{kind:'setting',settingPath:'access.maxWalkDistanceCells',value:31}).document;
+  const a=createDocument([]);
   const road=applyEnvironmentEdit(a,{kind:'road-add',cells:[[0,0,0],[1,0,0]]});
   expect(road.delta.roadCells).toHaveLength(2);expect(road.beforeSignature).not.toBe(road.afterSignature);
   const repeated=applyEnvironmentEdit(road.document,{kind:'road-add',cells:[[1,0,0],[0,0,0]]});expect(repeated.changed).toBe(false);expect(repeated.beforeSignature).toBe(repeated.afterSignature);
-  expect(replaceGrid(road.document,[[3,0,0]]).environment.access.maxWalkDistanceCells).toBe(31);
+  expect(replaceGrid(road.document,[[3,0,0]])).not.toHaveProperty('environment');
   const remove=applyEnvironmentEdit(road.document,{kind:'road-remove',cells:[[0,0,0]]});expect(remove.delta.roadCells).toEqual([[0,0,0]]);
 });
-it('edits independent building use and stored band policy while preserving theme and rule',()=>{
-  const a=createDocument([[0,0,0]],42,'shop'),use=applyEnvironmentEdit(a,{kind:'building-design',targetId:'0,0,0',settingPath:'use',value:'industrial'}).document;
-  const band=applyEnvironmentEdit(use,{kind:'building-design',targetId:'0,0,0',settingPath:'bandPolicy.baseCountOverride',value:2}).document;
-  expect(band.buildings[0].rule).toEqual(a.buildings[0].rule);expect(band.buildings[0].design.use).toBe('industrial');expect(band.buildings[0].theme?.bandPolicy.baseCountOverride).toBe(2);
-  expect(applyEnvironmentEdit(band,{kind:'building-design',targetId:'0,0,0',settingPath:'bandPolicy.baseCountOverride'}).document.buildings[0].theme?.bandPolicy.baseCountOverride).toBeUndefined();
+it('retired settings and building-design commands cannot alter a document',()=>{
+  const doc=createDocument([[0,0,0]],42,'shop'),before=exportDocument(doc);
+  for(const kind of ['setting','building-design'])expect(()=>applyEnvironmentEdit(doc,{kind} as unknown as Parameters<typeof applyEnvironmentEdit>[1])).toThrow('UNKNOWN_ENVIRONMENT_COMMAND');
+  expect(exportDocument(doc)).toBe(before);
 });
 it('source hit ties follow edit kind, distance, numeric anchor and ASCII ID, not input order',()=>{
   const hits=[{source:{kind:'object' as const,id:'object'},distance:1,anchor:[0,0,0] as Vec3},{source:{kind:'parking' as const,id:'b'},distance:2,anchor:[10,0,0] as Vec3},{source:{kind:'parking' as const,id:'a'},distance:2,anchor:[2,0,0] as Vec3}];

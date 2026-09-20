@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from '../src/core/environment-settings';
 import {expect,it} from 'vitest';
 import {parkingFixture} from '../src/parking-fixtures';
 import {analyzeVolume} from '../src/core/regions';
@@ -15,7 +16,7 @@ it('protects stall proof work after circulation exhaustion and keeps unrelated s
   const before=JSON.stringify(circulation.areas),first=planParkingStalls(document,circulation.areas,spatial.spatial,circulation.book.clone(),spatial.solidIndex),stalls=first[0].plans[0].stalls;
   expect(stalls.length).toBeGreaterThanOrEqual(8);expect(first[0].quality.stallUsed).toBeLessThanOrEqual(plan.budget.stallLimit);
   const book=circulation.book.clone(),target=stalls[0];
-  expect(book.tryReserveBatch([{id:'entrance-path',ownerId:'building',sourceRefs:[],kind:'walk',priority:700,cells:[target.rear],boxes16:[bodyBox16(target.rear,document.environment.access)]}]).accepted).toBe(true);
+  expect(book.tryReserveBatch([{id:'entrance-path',ownerId:'building',sourceRefs:[],kind:'walk',priority:700,cells:[target.rear],boxes16:[bodyBox16(target.rear,ENVIRONMENT.access)]}]).accepted).toBe(true);
   const second=planParkingStalls(document,circulation.areas,spatial.spatial,book,spatial.solidIndex);
   expect(second[0].plans[0].stalls.map(s=>s.id)).toEqual(stalls.filter(s=>s.id!==target.id).map(s=>s.id));
   expect(second[0].quality.primaryRejectionCounts.RESERVED_ACCESS).toBe(1);expect(second[0].quality.unallocatedPrimaryReasonCounts.RESERVED_ACCESS).toBe(1);

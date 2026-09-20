@@ -36,7 +36,7 @@ test('setback roofs render style variants and live height edits move the rooftop
   const canvas = page.locator('canvas'), b = (await canvas.boundingBox())!;
   await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   await expect(page.locator('#face')).toHaveValue('0,0,0|PY');
-  await expect(page.locator('#inspector')).toContainText('face-v1|crafted.roof|plain');
+  await expect(page.locator('#inspector')).toContainText('face-v1|facade.city-roof|plain');
   await expect(canvas).toHaveAttribute('data-selection-direction', 'PY');
   await page.keyboard.press('e');
   await inspect(page, '0,0,0|NX', false);

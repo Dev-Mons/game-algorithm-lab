@@ -1,5 +1,6 @@
 import {expect,it} from 'vitest';
-import {BUILDING_PROFILES,createDocument,exportDocument,loadDocument,replaceGrid,type Profile} from '../src/core/document';
+import {BUILDING_PROFILES,exportDocument,loadDocument,replaceGrid,type Profile} from '../src/core/document';
+import {createDocument} from '../tests/custom-frame-document';
 import {generateDocument} from '../src/core/generate-document';
 import {EnvironmentCache} from '../src/core/environment-cache';
 import {faceCorners,cellId,type Vec3} from '../src/core/analysis';

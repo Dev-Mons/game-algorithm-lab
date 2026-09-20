@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {VehicleDomain} from './vehicle-domain';
 import {add,cellId,compareCells,type Vec3} from './analysis';
 import {HEADING_VECTORS,type Heading,type ParkingAreaInput,type Reservation,type DecisionTrace,type ParkingBudgetAllocation} from './environment-contract';
@@ -25,14 +26,14 @@ interface StripDescriptor {incompleteBayCells:Vec3[];axis:'X'|'Z';offset:number;
 class LayoutRejected extends Error {constructor(readonly reason:string,readonly conflictIds:string[]=[]){super(reason);}}
 interface Trial {plan:ParkingCirculationPlan;book:ReservationBook;potential:number;additionalAisle:number;maxExitDistance:number;stateIndex:Map<string,number>;exitDistances:Int32Array}
 function gateCandidates(area:ParkingAreaInput,cells:Vec3[],document:GenerationDocument,solid:BoundsIndex<string>,keepout:Vec3[]):GateCandidate[]{
-  const own=mask(cells),roads=mask(document.sceneInputs.roads),other=mask(document.sceneInputs.parkingAreas.filter(p=>p.id!==area.id).flatMap(p=>p.cells)),settings=document.environment.parking,W=settings.aisleWidthCells,candidates:GateCandidate[]=[];
+  const own=mask(cells),roads=mask(document.sceneInputs.roads),other=mask(document.sceneInputs.parkingAreas.filter(p=>p.id!==area.id).flatMap(p=>p.cells)),settings=ENVIRONMENT.parking,W=settings.aisleWidthCells,candidates:GateCandidate[]=[];
   for(const run of boundaryRuns(cells,{kind:'parking',id:area.id}))for(let start=0;start+W<=run.cells.length;start++){
     const opening=run.cells.slice(start,start+W),out=HEADING_VECTORS[headingFor(run.direction)],inward=((headingFor(run.direction)+2)%4) as Heading;
     if(opening.some(c=>!own.has(cellId(add(c,HEADING_VECTORS[inward])))))continue;
     for(let gap=0;gap<=settings.maxConnectorDistanceCells;gap++){
       const end=opening.map(c=>add(c,out.map(n=>n*(gap+1)) as Vec3));if(!end.every(c=>roads.has(cellId(c))))continue;
       const connector:Vec3[]=[];for(let n=1;n<=gap;n++)connector.push(...opening.map(c=>add(c,out.map(v=>v*n) as Vec3)));
-      if(connector.some(c=>own.has(cellId(c))||other.has(cellId(c))||solid.query(cellBox16(c)).length)||[...opening,...connector,...end].some(c=>keepout.some(k=>Math.abs(c[0]-k[0])+Math.abs(c[2]-k[2])<=document.environment.fixtures.intersectionKeepoutCells)))continue;
+      if(connector.some(c=>own.has(cellId(c))||other.has(cellId(c))||solid.query(cellBox16(c)).length)||[...opening,...connector,...end].some(c=>keepout.some(k=>Math.abs(c[0]-k[0])+Math.abs(c[2]-k[2])<=ENVIRONMENT.fixtures.intersectionKeepoutCells)))continue;
       candidates.push({gap,frontageLength:run.lengthCells,gate:{id:`gate:${area.id}:${cellId(opening[0])}:${inward}`,areaId:area.id,openingCells:opening,inwardHeading:inward,connectorCells:sorted(connector.filter(c=>!roads.has(cellId(c)))),roadStates:[],entryStates:[],exitStates:[],crossingIds:[]}});break;
     }
   }
@@ -90,8 +91,8 @@ function validateLayout(area:ParkingAreaInput,cells:Vec3[],descriptor:StripDescr
   const walkGraph={...spatial,walkNodes:spatial.walkNodes.filter(n=>!own.has(n.id)||allowedWalk.has(n.id))};
   const search=new AccessSearch(walkGraph,document,book,solid),walk=descriptor.walk.filter(c=>search.reachable(c,100000));
   if(!walk.length)throw new LayoutRejected('NO_CONNECTED_WALK_STRIP');
-  const walking=mask(walk),walkBoxes=walk.map(c=>({box:bodyBox16(c,document.environment.access),cells:[c]}));
-  for(const c of walk)for(const d of HEADING_VECTORS){const next=add(c,d);if(walking.has(cellId(next))&&compareCells(c,next)<0)walkBoxes.push({box:walkSweep16(c,next,document.environment.access),cells:[c,next]});}
+  const walking=mask(walk),walkBoxes=walk.map(c=>({box:bodyBox16(c,ENVIRONMENT.access),cells:[c]}));
+  for(const c of walk)for(const d of HEADING_VECTORS){const next=add(c,d);if(walking.has(cellId(next))&&compareCells(c,next)<0)walkBoxes.push({box:walkSweep16(c,next,ENVIRONMENT.access),cells:[c,next]});}
   const walkReservations=crossingReservations(`walk:${area.id}:${cellId(cells[0])}`,area.id,'walk',900,walk,walkBoxes,certified);
   const walkReserved=book.tryReserveBatch(walkReservations);if(!walkReserved.accepted)throw new LayoutRejected('RESERVATION_CONFLICT',walkReserved.conflictIds);
   const graph=domain.graph(vehicleCells,charge.circulation),roots=gates.flatMap(g=>g.roadStates).sort(compareStates).map(s=>graph.index.get(stateKey(s))).filter((i):i is number=>i!==undefined);
@@ -109,14 +110,14 @@ function validateLayout(area:ParkingAreaInput,cells:Vec3[],descriptor:StripDescr
   const reservations=[...vehicleReservation,...walkReservations];
   const coverage=mask([...aisle,...walk,...bays.flatMap(b=>b.cells)]),unservedCells=cells.filter(c=>!coverage.has(cellId(c))).length;
   const maxExitDistance=Math.max(0,...exit.distance);
-  const plan:ParkingCirculationPlan={areaId:area.id,componentKey:cellId(cells[0]),status:unservedCells?'partial':'ok',axis:descriptor.axis,offset:descriptor.offset,periodCells:document.environment.parking.aisleWidthCells+5,eligibleCells:cells,incompleteBayCells:descriptor.incompleteBayCells,gates,aisleCells:aisle,walkCells:walk,crossings:certified.map(c=>({id:c.id,cells:c.cells})),bayStrips:bays,reachableStates:reachable,reservations,traces:[],budget:charge.allocation,reasonCodes:[],counters:{layoutCandidates:charge.layoutTrials,stateExpansions:charge.circulationUsed,unservedCells,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:bays.length,boxChecks:solid.checks,proofEdgeChecks:0}};
+  const plan:ParkingCirculationPlan={areaId:area.id,componentKey:cellId(cells[0]),status:unservedCells?'partial':'ok',axis:descriptor.axis,offset:descriptor.offset,periodCells:ENVIRONMENT.parking.aisleWidthCells+5,eligibleCells:cells,incompleteBayCells:descriptor.incompleteBayCells,gates,aisleCells:aisle,walkCells:walk,crossings:certified.map(c=>({id:c.id,cells:c.cells})),bayStrips:bays,reachableStates:reachable,reservations,traces:[],budget:charge.allocation,reasonCodes:[],counters:{layoutCandidates:charge.layoutTrials,stateExpansions:charge.circulationUsed,unservedCells,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:bays.length,boxChecks:solid.checks,proofEdgeChecks:0}};
   return {plan,book,potential:bays.length,additionalAisle:aisle.length-descriptor.aisle.length,maxExitDistance,stateIndex:graph.index,exitDistances:exit.distance};
 }
 function evaluate(area:ParkingAreaInput,cells:Vec3[],gateCandidate:GateCandidate,descriptor:StripDescriptor,document:GenerationDocument,spatial:SpatialAnalysis,base:ReservationBook,solid:BoundsIndex<string>,keepout:Vec3[],charge:ParkingCharge,domain:VehicleDomain,baseSearch:AccessSearch):Trial|undefined {
   const gate={...gateCandidate.gate},roads=mask(document.sceneInputs.roads);
   if(!gateCandidate.prepared){
     const own=mask(cells),open=mask(gate.openingCells),interior=cells.filter(c=>open.has(cellId(c))||HEADING_VECTORS.every(d=>own.has(cellId(add(c,d))))),allowedCells=[...interior,...document.sceneInputs.roads,...gate.connectorCells],allowed=mask(allowedCells),direction=HEADING_VECTORS[gate.inwardHeading];
-    const roots=gate.openingCells.map(c=>({rear:add(c,direction.map(n=>-n*(gateCandidate.gap+2)) as Vec3),heading:gate.inwardHeading})).filter(s=>validState(s,roads)&&vehicleCorridor(s,document.environment.parking.aisleWidthCells).every(c=>allowed.has(cellId(c))));
+    const roots=gate.openingCells.map(c=>({rear:add(c,direction.map(n=>-n*(gateCandidate.gap+2)) as Vec3),heading:gate.inwardHeading})).filter(s=>validState(s,roads)&&vehicleCorridor(s,ENVIRONMENT.parking.aisleWidthCells).every(c=>allowed.has(cellId(c))));
     gateCandidate.prepared={allowed:domain.mask(allowedCells),roots};
   }
   const {roots,allowed}=gateCandidate.prepared;
@@ -132,7 +133,7 @@ function failed(area:ParkingAreaInput,cells:Vec3[],reason:string,allocation=noAl
   return {areaId:area.id,componentKey:cellId(cells[0]),status:'unplannable',axis:'X',offset:0,periodCells:0,eligibleCells:cells,incompleteBayCells:[],gates:[],aisleCells:[],walkCells:[],crossings:[],bayStrips:[],reachableStates:[],reservations:[],traces:[],budget:allocation,reasonCodes:[reason],counters:{layoutCandidates:0,stateExpansions:0,unservedCells:cells.length,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:0,boxChecks:0,proofEdgeChecks:0}};
 }
 export function planParkingCirculation(document:GenerationDocument,spatial:SpatialAnalysis,initialBook:ReservationBook,solid:BoundsIndex<string>):{areas:ParkingCirculationArea[];book:ReservationBook;domains:Map<string,VehicleDomain>}{
-  const startChecks=solid.checks,domains=new Map<string,VehicleDomain>();let book=initialBook;const areas:ParkingCirculationArea[]=[],road=mask(document.sceneInputs.roads),settings=document.environment.parking;
+  const startChecks=solid.checks,domains=new Map<string,VehicleDomain>();let book=initialBook;const areas:ParkingCirculationArea[]=[],road=mask(document.sceneInputs.roads),settings=ENVIRONMENT.parking;
   const keepout=analyzeRoads(document.sceneInputs.roads).filter(r=>r.shape==='tee'||r.shape==='cross').flatMap(r=>r.cells);
   for(const area of document.sceneInputs.parkingAreas){
     const excludedRoadCells=area.cells.filter(c=>road.has(cellId(c))),excludedSolidCells=area.cells.filter(c=>!road.has(cellId(c))&&solid.query(cellBox16(c)).length),excluded=mask([...excludedRoadCells,...excludedSolidCells]);

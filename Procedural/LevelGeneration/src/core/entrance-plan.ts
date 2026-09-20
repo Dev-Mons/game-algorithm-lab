@@ -1,3 +1,4 @@
+import {ENVIRONMENT} from './environment-settings';
 import {BASES,add,cellId,compareCells,type Vec3,type Surface} from './analysis';
 import type {GenerationDocument} from './document';
 import type {ResolvedBuildingMetadata} from './buildings';
@@ -8,10 +9,9 @@ import type {Reservation,CandidateTrace} from './environment-contract';
 import type {Entrance,EntrancePlan} from './entrance-contract';
 import {FACADE_ASSETS} from './facade-assets';
 import type {BuildingStyle} from './building-style';
-import type {ParkingCirculationArea} from './parking-contract';
 import {planColumns} from './column-prototype';
 
-export const desiredEntranceCount=(frontageCells:number,volumeCells:number,settings:GenerationDocument['environment']['entrances'])=>frontageCells===0?0:Math.min(settings.maxCount,Math.ceil(frontageCells/settings.facadeCellsPerEntry),Math.max(1,Math.ceil(volumeCells/settings.volumeCellsPerEntry)));
+export const desiredEntranceCount=(frontageCells:number,volumeCells:number,settings:typeof ENVIRONMENT.entrances)=>frontageCells===0?0:Math.min(settings.maxCount,Math.ceil(frontageCells/settings.facadeCellsPerEntry),Math.max(1,Math.ceil(volumeCells/settings.volumeCellsPerEntry)));
 interface Candidate {id:string;run:BoundaryRun;faces:Surface[];landing:Vec3[];path:AccessResult;centerDistance2:number;trace:CandidateTrace}
 const dotU=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*BASES[s.direction].u[i],0);
 function supportsPortal(style:BuildingStyle,width:1|2,bodyWidth:number,bodyHeight:number):boolean {
@@ -24,9 +24,9 @@ function supportsPortal(style:BuildingStyle,width:1|2,bodyWidth:number,bodyHeigh
   const clearanceWidth=(width===1?openings[0].maxX-openings[0].minX:1+openings[1].maxX-openings[0].minX)*16;
   return clearanceWidth>=bodyWidth&&openings.every(o=>o.minY<=-.5&&(o.maxY+.5)*16>=bodyHeight);
 }
-export function planEntrances(document:GenerationDocument,building:ResolvedBuildingMetadata,cells:Vec3[],surfaces:Surface[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,parking:ParkingCirculationArea[]):EntrancePlan {
-  const style=building.theme??document.buildingDefinition,settings=document.environment,search=new AccessSearch(spatial,document,book,solid),roads=new Set(document.sceneInputs.roads.map(cellId)),faceMap=new Map(surfaces.map(s=>[s.faceId,s])),candidates:Candidate[]=[],traces:CandidateTrace[]=[];
-  const columns=new Set(planColumns(building.componentId,cells,surfaces,building.design.columnMode??(style.programs?'auto':'building'),new Set()).faces.map(f=>f.faceId));
+export function planEntrances(document:GenerationDocument,building:ResolvedBuildingMetadata,cells:Vec3[],surfaces:Surface[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>):EntrancePlan {
+  const style=building.theme??document.buildingDefinition,settings=ENVIRONMENT,search=new AccessSearch(spatial,document,book,solid),roads=new Set(document.sceneInputs.roads.map(cellId)),faceMap=new Map(surfaces.map(s=>[s.faceId,s])),candidates:Candidate[]=[],traces:CandidateTrace[]=[];
+  const columns=new Set(planColumns(building.componentId,cells,surfaces,style.programs?'auto':'building',new Set()).faces.map(f=>f.faceId));
   const runs=spatial.buildingRuns.filter(r=>r.owner.id===building.componentId&&r.footY===style.groundY);
   for(const run of runs){
     const faces=run.cells.map(c=>faceMap.get(`${cellId(c)}|${run.direction}`)!).filter(Boolean).sort((a,b)=>dotU(a)-dotU(b));
@@ -83,14 +83,5 @@ export function planEntrances(document:GenerationDocument,building:ResolvedBuild
   }
   for(const c of candidates)if(!c.trace.accepted&&!c.trace.reasonCodes.length)c.trace.reasonCodes=['LOWER_RANKED'];
   const entrances:Entrance[]=selected.map((c,i)=>({id:c.id,buildingId:building.componentId,faceIds:c.faces.map(f=>f.faceId),widthCells:c.faces.length as 1|2,role:i===0?'main':'secondary',outward:c.run.direction,access:c.path.reachable?'road':'local',landingCells:c.landing,pathCells:c.path.path,...(c.path.reachable?{roadTargetCell:c.path.targetRoadCell!,roadFrontageId:c.path.targetFrontageId!}:{}),traceId:`entrances:${building.componentId}`}));
-  if(building.design.use==='industrial'&&entrances.length>1){
-    const parkingWalk=new Set(parking.flatMap(a=>a.components.flatMap(p=>p.walkCells.map(cellId))));
-    const service=entrances.slice(1).filter(e=>e.roadFrontageId!==entrances[0].roadFrontageId).map(e=>{
-      const queue=e.landingCells.map(c=>({id:cellId(c),distance:0})),seen=new Set(queue.map(n=>n.id));
-      for(let i=0;i<queue.length;i++){const n=queue[i];if(parkingWalk.has(n.id))return {e,distance:n.distance};if(n.distance>=settings.access.maxWalkDistanceCells)continue;for(const id of search.neighbors.get(n.id)??[])if(!seen.has(id)){seen.add(id);queue.push({id,distance:n.distance+1});}}
-      return {e,distance:Infinity};
-    }).sort((a,b)=>a.distance-b.distance||(a.e.id<b.e.id?-1:1))[0];
-    if(service&&Number.isFinite(service.distance))service.e.role='service';
-  }
   return {buildingId:building.componentId,entrances,frontages:[...new Map(selected.map(c=>[`${c.run.direction}:${c.run.plane}`,{direction:c.run.direction,plane:c.run.plane}])).values()],desiredCount,unmetCount:desiredCount-entrances.length,reservations,traces:[{id:`entrances:${building.componentId}`,ownerId:building.componentId,ruleId:'accessible-portals',ruleVersion:'1.0.0',sourceRefs:[{kind:'building',id:building.componentId}],selectedIds:entrances.map(e=>e.id),candidates:traces}]};
 }

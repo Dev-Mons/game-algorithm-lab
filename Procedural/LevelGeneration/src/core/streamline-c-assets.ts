@@ -1,6 +1,7 @@
 import {ASSET_ROWS,portalDescriptor,type AssetBand,type AssetPart,type AssetRow,type BandedFacadeAsset} from './banded-facade-assets';
 import {COLUMN_ASSETS,type ColumnRole} from './column-prototype';
 import type {Box16} from './environment-contract';
+import {cityRoof} from './city-facade-assets';
 
 export type StreamlineCKey=`facade.${''|'rooftop-'}streamline-c-${AssetBand}-${AssetRow}-${AssetPart}${''|'-cut-left'|'-cut-right'|'-cut-both'}`
   | `facade.${''|'rooftop-'}streamline-c-${'wall'|'portal-single'|'portal-left'|'portal-right'}${''|'-cut-left'|'-cut-right'|'-cut-both'}`
@@ -60,7 +61,7 @@ const wall:BandedFacadeAsset={finish:'streamline-c',structural:true,railWidth16:
   bounds16:{min:[-8,-8,0],max:[8,8,2]},reliefBoxes16:[{min:[-8,-8,0],max:[8,8,2]}]};
 STREAMLINE_C_ASSETS['facade.streamline-c-wall']=wall;
 STREAMLINE_C_ASSETS['facade.rooftop-streamline-c-wall']=rooftop(wall);
-STREAMLINE_C_ASSETS['facade.streamline-c-roof']={...wall,reliefBoxes16:[],finish:'streamline-c-roof',surfaceRole:'roof',bounds16:{min:[-8,-8,-1],max:[8,8,0]}};
+STREAMLINE_C_ASSETS['facade.streamline-c-roof']=cityRoof('streamline-c-roof');
 STREAMLINE_C_ASSETS['facade.streamline-c-terrace']={...STREAMLINE_C_ASSETS['facade.streamline-c-roof'],surfaceRole:'terrace'};
 for(const [key,asset] of Object.entries(COLUMN_ASSETS))
   STREAMLINE_C_ASSETS[key.replace('urban-column','streamline-c-column') as StreamlineCKey]={...asset,finish:'streamline-c'};

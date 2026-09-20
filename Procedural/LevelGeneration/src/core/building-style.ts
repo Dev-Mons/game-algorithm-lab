@@ -2,7 +2,7 @@ import {ASSET_ROWS,type AssetRow,type BandedFacadeKey} from "./banded-facade-ass
 import {rooftopBandedKey} from './rooftop-facade-assets';
 import { FACADE_ASSETS, type FacadeAssetKey } from './facade-assets';
 import type { Direction } from './analysis';
-import { BUILDING_USES, type BuildingUse } from './environment-contract';
+
 import { exactKeys, cloneJSON } from './canonical';
 import {validatePrograms,type ArchitecturalProgram} from './architectural-program';
 import type {MassPolicy} from './mass-relations';
@@ -12,6 +12,7 @@ import {ribbonAKey} from './ribbon-a-assets';
 import {curtainBKey} from './curtain-b-assets';
 import {streamlineCKey,type StreamlineCKey} from './streamline-c-assets';
 import {COLUMN_ASSETS} from './column-prototype';
+
 export type VerticalBand = string;
 export type FacadeKind = 'front' | 'side';
 export interface BuildingModule {
@@ -25,15 +26,11 @@ export interface FacadePattern {
   id:string;start:string[];repeat:string[];end:string[];minRepeat:number;maxRepeat:number;
   roles:VerticalBand[];facades:FacadeKind[];minWidth:number;priority:number;remainder:string;
 }
-export interface BandPolicy {
-  baseRatioPermille:Record<BuildingUse,number>;crownRatioPermille:number;maxBaseCells:number;maxCrownCells:number;
-  baseCountOverride?:number;crownCountOverride?:number;
-}
 export interface BandDefinition {moduleSet:string[];fallback:string}
 export interface AlignedFamily {id:string;periodCells:number;patterns:Record<VerticalBand,string[]>;priority:number}
 export interface BuildingStyle {
   format:'banded-facade-v1';id:string;version:number;label:string;
-  bandPolicy:BandPolicy;bands:Record<VerticalBand,BandDefinition>;alignedFamilies:AlignedFamily[];
+  bands:Record<VerticalBand,BandDefinition>;alignedFamilies:AlignedFamily[];
   modules:BuildingModule[];patterns:FacadePattern[];fallback:string;entrance:string;entrancePair:[string,string];
   corner:{module:string;minRunWidth:number};topTrim:string;frontOrder:Direction[];groundY:0;
   programs?:ArchitecturalProgram[];
@@ -42,7 +39,6 @@ export interface BuildingStyle {
   roofAsset?:FacadeAssetKey;
   terraceAsset?:FacadeAssetKey;
 }
-export const DEFAULT_BAND_POLICY:BandPolicy={baseRatioPermille:{retail:250,office:200,generic:200,residential:167,industrial:200},crownRatioPermille:100,maxBaseCells:4,maxCrownCells:3};
 export const VERTICAL_BANDS:('base'|'body'|'crown')[]=['base','body','crown'];
 const walls:Direction[]=['PX','NX','PZ','NZ'];
 const module=(id:string,assetId:FacadeAssetKey,semantic:BuildingModule['semantic'],connection?:BuildingModule['connection']):BuildingModule=>({id,assetId,semantic,width:1,height:1,directions:[...walls],...(connection?{connection}:{})});
@@ -58,13 +54,13 @@ function stockStyle(id:'shop'|'office'):BuildingStyle {
     m.rooftopAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`facade.rooftop-${id}-${suffix}`])) as Record<AssetRow,FacadeAssetKey>;
   }
   const patterns=VERTICAL_BANDS.map((band):FacadePattern=>({id:`${band}-rhythm`,start:[],repeat:[`${band}-left`,`${band}-right`,`${band}-pier`],end:[],minRepeat:1,maxRepeat:32,roles:[band],facades:['front','side'],minWidth:1,priority:100,remainder:`${band}-single`}));
-  return {format:'banded-facade-v1',id,version:5,label:id==='shop'?'A':'B',bandPolicy:cloneJSON(DEFAULT_BAND_POLICY),
+  return {format:'banded-facade-v1',id,version:5,label:id==='shop'?'A':'B',
     bands:Object.fromEntries(VERTICAL_BANDS.map(b=>[b,{moduleSet:['wall','entry','entry-left','entry-right','trim',`${b}-single`,`${b}-left`,`${b}-right`,`${b}-pier`],fallback:`${b}-single`}])) as Record<VerticalBand,BandDefinition>,
     alignedFamilies:[{id:'paired-pier',periodCells:3,priority:100,patterns:{base:['base-rhythm'],body:['body-rhythm'],crown:['crown-rhythm']}}],modules,patterns,fallback:'wall',entrance:'entry',entrancePair:['entry-left','entry-right'],corner:{module:'body-pier',minRunWidth:3},topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0};
 }
 export const LEGACY_SHOP_STYLE=stockStyle('shop');
 function ribbonStyle():BuildingStyle {
-  const style=stockStyle('shop');style.version=6;
+  const style=stockStyle('shop');style.version=11;style.roofAsset='facade.city-roof';style.terraceAsset='facade.city-terrace';
   for(const m of style.modules){
     if(m.semantic==='trim')continue;
     m.assetId=ribbonAKey(m.assetId);
@@ -76,8 +72,8 @@ function ribbonStyle():BuildingStyle {
 export const SHOP_STYLE=ribbonStyle();
 export const LEGACY_OFFICE_STYLE=stockStyle('office');
 function curtainStyle():BuildingStyle {
-  const style=stockStyle('office');style.version=7;style.roofAsset='facade.curtain-b-roof';
-  style.bandPolicy.crownRatioPermille=200;
+  const style=stockStyle('office');style.version=11;style.roofAsset='facade.curtain-b-roof';style.terraceAsset='facade.city-terrace';
+
   for(const m of style.modules){
     if(m.semantic==='trim')continue;
     m.assetId=curtainBKey(m.assetId);
@@ -90,7 +86,7 @@ function curtainStyle():BuildingStyle {
 export const OFFICE_STYLE=curtainStyle();
 /** Legacy styles remain exact presets. New urban presets share the same mesh supplier. */
 export function urbanStyle(kind:'shop'|'office'):BuildingStyle {
-  const style=stockStyle(kind);style.id=`urban-${kind}`;style.label=kind==='shop'?'C':'D';
+  const style=stockStyle(kind);style.id=`urban-${kind}`;style.label=kind==='shop'?'C':'Custom frame';
   const roles={retail:'base',office:'body',upper:'crown',mechanical:'body'} as const;
   style.modules.push(module('louver','facade.urban-louver','wall'));
   style.bands={};style.patterns=[];style.alignedFamilies=[];
@@ -140,23 +136,32 @@ function streamlineStyle():BuildingStyle {
   return style;
 }
 export const URBAN_SHOP_STYLE=streamlineStyle();
-export const URBAN_OFFICE_STYLE=urbanStyle('office');
-// E reuses the metal prototypes with taller, three-floor glazing groups.
-export const STYLE_E:BuildingStyle={...urbanStyle('office'),id:'style-e',label:'E',
-  facadeGrammar:{...URBAN_OFFICE_STYLE.facadeGrammar!,periodV:3,minHeight:3}};
+function tower11Style():BuildingStyle {
+  const modules:BuildingModule[]=[module('wall','facade.tower11-d-wall','wall'),module('entry','facade.tower11-d-portal-single','entrance'),
+    module('entry-left','facade.tower11-d-portal-left','entrance',{family:'tower11-door',part:'left'}),
+    module('entry-right','facade.tower11-d-portal-right','entrance',{family:'tower11-door',part:'right'}),module('trim','facade.cap','trim')];
+  for(const band of VERTICAL_BANDS){
+    const asset=band==='base'?'facade.tower11-d-ground':'facade.tower11-d-window';
+    modules.push(module(`${band}-window`,asset,'window'),module(`${band}-edge`,asset,'pier'));
+  }
+  for(const m of modules)if(m.semantic!=='trim')m.rooftopAssets=Object.fromEntries(ASSET_ROWS.map(row=>[row,`${m.assetId}-rooftop`])) as Record<AssetRow,FacadeAssetKey>;
+  const patterns=VERTICAL_BANDS.map((band):FacadePattern=>({id:`${band}-grid`,start:[],repeat:[`${band}-window`],end:[],minRepeat:1,maxRepeat:32,roles:[band],facades:['front','side'],minWidth:1,priority:100,remainder:`${band}-window`}));
+  return {format:'banded-facade-v1',id:'tower11-d',version:1,label:'D',modules,patterns,
+    bands:Object.fromEntries(VERTICAL_BANDS.map(b=>[b,{moduleSet:['wall','entry','entry-left','entry-right','trim',`${b}-window`,`${b}-edge`],fallback:`${b}-window`} ])),
+    alignedFamilies:[{id:'tower11-grid',periodCells:1,priority:100,patterns:{base:['base-grid'],body:['body-grid'],crown:['crown-grid']}}],
+    fallback:'wall',entrance:'entry',entrancePair:['entry-left','entry-right'],corner:{module:'body-window',minRunWidth:2},
+    topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0,roofAsset:'facade.city-roof',terraceAsset:'facade.city-terrace'};
+}
+export const TOWER11_D_STYLE=tower11Style();
 export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
   const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);
   const range=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=min&&v<=max;
-  exactKeys(style,['format','id','version','label','bandPolicy','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar','roofAsset','terraceAsset']);
+  exactKeys(style,['format','id','version','label','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar','roofAsset','terraceAsset']);
   if(style.roofAsset!==undefined){const a=FACADE_ASSETS[style.roofAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='roof')fail();}
   if(style.terraceAsset!==undefined){const a=FACADE_ASSETS[style.terraceAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='terrace')fail();}
   if(style.massPolicy!==undefined){const p=style.massPolicy;exactKeys(p,['minArea','minWidth','minPersistence','changePermille']);if(!style.programs||!range(p.minArea,1,1024)||!range(p.minWidth,1,32)||!range(p.minPersistence,1,32)||!range(p.changePermille,1,1000))fail();}
   if(style.format!=='banded-facade-v1'||!id(style.id)||!range(style.version,1,0x7fffffff)||typeof style.label!=='string'||style.label.length>120||style.groundY!==0) fail();
-  const policy=style.bandPolicy;
-  exactKeys(policy,['baseRatioPermille','crownRatioPermille','maxBaseCells','maxCrownCells'],['baseCountOverride','crownCountOverride']);
-  exactKeys(policy.baseRatioPermille,BUILDING_USES);
-  if(!range(policy.crownRatioPermille,50,250)||!range(policy.maxBaseCells,2,16)||!range(policy.maxCrownCells,1,8)||(policy.baseCountOverride!==undefined&&!range(policy.baseCountOverride,1,16))||(policy.crownCountOverride!==undefined&&!range(policy.crownCountOverride,0,8))||BUILDING_USES.some(use=>!range(policy.baseRatioPermille[use],100,400)||policy.baseRatioPermille[use]+policy.crownRatioPermille>650)) fail();
   if(!Array.isArray(style.modules)||!style.modules.length||style.modules.length>256||!Array.isArray(style.patterns)||style.patterns.length>100) fail();
   const mods=new Map<string,BuildingModule>();
   for(const m of style.modules) {

@@ -4,6 +4,8 @@ import {URBAN_FACADE_ASSETS} from './urban-facade-assets';
 import {RIBBON_A_ASSETS} from './ribbon-a-assets';
 import {CURTAIN_B_ASSETS} from './curtain-b-assets';
 import {STREAMLINE_C_ASSETS} from './streamline-c-assets';
+import {CITY_FACADE_ASSETS} from './city-facade-assets';
+import {TOWER11_D_ASSETS} from './tower11-d-assets';
 // Authored dimensions in local face coordinates. No volume input.
 export interface FacadeAsset {
   opening?: {
@@ -25,6 +27,8 @@ export const FACADE_ASSETS = {
   ...RIBBON_A_ASSETS,
   ...CURTAIN_B_ASSETS,
   ...STREAMLINE_C_ASSETS,
+  ...CITY_FACADE_ASSETS,
+  ...TOWER11_D_ASSETS,
   "facade.portal-single": portalDescriptor('single'),
   "facade.portal-left": portalDescriptor('left'),
   "facade.portal-right": portalDescriptor('right'),
