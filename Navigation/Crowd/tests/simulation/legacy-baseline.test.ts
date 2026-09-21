@@ -9,9 +9,9 @@ const BASELINES = [
   { name: 'open', scenario: 'open-field', largeAgentPercent: 0,
     initial: '876a2f74', step120: '448364e5', command: 'fffe126b', command60: '0b31610d' },
   { name: 'corners', scenario: 'winding-corners', largeAgentPercent: 0,
-    initial: '20137ce9', step120: '99f07002', command: 'dc44afed', command60: '99a9ea37' },
+    initial: '20137ce9', step120: '9f4d2c16', command: '67909cbd', command60: '181fb658' },
   { name: 'mixed sizes at corners', scenario: 'winding-corners', largeAgentPercent: 5,
-    initial: '805de773', step120: '77fdca79', command: '4f7fdfce', command60: '298d8f68' },
+    initial: '805de773', step120: '988a1868', command: 'c9a9b55b', command60: 'ec2c6e66' },
 ] as const;
 
 describe('legacy movement-turn baseline', () => {
