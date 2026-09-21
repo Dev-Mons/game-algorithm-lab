@@ -1,5 +1,7 @@
 # Algorithm lab measurement protocol and results
 
+> 과거 실험 기록: B0/B1/R/Q/D는 현재 구현에서 제거되었습니다. 현재 등록·실행 구조는 [알고리즘 계약](algorithm-design-map.md)을 참고하세요.
+
 This report preserves the measurements made **before the winding-corner repairs**.
 Those repairs change experimental route following, touching-disc motion and retained-body
 detours; the old timings and quality numbers are not requalified results for the repaired solver.

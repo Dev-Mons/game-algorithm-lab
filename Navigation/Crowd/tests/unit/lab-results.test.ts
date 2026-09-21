@@ -16,7 +16,7 @@ function fixture(count: number, retained = false): CrowdSimulation {
     config: { width: 100, height: 100, wallMargin: 0 },
     agentRadii: new Float64Array(count).fill(2), maxAgentRadius: 2,
     scenario: { obstacles: [] },
-    resolvedExperiment: { preset: { id: retained ? 'R' : 'B1' }, options: { destination: retained ? 'slots' : 'exit' } },
+    resolvedExperiment: { preset: { id: 'fixture' }, options: { destination: retained ? 'slots' : 'exit' } },
   } as unknown as CrowdSimulation;
 }
 

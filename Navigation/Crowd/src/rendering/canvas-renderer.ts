@@ -1,4 +1,5 @@
 import type { CrowdSimulation } from '../core/simulation';
+import { angleDelta } from '../core/math';
 import type { Renderer } from '../core/types';
 import { drawDebug, type DebugOptions } from './debug-drawing';
 
@@ -116,7 +117,7 @@ export class CanvasRenderer implements Renderer {
         this.drawAgentGroup(simulation, interpolation, simulation.maxAgentRadius, LARGE_AGENT_COLOR, true);
       }
     }
-    if (simulation.resolvedExperiment.preset.id !== 'legacy' && simulation.resolvedExperiment.options.destination === 'slots') {
+    if (simulation.resolvedExperiment.options.destination === 'slots') {
       context.fillStyle = '#6ee7b7';
       context.beginPath();
       for (let agent = 0; agent < simulation.state.count; agent++) {
@@ -127,8 +128,7 @@ export class CanvasRenderer implements Renderer {
       context.fill();
     }
 
-    // Heading is presentation-only and follows the latest command intent
-    // immediately. Physical velocity remains acceleration-limited by the solver.
+    // Interpolate the fixed-step, rate-limited body heading along the short arc.
     context.strokeStyle = 'rgba(219, 234, 254, 0.72)';
     context.lineWidth = Math.max(1, radius * 0.32);
     context.beginPath();
@@ -142,20 +142,13 @@ export class CanvasRenderer implements Renderer {
         + (simulation.state.x[agent]! - previous.x[agent]!) * interpolation;
       const y = previous.y[agent]!
         + (simulation.state.y[agent]! - previous.y[agent]!) * interpolation;
-      let headingX = simulation.state.intentX[agent]!;
-      let headingY = simulation.state.intentY[agent]!;
-      let length = Math.hypot(headingX, headingY);
-      if (length <= 1e-6) {
-        headingX = simulation.state.vx[agent]!;
-        headingY = simulation.state.vy[agent]!;
-        length = Math.hypot(headingX, headingY);
-      }
-      if (length <= 1e-6) continue;
+      const heading = previous.heading[agent]!
+        + angleDelta(previous.heading[agent]!, simulation.state.heading[agent]!) * interpolation;
       const agentRadius = simulation.agentRadii[agent]!;
       context.moveTo(x, y);
       context.lineTo(
-        x + headingX / length * agentRadius * 1.45,
-        y + headingY / length * agentRadius * 1.45,
+        x + Math.cos(heading) * agentRadius * 1.45,
+        y + Math.sin(heading) * agentRadius * 1.45,
       );
     }
     context.stroke();

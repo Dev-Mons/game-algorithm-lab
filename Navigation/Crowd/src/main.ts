@@ -9,7 +9,7 @@ import { CanvasRenderer } from './rendering/canvas-renderer';
 import { DEFAULT_DEBUG_OPTIONS } from './rendering/debug-drawing';
 import { getScenario } from './scenarios/scenarios';
 import { appTemplate } from './ui/template';
-import { PRESETS, resolveExperiment, type ExperimentOptions, type PresetId } from './algorithms/lab/registry';
+import { PRESETS, type PresetId } from './algorithms/lab/registry';
 import { LabRecorder, type LabResult } from './core/lab-results';
 import { applyCommands, defaultCommands, scaleScenario, type LabCommand } from './scenarios/lab-scenarios';
 
@@ -211,6 +211,7 @@ function initializeControls(): void {
 
   bindRange('max-speed', 'maxSpeed');
   bindRange('max-acceleration', 'maxAcceleration');
+  bindRange('turn-speed', 'turnSpeed');
   bindRange('agent-radius', 'agentRadius', true);
   bindRange('large-agent-percent', 'largeAgentPercent', true);
   bindRange('large-agent-scale', 'largeAgentScale', true);
@@ -328,7 +329,7 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-velocity-delta').textContent = `${metrics.averageVelocityDelta.toFixed(2)} / ${metrics.maxVelocityDelta.toFixed(2)}`;
   element<HTMLElement>('metric-acceleration').textContent = `${metrics.averageAcceleration.toFixed(1)} / ${metrics.maxAcceleration.toFixed(1)}`;
   element<HTMLElement>('metric-dynamic-rebuild').textContent = simulation.resolvedExperiment.preset.id !== 'legacy'
-    ? `${simulation.resolvedExperiment.options.planner} · 생성 ${simulation.experimentStats.fieldBuilds}`
+    ? `${simulation.resolvedExperiment.preset.name} · 생성 ${simulation.experimentStats.fieldBuilds}`
     : !simulation.config.dynamicRouting
     ? `고정 · ${simulation.navigators.length}개`
     : metrics.dynamicRebuildCount > 0
@@ -339,7 +340,7 @@ function updateMetrics(): void {
   document.body.dataset.paused = String(!running && !fastForwarding);
   document.body.dataset.preset = simulation.resolvedExperiment.preset.id;
   const stats = simulation.experimentStats;
-  element('lab-live').textContent = `생성 ${simulation.state.count.toLocaleString()} · 활성 ${metrics.activeCount.toLocaleString()} · 이동 ${stats.movingCount.toLocaleString()} · 대기 ${stats.waitingCount.toLocaleString()} · 도착 ${metrics.arrivedCount.toLocaleString()} · 접촉 활성 ${stats.contactActiveCount.toLocaleString()} · 벽시계 Hz ${recorder.achievedHz.toFixed(1)} · 슬롯 부족 ${stats.unavailableSlots} · 회피 이웃 잘림 ${stats.neighborTruncations}`;
+  element('lab-live').textContent = `생성 ${simulation.state.count.toLocaleString()} · 활성 ${metrics.activeCount.toLocaleString()} · 이동 ${stats.movingCount.toLocaleString()} · 대기 ${stats.waitingCount.toLocaleString()} · 도착 ${metrics.arrivedCount.toLocaleString()} · 접촉 활성 ${stats.contactActiveCount.toLocaleString()} · 벽시계 Hz ${recorder.achievedHz.toFixed(1)}`;
   element('lab-passes').textContent = Object.entries(stats.passMs).map(([key, value]) => `${key} ${value.toFixed(2)}ms`).join(' · ')
     + ` | 경로 요청 ${stats.pathRequests} · 공유 재사용 ${stats.cacheHits} · field 생성 ${stats.fieldBuilds} · 지형 v${stats.terrainVersion}`;
 }
@@ -356,14 +357,6 @@ function syncLabControls(): void {
     ? '초록 빈 원은 각 유닛의 도착 슬롯입니다(최대 2,000개 표시). 파란 원은 부대 명령 중심이며, 목표에서 보이는 주변 공간에 슬롯이 분산됩니다. 초록색 유닛은 도착 후 자리를 유지합니다.'
     : preset.id === 'legacy' ? '파란 영역에 도착하면 유닛을 출구로 제거합니다. 기존 도착 판정을 보존한 기준 프리셋입니다.'
       : '파란 영역에 도착하면 유닛을 출구로 제거합니다. 벽에 가려진 목표는 도착으로 처리하지 않습니다.';
-  element<HTMLFieldSetElement>('module-controls').disabled = preset.id === 'legacy';
-  element<HTMLFieldSetElement>('individual-controls').disabled = preset.id === 'legacy';
-  for (const [key, value] of Object.entries(options)) {
-    const control = document.getElementById(`module-${key}`) as HTMLInputElement | HTMLSelectElement | null;
-    if (!control) continue;
-    if (typeof value === 'boolean') (control as HTMLInputElement).checked = value;
-    else control.value = String(value);
-  }
   element<HTMLButtonElement>('map-edit').disabled = scaledWorld && worldScale !== 1;
   element<HTMLInputElement>('scale-world').checked = scaledWorld;
 }
@@ -383,34 +376,6 @@ function initializeLabControls(): void {
     rebuildSimulation(baseScenario);
   });
   element('quality-mode').addEventListener('change', () => rebuildSimulation(baseScenario));
-  element('send-agent-command').addEventListener('click', () => {
-    const agent = Number(element<HTMLInputElement>('command-agent').value);
-    const goal = { x: Number(element<HTMLInputElement>('command-x').value), y: Number(element<HTMLInputElement>('command-y').value) };
-    try {
-      simulation.setAgentGoal(agent, goal.x, goal.y);
-      const command: LabCommand = { type: 'agent-goals', step: simulation.stepCount, goals: [{ agent, goal }] };
-      commandLog.push(command); appliedLiveCommands.add(command);
-      element('lab-error').hidden = true; updateMetrics(); renderer.render(1);
-    } catch (error) { element('lab-error').hidden = false; element('lab-error').textContent = String(error); }
-  });
-  element('apply-modules').addEventListener('click', () => {
-    const options = { ...simulation.resolvedExperiment.options };
-    for (const key of Object.keys(options) as Array<keyof ExperimentOptions>) {
-      const control = element<HTMLInputElement>(`module-${key}`);
-      (options as unknown as Record<string, unknown>)[key] = typeof options[key] === 'boolean' ? control.checked : typeof options[key] === 'number' ? Number(control.value) : control.value;
-    }
-    try {
-      resolveExperiment({ preset: config.preset, experiment: options });
-      config.experiment = options;
-      element('lab-error').hidden = true;
-      running = false;
-      rebuildSimulation(baseScenario);
-      updateRunState();
-    } catch (error) {
-      element('lab-error').hidden = false;
-      element('lab-error').textContent = String(error);
-    }
-  });
   element('run-current').addEventListener('click', () => { void compareRuns(false); });
   element('compare-presets').addEventListener('click', () => { void compareRuns(true); });
   element('cancel-comparison').addEventListener('click', () => { comparisonCancelled = true; });
@@ -451,8 +416,8 @@ function saveResult(result: LabResult): void { savedResults.push(result); savedR
 
 async function compareRuns(all: boolean): Promise<void> {
   if (comparisonRunning) return;
-  if (all && commandLog.some(command => command.type === 'agent-goals')) {
-    element('comparison-status').textContent = '개별 명령은 Legacy가 지원하지 않습니다. 현재 조합 재실행으로 비교하거나 초기화하여 공통 명령으로 6개 프리셋을 비교하세요.';
+  if (all && PRESETS.some(preset => !preset.supportsIndividualGoals) && commandLog.some(command => command.type === 'agent-goals')) {
+    element('comparison-status').textContent = '개별 명령을 지원하지 않는 프리셋이 있습니다. 초기화하여 공통 명령으로 비교하세요.';
     return;
   }
   comparisonRunning = true; comparisonCancelled = false; running = false; fastForwarding = false;

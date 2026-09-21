@@ -1,7 +1,8 @@
 import type { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import type { AgentBuffer } from './agent-state';
-import { clamp } from './math';
+import { angleDelta, clamp } from './math';
 import {
+  distanceSquaredToRect,
   projectCircleOutsideRectWithinBounds,
   SweptCircleStaticIntegrator,
   type CircleProjection,
@@ -32,6 +33,7 @@ export interface CrowdMovementInput {
   agentGap: number;
   maxSpeed: number;
   maxAcceleration: number;
+  turnSpeed: number;
   fixedDelta: number;
   contactCompliance: number;
   contactFriction: number;
@@ -69,6 +71,7 @@ export interface CrowdMovementResult {
 export class CrowdMovementSolver {
   private velocityX = new Float64Array(0);
   private velocityY = new Float64Array(0);
+  private headings = new Float64Array(0);
   private predictedX = new Float64Array(0);
   private predictedY = new Float64Array(0);
   private correctionX = new Float64Array(0);
@@ -171,9 +174,11 @@ export class CrowdMovementSolver {
 
   private predictPositions(input: CrowdMovementInput): void {
     const maximumVelocityDelta = Math.max(0, input.maxAcceleration) * input.fixedDelta;
+    const maximumTurn = Math.max(0, input.turnSpeed) * Math.PI / 180 * input.fixedDelta;
     for (let agent = 0; agent < input.current.count; agent += 1) {
       const startX = input.current.x[agent]!;
       const startY = input.current.y[agent]!;
+      this.headings[agent] = input.current.heading[agent]!;
       if (input.current.active[agent] !== 1) {
         this.velocityX[agent] = 0;
         this.velocityY[agent] = 0;
@@ -200,6 +205,28 @@ export class CrowdMovementSolver {
         velocityX *= scale;
         velocityY *= scale;
       }
+      // Limit the movement vector AFTER grid pressure and acceleration so those
+      // passes cannot overwrite the turn rate. A stopped agent can turn in place.
+      const moving = Math.hypot(velocityX, velocityY) > EPSILON;
+      const targetX = moving ? velocityX : input.current.intentX[agent]!;
+      const targetY = moving ? velocityY : input.current.intentY[agent]!;
+      if (targetX * targetX + targetY * targetY > EPSILON) {
+        const previous = input.current.heading[agent]!;
+        const delta = angleDelta(previous, Math.atan2(targetY, targetX));
+        const turnLimit = Math.abs(delta) > maximumTurn
+          && this.isNearStaticObstacle(input, startX, startY, Math.max(48, input.maxSpeed * input.fixedDelta * 12))
+          ? Math.PI * 2
+          : maximumTurn;
+        const heading = angleDelta(0, previous + clamp(delta, -turnLimit, turnLimit));
+        this.headings[agent] = heading;
+        if (Math.abs(delta) > turnLimit) {
+          const forwardX = Math.cos(heading), forwardY = Math.sin(heading);
+          // Orthogonal projection avoids injecting speed while restricting turn.
+          const forwardSpeed = Math.max(0, velocityX * forwardX + velocityY * forwardY);
+          velocityX = forwardX * forwardSpeed;
+          velocityY = forwardY * forwardSpeed;
+        }
+      }
       let predictedX = startX + velocityX * input.fixedDelta;
       let predictedY = startY + velocityY * input.fixedDelta;
       if (
@@ -218,6 +245,16 @@ export class CrowdMovementSolver {
       this.predictedX[agent] = predictedX;
       this.predictedY[agent] = predictedY;
     }
+  }
+
+  private isNearStaticObstacle(input: CrowdMovementInput, x: number, y: number, distance: number): boolean {
+    if (input.obstacles.length === 0) return false;
+    const threshold = Math.max(12, distance);
+    const thresholdSquared = threshold * threshold;
+    for (const obstacle of input.obstacles) {
+      if (distanceSquaredToRect(x, y, obstacle) <= thresholdSquared) return true;
+    }
+    return false;
   }
 
   private buildContactConstraints(input: CrowdMovementInput): void {
@@ -444,6 +481,7 @@ export class CrowdMovementSolver {
 
   private integratePredictions(input: CrowdMovementInput): void {
     input.next.copyFrom(input.current);
+    input.next.heading.set(this.headings.subarray(0, input.current.count));
     const inverseDelta = 1 / Math.max(EPSILON, input.fixedDelta);
     for (let agent = 0; agent < input.current.count; agent += 1) {
       if (input.current.active[agent] !== 1) continue;
@@ -671,6 +709,7 @@ export class CrowdMovementSolver {
     if (this.velocityX.length >= count) return;
     this.velocityX = new Float64Array(count);
     this.velocityY = new Float64Array(count);
+    this.headings = new Float64Array(count);
     this.predictedX = new Float64Array(count);
     this.predictedY = new Float64Array(count);
     this.correctionX = new Float64Array(count);

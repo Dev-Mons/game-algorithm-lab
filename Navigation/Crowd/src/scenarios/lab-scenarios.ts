@@ -29,7 +29,7 @@ export const LAB_SCENARIOS: readonly ScenarioDefinition[] = [
     ],
   },
   {
-    id: 'crowded-goal', name: '목적지 밀집', description: '작은 목적지 주변. exit는 제거, slots는 도착자 점유 유지·수용량 부족 대기를 구분합니다.',
+    id: 'crowded-goal', name: '목적지 밀집', description: '작은 목적지 주변으로 군중이 집중되는 상황을 확인합니다.',
     spawn: { x: 48, y: 84, width: 384, height: 552 }, goal: { x: 1020, y: 360 },
     obstacles: [{ x: 936, y: 168, width: 240, height: 48 }, { x: 936, y: 504, width: 240, height: 48 }],
   },

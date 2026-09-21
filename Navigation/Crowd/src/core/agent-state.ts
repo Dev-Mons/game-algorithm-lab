@@ -7,6 +7,8 @@ export class AgentBuffer {
   readonly stalledFor: Float64Array;
   readonly intentX: Float64Array;
   readonly intentY: Float64Array;
+  /** Persistent movement heading in radians, limited by turnSpeed. */
+  readonly heading: Float64Array;
 
   constructor(public readonly count: number) {
     this.x = new Float64Array(count);
@@ -17,6 +19,7 @@ export class AgentBuffer {
     this.stalledFor = new Float64Array(count);
     this.intentX = new Float64Array(count);
     this.intentY = new Float64Array(count);
+    this.heading = new Float64Array(count);
   }
 
   copyFrom(other: AgentBuffer): void {
@@ -28,5 +31,6 @@ export class AgentBuffer {
     this.stalledFor.set(other.stalledFor);
     this.intentX.set(other.intentX);
     this.intentY.set(other.intentY);
+    this.heading.set(other.heading);
   }
 }

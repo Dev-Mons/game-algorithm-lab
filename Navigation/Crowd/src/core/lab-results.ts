@@ -12,7 +12,7 @@ export function distribution(values: readonly number[]) {
 /** Independent audit: no solver candidate list or neighbor cap is reused. */
 export function auditGeometry(simulation: CrowdSimulation) {
   const { state, previousState: previous, config, agentRadii: radii } = simulation;
-  const retain = simulation.resolvedExperiment.preset.id !== 'legacy' && simulation.resolvedExperiment.options.destination === 'slots';
+  const retain = simulation.resolvedExperiment.options.destination === 'slots';
   const present = Uint8Array.from(state.active, (active, i) => retain || active === 1 || previous.active[i] === 1 ? 1 : 0);
   const index = new SpatialHash(config.width, config.height, Math.max(4, simulation.maxAgentRadius * 2), state.count);
   index.rebuild(previous.x, previous.y, present);

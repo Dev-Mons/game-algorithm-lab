@@ -6,6 +6,12 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+/** Signed shortest angular difference, in [-PI, PI). */
+export function angleDelta(from: number, to: number): number {
+  const turn = Math.PI * 2;
+  return ((to - from + Math.PI) % turn + turn) % turn - Math.PI;
+}
+
 export function length(x: number, y: number): number {
   return Math.hypot(x, y);
 }

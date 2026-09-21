@@ -13,12 +13,11 @@ const integer = (name: string, fallback: number, minimum = 1) => {
   return value;
 };
 const sourceRoot = resolve(arg('source', '.'));
-const presets = arg('presets', 'legacy,B0,B1,R,Q,D').split(',');
 const agents = integer('agents', 1000);
 const ticks = integer('ticks', 3600);
 const tailTicks = integer('tail-ticks', ticks);
 if (tailTicks < ticks) throw new RangeError('--tail-ticks must not be smaller than --ticks');
-const tailPresets = new Set(arg('tail-presets', 'R,Q').split(','));
+const tailPresets = new Set(arg('tail-presets', '').split(','));
 const stopOnComplete = arg('stop-on-complete', 'false') === 'true';
 const auditEvery = integer('audit-every', 30, 0);
 const seed = integer('seed', 42, 0);
@@ -38,6 +37,7 @@ const { CrowdSimulation, DEFAULT_CONFIG } = await import(pathToFileURL(resolve(s
 const { getScenario } = await import(pathToFileURL(resolve(sourceRoot, 'src/scenarios/scenarios.ts')).href) as typeof import('../src/scenarios/scenarios');
 const { auditGeometry } = await import(pathToFileURL(resolve(sourceRoot, 'src/core/lab-results.ts')).href) as typeof import('../src/core/lab-results');
 const { PRESETS } = await import(pathToFileURL(resolve(sourceRoot, 'src/algorithms/lab/registry.ts')).href) as typeof import('../src/algorithms/lab/registry');
+const presets = arg('presets', PRESETS.map(preset => preset.id).join(',')).split(',');
 for (const preset of presets) if (!PRESETS.some((candidate) => candidate.id === preset)) throw new RangeError(`Unknown preset ${preset}`);
 
 const GATES = [

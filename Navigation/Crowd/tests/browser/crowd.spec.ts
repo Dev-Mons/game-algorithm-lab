@@ -83,37 +83,30 @@ test('a requested fixed step is deterministic and physically bounded', async ({ 
   await page.screenshot({ path: testInfo.outputPath('movement-v2-open-field.png'), fullPage: true });
 });
 
-test('reversing the goal changes intent immediately and moves on the next step', async ({ page }) => {
-  await page.goto('/?scenario=open-field&agents=200&paused=true');
-  const result = await page.evaluate(() => {
-    const simulation = window.crowdDebug.simulation();
-    for (let step = 0; step < 120; step += 1) simulation.step();
-    simulation.setGoal(10, 360);
-    let redirected = 0;
-    let minimumCommandProjection = Number.POSITIVE_INFINITY;
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      if (simulation.state.active[agent] !== 1) continue;
-      if (simulation.state.intentX[agent]! < -0.25) redirected += 1;
-      minimumCommandProjection = Math.min(
-        minimumCommandProjection,
-        simulation.state.vx[agent]! * simulation.state.intentX[agent]!
-          + simulation.state.vy[agent]! * simulation.state.intentY[agent]!,
-      );
-    }
-    simulation.step();
-    let progress = 0;
-    let active = 0;
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      if (simulation.state.active[agent] !== 1) continue;
-      active += 1;
-      progress += simulation.state.vx[agent]! * simulation.state.intentX[agent]!
-        + simulation.state.vy[agent]! * simulation.state.intentY[agent]!;
-    }
-    return { redirected, minimumCommandProjection, averageProgress: progress / active };
-  });
-  expect(result.redirected).toBeGreaterThan(180);
-  expect(result.minimumCommandProjection).toBeGreaterThanOrEqual(-1e-9);
-  expect(result.averageProgress).toBeGreaterThan(0);
+test('movement turn speed changes the actual path', async ({ page }) => {
+  const positions = [];
+  for (const speed of [60, 720]) {
+    await page.goto('/?scenario=open-field&agents=1&paused=true');
+    const control = page.locator('#turn-speed');
+    if (speed === 60) {
+      await control.press('Home');
+      await control.press('ArrowRight');
+      await control.press('ArrowRight');
+    } else await control.press('End');
+    positions.push(await page.evaluate(() => {
+      const s = window.crowdDebug.simulation();
+      s.config.maxAcceleration = 1000;
+      s.state.x[0] = 500; s.state.y[0] = 300;
+      s.state.vx[0] = 86; s.state.vy[0] = 0; s.state.heading[0] = 0;
+      s.setGoal(500, 660);
+      for (let tick = 0; tick < 45; tick++) s.step();
+      return { x: s.state.x[0]!, y: s.state.y[0]!, turnSpeed: s.config.turnSpeed };
+    }));
+  }
+  expect(positions[0]!.turnSpeed).toBe(60);
+  expect(positions[1]!.turnSpeed).toBe(720);
+  expect(positions[0]!.x - positions[1]!.x).toBeGreaterThan(15);
+  expect(positions[1]!.y - positions[0]!.y).toBeGreaterThan(10);
 });
 
 test('a pathological 1000-agent overlap remains bounded and keeps moving', async ({ page }) => {

@@ -11,7 +11,7 @@ export interface Rect {
 }
 
 export interface SimulationConfig {
-  /** Omitted means the unchanged legacy directional-fluid solver. */
+  /** Omitted selects the legacy directional-fluid solver. */
   preset?: string;
   experiment?: Partial<import('../algorithms/lab/registry').ExperimentOptions>;
   width: number;
@@ -23,6 +23,8 @@ export interface SimulationConfig {
   seed: number;
   maxSpeed: number;
   maxAcceleration: number;
+  /** Maximum commanded movement heading change in degrees per simulation second. */
+  turnSpeed: number;
   agentRadius: number;
   largeAgentPercent: number;
   largeAgentScale: number;

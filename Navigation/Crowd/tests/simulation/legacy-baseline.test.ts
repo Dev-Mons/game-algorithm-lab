@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { getScenario } from '../../src/scenarios/scenarios';
 
-// Captured from the one-time imported original working state on 2026-09-20,
-// before the lab pipeline changed movement behavior. These hashes protect the
-// explicit legacy preset, including its command and reset lifecycle.
+// Rebased on 2026-09-21 for actual movement turn limiting and persistent heading
+// in the hash. The former immediate reverse-momentum cancellation was removed.
+// These hashes protect the legacy solver's command and reset lifecycle.
 const BASELINES = [
   { name: 'open', scenario: 'open-field', largeAgentPercent: 0,
-    initial: '3bad1e40', step120: '33ed01ec', command: 'bc828a5f', command60: 'cec864c2' },
+    initial: '876a2f74', step120: '448364e5', command: 'fffe126b', command60: '0b31610d' },
   { name: 'corners', scenario: 'winding-corners', largeAgentPercent: 0,
-    initial: '410c87fb', step120: '267e8323', command: 'ae100ec9', command60: '92a461e7' },
+    initial: '20137ce9', step120: '99f07002', command: 'dc44afed', command60: '99a9ea37' },
   { name: 'mixed sizes at corners', scenario: 'winding-corners', largeAgentPercent: 5,
-    initial: '62e883bf', step120: '0864dd62', command: '54d6d844', command60: '8f24e72a' },
+    initial: '805de773', step120: '77fdca79', command: '4f7fdfce', command60: '298d8f68' },
 ] as const;
 
-describe('imported legacy baseline', () => {
+describe('legacy movement-turn baseline', () => {
   it.each(BASELINES)('preserves $name movement, re-command and reset', (baseline) => {
     const simulation = new CrowdSimulation({
       ...DEFAULT_CONFIG,

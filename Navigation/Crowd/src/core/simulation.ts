@@ -2,7 +2,7 @@ import { AgentBuffer } from './agent-state';
 import { largeAgentPercent, largeAgentScale } from './agent-size';
 import { CrowdField } from './crowd-field';
 import { CrowdFlowSolver } from './crowd-flow-solver';
-import { clamp, distanceSquared } from './math';
+import { angleDelta, clamp, distanceSquared } from './math';
 import { distanceSquaredToRect } from './obstacle-collision';
 import { CrowdMovementSolver, type CrowdMovementResult } from './crowd-movement-solver';
 import { createSpawnLayout } from './spawn-layout';
@@ -18,7 +18,7 @@ import type {
 import { FlowField, type DynamicFlowFieldOptions } from '../algorithms/flow-field/flow-field';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import { resolveExperiment, type ResolvedExperiment } from '../algorithms/lab/registry';
-import { LabPipeline, type AgentGoalCommand } from '../algorithms/lab/pipeline';
+import type { LabPipeline, AgentGoalCommand } from '../algorithms/lab/pipeline';
 import { emptyExperimentStats, type ExperimentStats } from '../algorithms/lab/contracts';
 
 const EPSILON = 1e-9;
@@ -240,6 +240,12 @@ export class CrowdSimulation {
     this.legacyExperimentStats.waitingCount = this.state.count;
     this.legacyExperimentStats.fieldBuilds = this.uniqueNavigators.length;
     this.rebuildPipeline(false);
+    for (let agent = 0; agent < this.state.count; agent += 1) {
+      this.sampleNavigationDirection(agent, this.state.x[agent]!, this.state.y[agent]!, this.direction);
+      this.state.heading[agent] = Math.atan2(this.direction.y, this.direction.x);
+    }
+    this.previousState.heading.set(this.state.heading);
+    this.nextState.heading.set(this.state.heading);
   }
 
   changeScenario(scenario: ScenarioDefinition): void {
@@ -248,9 +254,8 @@ export class CrowdSimulation {
   }
 
   /**
-   * A new command invalidates old movement momentum. Velocity is projected onto
-   * the new route direction, so a 180-degree command stops old motion in the
-   * command frame and accelerates in the new direction on the next fixed step.
+   * A new command changes route intent immediately. Momentum and heading are
+   * preserved; the movement solver brakes and turns under the configured limits.
    */
   setGoal(x: number, y: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError('Goal coordinates must be finite.');
@@ -261,7 +266,7 @@ export class CrowdSimulation {
       this.flowGoals[flow]!.y = this.goal.y;
     }
     this.configureNavigators();
-    if (this.resolvedExperiment.preset.id !== 'legacy') {
+    if (!!this.resolvedExperiment.preset.createPipeline) {
       this.individualGoals.clear();
       this.state.active.fill(1);
       this.rebuildPipeline(true);
@@ -275,7 +280,6 @@ export class CrowdSimulation {
         this.state.y[agent]!,
         this.direction,
       );
-      this.removeReverseVelocity(this.state, agent, this.direction.x, this.direction.y);
       this.state.intentX[agent] = this.direction.x;
       this.state.intentY[agent] = this.direction.y;
     }
@@ -351,6 +355,7 @@ export class CrowdSimulation {
       agentGap: this.config.agentGap,
       maxSpeed: this.config.maxSpeed,
       maxAcceleration: this.config.maxAcceleration,
+      turnSpeed: Number.isFinite(this.config.turnSpeed) ? this.config.turnSpeed : 360,
       fixedDelta: this.config.fixedDelta,
       contactCompliance: this.config.contactCompliance,
       contactFriction: this.config.contactFriction,
@@ -424,6 +429,7 @@ export class CrowdSimulation {
   }
 
   stateHash(): string {
+    // Heading affects subsequent movement and belongs to deterministic state.
     let hash = 0x811c9dc5;
     const mix = (value: number): void => {
       hash ^= value | 0;
@@ -449,6 +455,7 @@ export class CrowdSimulation {
       mix(Math.round(this.state.intentY[agent]! * 1_000_000));
       mix(this.agentFlow[agent]!);
       mix(Math.round(this.agentRadii[agent]! * 1000));
+      mix(Math.round(this.state.heading[agent]! * 1_000_000));
     }
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
@@ -457,20 +464,12 @@ export class CrowdSimulation {
   setAgentGoal(agent: number, x: number, y: number): void { this.setAgentGoals([{ agent, goal: { x, y } }]); }
 
   setAgentGoals(commands: readonly AgentGoalCommand[]): void {
-    if (!this.pipeline) throw new RangeError('Individual goal commands require an experimental preset (B0–D).');
+    if (!this.pipeline || !this.resolvedExperiment.preset.supportsIndividualGoals) throw new RangeError('This preset does not support individual goal commands.');
     const proposed = new Map(this.individualGoals);
     for (const command of commands) {
       if (!Number.isInteger(command.agent) || command.agent < 0 || command.agent >= this.state.count) throw new RangeError('Individual goal agent is out of range.');
       if (!Number.isFinite(command.goal.x) || !Number.isFinite(command.goal.y)) throw new RangeError('Goal coordinates must be finite.');
       proposed.set(command.agent, { x: clamp(command.goal.x, 0, this.config.width), y: clamp(command.goal.y, 0, this.config.height) });
-    }
-    if (this.resolvedExperiment.options.planner === 'shared-flow') {
-      const keys = new Set<string>();
-      for (let i = 0; i < this.state.count; i += 1) {
-        const target = proposed.get(i) ?? this.flowGoals[this.agentFlow[i]!]!;
-        keys.add(`${target.x},${target.y},${this.agentRadii[i]}`);
-      }
-      if (keys.size > 128) throw new RangeError('Shared-flow supports at most 128 distinct goal/size fields; select B0 for many individual goals.');
     }
     this.individualGoals.clear();
     for (const [agent, goal] of proposed) this.individualGoals.set(agent, goal);
@@ -486,7 +485,7 @@ export class CrowdSimulation {
       if (![obstacle.x, obstacle.y, obstacle.width, obstacle.height].every(Number.isFinite)
         || obstacle.width < 0 || obstacle.height < 0) throw new RangeError('Invalid obstacle geometry.');
     }
-    const retainArrivals = this.resolvedExperiment.preset.id !== 'legacy'
+    const retainArrivals = !!this.resolvedExperiment.preset.createPipeline
       && this.resolvedExperiment.options.destination === 'slots';
     for (let agent = 0; agent < this.state.count; agent += 1) {
       if (this.state.active[agent] !== 1 && !retainArrivals) continue;
@@ -499,6 +498,7 @@ export class CrowdSimulation {
     }
     this.scenario = { ...this.scenario, obstacles: obstacles.map((obstacle) => ({ ...obstacle })) };
     this.terrainVersion += 1;
+    this.legacyExperimentStats.terrainVersion = this.terrainVersion;
     this.configureNavigators();
     const clearance = this.config.agentRadius + this.config.wallMargin;
     this.crowdField.setObstacles(this.scenario.obstacles, clearance);
@@ -511,10 +511,11 @@ export class CrowdSimulation {
   }
 
   private rebuildPipeline(preserveCounters: boolean): void {
-    if (this.resolvedExperiment.preset.id === 'legacy') return;
+    const createPipeline = this.resolvedExperiment.preset.createPipeline;
+    if (!createPipeline) return;
     const previousPipeline = this.pipeline;
     const previous = previousPipeline?.stats;
-    this.pipeline = new LabPipeline({ config: this.config, scenario: this.scenario, state: this.state,
+    this.pipeline = createPipeline({ config: this.config, scenario: this.scenario, state: this.state,
       radii: this.agentRadii, flows: this.agentFlow, goals: this.flowGoals, crowdField: this.crowdField },
     this.resolvedExperiment.options, this.navigator, this.individualGoals, this.terrainVersion,
     preserveCounters ? previousPipeline ?? undefined : undefined);
@@ -535,9 +536,25 @@ export class CrowdSimulation {
     this.publishFieldDensity(next);
     this.dynamicRebuildCountThisStep = 0; this.dynamicRebuildMsThisStep = 0;
     this.finalizeMetrics(current, next, movement);
+    this.updateHeadings(current, next);
     this.state = next; this.nextState = current; this.stepCount += 1;
     this.pipeline!.stats.passMs.density = densityMs;
     this.pipeline!.stats.passMs.total = performance.now() - started;
+  }
+
+  private updateHeadings(current: AgentBuffer, next: AgentBuffer): void {
+    const turnSpeed = Number.isFinite(this.config.turnSpeed) ? Math.max(0, this.config.turnSpeed) : 360;
+    const maximumTurn = turnSpeed * Math.PI / 180 * this.config.fixedDelta;
+    for (let agent = 0; agent < next.count; agent += 1) {
+      const previous = current.heading[agent]!;
+      next.heading[agent] = previous;
+      if (next.active[agent] !== 1) continue;
+      let x = next.intentX[agent]!, y = next.intentY[agent]!;
+      if (x * x + y * y <= EPSILON) { x = next.vx[agent]!; y = next.vy[agent]!; }
+      if (x * x + y * y <= EPSILON) continue;
+      const delta = angleDelta(previous, Math.atan2(y, x));
+      next.heading[agent] = angleDelta(0, previous + clamp(delta, -maximumTurn, maximumTurn));
+    }
   }
 
   private configureFlows(): void {
@@ -554,7 +571,7 @@ export class CrowdSimulation {
   }
 
   private configureNavigators(): void {
-    if (this.resolvedExperiment.preset.id !== 'legacy') {
+    if (!!this.resolvedExperiment.preset.createPipeline) {
       this.flowNavigators = []; this.largeFlowNavigators = [];
       this.uniqueFlowNavigators = []; this.uniqueNavigators = [];
       return;
@@ -595,7 +612,6 @@ export class CrowdSimulation {
       this.sampleNavigationDirection(agent, current.x[agent]!, current.y[agent]!, this.direction);
       current.intentX[agent] = this.direction.x;
       current.intentY[agent] = this.direction.y;
-      this.removeReverseVelocity(current, agent, this.direction.x, this.direction.y);
       const distance = Math.sqrt(distanceSquared(
         current.x[agent]!,
         current.y[agent]!,
@@ -630,18 +646,6 @@ export class CrowdSimulation {
       state.intentX[agent] = 0;
       state.intentY[agent] = 0;
     }
-  }
-
-  private removeReverseVelocity(
-    state: AgentBuffer,
-    agent: number,
-    directionX: number,
-    directionY: number,
-  ): void {
-    const progress = state.vx[agent]! * directionX + state.vy[agent]! * directionY;
-    if (progress >= 0) return;
-    state.vx[agent] = state.vx[agent]! - directionX * progress;
-    state.vy[agent] = state.vy[agent]! - directionY * progress;
   }
 
   private finalizeMetrics(
@@ -807,6 +811,7 @@ export const DEFAULT_CONFIG: SimulationConfig = {
   seed: 42,
   maxSpeed: 86,
   maxAcceleration: 210,
+  turnSpeed: 360,
   agentRadius: 3.2,
   largeAgentPercent: 0,
   largeAgentScale: 2,

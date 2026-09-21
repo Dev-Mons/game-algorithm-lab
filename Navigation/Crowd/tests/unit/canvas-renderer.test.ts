@@ -15,6 +15,9 @@ describe('CanvasRenderer', () => {
     const previousY = simulation.previousState.y[0]!;
     const currentX = simulation.state.x[0]!;
     const currentY = simulation.state.y[0]!;
+    // The halfway heading crosses PI, rather than rotating the long way via 0.
+    simulation.previousState.heading[0] = 179 * Math.PI / 180;
+    simulation.state.heading[0] = -179 * Math.PI / 180;
     const arcs: Array<[number, number, number]> = [];
     const moveTo = vi.fn();
     const gradient = { addColorStop: vi.fn() };
@@ -60,6 +63,11 @@ describe('CanvasRenderer', () => {
       agentArc![1],
     );
     expect(simulation.stateHash()).toBe(hash);
+    expect(context.lineTo).toHaveBeenCalledWith(
+      expect.closeTo(agentArc![0] - simulation.config.agentRadius * 1.45, 10),
+      expect.closeTo(agentArc![1], 10),
+    );
+    expect(simulation.state.heading[0]).toBe(-179 * Math.PI / 180);
   });
 
   it('composites very large crowds once and bounds overlap warning markers', () => {

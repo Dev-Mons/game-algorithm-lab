@@ -48,39 +48,6 @@ describe('single crowd movement pipeline', () => {
     },
   );
 
-  it('turns command intent immediately and removes momentum toward the old goal', () => {
-    const simulation = new CrowdSimulation(
-      { ...DEFAULT_CONFIG, agentCount: 200 },
-      getTestScenario('open-field'),
-    );
-    for (let step = 0; step < 120; step += 1) simulation.step();
-    const oldGoalX = simulation.goal.x;
-
-    simulation.setGoal(10, 360);
-
-    let redirected = 0;
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      if (simulation.state.active[agent] !== 1) continue;
-      expect(simulation.state.vx[agent]! * simulation.state.intentX[agent]!
-        + simulation.state.vy[agent]! * simulation.state.intentY[agent]!).toBeGreaterThanOrEqual(-1e-9);
-      if (simulation.state.intentX[agent]! < -0.25) redirected += 1;
-    }
-    expect(simulation.goal.x).toBeLessThan(oldGoalX);
-    expect(redirected).toBeGreaterThan(180);
-
-    simulation.step();
-    let progress = 0;
-    let active = 0;
-    for (let agent = 0; agent < simulation.state.count; agent += 1) {
-      if (simulation.state.active[agent] !== 1) continue;
-      active += 1;
-      progress += simulation.state.vx[agent]! * simulation.state.intentX[agent]!
-        + simulation.state.vy[agent]! * simulation.state.intentY[agent]!;
-    }
-    expect(progress / active).toBeGreaterThan(0);
-    expect(simulation.metrics.backwardCount).toBe(0);
-  });
-
   it('separates an invalid coincident cluster without stopping the group', () => {
     const simulation = new CrowdSimulation(
       { ...DEFAULT_CONFIG, agentCount: 32 },

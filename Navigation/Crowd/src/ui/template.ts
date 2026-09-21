@@ -98,6 +98,7 @@ export function appTemplate(): string {
           <h2>이동 파라미터</h2>
           ${rangeControl('최대 속도', 'max-speed', 20, 180, 1, 86)}
           ${rangeControl('최대 가속도', 'max-acceleration', 40, 500, 5, 210)}
+          ${rangeControl('이동 회전 속도 (°/초)', 'turn-speed', 0, 720, 30, 360)}
           ${rangeControl('객체 반지름', 'agent-radius', 1.5, 8, 0.1, 3.2)}
           ${rangeControl('큰 객체 비율 (%)', 'large-agent-percent', 0, 100, 1, 0)}
           ${rangeControl('큰 객체 크기 배율 (×)', 'large-agent-scale', 1, 4, 0.1, 2)}
@@ -125,7 +126,7 @@ export function appTemplate(): string {
         <section class="control-section">
           <h2>지원 범위</h2>
           <p class="editor-help">2D 원판·사각형 벽·고정 tick. 같은 런타임의 seed/명령 재현을 지원합니다.
-          ORCA는 원판 반평면 변형이며 정적 벽은 별도 sweep입니다. 제한 이웃·유한 접촉 반복은 무겹침 보장이 아닙니다.</p>
+          방향별 격자 속도·압력과 XPBD 접촉을 사용하며 정적 벽은 sweep으로 처리합니다. 유한 접촉 반복은 무겹침 보장이 아닙니다.</p>
         </section>
         <footer class="core-note"><span>CORE</span> Fixed dt 1/60 s · Measured Hz / FPS separately</footer>
       </aside>
