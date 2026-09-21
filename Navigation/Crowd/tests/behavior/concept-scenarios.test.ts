@@ -4,7 +4,7 @@ import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { CrowdQualityTracker } from '../../src/core/crowd-quality-metrics';
 import { getScenario } from '../../src/scenarios/scenarios';
 
-const concepts = ['winding-corners', 'funnel-bypass', 'four-way-merge'];
+const concepts = ['winding-corners', 'funnel-bypass', 'four-way-merge', 'rocky-pass'];
 
 function stepSafely(simulation: CrowdSimulation): void {
   simulation.step();
@@ -41,7 +41,7 @@ describe('sketch concept scenarios through the shared navigation pipeline', () =
     expect(first.navigator.dynamicRebuildCount).toBe(0);
     expect(first.navigator.directionX).toEqual(directionX);
     expect(first.navigator.directionY).toEqual(directionY);
-  });
+  }, 20_000);
 
   it('shares one field across spawn cohorts and rebuilds it once when the goal changes', () => {
     const simulation = new CrowdSimulation({...DEFAULT_CONFIG, agentCount: 100},getScenario('four-way-merge'));

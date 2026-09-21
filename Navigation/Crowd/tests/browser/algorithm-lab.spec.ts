@@ -51,19 +51,25 @@ test('fair sequential comparison saves and exports reproducible results', async 
   await expect(page.locator('#result-rows tr')).toHaveCount(PRESETS.length);
 });
 
-test('scaled world preserves 10000 actual bodies and physical radii', async ({ page }) => {
-  await page.goto('/?agents=10000&paused=true&preset=legacy&scale=true');
+for (const scenario of ['open-field', 'rocky-pass']) {
+test(`scaled world preserves 10000 actual bodies and physical radii: ${scenario}`, async ({ page }) => {
+  await page.goto(`/?scenario=${scenario}&agents=10000&paused=true&preset=legacy&scale=true`);
   const dimensions = await page.evaluate(() => {
     const s = window.crowdDebug.simulation();
-    return { count: s.state.count, width: s.config.width, radius: s.config.agentRadius };
+    return { count: s.state.count, width: s.config.width, height: s.config.height,
+      radius: s.config.agentRadius, unspawned: s.unspawnedCount };
   });
   expect(dimensions.count).toBe(10000);
   expect(dimensions.radius).toBe(3.2);
   expect(dimensions.width).toBeGreaterThan(1200);
+  expect(dimensions.height).toBeCloseTo(720 * Math.sqrt(10));
+  expect(dimensions.unspawned).toBe(0);
   await expect(page.locator('#map-edit')).toBeDisabled();
   await page.locator('#single-step').click();
   await expect(page.locator('body')).toHaveAttribute('data-step', '1');
+  expect(await page.evaluate(() => window.crowdDebug.simulation().metrics.wallOverlapCount)).toBe(0);
 });
+}
 
 test('scheduled terrain edits replay and reset from original geometry', async ({ page }) => {
   await page.goto('/?agents=80&paused=true&preset=legacy&scenario=dynamic-blocking&step=181');

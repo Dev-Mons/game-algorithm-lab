@@ -2,6 +2,7 @@ import type { CrowdField } from '../../core/crowd-field';
 import { clamp } from '../../core/math';
 import { distanceSquaredToRect, segmentDistanceSquaredToRect } from '../../core/obstacle-collision';
 import type { GlobalNavigator, Rect, Vec2 } from '../../core/types';
+import { StaticObstacleIndex } from '../../core/static-obstacle-index';
 
 const EPSILON = 1e-9;
 const DIRECT_GOAL_DENSITY_FALLOFF = 0.1;
@@ -143,6 +144,7 @@ export class FlowField implements GlobalNavigator {
   private goalX = 0;
   private goalY = 0;
   private obstacles: readonly Rect[] = [];
+  private readonly obstacleIndex = new StaticObstacleIndex();
   private readonly heap: IndexedMinHeap;
   private readonly averageVelocity = { x: 0, y: 0 };
   private hasDynamicSample = false;
@@ -193,6 +195,7 @@ export class FlowField implements GlobalNavigator {
   rebuildStatic(goal: Vec2, obstacles: readonly Rect[], clearance = 0): void {
     this.clearance = Math.max(0, clearance);
     this.obstacles = obstacles;
+    this.obstacleIndex.update(obstacles);
     this.goalX = goal.x;
     this.goalY = goal.y;
     this.blocked.fill(0);
@@ -436,7 +439,8 @@ export class FlowField implements GlobalNavigator {
       || endX > this.width - this.clearance || endY > this.height - this.clearance
     ) return false;
     const clearanceSquared = this.clearance * this.clearance;
-    for (const obstacle of this.obstacles) {
+    for (const index of this.obstacleIndex.querySegment(startX, startY, endX, endY, this.clearance)) {
+      const obstacle = this.obstacles[index]!;
       const distanceSquared = segmentDistanceSquaredToRect(startX, startY, endX, endY, obstacle);
       if (clearanceSquared <= 1e-12 ? distanceSquared <= 1e-12 : distanceSquared < clearanceSquared - 1e-10) {
         return false;

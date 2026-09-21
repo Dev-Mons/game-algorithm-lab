@@ -3,8 +3,44 @@ import { FlowField } from '../../src/algorithms/flow-field/flow-field';
 import { segmentDistanceSquaredToRect } from '../../src/core/obstacle-collision';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { FUNNEL_V2 } from '../fixtures/funnel-v2';
+import { getScenario } from '../../src/scenarios/scenarios';
 
 describe('navigation after contact displacement', () => {
+  it.each([360, 624, 888])('recovers sub-nanometer penetration beside the wall at x=%s', (wallX) => {
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 1, maxSpeed: 68 },
+      getScenario('winding-corners'));
+    const clearance = simulation.config.agentRadius + simulation.config.wallMargin;
+    simulation.state.x[0] = wallX - clearance + 5.5e-11;
+    simulation.state.y[0] = 460;
+    simulation.state.vx[0] = 0;
+    simulation.state.vy[0] = 0;
+    for (let step = 0; step < 120; step++) {
+      simulation.step();
+      expect(simulation.metrics.wallOverlapCount).toBe(0);
+    }
+    const progress = wallX === 624 ? 460 - simulation.state.y[0]! : simulation.state.y[0]! - 460;
+    // The first wall ends 44px below the start, where the route turns east.
+    expect(progress).toBeGreaterThan(40);
+  });
+
+  it.each([68, 86])('clears all winding walls at speed %s with a saturated spawn', (maxSpeed) => {
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 10000, maxSpeed },
+      getScenario('winding-corners'));
+    expect(simulation.state.count).toBe(1656);
+    let maximumWalls = 0;
+    for (let step = 0; step < 3600; step++) {
+      simulation.step();
+      maximumWalls = Math.max(maximumWalls, simulation.metrics.wallOverlapCount);
+    }
+    expect(maximumWalls).toBe(0);
+    // Check obstacle clearance, allowing the existing arrival slowdown to settle
+    // at the goal boundary without requiring the exit sink to deactivate it.
+    for (let agent = 0; agent < simulation.state.count; agent++) {
+      expect(Math.hypot(simulation.state.x[agent]! - simulation.goal.x,
+        simulation.state.y[agent]! - simulation.goal.y)).toBeLessThan(simulation.config.goalRadius + 1);
+    }
+  }, 30_000);
+
   it.each([3.35, 6.35])('escapes a corner from the actual position with clearance %s', (clearance) => {
     const field = new FlowField(1200, 720, 24);
     field.rebuild(FUNNEL_V2.goal, FUNNEL_V2.obstacles, clearance);

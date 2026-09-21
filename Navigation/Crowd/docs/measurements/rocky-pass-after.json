@@ -1,0 +1,314 @@
+{
+  "browser": "151.0.7922.34",
+  "createdAt": "2026-09-21T13:45:22.091Z",
+  "cases": [
+    {
+      "scenario": "rocky-pass",
+      "agents": 1000,
+      "obstacles": 158,
+      "world": [
+        1200,
+        720
+      ],
+      "grid": [
+        50,
+        30
+      ],
+      "step": {
+        "mean": 2.711666666669771,
+        "p50": 2.6000000005587935,
+        "p95": 2.900000000372529
+      },
+      "passes": {
+        "navigation": {
+          "mean": 0.0008333333302289247,
+          "p50": 0,
+          "p95": 0
+        },
+        "desired": {
+          "mean": 0.7158333333597208,
+          "p50": 0.7000000001862645,
+          "p95": 0.8000000007450581
+        },
+        "avoidance": {
+          "mean": 0.411666666646488,
+          "p50": 0.40000000037252903,
+          "p95": 0.5
+        },
+        "contact": {
+          "mean": 1.386666666677532,
+          "p50": 1.2999999998137355,
+          "p95": 1.599999999627471
+        },
+        "density": {
+          "mean": 0.07166666664804021,
+          "p50": 0.09999999962747097,
+          "p95": 0.20000000018626451
+        },
+        "queue": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "spatial": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "integration": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "total": {
+          "mean": 2.7108333333395422,
+          "p50": 2.6000000005587935,
+          "p95": 2.900000000372529
+        }
+      },
+      "renderCpu": {
+        "mean": 0.225,
+        "p50": 0.20000000018626451,
+        "p95": 0.30000000074505806
+      },
+      "active": 1000,
+      "maxWalls": 0,
+      "hash": "7ff6b453"
+    },
+    {
+      "scenario": "open-field",
+      "agents": 10000,
+      "obstacles": 0,
+      "world": [
+        3794.7331922020553,
+        2276.839915321233
+      ],
+      "grid": [
+        159,
+        95
+      ],
+      "step": {
+        "mean": 13.521666666663561,
+        "p50": 13.5,
+        "p95": 13.799999999813735
+      },
+      "passes": {
+        "navigation": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "desired": {
+          "mean": 0.6208333332867672,
+          "p50": 0.6000000005587935,
+          "p95": 0.7000000001862645
+        },
+        "avoidance": {
+          "mean": 4.667500000035701,
+          "p50": 4.699999999254942,
+          "p95": 4.7999999998137355
+        },
+        "contact": {
+          "mean": 6.900833333299185,
+          "p50": 6.900000000372529,
+          "p95": 7
+        },
+        "density": {
+          "mean": 0.7358333333938692,
+          "p50": 0.7000000001862645,
+          "p95": 0.8999999994412065
+        },
+        "queue": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "spatial": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "integration": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "total": {
+          "mean": 13.520833333333334,
+          "p50": 13.5,
+          "p95": 13.799999999813735
+        }
+      },
+      "renderCpu": {
+        "mean": 0.8683333333271245,
+        "p50": 0.8999999994412065,
+        "p95": 1.099999999627471
+      },
+      "active": 10000,
+      "maxWalls": 0,
+      "hash": "8a1fd9ff"
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "obstacles": 158,
+      "world": [
+        3794.7331922020553,
+        2276.839915321233
+      ],
+      "grid": [
+        159,
+        95
+      ],
+      "step": {
+        "mean": 31.01000000000155,
+        "p50": 31.600000000558794,
+        "p95": 37.200000000186265
+      },
+      "passes": {
+        "navigation": {
+          "mean": 0.0016666666604578495,
+          "p50": 0,
+          "p95": 0
+        },
+        "desired": {
+          "mean": 7.26916666670392,
+          "p50": 8.100000000558794,
+          "p95": 8.900000000372529
+        },
+        "avoidance": {
+          "mean": 5.764999999975164,
+          "p50": 6.199999999254942,
+          "p95": 6.7999999998137355
+        },
+        "contact": {
+          "mean": 16.09500000002639,
+          "p50": 16.40000000037253,
+          "p95": 19.5
+        },
+        "density": {
+          "mean": 0.8850000000170742,
+          "p50": 1,
+          "p95": 1.1000000005587935
+        },
+        "queue": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "spatial": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "integration": {
+          "mean": 0,
+          "p50": 0,
+          "p95": 0
+        },
+        "total": {
+          "mean": 30.996666666694605,
+          "p50": 31.600000000558794,
+          "p95": 37.200000000186265
+        }
+      },
+      "renderCpu": {
+        "mean": 1.3,
+        "p50": 1.2000000001862645,
+        "p95": 1.7999999998137355
+      },
+      "active": 10000,
+      "maxWalls": 0,
+      "hash": "05921147"
+    }
+  ],
+  "cpuSelfTime": [
+    {
+      "functionName": "solveContactConstraints @ http://127.0.0.1:4273/src/core/crowd-movement-solver.ts:239",
+      "milliseconds": 492.745
+    },
+    {
+      "functionName": "querySegment @ http://127.0.0.1:4273/src/core/static-obstacle-index.ts:66",
+      "milliseconds": 262.474
+    },
+    {
+      "functionName": "projectOutsideStatics @ http://127.0.0.1:4273/src/core/crowd-movement-solver.ts:422",
+      "milliseconds": 96.973
+    },
+    {
+      "functionName": "buildVelocities @ http://127.0.0.1:4273/src/core/crowd-flow-solver.ts:104",
+      "milliseconds": 94.71
+    },
+    {
+      "functionName": "buildContactConstraints @ http://127.0.0.1:4273/src/core/crowd-movement-solver.ts:188",
+      "milliseconds": 82.374
+    },
+    {
+      "functionName": "step @ http://127.0.0.1:4273/src/core/simulation.ts:286",
+      "milliseconds": 78.621
+    },
+    {
+      "functionName": "queryCandidates @ http://127.0.0.1:4273/src/algorithms/spatial-hash/spatial-hash.ts:111",
+      "milliseconds": 73.936
+    },
+    {
+      "functionName": "project @ http://127.0.0.1:4273/src/core/crowd-flow-solver.ts:129",
+      "milliseconds": 69.354
+    },
+    {
+      "functionName": "scatter @ http://127.0.0.1:4273/src/core/crowd-flow-solver.ts:78",
+      "milliseconds": 61.318
+    },
+    {
+      "functionName": "(program) @ :0",
+      "milliseconds": 59.127
+    },
+    {
+      "functionName": "gather @ http://127.0.0.1:4273/src/core/crowd-flow-solver.ts:185",
+      "milliseconds": 55.672
+    },
+    {
+      "functionName": "stencil @ http://127.0.0.1:4273/src/core/crowd-flow-solver.ts:235",
+      "milliseconds": 52.649
+    },
+    {
+      "functionName": "predictPositions @ http://127.0.0.1:4273/src/core/crowd-movement-solver.ts:116",
+      "milliseconds": 47.988
+    },
+    {
+      "functionName": "isSegmentSafe @ http://127.0.0.1:4273/src/algorithms/flow-field/flow-field.ts:402",
+      "milliseconds": 33.144
+    },
+    {
+      "functionName": "rebuild @ http://127.0.0.1:4273/src/algorithms/spatial-hash/spatial-hash.ts:18",
+      "milliseconds": 32.29
+    },
+    {
+      "functionName": "sampleDirection @ http://127.0.0.1:4273/src/algorithms/flow-field/flow-field.ts:252",
+      "milliseconds": 25.528
+    },
+    {
+      "functionName": "canIntegrateDirectly @ http://127.0.0.1:4273/src/core/crowd-movement-solver.ts:458",
+      "milliseconds": 21.555
+    },
+    {
+      "functionName": "(garbage collector) @ :0",
+      "milliseconds": 18.106
+    },
+    {
+      "functionName": "planDesiredVelocities @ http://127.0.0.1:4273/src/core/simulation.ts:590",
+      "milliseconds": 17.179
+    },
+    {
+      "functionName": "segmentIntersectsRect @ http://127.0.0.1:4273/src/core/obstacle-collision.ts:443",
+      "milliseconds": 9.316
+    }
+  ],
+  "live": {
+    "samples": 80,
+    "fps": 27.191461880964212,
+    "renderMeanMs": 1.1299999999580905,
+    "step": 306,
+    "active": 10000
+  }
+}

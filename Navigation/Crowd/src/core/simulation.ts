@@ -6,6 +6,7 @@ import { angleDelta, clamp, distanceSquared } from './math';
 import { distanceSquaredToRect } from './obstacle-collision';
 import { CrowdMovementSolver, type CrowdMovementResult } from './crowd-movement-solver';
 import { createSpawnLayout } from './spawn-layout';
+import { StaticObstacleIndex } from './static-obstacle-index';
 import type {
   CrowdDebugLayers,
   Rect,
@@ -100,7 +101,8 @@ export class CrowdSimulation {
   private readonly solvedVelocityY: Float64Array;
   private readonly density: Float64Array;
   private readonly recovery: Uint8Array;
-  private readonly movement = new CrowdMovementSolver();
+  private readonly obstacleIndex = new StaticObstacleIndex();
+  private readonly movement = new CrowdMovementSolver(this.obstacleIndex);
   private readonly direction = { x: 1, y: 0 };
   private readonly dynamicFlowOptions: DynamicFlowFieldOptions = {
     densityScale: 1,
@@ -653,6 +655,7 @@ export class CrowdSimulation {
     next: AgentBuffer,
     movement: CrowdMovementResult,
   ): void {
+    this.obstacleIndex.update(this.scenario.obstacles);
     let activeCount = 0;
     let speedSum = 0;
     let stalledCount = 0;
@@ -695,7 +698,9 @@ export class CrowdSimulation {
         wallOverlapCount += 1;
         continue;
       }
-      for (const obstacle of this.scenario.obstacles) {
+      for (const index of this.obstacleIndex.query(next.x[agent]! - wallClearance, next.y[agent]! - wallClearance,
+        next.x[agent]! + wallClearance, next.y[agent]! + wallClearance)) {
+        const obstacle = this.scenario.obstacles[index]!;
         if (distanceSquaredToRect(next.x[agent]!, next.y[agent]!, obstacle) >= wallClearanceSquared - EPSILON) continue;
         wallOverlapCount += 1;
         break;

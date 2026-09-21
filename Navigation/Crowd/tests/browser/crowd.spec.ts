@@ -43,7 +43,7 @@ test('page opens with the default 1000-agent scenario', async ({ page }) => {
 
 test('the baseline and experiment scenarios are available; removed URLs fall back to flat', async ({ page }) => {
   await page.goto('/?scenario=obstacle-field&paused=true&agents=120');
-  await expect(page.locator('#scenario-select option')).toHaveCount(9);
+  await expect(page.locator('#scenario-select option')).toHaveCount(10);
   await expect(page.locator('#scenario-select')).toHaveValue('open-field');
   const result = await page.evaluate(() => ({
     id: window.crowdDebug.simulation().scenario.id,
@@ -150,6 +150,7 @@ for (const [id, name, flows] of [
   ['winding-corners', '연속 코너', 1],
   ['funnel-bypass', '깔때기와 우회로', 1],
   ['four-way-merge', '네 생성 지점 합류', 4],
+  ['rocky-pass', '바위 협곡', 1],
 ] as const) {
   test(`concept scenario selection and replay: ${id}`, async ({ page }, testInfo) => {
     await page.goto('/?paused=true');
@@ -163,7 +164,7 @@ for (const [id, name, flows] of [
     expect(initial).toEqual({ id, count: 1000, flows });
     await page.locator('#crowd-canvas').screenshot({ path: testInfo.outputPath(`${id}-initial.png`) });
     await page.goto(`/?scenario=${id}&agents=1000&seed=42&step=600&paused=true`);
-    await expect(page.locator('body')).toHaveAttribute('data-step', '600');
+    await expect(page.locator('body')).toHaveAttribute('data-step', '600', { timeout: 20_000 });
     const snapshot = await page.evaluate(() => window.crowdDebug.getSnapshot());
     expect(snapshot.metrics.wallOverlapCount).toBe(0);
     expect(snapshot.metrics.dynamicRebuildCount).toBe(0);

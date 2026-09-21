@@ -9,6 +9,7 @@ import {
   type SweptCircleSlideOutput,
 } from './obstacle-collision';
 import type { Rect } from './types';
+import { StaticObstacleIndex } from './static-obstacle-index';
 
 const EPSILON = 1e-9;
 const REPORTABLE_PENETRATION = 0.01;
@@ -69,6 +70,8 @@ export interface CrowdMovementResult {
  * simultaneously before the existing swept static collision path runs.
  */
 export class CrowdMovementSolver {
+  constructor(private readonly obstacleIndex = new StaticObstacleIndex()) {}
+  private readonly sweepObstacles: Rect[] = [];
   private velocityX = new Float64Array(0);
   private velocityY = new Float64Array(0);
   private headings = new Float64Array(0);
@@ -126,6 +129,7 @@ export class CrowdMovementSolver {
   };
 
   solve(input: CrowdMovementInput): CrowdMovementResult {
+    this.obstacleIndex.update(input.obstacles);
     const count = input.current.count;
     this.ensureCapacity(count);
     this.reset(input);
@@ -251,7 +255,8 @@ export class CrowdMovementSolver {
     if (input.obstacles.length === 0) return false;
     const threshold = Math.max(12, distance);
     const thresholdSquared = threshold * threshold;
-    for (const obstacle of input.obstacles) {
+    for (const index of this.obstacleIndex.query(x - threshold, y - threshold, x + threshold, y + threshold)) {
+      const obstacle = input.obstacles[index]!;
       if (distanceSquaredToRect(x, y, obstacle) <= thresholdSquared) return true;
     }
     return false;
@@ -501,6 +506,13 @@ export class CrowdMovementSolver {
         input.next.y[agent] = targetY;
         continue;
       }
+      // Sliding never increases speed: the whole swept path stays within this
+      // travel-radius square, including turns after the first contact.
+      const travel = Math.hypot(targetX - startX, targetY - startY) + clearance + 1e-6;
+      this.sweepObstacles.length = 0;
+      for (const index of this.obstacleIndex.query(startX - travel, startY - travel, startX + travel, startY + travel)) {
+        this.sweepObstacles.push(input.obstacles[index]!);
+      }
       this.integrator.integrate(
         startX,
         startY,
@@ -510,7 +522,7 @@ export class CrowdMovementSolver {
         clearance,
         input.worldWidth,
         input.worldHeight,
-        input.obstacles,
+        this.sweepObstacles,
         4,
         this.integration,
       );
@@ -542,7 +554,11 @@ export class CrowdMovementSolver {
   ): boolean {
     let x = clamp(inputX, clearance, input.worldWidth - clearance);
     let y = clamp(inputY, clearance, input.worldHeight - clearance);
-    for (const obstacle of input.obstacles) {
+    let candidates = this.obstacleIndex.query(x - clearance, y - clearance, x + clearance, y + clearance);
+    let cursor = 0;
+    while (cursor < candidates.length) {
+      const index = candidates[cursor++]!;
+      const obstacle = input.obstacles[index]!;
       if (
         x <= obstacle.x - clearance
         || x >= obstacle.x + obstacle.width + clearance
@@ -560,8 +576,17 @@ export class CrowdMovementSolver {
       )) continue;
       x = this.projection.x;
       y = this.projection.y;
+      // A repair can enter another obstacle's bounds. Re-query at the repaired
+      // position, retaining the original one-pass obstacle order exactly.
+      candidates = this.obstacleIndex.query(x - clearance, y - clearance, x + clearance, y + clearance);
+      cursor = 0;
+      while (cursor < candidates.length && candidates[cursor]! <= index) cursor++;
     }
-    if (Math.abs(x - inputX) <= EPSILON && Math.abs(y - inputY) <= EPSILON) return false;
+    // Publish even sub-EPSILON repairs: the navigation and sweep checks use
+    // squared-distance tolerances and can reject this tiny penetration. Dropping
+    // the repaired position would leave the body unable to move or recover.
+    // recordStaticProjection still filters insignificant diagnostic events.
+    if (x === inputX && y === inputY) return false;
     this.projection.x = x;
     this.projection.y = y;
     return true;
@@ -608,7 +633,8 @@ export class CrowdMovementSolver {
     const maximumX = Math.max(startX, targetX) + clearance;
     const minimumY = Math.min(startY, targetY) - clearance;
     const maximumY = Math.max(startY, targetY) + clearance;
-    for (const obstacle of input.obstacles) {
+    for (const index of this.obstacleIndex.query(minimumX, minimumY, maximumX, maximumY)) {
+      const obstacle = input.obstacles[index]!;
       if (
         maximumX < obstacle.x
         || minimumX > obstacle.x + obstacle.width

@@ -1,5 +1,6 @@
 import type { ScenarioDefinition } from '../core/types';
 import { LAB_SCENARIOS } from './lab-scenarios';
+import { ROCKY_PASS } from './rocky-pass';
 
 export const SCENARIOS: readonly ScenarioDefinition[] = [
   {
@@ -61,6 +62,7 @@ export const SCENARIOS: readonly ScenarioDefinition[] = [
       goal: { x: 1116, y: 612 },
     })),
   },
+  ROCKY_PASS,
   ...LAB_SCENARIOS,
 ];
 
