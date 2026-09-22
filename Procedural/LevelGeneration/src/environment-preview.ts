@@ -4,6 +4,7 @@ import type { GenerationDocument } from "./core/document";
 import type { GenerationResult, Vec3 } from "./core/generate";
 import type { Box16, SourceRef } from "./core/environment-contract";
 import { buildingComponents } from "./core/buildings";
+import {surfaceOutline} from './surface-outline';
 
 export interface PlanOverlay { id:string; sourceRefs:SourceRef[]; boxes16?:Box16[]; path?:Vec3[]; color?:string }
 /** Generic display adapter. No planning or candidate selection lives here. */
@@ -43,7 +44,8 @@ export class EnvironmentPreview {
       ];
       for(const source of sources) {
         const points:number[]=[];
-        for(const box of mergeBoxes16(source.cells.map(cellBox16))){if(source.ref.kind==='parking')box.max[1]=box.min[1]+.8;appendBox(points,box);}
+        if(source.ref.kind==='building')points.push(...surfaceOutline(result.surfaces.filter(s=>s.componentId===source.ref.id)).map((n,i)=>n+origin.getComponent(i%3)));
+        else for(const box of mergeBoxes16(source.cells.map(cellBox16))){if(source.ref.kind==='parking')box.max[1]=box.min[1]+.8;appendBox(points,box);}
         this.lines(this.inputs,points,source.color,[source.ref]);
       }
     }

@@ -12,6 +12,7 @@ import {ribbonAKey} from './ribbon-a-assets';
 import {curtainBKey} from './curtain-b-assets';
 import {streamlineCKey,type StreamlineCKey} from './streamline-c-assets';
 import {COLUMN_ASSETS} from './column-prototype';
+import {FACADE_TILE_ROLES,FACADE_TILE_SETS,type FacadeTileSettings} from './facade-tile-settings';
 
 export type VerticalBand = string;
 export type FacadeKind = 'front' | 'side';
@@ -38,6 +39,7 @@ export interface BuildingStyle {
   facadeGrammar?:FacadeGrammar;
   roofAsset?:FacadeAssetKey;
   terraceAsset?:FacadeAssetKey;
+  tileSettings?:FacadeTileSettings;
 }
 export const VERTICAL_BANDS:('base'|'body'|'crown')[]=['base','body','crown'];
 const walls:Direction[]=['PX','NX','PZ','NZ'];
@@ -157,7 +159,8 @@ export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
   const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);
   const range=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isInteger(v)&&v>=min&&v<=max;
-  exactKeys(style,['format','id','version','label','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar','roofAsset','terraceAsset']);
+  exactKeys(style,['format','id','version','label','bands','alignedFamilies','modules','patterns','fallback','entrance','entrancePair','corner','topTrim','frontOrder','groundY'],['programs','massPolicy','facadeGrammar','roofAsset','terraceAsset','tileSettings']);
+  if(style.tileSettings!==undefined){exactKeys(style.tileSettings,[],Object.keys(FACADE_TILE_ROLES));if(Object.values(style.tileSettings).some(v=>!Object.hasOwn(FACADE_TILE_SETS,v)))fail();}
   if(style.roofAsset!==undefined){const a=FACADE_ASSETS[style.roofAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='roof')fail();}
   if(style.terraceAsset!==undefined){const a=FACADE_ASSETS[style.terraceAsset];if(!a||!('surfaceRole' in a)||a.surfaceRole!=='terrace')fail();}
   if(style.massPolicy!==undefined){const p=style.massPolicy;exactKeys(p,['minArea','minWidth','minPersistence','changePermille']);if(!style.programs||!range(p.minArea,1,1024)||!range(p.minWidth,1,32)||!range(p.minPersistence,1,32)||!range(p.changePermille,1,1000))fail();}

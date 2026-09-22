@@ -1,3 +1,4 @@
+import {FACADE_TILE_ROLES,FACADE_TILE_SETS,type FacadeTileRole,type FacadeTileSet} from './core/facade-tile-settings';
 import {environmentCache} from './core/environment-cache';
 import {canonicalJSON,immutableJSON} from './core/canonical';
 import type {MeasurementSample} from './measurement';
@@ -165,6 +166,10 @@ function refreshBuildingSelection() {
   if (selectedBuilding) {
 
     el("building-id").textContent = `건물 ${selectedBuilding}`;
+    const style=currentDocument.buildings.find(b=>b.componentId===selectedBuilding)?.theme??currentDocument.buildingDefinition;
+    for(const role of Object.keys(FACADE_TILE_ROLES) as FacadeTileRole[])
+      el<HTMLSelectElement>(`tile-${role}`).value=style.tileSettings?.[role]??'';
+
     el<HTMLSelectElement>("building-theme").value = currentDocument.buildings?.find(b => b.componentId === selectedBuilding)?.theme?.id ?? currentDocument.buildingDefinition?.id ?? "";
   }
 }
@@ -439,9 +444,9 @@ const styleOptions=Object.entries(BUILDING_PROFILES).map(([id,style])=>`<option 
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
   <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">왼쪽 드래그로 지면 영역 선택 후 정사각뿔 드래그 또는 E 추가 / Q 제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>왼쪽 드래그로 도로 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 연결과 차선은 자동으로 바뀝니다.</p>
-  <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><label for="facility-kind">외벽 시설 종류</label><select id="facility-kind"><option value="">자동 지상·옥상 시설</option><option value="balcony">발코니 · 표시용</option><option value="fire-escape">외부 계단 · 표시용</option><option value="elevator">엘리베이터 · 표시용</option></select><label><input id="facility-solid" type="checkbox"> 시설 뒤 외벽을 솔리드로 변경</label><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 식생은 한 층일 때 관목, 높이를 쌓으면 각 칸의 나무가 자랍니다.</p></div>
+  <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 시설은 각 칸에 배치됩니다. 외벽의 한 줄은 발코니, 여러 높이는 비상계단, 지면까지 이어지면 엘리베이터가 됩니다.</p></div>
   <div id="building-guide" class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 · 마지막 블록 중앙에 정사각뿔 표시</span></p><p><b>정사각뿔 드래그</b><span>면 바깥쪽으로 추가 · 안쪽으로 제거</span></p><p><b>E / Q</b><span>선택 영역 한 층 추가 / 제거</span></p><p><b>상부 시점</b><span>핸들을 위로 추가 · 아래로 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
-  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option>${styleOptions}</select></div>
+  <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option>${styleOptions}</select><details id="facade-tiles"><summary>외벽 타일 설정</summary><p class="edit-note">선택 건물에 적용 · 코너 설정 우선 · 출입구와 옥상 경계는 유지</p>${Object.entries(FACADE_TILE_ROLES).map(([role,label])=>`<label for="tile-${role}">${label}</label><select id="tile-${role}"><option value="">컨셉 기본값</option>${Object.entries(FACADE_TILE_SETS).map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select>`).join('')}<button id="tile-reset" class="text-button">타일 기본값 복원</button></details></div>
   <div class="seed-row"><label for="seed">Seed<input id="seed" type="number" value="42" min="0" max="4294967295" step="1" required></label><label for="profile">건축 스타일<select id="profile">${styleOptions}</select></label></div>
   <div class="button-row"><button id="save">↓ JSON 저장</button><button id="load">↑ 불러오기</button></div><input id="file" type="file" accept=".json,application/json" hidden>
   <button id="retry" class="text-button">현재 입력 다시 생성</button><p id="edit-note" role="status" class="edit-note">표면이나 빈 바닥을 왼쪽 드래그로 선택한 뒤 정사각뿔 드래그 또는 E / Q로 편집하세요.
@@ -460,6 +465,21 @@ el("edit-mode").addEventListener("change", () => {
 el("building-theme").addEventListener("change", () => {
   if (!selectedBuilding) return;
   acceptDocument(setBuildingTheme(currentDocument, selectedBuilding, profileData(el<HTMLSelectElement>("building-theme").value as Profile).architecture));
+});
+for(const role of Object.keys(FACADE_TILE_ROLES) as FacadeTileRole[])el(`tile-${role}`).addEventListener('change',()=>{
+  if(!selectedBuilding)return;
+  const style=structuredClone(currentDocument.buildings.find(b=>b.componentId===selectedBuilding)?.theme??currentDocument.buildingDefinition);
+  const value=el<HTMLSelectElement>(`tile-${role}`).value as FacadeTileSet|'';
+  const settings={...style.tileSettings};
+  if(value)settings[role]=value;else delete settings[role];
+  if(Object.keys(settings).length)style.tileSettings=settings;else delete style.tileSettings;
+  acceptDocument(setBuildingTheme(currentDocument,selectedBuilding,style));
+});
+el('tile-reset').addEventListener('click',()=>{
+  if(!selectedBuilding)return;
+  const style=structuredClone(currentDocument.buildings.find(b=>b.componentId===selectedBuilding)?.theme??currentDocument.buildingDefinition);
+  delete style.tileSettings;
+  acceptDocument(setBuildingTheme(currentDocument,selectedBuilding,style));
 });
 function inputSettings() {
   return {
@@ -502,7 +522,7 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
       return commitEnvironmentEdit(command,commandStart)?selection:undefined;
     }
     if (el<HTMLSelectElement>("edit-mode").value === "object") {
-      const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, mode, el<HTMLSelectElement>('object-category').value==='facility'&&el<HTMLSelectElement>('facility-kind').value?{facilityKind:el<HTMLSelectElement>('facility-kind').value as ObjectInput['facilityKind'],...(el<HTMLInputElement>('facility-solid').checked?{facadeRequest:'solid' as const}:{})}:{});
+      const next = editObjects(currentDocument, selection, el<HTMLSelectElement>("object-category").value as ObjectCategory, mode);
       if (!next.changed) {
         el("edit-note").textContent = mode === "add" ? "추가할 층이 다른 오브젝트와 겹칩니다. 영역을 다시 선택하세요." : "제거할 층이 비어 있습니다. 영역을 유지합니다.";
         return undefined;

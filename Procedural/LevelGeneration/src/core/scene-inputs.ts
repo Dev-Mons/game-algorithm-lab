@@ -3,7 +3,7 @@ import type { ParkingAreaInput, SourceRef, Heading, Box16 } from "./environment-
 import { exactKeys } from "./canonical";
 import {FACILITY_KINDS,type FacilityKind} from './wall-facility-assets';
 export type ObjectCategory = "lighting" | "vegetation" | "facility";
-export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction; facilityKind?:FacilityKind;facadeRequest?:'solid' }
+export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction; facilityKind?:FacilityKind|'auto';facadeRequest?:'solid' }
 export interface SceneInputs { version: 2; roads: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
 export const emptySceneInputs = (): SceneInputs => ({version:2,roads:[],objects:[],parkingAreas:[]});
 export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building" | "parking"; asset: string; center: Vec3; size: Vec3; color: string; context: string; planId?: string; sourceRefs?: SourceRef[]; yawQuarterTurns?: Heading; worldBounds16?: Box16 }
@@ -17,7 +17,7 @@ export function objectContext(input: ObjectInput, grid: Vec3[], roads: Vec3[],an
   if(analysis){const exterior=new Set(analysis.surfaces.map(s=>s.faceId));if(bases.some(c=>!(input.direction==='PY'&&c[1]===0)&&!exterior.has(`${cellId(add(c,normal.map(n=>-n) as Vec3))}|${input.direction}`)))throw new Error('실제 외부 지지면이 필요합니다.');}
   if (input.cells.some(c => occupied.has(cellId(c)))) throw new Error("오브젝트가 건물과 겹칩니다.");
   if (input.direction !== "PY") {
-    if ((input.category !== "lighting"&&!input.facilityKind) || bases.some(c => !occupied.has(cellId(add(c, normal.map(n => -n) as Vec3))))) throw new Error("외벽에는 지지면이 있는 조명 또는 지정 시설이 필요합니다.");
+    if ((input.category !== "lighting"&&input.category !== 'facility') || bases.some(c => !occupied.has(cellId(add(c, normal.map(n => -n) as Vec3))))) throw new Error("외벽에는 지지면이 있는 조명 또는 시설이 필요합니다.");
     return "wall";
   }
   if (bases.some(c => c[1] !== 0 && !occupied.has(cellId(add(c,[0,-1,0]))))) throw new Error("지면이나 옥상 지지면이 필요합니다.");
@@ -35,7 +35,7 @@ export function validateSceneInputs(grid: Vec3[], inputs: SceneInputs): SceneInp
   if (roads.some(c => c[1] !== 0 || occupied.has(cellId(c)))) throw new Error("도로는 비어 있는 지면에만 설치할 수 있습니다.");
   const objects = inputs.objects.map(input => {
     if (!input || !["lighting","vegetation","facility"].includes(input.category) || !DIRECTIONS.includes(input.direction) || typeof input.id !== "string" || !input.id.length || ids.has(input.id) || Object.keys(input).some(k => !["id","category","cells","direction","facilityKind","facadeRequest"].includes(k))) throw new Error("Invalid object input.");
-    if(input.facilityKind!==undefined&&(input.category!=='facility'||!FACILITY_KINDS.includes(input.facilityKind)||!['PX','NX','PZ','NZ'].includes(input.direction))||input.facadeRequest!==undefined&&(input.facadeRequest!=='solid'||!input.facilityKind))throw new Error('INVALID_WALL_FACILITY_INTENT');
+    if(input.facilityKind!==undefined&&(input.category!=='facility'||input.facilityKind!=='auto'&&!FACILITY_KINDS.includes(input.facilityKind)||!['PX','NX','PZ','NZ'].includes(input.direction))||input.facadeRequest!==undefined&&(input.facadeRequest!=='solid'||!input.facilityKind))throw new Error('INVALID_WALL_FACILITY_INTENT');
     const cells = normalizeGrid(input.cells);
     if (!cells.length || cells.some(c => used.has(cellId(c)))) throw new Error("오브젝트 입력이 겹치거나 비어 있습니다.");
     const volume = [0,1,2].reduce((n,a) => n*(Math.max(...cells.map(c=>c[a]))-Math.min(...cells.map(c=>c[a]))+1),1);

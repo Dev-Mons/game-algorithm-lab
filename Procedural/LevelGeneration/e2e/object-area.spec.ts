@@ -42,6 +42,7 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
     const input = saved.sceneInputs!.objects[0];
     expect(input.cells).toHaveLength(9);
     const placements = generateDocument(saved,{mode:"development-preview"}).scenePlacements!;
+    if(category==='facility')expect(placements.filter(p=>p.asset==='fixture.air-conditioner')).toHaveLength(9);
     if (category === 'lighting') {
       const lights = placements.filter(p => p.asset === 'fixture.lamp-16');
       expect(lights).toHaveLength(9);

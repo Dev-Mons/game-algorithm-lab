@@ -95,6 +95,11 @@ export function editObjects(
     objects: [],
     parkingAreas: [],
   };
+  // Automatic wall intent follows the original mount when extending a side/top.
+  const selectedOwner = inputs.objects.find(o => selection.cells.some(c => o.cells.some(b => cellId(b) === cellId(c))));
+  const mount = selectedOwner?.direction ?? selection.direction;
+  if (category === 'facility' && mount !== 'PY' && mount !== 'NY' && !options.facilityKind)
+    options = {...options, facilityKind: selectedOwner?.facilityKind ?? 'auto'};
   const normal = BASES[selection.direction].n;
   const targets = normalizeGrid(
     mode === "add"

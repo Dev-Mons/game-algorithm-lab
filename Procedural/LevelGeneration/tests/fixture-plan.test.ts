@@ -15,8 +15,8 @@ it('interprets the same facility strip as local vegetation rest, public streetsc
   expect(vegetation.environment!.fixtures!.placements.some(p=>p.asset==='fixture.bench')).toBe(true);
   expect(vegetation.environment!.fixtures!.placements.every(p=>JSON.parse(p.context).accessMode==='local-only')).toBe(true);
   expect(street.environment!.fixtures!.placements.some(p=>p.asset==='fixture.bin'||p.asset==='fixture.hydrant')).toBe(true);
-  expect(street.environment!.fixtures!.placements.every(p=>JSON.parse(p.context).accessMode==='public')).toBe(true);
-  expect(street.environment!.fixtures!.placements.length).toBeLessThan(16);expect(street.environment!.fixtures!.counters.emptySlots).toBeGreaterThan(0);
+  expect(street.environment!.fixtures!.placements.every(p=>['public','service-unverified'].includes(JSON.parse(p.context).accessMode))).toBe(true);
+  expect(street.environment!.fixtures!.placements.length).toBe(16);expect(street.environment!.fixtures!.counters.slots).toBe(16);
   const lot=parkingFixture('R12');lot.sceneInputs.objects=[input('facility','facility',box(12,1,1))];const parking=generateDocument(lot);
   expect(parking.environment!.fixtures!.placements.some(p=>p.asset==='fixture.raised-barrier-post')).toBe(true);
   expect(parking.environment!.parking![0].quality.acceptedStalls).toBe(18);
@@ -27,7 +27,7 @@ it('uses absolute slots under front cropping, fragment IDs and input permutation
   const split=replaceSceneInputs(document,{...document.sceneInputs,roads:[...document.sceneInputs.roads].reverse(),objects:[input('right','facility',box(8,1,1).map(([x,y,z])=>[x+8,y,z])),input('left','facility',box(8,1,1))]});
   expect(geometry(generateDocument(split))).toEqual(geometry(before));
 });
-it('keeps bodies and use spaces disjoint and respects spacing between winning clusters',()=>{
+it('keeps painted bodies disjoint without reserving neighboring painted cells for use',()=>{
   const result=generateDocument(rest()),plan=result.environment!.fixtures!,body=plan.reservations.filter(r=>r.kind!=='walk'),use=plan.reservations.filter(r=>r.kind==='walk');
   expect(plan.counters.maxVariantsPerAnchor).toBeLessThanOrEqual(8);
   for(const a of body)for(const b of use)expect(a.boxes16.some(x=>b.boxes16.some(y=>boxesOverlap(x,y)))).toBe(false);
@@ -68,8 +68,8 @@ it('fills compatible painted wall cells at every height while preserving wall mo
  expect(plan.traces.flatMap(t=>t.candidates).filter(c=>c.reasonCodes.includes('NO_COMPATIBLE_WALL_MOUNT'))).toHaveLength(3);
  expect(plan.placements.every(p=>p.asset==='fixture.wall-lamp')).toBe(true);
 });
-it('roadless vegetation does not invent a usable local pocket inside a narrow blocked channel',()=>{
+it('painted facilities remain visible but do not invent usable access inside a blocked channel',()=>{
  const scene=emptySceneInputs();scene.objects=[input('rest','facility',[[0,0,0]]),input('tree','vegetation',[[0,0,-1]])];
  const cells=[[-1,0,0],[1,0,0],[-1,0,1],[1,0,1],[0,0,2]] as Vec3[],plan=generateDocument(createDocument(cells,42,'office',undefined,undefined,scene)).environment!.fixtures!;
- expect(plan.placements).toEqual([]);expect(plan.traces.flatMap(t=>t.candidates).some(c=>c.reasonCodes.includes('NO_USE_CLEARANCE'))).toBe(true);
+ expect(plan.placements).toHaveLength(1);expect(JSON.parse(plan.placements[0].context).accessMode).toBe('service-unverified');expect(plan.reservations.every(r=>r.kind!=='walk')).toBe(true);
 });

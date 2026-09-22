@@ -26,8 +26,8 @@ export interface FixtureCandidate {
 export interface FixturePlan {placements:ScenePlacement[];reservations:Reservation[];traces:DecisionTrace[];counters:{slots:number;emptySlots:number;candidates:number;accepted:number;maxVariantsPerAnchor:number;companionCandidates:number;neighborChecks:number}}
 interface Column {cell:Vec3;height:number}
 interface Patch {category:'facility'|'lighting';direction:Direction;support:FixtureContext['support'];footY:number;columns:Column[];inputs:ObjectInput[];volume:Set<string>}
-interface Slot {bucketKey?:string;id:string;columns:Column[];patch:Patch;family:string;prototype:FixturePrototypeId|'lamp'|'empty';companion?:'bin'|'pay-station';interval:number;center2:Vec3}
-interface Cluster {bucketKey?:string;explicitLighting:boolean;id:string;items:FixtureCandidate[];main:FixtureCandidate;trace:CandidateTrace;companionTraces:CandidateTrace[]}
+interface Slot {id:string;columns:Column[];patch:Patch;family:string;prototype:FixturePrototypeId|'lamp'|'empty';center2:Vec3}
+interface Cluster {id:string;items:FixtureCandidate[];main:FixtureCandidate;trace:CandidateTrace}
 const ascii=(a:string,b:string)=>a<b?-1:a>b?1:0;
 const manhattan=(a:Vec3,b:Vec3)=>a.reduce((n,v,i)=>n+Math.abs(v-b[i]),0);
 const sameHeightDistance=(a:Vec3,b:Vec3)=>a[1]===b[1]?Math.abs(a[0]-b[0])+Math.abs(a[2]-b[2]):Infinity;
@@ -35,7 +35,7 @@ const intersects=(a:Box16[],b:Box16[])=>a.some(x=>b.some(y=>boxesOverlap(x,y)));
 function occupiedCells(box:Box16):Vec3[]{const cells:Vec3[]=[];for(let x=Math.floor(box.min[0]/16);x<Math.ceil(box.max[0]/16);x++)for(let y=Math.floor(box.min[1]/16);y<Math.ceil(box.max[1]/16);y++)for(let z=Math.floor(box.min[2]/16);z<Math.ceil(box.max[2]/16);z++)cells.push([x,y,z]);return cells;}
 function makePatches(document:GenerationDocument,analysis:VolumeAnalysis):Patch[]{
   const groups=new Map<string,Patch>();
-  for(const input of document.sceneInputs.objects){if(input.category==='vegetation'||input.facilityKind)continue;let context:ReturnType<typeof objectContext>;
+  for(const input of document.sceneInputs.objects){if(input.category==='vegetation'||input.category==='facility'&&input.direction!=='PY')continue;let context:ReturnType<typeof objectContext>;
     try{context=objectContext(input,document.grid,document.sceneInputs.roads,analysis);}catch{continue;}
     const support=context==='roof'?'roof':context==='wall'?'wall':'ground',footY=Math.min(...input.cells.map(c=>c[1])),key=`${input.category}:${input.direction}:${support}:${footY}`;
     const patch=groups.get(key)??{category:input.category,direction:input.direction,support,footY,columns:[],inputs:[],volume:new Set<string>()};
@@ -79,42 +79,35 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   const contextCache=new Map<string,FixtureContext>();
   const getContext=(column:Column,patch:Patch)=>{const key=`${patch.support}:${cellId(column.cell)}`;let c=contextCache.get(key);if(!c){c=contextAt(column.cell,patch);contextCache.set(key,c);}return c;};
   const familyAt=(context:FixtureContext,patch:Patch)=>patch.support==='wall'?'wall':patch.category==='lighting'?'lamp':context.parkingAreaId?`parking-${context.parkingZone}${context.gateId?`:${context.gateId}`:''}`:patch.support==='roof'?'roof-utility':context.vegetationDistanceCells!==undefined?'rest':(context.roadDistanceCells??Infinity)<=settings.roadsideRadiusCells?'street':'utility';
-  const intervalFor=(family:string)=>family==='lamp'||family==='wall'||family.startsWith('parking-edge')||family.startsWith('parking-interior')?settings.lightIntervalCells:family==='rest'?settings.restIntervalCells:settings.streetIntervalCells;
-  const choose=(family:string,index:number,columns:Column[]):{prototype:Slot['prototype'];companion?:Slot['companion']}=>{
+  const choose=(family:string,index:number,columns:Column[]):{prototype:Slot['prototype']}=>{
     if(family==='wall')return {prototype:'wall-lamp'};
     if(family==='lamp'||family.startsWith('parking-edge')||family.startsWith('parking-interior'))return {prototype:'lamp'};
-    if(family.startsWith('parking-gate'))return {prototype:'raised-barrier-post',companion:'pay-station'};
+    if(family.startsWith('parking-gate'))return {prototype:'raised-barrier-post'};
     if(family.startsWith('parking-row-end'))return {prototype:'safety-bollard'};
     if(family==='roof-utility')return {prototype:columns.some(c=>c.height>=2)?'water-tank':'air-conditioner'};
     if(family==='utility')return {prototype:'utility-cabinet'};
-    if(family==='rest'){const i=positiveMod(index,4);return i===1||i===3?{prototype:'empty'}:{prototype:'bench',...(i===2?{companion:'bin' as const}:{})};}
+    if(family==='rest'){const i=positiveMod(index,4);return i===1||i===3?{prototype:'empty'}:{prototype:i===2?'bin':'bench'};}
     return {prototype:(['bench','empty','bin','empty','hydrant','empty'] as const)[positiveMod(index,6)]};
   };
   const slots:Slot[]=[];
   for(const patch of makePatches(document,analysis)){
     // Painted lighting owns one fixture per support cell; vertical ground/roof cells set pole height.
     if(patch.category==='lighting'){
-      for(const column of patch.columns)slots.push({id:`cell:lighting:${patch.direction}:${cellId(column.cell)}`,columns:[column],patch,family:familyAt(getContext(column,patch),patch),interval:1,center2:column.cell.map(n=>2*n) as Vec3,prototype:patch.support==='wall'?'wall-lamp':'lamp'});
+      for(const column of patch.columns)slots.push({id:`cell:lighting:${patch.direction}:${cellId(column.cell)}`,columns:[column],patch,family:familyAt(getContext(column,patch),patch),center2:column.cell.map(n=>2*n) as Vec3,prototype:patch.support==='wall'?'wall-lamp':'lamp'});
       continue;
     }
-    const contexts=new Map<string,Column[]>();for(const c of patch.columns){const family=familyAt(getContext(c,patch),patch),list=contexts.get(family)??[];list.push(c);contexts.set(family,list);}
-    for(const [family,columns] of contexts){
-      const interval=intervalFor(family),minX=Math.min(...columns.map(c=>c.cell[0])),maxX=Math.max(...columns.map(c=>c.cell[0])),minZ=Math.min(...columns.map(c=>c.cell[2])),maxZ=Math.max(...columns.map(c=>c.cell[2]));
-      const push=(id:string,members:Column[],index:number,center2:Vec3)=>slots.push({id,columns:members,patch,family,interval,center2,...(id.startsWith('bucket:')||id.startsWith('small:')?{bucketKey:`${patch.category}:${patch.footY}:${interval}:${Math.floor(center2[0]/(2*interval))}:${Math.floor(center2[2]/(2*interval))}`} : {}),...choose(family,index,members)});
-      if(family==='utility'||family.startsWith('parking-gate')){push(`patch:${family}:${patch.footY}:${minX}:${minZ}`,columns,0,[minX+maxX,patch.footY*2,minZ+maxZ]);continue;}
-      const thin=Math.min(maxX-minX+1,maxZ-minZ+1)<=2;
-      if(thin){
-        const context=getContext(columns[0],patch),normal=(patch.support==='wall'?({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[patch.direction]:context.roadHeading??context.vegetationDirection)??(maxX-minX>=maxZ-minZ?0:1),axis=normal%2===0?0:2,phase=hash33(document.seed,`fixtures-v1|${patch.footY}|${normal}|${patch.category}`)%interval;
-        const positions=[...new Set(columns.map(c=>c.cell[axis]))].sort((a,b)=>a-b);let placed=0;
-        for(const t of positions)if(positiveMod(t-phase,interval)===0){const members=columns.filter(c=>c.cell[axis]===t),center2:Vec3=[minX+maxX,patch.footY*2,minZ+maxZ];center2[axis]=t*2;push(`run:${family}:${patch.footY}:${normal}:${t}`,members,(t-phase)/interval,center2);placed++;}
-        if(!placed&&Math.max(maxX-minX+1,maxZ-minZ+1)<interval){const root=[...columns].sort((a,b)=>compareCells(a.cell,b.cell))[0].cell,bx=Math.floor(root[0]/interval),bz=Math.floor(root[2]/interval),index=hash33(document.seed,`fixtures-v1|${bx}|${bz}|${patch.footY}|${family}`);push(`small:${family}:${patch.footY}:${bx}:${bz}`,columns.filter(c=>Math.floor(c.cell[0]/interval)===bx&&Math.floor(c.cell[2]/interval)===bz),index,[2*bx*interval+interval-1,patch.footY*2,2*bz*interval+interval-1]);}
-      }else {
-        const buckets=new Map<string,{bx:number;bz:number;columns:Column[]}>();for(const column of columns){const bx=Math.floor(column.cell[0]/interval),bz=Math.floor(column.cell[2]/interval),key=`${bx}:${bz}`,bucket=buckets.get(key)??{bx,bz,columns:[]};bucket.columns.push(column);buckets.set(key,bucket);}
-        for(const {bx,bz,columns:members} of buckets.values())push(`bucket:${family}:${patch.footY}:${bx}:${bz}`,members,hash33(document.seed,`fixtures-v1|${bx}|${bz}|${patch.footY}|${family}`),[2*bx*interval+interval-1,patch.footY*2,2*bz*interval+interval-1]);
-      }
+    for (const column of patch.columns) {
+      const context=getContext(column,patch),family=familyAt(context,patch);
+      const index=hash33(document.seed,`painted-facility:${cellId(column.cell)}`);
+      const choice=choose(family,index,[column]);
+      const prototype=choice.prototype==='empty'?'bench':choice.prototype;
+      slots.push({id:`cell:facility:${cellId(column.cell)}`,columns:[column],patch,family,
+        center2:column.cell.map(n=>2*n) as Vec3,prototype});
     }
   }
-  const bodyClear=(box:Box16,bodies:Box16[])=>!bodies.some(b=>boxesOverlap(box,b));
+
+  let finalBodyIndex:BoundsIndex<string>|undefined;
+  const bodyClear=(box:Box16,bodies:Box16[])=>!bodies.some(b=>boxesOverlap(box,b))&&!finalBodyIndex?.query(box).length;
   const publicAccess=(start:Vec3,bodies:Box16[])=>{
     const id=cellId(start);if(!search.nodes.has(id)||!bodyClear(bodyBox16(start,ENVIRONMENT.access),bodies))return undefined;
     const queue=[{id,path:[start]}],seen=new Set([id]);
@@ -152,21 +145,9 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     let use=offset===-6?c:add(c,d);
     if(slot.patch.support==='wall')use=search.graph.walkNodes.filter(n=>n.foot[0]===c[0]&&n.foot[2]===c[2]&&n.foot[1]<=c[1]).sort((a,b)=>b.foot[1]-a.foot[1])[0]?.foot??c;
     let serviceCells:Vec3[]=[],useBoxes:Box16[]=[],publicDistance=Infinity;
-    const publicPath=publicAccess(use,bodies);
-    if(slot.patch.category==='lighting'){
-      // Maintenance access is informational, not a permanent empty cell beside every painted light.
-      context.accessMode=publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])?'public':'service-unverified';
-    }else if(publicPath&&!(slot.patch.support==='wall'&&use[1]!==c[1])){
-      context.accessMode='public';serviceCells=publicPath;publicDistance=publicPath.length-1;useBoxes=publicPath.map(p=>bodyBox16(p,ENVIRONMENT.access));for(let i=1;i<publicPath.length;i++)useBoxes.push(walkSweep16(publicPath[i-1],publicPath[i],ENVIRONMENT.access));
-    }else if(prototype==='bench'||prototype==='bin'){
-      if(document.sceneInputs.roads.length||context.vegetationDistanceCells===undefined)return {reason:'NO_PUBLIC_ACCESS'};
-      const pocket=localPocket(use,bodies);if(!pocket)return {reason:'NO_USE_CLEARANCE'};context.accessMode='local-only';serviceCells=pocket.cells;useBoxes=pocket.boxes;
-    }else if(slot.patch.support==='roof'||slot.patch.support==='wall'){
-      if(search.nodes.has(cellId(use))&&bodyClear(bodyBox16(use,ENVIRONMENT.access),bodies)){serviceCells=[use];useBoxes=[bodyBox16(use,ENVIRONMENT.access)];}
-      else if(slot.patch.support!=='wall')return {reason:'NO_USE_CLEARANCE'};
-      context.accessMode='service-unverified';
-    }else return {reason:'NO_PUBLIC_ACCESS'};
-    if(intersects(bodies,useBoxes))return {reason:'NO_USE_CLEARANCE'};
+    // Painted cells own their models. Access is reported after every body is
+    // placed; it must not relocate a model or permanently consume a neighbor.
+    context.accessMode='service-unverified';
     let frontFree=0;const tangent=HEADING_VECTORS[(heading+1)%4];
     for(let forward=0;forward<=1;forward++)for(let side=-1;side<=1;side++){const cell:Vec3=[use[0]+forward*d[0]+side*tangent[0],use[1],use[2]+forward*d[2]+side*tangent[2]];if(search.nodes.has(cellId(cell))&&bodyClear(bodyBox16(cell,ENVIRONMENT.access),bodies))frontFree++;}
     const refs:SourceRef[]=slot.patch.inputs.filter(input=>bodies.some(b=>input.cells.some(cell=>occupiedCells(b).some(c=>cellId(c)===cellId(cell))))).map(input=>({kind:'object' as const,id:input.id})).sort((a,b)=>ascii(a.id,b.id));
@@ -183,32 +164,18 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     let main:FixtureCandidate|undefined;
     for(const column of columns){
       const prototype=slot.prototype==='lamp'?(column.height>=4?'lamp-64':column.height>=2?'lamp-32':'lamp-16'):slot.prototype;
-      const headings:Heading[]=slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[0,1,2,3];
+      const paintedFacility=slot.patch.category==='facility',context=getContext(column,slot.patch);
+      const headings:Heading[]=paintedFacility?[context.roadHeading??(context.vegetationDirection===undefined?0:(context.vegetationDirection+2)%4 as Heading)]:slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[0,1,2,3];
       const poses:FixtureCandidate[]=[];let count=0;
-      for(const h of headings)for(const offset of slot.patch.support==='wall'?[-6]:[0,-6]){
+      for(const h of headings)for(const offset of paintedFacility?[FIXTURE_CATALOG[prototype].size16[2]<=4?-6:0]:slot.patch.support==='wall'?[-6]:[0,-6]){
         count++;const result=attempt(slot,column,prototype,h,offset);if(result.candidate)poses.push(result.candidate);
         else trace.candidates.push({candidateId:`${slot.id}:${cellId(column.cell)}:${h}:${offset}`,accepted:false,reasonCodes:[result.reason!],metrics:{prototype,family:slot.family,context:JSON.stringify(getContext(column,slot.patch)),heading:h,offset},conflictIds:result.conflicts??[]});
       }
       counters.maxVariantsPerAnchor=Math.max(counters.maxVariantsPerAnchor,count);if(poses.length){main=poses.sort(preference)[0];break;}
     }
     if(!main)continue;
-    const items=[main],companionTraces:CandidateTrace[]=[];
-    if(slot.companion&&settings.maxClusterItems===2){
-      const cells=slot.companion==='bin'?[add(main.anchorCell,HEADING_VECTORS[(main.heading+1)%4]),add(main.anchorCell,HEADING_VECTORS[(main.heading+3)%4])]:slot.patch.columns.filter(c=>manhattan(c.cell,main!.anchorCell)<=2).map(c=>c.cell);
-      const companions:FixtureCandidate[]=[];
-      for(const cell of cells){const column=slot.patch.columns.find(c=>cellId(c.cell)===cellId(cell));if(!column)continue;
-        for(const h of slot.companion==='bin'?[main.heading]:[0,1,2,3] as Heading[]){counters.companionCandidates++;const result=attempt(slot,column,slot.companion,h,main.offset),candidate=result.candidate;
-          const reason=!candidate?result.reason:slot.companion==='pay-station'&&(candidate.context.accessMode!=='public'||candidate.context.gateId!==main.context.gateId)?'COMPANION_REQUIRES_GATE_PUBLIC_ACCESS':intersects(main.bodyBoxes16,[...candidate.bodyBoxes16,...candidate.useBoxes16])||intersects(candidate.bodyBoxes16,main.useBoxes16)?'COMPANION_CLEARANCE_CONFLICT':undefined;
-          companionTraces.push({candidateId:candidate?.id??`${slot.id}:companion:${cellId(cell)}:${h}`,accepted:false,reasonCodes:[reason??'COMPANION_NOT_SELECTED'],metrics:{prototype:slot.companion,heading:h,companionOf:main.id},conflictIds:result.conflicts??[]});
-          if(reason||!candidate)continue;
-          companions.push(candidate);
-        }
-        if(slot.companion==='bin'&&companions.length)break;
-      }
-      companions.sort((a,b)=>a.publicDistance-b.publicDistance||manhattan(a.anchorCell,main!.anchorCell)-manhattan(b.anchorCell,main!.anchorCell)||compareCells(a.anchorCell,b.anchorCell)||a.heading-b.heading);
-      if(companions[0])items.push(companions[0]);trace.candidates.push(...companionTraces);
-    }
-    const candidateTrace:CandidateTrace={candidateId:main.id,accepted:false,reasonCodes:[],metrics:{prototype:main.prototypeId,heading:main.heading,offset:main.offset,accessMode:main.context.accessMode,frontFree:main.frontFree,family:slot.family,context:JSON.stringify(main.context),companionCount:items.length-1},conflictIds:[]};trace.candidates.push(candidateTrace);clusters.push({id:slot.id,bucketKey:slot.bucketKey,explicitLighting:slot.patch.category==='lighting',main,items,trace:candidateTrace,companionTraces});
+    const items=[main];
+    const candidateTrace:CandidateTrace={candidateId:main.id,accepted:false,reasonCodes:[],metrics:{prototype:main.prototypeId,heading:main.heading,offset:main.offset,accessMode:main.context.accessMode,frontFree:main.frontFree,family:slot.family,context:JSON.stringify(main.context),companionCount:items.length-1},conflictIds:[]};trace.candidates.push(candidateTrace);clusters.push({id:slot.id,main,items,trace:candidateTrace});
   }
   const unique=new Map<string,Cluster>();
   for(const cluster of clusters){const key=`${cluster.main.prototypeId}:${cluster.main.center16.join(',')}:${cluster.main.heading}`,previous=unique.get(key);
@@ -216,36 +183,41 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     else unique.set(key,cluster);
   }
   const ranked=[...unique.values()].sort((a,b)=>b.main.priority-a.main.priority||a.main.rankHash-b.main.rankHash||compareCells(a.main.center16,b.main.center16)||ascii(a.main.prototypeId,b.main.prototypeId));
-  const familyInterval=(id:FixturePrototypeId)=>FIXTURE_CATALOG[id].family==='bench'?settings.restIntervalCells:FIXTURE_CATALOG[id].family==='lamp'?settings.lightIntervalCells:FIXTURE_CATALOG[id].family==='hydrant'?settings.hydrantIntervalCells:2;
   const conflict=(a:Cluster,b:Cluster)=>{
-    counters.neighborChecks++;if(a.bucketKey&&a.bucketKey===b.bucketKey)return true;if(a.main.context.gateId&&a.main.context.gateId===b.main.context.gateId&&a.main.prototypeId==='raised-barrier-post'&&b.main.prototypeId==='raised-barrier-post')return true;
-    const paintedLights=a.explicitLighting&&b.explicitLighting;
-    if(!paintedLights&&manhattan(a.main.anchorCell,b.main.anchorCell)<2)return true;
-    for(const x of a.items)for(const y of b.items){if(!paintedLights&&FIXTURE_CATALOG[x.prototypeId].family===FIXTURE_CATALOG[y.prototypeId].family&&manhattan(x.anchorCell,y.anchorCell)<Math.max(familyInterval(x.prototypeId),familyInterval(y.prototypeId)))return true;if(intersects(x.bodyBoxes16,[...y.bodyBoxes16,...y.useBoxes16])||intersects(y.bodyBoxes16,x.useBoxes16))return true;}return false;
+    counters.neighborChecks++;
+    return a.items.some(x=>b.items.some(y=>intersects(x.bodyBoxes16,y.bodyBoxes16)));
   };
-  const anchorBuckets=new Map<string,number[]>(),spatialCandidates=new BoundsIndex<number>(),gateCandidates=new Map<string,number[]>(),bucketCandidates=new Map<string,number[]>();
-  ranked.forEach((cluster,i)=>{if(cluster.bucketKey){const list=bucketCandidates.get(cluster.bucketKey)??[];list.push(i);bucketCandidates.set(cluster.bucketKey,list);}for(const item of cluster.items){const key=item.anchorCell.map(n=>Math.floor(n/4)).join(','),list=anchorBuckets.get(key)??[];list.push(i);anchorBuckets.set(key,list);for(const box of [...item.bodyBoxes16,...item.useBoxes16])spatialCandidates.add(box,i);}if(cluster.main.context.gateId){const list=gateCandidates.get(cluster.main.context.gateId)??[];list.push(i);gateCandidates.set(cluster.main.context.gateId,list);}});
-  const radius=Math.ceil(Math.max(settings.restIntervalCells,settings.lightIntervalCells,settings.hydrantIntervalCells,2)/4);
+  const spatialCandidates=new BoundsIndex<number>();
+  ranked.forEach((cluster,i)=>{for(const item of cluster.items)for(const box of item.bodyBoxes16)spatialCandidates.add(box,i);});
   for(let i=0;i<ranked.length;i++){
     const cluster=ranked[i],neighbors=new Set<number>();
-    for(const item of cluster.items){const center=item.anchorCell.map(n=>Math.floor(n/4));for(let x=-radius;x<=radius;x++)for(let y=-radius;y<=radius;y++)for(let z=-radius;z<=radius;z++)for(const j of anchorBuckets.get(`${center[0]+x},${center[1]+y},${center[2]+z}`)??[])if(j<i)neighbors.add(j);
-      for(const box of [...item.bodyBoxes16,...item.useBoxes16])for(const hit of spatialCandidates.query(box))if(hit.value<i)neighbors.add(hit.value);
-    }
-    for(const j of gateCandidates.get(cluster.main.context.gateId??'')??[])if(j<i)neighbors.add(j);
-    for(const j of bucketCandidates.get(cluster.bucketKey??'')??[])if(j<i)neighbors.add(j);
+    for(const item of cluster.items)for(const box of item.bodyBoxes16)for(const hit of spatialCandidates.query(box))if(hit.value<i)neighbors.add(hit.value);
     const winner=[...neighbors].sort((a,b)=>a-b).find(j=>conflict(cluster,ranked[j]));
     if(winner!==undefined){cluster.trace.reasonCodes=['LOCAL_PRIORITY_SUPPRESSED'];cluster.trace.conflictIds=[ranked[winner].main.id];continue;}
     const proposals:Reservation[]=[];
     for(const item of cluster.items){proposals.push({id:item.id,ownerId:item.sourceRefs[0]?.id??item.id,sourceRefs:item.sourceRefs,kind:item.priority===500?'safety':item.priority===400?'lighting':'fixture',priority:item.priority,cells:[item.anchorCell],boxes16:item.bodyBoxes16});
-      item.useBoxes16.forEach((box,index)=>{const certificate=book.crossingSnapshot().find(c=>c.boxes16.some(b=>boxesOverlap(b,box)));proposals.push({id:`${item.id}:use:${index}`,ownerId:item.sourceRefs[0]?.id??item.id,sourceRefs:item.sourceRefs,kind:'walk',priority:700,cells:item.serviceCells,boxes16:[box],...(certificate?{crossingId:certificate.id}:{})});});
+
     }
     const reserved=book.tryReserveBatch(proposals);if(!reserved.accepted)throw new Error(`FIXTURE_SUPPRESSION_INVARIANT:${reserved.conflictIds.join(',')}`);
     cluster.trace.accepted=true;cluster.trace.reasonCodes=cluster.main.context.accessMode==='local-only'?['LOCAL_ACCESS_ONLY']:cluster.main.context.accessMode==='service-unverified'?['MAINTENANCE_ROUTE_UNVERIFIED']:[];
-    for(const trace of cluster.companionTraces)if(cluster.items.some(item=>item.id===trace.candidateId)){trace.accepted=true;trace.reasonCodes=cluster.trace.reasonCodes;}
     reservations.push(...proposals);
     for(const item of cluster.items){const d=FIXTURE_CATALOG[item.prototypeId],center:Vec3=[item.center16[0]/16,(item.center16[1]+d.size16[1]/2)/16,item.center16[2]/16],size=d.size16.map(n=>n/16) as Vec3;
       placements.push({id:item.id,kind:'object',asset:`fixture.${item.prototypeId}`,center,size,color:d.color,context:JSON.stringify(item.context),sourceRefs:item.sourceRefs,planId:cluster.id,yawQuarterTurns:item.heading,worldBounds16:sceneBounds16(center,size,item.heading)});counters.accepted++;
     }
+  }
+  const allBodies=new BoundsIndex<string>();
+  for(const r of reservations)for(const box of r.boxes16)allBodies.add(box,r.id);
+  finalBodyIndex=allBodies;
+  const finalBodyClear=(box:Box16)=>allBodies.query(box).length===0;
+  for(const cluster of ranked)if(cluster.trace.accepted)for(const item of cluster.items){
+    const d=HEADING_VECTORS[item.heading],use=item.offset===-6?item.anchorCell:add(item.anchorCell,d);
+    const path=publicAccess(use,[]);
+    const publiclyReachable=item.context.support!=='wall'&&path&&path.every(c=>finalBodyClear(bodyBox16(c,ENVIRONMENT.access)))&&path.slice(1).every((c,i)=>finalBodyClear(walkSweep16(path[i],c,ENVIRONMENT.access)));
+    const pocket=!document.sceneInputs.roads.length&&item.context.vegetationDistanceCells!==undefined?localPocket(use,[]):undefined;
+    item.context.accessMode=publiclyReachable?'public':pocket&&pocket.boxes.every(finalBodyClear)?'local-only':'service-unverified';
+    const placement=placements.find(p=>p.id===item.id)!;placement.context=JSON.stringify(item.context);
+    cluster.trace.metrics.accessMode=item.context.accessMode;cluster.trace.metrics.context=placement.context;
+    cluster.trace.reasonCodes=item.context.accessMode==='public'?[]:item.context.accessMode==='local-only'?['LOCAL_ACCESS_ONLY']:['MAINTENANCE_ROUTE_UNVERIFIED'];
   }
   for(const trace of traces)trace.selectedIds=trace.candidates.filter(c=>c.accepted).map(c=>c.candidateId);
   return {placements,reservations,traces,counters};

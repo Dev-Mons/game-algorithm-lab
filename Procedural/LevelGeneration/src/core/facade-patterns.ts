@@ -1,4 +1,5 @@
 import type {AssetRow} from "./banded-facade-assets";
+import {facadeTileAsset,facadeTileBand} from './facade-tile-settings';
 import {FACADE_ASSETS,type FacadeAssetKey} from './facade-assets';
 import {
   BASES,
@@ -172,14 +173,19 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     const rowAsset=(isCap?`${band.rowRole}-cap`:band.rowRole) as AssetRow;
     const rooftopAsset=s.wallKind==='rooftop'?def.rooftopAssets?.[rowAsset]:undefined;
     let asset=rooftopAsset??def.rowAssets?.[rowAsset]??def.assetId;
+    const tangent=BASES[s.direction].u;
+    const exposed=(sign:number)=>{
+      const direction=(['PX','NX','PZ','NZ'] as const).find(d=>BASES[d].n.every((n,i)=>n===tangent[i]*sign))!;
+      return faces.has(`${cellId(s.cell)}|${direction}`);
+    };
+    const left=exposed(-1),right=exposed(1);
+    const tileBand=facadeTileBand(band.band),corner=patternId==='corner'||left||right;
+    const tileSet=!portal&&patternId!=='approved-facility-wall'&&patternId!=='column-display'&&patternId!=='multi-floor-frame'
+      ?(corner?style.tileSettings?.corner??style.tileSettings?.[tileBand]:style.tileSettings?.[tileBand]):undefined;
+    if(tileSet)asset=facadeTileAsset(tileSet,tileBand,rowAsset,s.wallKind==='rooftop',corner);
     const descriptor=FACADE_ASSETS[asset];
     if('cornerAssets' in descriptor&&descriptor.cornerAssets){
-      const tangent=BASES[s.direction].u;
-      const exposed=(sign:number)=>{
-        const direction=(['PX','NX','PZ','NZ'] as const).find(d=>BASES[d].n.every((n,i)=>n===tangent[i]*sign))!;
-        return faces.has(`${cellId(s.cell)}|${direction}`);
-      };
-      const left=exposed(-1),right=exposed(1),cut=left&&right?'both':left?'left':right?'right':undefined;
+      const cut=left&&right?'both':left?'left':right?'right':undefined;
       if(cut)asset=(descriptor.cornerAssets[cut]??asset) as FacadeAssetKey;
     }
     const palette=vertical.profile?.palette??trace.architecture?.palette??'clay',tileId=`${asset}.${palette}`;
@@ -190,6 +196,7 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     trace.facade={styleId:style.id,styleVersion:style.version,level:band.band,rowRole:band.rowRole,phase:vertical.alignment.phaseByDirection[s.direction as 'PX'|'NX'|'PZ'|'NZ'],topBoundary:caps.has(s.faceId),facade:kind(s),runId:`${s.componentId}:${s.direction}:${plane(s)}:${s.cell[1]}`,patternId,moduleId:key,reason,candidates,...(groupId?{groupId}:{}),...(def.connection?{part:def.connection.part}:{}),...(portal?{portalId:portal.id,portalRole:portal.role,portalAccess:portal.access,entranceSpan:portal.widthCells}:{})};
     claimed.add(s.faceId);
     trace.facade.wallKind=s.wallKind;
+    if(tileSet){delete trace.facade.groupId;delete trace.facade.part;trace.facade.reason=`custom ${corner?'corner':tileBand} tile: ${tileSet}`;}
   };
   for(const portal of entrances.entrances)for(const [partIndex,faceId] of portal.faceIds.entries()){const face=faces.get(faceId);if(!face||face.role!=='wall')throw new Error('INVALID_PORTAL_FACE');assign(face,portal.widthCells===2?style.entrancePair[partIndex]:style.entrance,'entrance',portal.access==='road'?'validated exterior access':'ground entrance; road access unverified',[],portal.id,portal);}
   for(const change of context.facadeChanges??[]){const s=faces.get(change.faceId);if(!s)continue;if(claimed.has(s.faceId))throw new Error('FACILITY_PORTAL_CONFLICT');assign(s,change.moduleId,'approved-facility-wall','atomic approved wall request');}

@@ -23,6 +23,7 @@ import {buildingComponents} from './core/buildings';
 import {createParkingArrowGeometry} from './parking-geometry';
 import {WallFacilityGeometryLibrary} from './wall-facility-geometry';
 import {FixtureGeometryLibrary} from './fixture-geometry';
+import {surfaceOutline} from './surface-outline';
 
 export const ROLE_COLORS = {
   wall: "#ded3ba",
@@ -107,7 +108,7 @@ export class Viewer {
   };
   private selectedMaterial = new THREE.LineBasicMaterial({
     color: "#f7dd83",
-    depthTest: false,
+    depthTest: true,
   });
   private scenePlacements = new THREE.Group();
   private sceneMaterials = new Map<string, THREE.MeshStandardMaterial>();
@@ -121,6 +122,7 @@ export class Viewer {
   private displayOrigin = new THREE.Vector3();
   private radius = 5;
   private ground = 0;
+  private groundAnchor = new THREE.Vector3();
   private raycaster = new THREE.Raycaster();
   private observer: ResizeObserver;
   private interaction: SurfaceInteraction;
@@ -362,8 +364,7 @@ export class Viewer {
     this.controls.target.add(shift);
     this.interaction.refresh();
     this.model.position.set(0, 0, 0);
-    this.grid.position.set(0, this.displayOrigin.y + this.ground, 0);
-    this.groundPlane.position.copy(this.grid.position);
+    this.updateGroundPosition();
     this.radius = Math.max(
       2,
       bounds.isEmpty() ? 2 : bounds.getSize(new THREE.Vector3()).length() / 2,
@@ -510,10 +511,9 @@ export class Viewer {
     this.clearGroup(this.buildingSelection);
     this.renderer.domElement.dataset.buildingId = componentId ?? "";
     if (!componentId) return;
-    const points = this.result?.surfaces.filter(s => s.componentId === componentId).flatMap(s => {
-      const corners = faceCorners(s.cell, s.direction);
-      return corners.flatMap((c,i) => [...c, ...corners[(i+1)%4]]);
-    }) ?? [];
+    // Keep the visible highlight outside the two-sixteenth facade relief.
+    const points = surfaceOutline(this.result?.surfaces.filter(s => s.componentId === componentId) ?? [], .14);
+    this.renderer.domElement.dataset.buildingOutlineSegments = String(points.length / 6);
     const lines = this.lines(points, this.selectedMaterial);
     lines.renderOrder = 15;
     this.buildingSelection.add(lines);
@@ -541,14 +541,26 @@ export class Viewer {
   }
   setGround(y: number) {
     this.ground = y;
-    this.grid.position.y = this.displayOrigin.y + y;
-    this.groundPlane.position.y = this.grid.position.y;
+    this.updateGroundPosition();
+  }
+  private updateGroundPosition() {
+    this.grid.position.copy(this.displayOrigin).add(this.groundAnchor);
+    this.grid.position.y += this.ground;
+    this.groundPlane.position.copy(this.grid.position);
+    this.renderer.domElement.dataset.displayOrigin=JSON.stringify(this.displayOrigin.toArray());
+    this.renderer.domElement.dataset.groundPosition=JSON.stringify(this.grid.position.toArray());
   }
   setGroundVisible(visible: boolean) {
     this.groundPlane.visible = visible;
     this.grid.visible = !visible;
   }
   setCamera(preset: "iso" | "below" | "top" | "front") {
+    // Reframe distant imported documents on integer world cells. Editing itself
+    // never recenters this finite ground patch or shifts its grid phase.
+    if(Math.abs(this.groundAnchor.x+this.displayOrigin.x)>24||Math.abs(this.groundAnchor.z+this.displayOrigin.z)>24){
+      this.groundAnchor.set(Math.round(-this.displayOrigin.x),0,Math.round(-this.displayOrigin.z));
+      this.updateGroundPosition();
+    }
     const vector =
       preset === "below"
         ? new THREE.Vector3(1, -0.9, 1)
