@@ -1,0 +1,609 @@
+{
+  "measuredAt": "2026-09-22T16:49:21.102Z",
+  "browser": "153.0.8010.12",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "buildArtifacts": {
+    "index-DKsJJGjG.js": "e5c39bca92c93d160ab571bffeb4b6c7fb752cae79c174628e139ae4325780a9",
+    "index-o8zqimnd.css": "b52082e0cb4de47f8de60283fc369b7017dca85448280835af39086468a98a70"
+  },
+  "protocol": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "seed": 42,
+    "dimensions": [
+      28,
+      24,
+      28
+    ],
+    "samples": 3,
+    "camera": "iso",
+    "scope": "existing environmentMeasure.accept: parse/load, full generation, Viewer sync, UI/history publication and canonical output signatures; then two requestAnimationFrame callbacks",
+    "limitations": [
+      "n=3 cannot estimate stable p95; p95 is maximum",
+      "two rAF interval offers a render opportunity; GPU completion, compositor paint and physical display are not measured",
+      "browser navigation excluded; fresh contexts in one Chromium process, not fresh OS/process cold starts"
+    ]
+  },
+  "rows": [
+    {
+      "profile": "shop",
+      "summary": {
+        "acceptance": {
+          "n": 3,
+          "p50": 316.69999999925494,
+          "p95": 326,
+          "max": 326
+        },
+        "generation": {
+          "n": 3,
+          "p50": 197.20000000298023,
+          "p95": 205.19999999925494,
+          "max": 205.19999999925494
+        },
+        "viewerSync": {
+          "n": 3,
+          "p50": 45.100000001490116,
+          "p95": 45.399999998509884,
+          "max": 45.399999998509884
+        },
+        "geometryBuild": {
+          "n": 3,
+          "p50": 6.99999999627471,
+          "p95": 7.2000000067055225,
+          "max": 7.2000000067055225
+        },
+        "acceptThroughTwoRaf": {
+          "n": 3,
+          "p50": 701.8000000007451,
+          "p95": 714.3999999985099,
+          "max": 714.3999999985099
+        }
+      },
+      "samples": [
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1228766:9ec763de",
+            "outputSignature": "1040163:4ca2a89b",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 309.6000000014901,
+            "commandAndHistoryMs": 76.50000000372529,
+            "rendererSyncMs": 41.599999997764826,
+            "stages": {
+              "analysis": 95,
+              "vertical": 3.2999999970197678,
+              "preflight": 15.800000000745058,
+              "spatial": 18.400000002235174,
+              "entrances": 4.199999999254942,
+              "facade": 27.599999997764826,
+              "attachments": 14.900000002235174
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 95,
+            "selection": 96.5,
+            "rendererSync": 41.599999997764826,
+            "total": 233.09999999776483,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 95,
+              "vertical": 3.2999999970197678,
+              "preflight": 15.800000000745058,
+              "spatial": 18.400000002235174,
+              "entrances": 4.199999999254942,
+              "facade": 27.599999997764826,
+              "attachments": 14.900000002235174
+            },
+            "rendererStages": {
+              "clear": 0.10000000149011612,
+              "boundsAndInteraction": 1.2999999970197678,
+              "environmentPreview": 18.300000000745058,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 16.599999997764826,
+              "geometryBuild": 7.2000000067055225,
+              "analysisMeshes": 5
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 714.3999999985099,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1228766:9ec763de",
+            "outputSignature": "1040163:4ca2a89b",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 316.69999999925494,
+            "commandAndHistoryMs": 74.09999999776483,
+            "rendererSyncMs": 45.399999998509884,
+            "stages": {
+              "analysis": 92.80000000074506,
+              "vertical": 3.899999998509884,
+              "preflight": 20.899999998509884,
+              "spatial": 20.200000002980232,
+              "entrances": 3.399999998509884,
+              "facade": 29.600000001490116,
+              "attachments": 16.400000002235174
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 92.80000000074506,
+            "selection": 104.40000000223517,
+            "rendererSync": 45.399999998509884,
+            "total": 242.60000000149012,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 92.80000000074506,
+              "vertical": 3.899999998509884,
+              "preflight": 20.899999998509884,
+              "spatial": 20.200000002980232,
+              "entrances": 3.399999998509884,
+              "facade": 29.600000001490116,
+              "attachments": 16.400000002235174
+            },
+            "rendererStages": {
+              "clear": 0.10000000149011612,
+              "boundsAndInteraction": 1.300000000745058,
+              "environmentPreview": 20.5,
+              "sceneMeshesAndPublication": 0,
+              "faceMeshes": 18.299999997019768,
+              "geometryBuild": 6.799999997019768,
+              "analysisMeshes": 5.100000001490116
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 701.8000000007451,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1228766:9ec763de",
+            "outputSignature": "1040163:4ca2a89b",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 326,
+            "commandAndHistoryMs": 75.69999999925494,
+            "rendererSyncMs": 45.100000001490116,
+            "stages": {
+              "analysis": 103.39999999850988,
+              "vertical": 3.800000000745058,
+              "preflight": 17.599999997764826,
+              "spatial": 20.699999999254942,
+              "entrances": 3.300000000745058,
+              "facade": 29.300000000745058,
+              "attachments": 17.199999999254942
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 103.39999999850988,
+            "selection": 101.80000000074506,
+            "rendererSync": 45.100000001490116,
+            "total": 250.30000000074506,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 103.39999999850988,
+              "vertical": 3.800000000745058,
+              "preflight": 17.599999997764826,
+              "spatial": 20.699999999254942,
+              "entrances": 3.300000000745058,
+              "facade": 29.300000000745058,
+              "attachments": 17.199999999254942
+            },
+            "rendererStages": {
+              "clear": 0.10000000149011612,
+              "boundsAndInteraction": 1.199999999254942,
+              "environmentPreview": 20.199999999254942,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 18.199999999254942,
+              "geometryBuild": 6.99999999627471,
+              "analysisMeshes": 5.100000001490116
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12356404
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 701.6000000014901,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        }
+      ]
+    },
+    {
+      "profile": "urban-shop",
+      "summary": {
+        "acceptance": {
+          "n": 3,
+          "p50": 346.0999999977648,
+          "p95": 349.4000000022352,
+          "max": 349.4000000022352
+        },
+        "generation": {
+          "n": 3,
+          "p50": 228,
+          "p95": 230.89999999850988,
+          "max": 230.89999999850988
+        },
+        "viewerSync": {
+          "n": 3,
+          "p50": 41.19999999925494,
+          "p95": 43.400000002235174,
+          "max": 43.400000002235174
+        },
+        "geometryBuild": {
+          "n": 3,
+          "p50": 5.800000000745058,
+          "p95": 5.899999994784594,
+          "max": 5.899999994784594
+        },
+        "acceptThroughTwoRaf": {
+          "n": 3,
+          "p50": 664.8999999985099,
+          "p95": 683.5,
+          "max": 683.5
+        }
+      },
+      "samples": [
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1234543:5241feb9",
+            "outputSignature": "1062557:ad2a5aed",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 342.8999999985099,
+            "commandAndHistoryMs": 76.19999999925494,
+            "rendererSyncMs": 39.30000000074506,
+            "stages": {
+              "analysis": 96.5,
+              "vertical": 28.300000000745058,
+              "preflight": 16.300000000745058,
+              "spatial": 18.099999997764826,
+              "entrances": 10,
+              "facade": 30.699999999254942,
+              "attachments": 13.099999997764826
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 96.5,
+            "selection": 130.89999999850988,
+            "rendererSync": 39.30000000074506,
+            "total": 266.69999999925494,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 96.5,
+              "vertical": 28.300000000745058,
+              "preflight": 16.300000000745058,
+              "spatial": 18.099999997764826,
+              "entrances": 10,
+              "facade": 30.699999999254942,
+              "attachments": 13.099999997764826
+            },
+            "rendererStages": {
+              "clear": 0.19999999925494194,
+              "boundsAndInteraction": 1.4000000022351742,
+              "environmentPreview": 16.199999999254942,
+              "sceneMeshesAndPublication": 0.19999999925494194,
+              "faceMeshes": 15.899999998509884,
+              "geometryBuild": 5.800000000745058,
+              "analysisMeshes": 5.300000000745058
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 664.5,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1234543:5241feb9",
+            "outputSignature": "1062557:ad2a5aed",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 349.4000000022352,
+            "commandAndHistoryMs": 75.10000000149012,
+            "rendererSyncMs": 43.400000002235174,
+            "stages": {
+              "analysis": 100.19999999925494,
+              "vertical": 28.300000000745058,
+              "preflight": 15.5,
+              "spatial": 20,
+              "entrances": 9.099999997764826,
+              "facade": 31.100000001490116,
+              "attachments": 11.699999999254942
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 100.19999999925494,
+            "selection": 130.69999999925494,
+            "rendererSync": 43.400000002235174,
+            "total": 274.30000000074506,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 100.19999999925494,
+              "vertical": 28.300000000745058,
+              "preflight": 15.5,
+              "spatial": 20,
+              "entrances": 9.099999997764826,
+              "facade": 31.100000001490116,
+              "attachments": 11.699999999254942
+            },
+            "rendererStages": {
+              "clear": 0,
+              "boundsAndInteraction": 1.4000000022351742,
+              "environmentPreview": 19.300000000745058,
+              "sceneMeshesAndPublication": 0.09999999776482582,
+              "faceMeshes": 17.400000002235174,
+              "geometryBuild": 5.800000000745058,
+              "analysisMeshes": 5
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 683.5,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        {
+          "sample": {
+            "runKind": "application-cold",
+            "operation": "none",
+            "inputBeforeSignature": "1043006:46a1cdd5",
+            "inputAfterSignature": "1234543:5241feb9",
+            "outputSignature": "1062557:ad2a5aed",
+            "initializationState": {
+              "plannerCacheEntries": 0,
+              "geometryCacheEntries": 0,
+              "startupGenerationCount": 0
+            },
+            "totalMs": 346.0999999977648,
+            "commandAndHistoryMs": 76.89999999850988,
+            "rendererSyncMs": 41.19999999925494,
+            "stages": {
+              "analysis": 98.39999999850988,
+              "vertical": 27.700000002980232,
+              "preflight": 15.799999997019768,
+              "spatial": 18,
+              "entrances": 10.599999997764826,
+              "facade": 31.099999997764826,
+              "attachments": 12.400000002235174
+            },
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "historyCommitCalls": 1,
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            },
+            "parkingQuality": []
+          },
+          "timings": {
+            "analysis": 98.39999999850988,
+            "selection": 129.60000000149012,
+            "rendererSync": 41.19999999925494,
+            "total": 269.19999999925494,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 98.39999999850988,
+              "vertical": 27.700000002980232,
+              "preflight": 15.799999997019768,
+              "spatial": 18,
+              "entrances": 10.599999997764826,
+              "facade": 31.099999997764826,
+              "attachments": 12.400000002235174
+            },
+            "rendererStages": {
+              "clear": 0.19999999925494194,
+              "boundsAndInteraction": 1.300000000745058,
+              "environmentPreview": 16.699999999254942,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 16.300000000745058,
+              "geometryBuild": 5.899999994784594,
+              "analysisMeshes": 6.5
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 3,
+                "writes": 3,
+                "evictions": 0,
+                "entries": 3,
+                "bytes": 12391088
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "acceptThroughTwoRafMs": 664.8999999985099,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        }
+      ]
+    }
+  ]
+}

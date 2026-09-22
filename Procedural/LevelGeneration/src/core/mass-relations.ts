@@ -1,4 +1,4 @@
-import {cellId,compareCells,type Vec3} from './analysis';
+import {cellId,compareCells,partitionNormalizedCells,type Vec3} from './analysis';
 export interface MassPolicy {minArea:number;minWidth:number;minPersistence:number;changePermille:number}
 export interface MassSlice {id:string;y:number;cells:Vec3[];parents:string[];children:string[]}
 export interface MassEvent {from:string;to:string;overlap:number;kind:'persist'|'shrink'|'expand'|'reshape'|'split'|'merge';significant:boolean;changedArea:number}
@@ -7,11 +7,9 @@ export interface MassRelations {slices:MassSlice[];events:MassEvent[];spans:{sli
 const steps=[[1,0],[-1,0],[0,1],[0,-1]];
 const column=(c:Vec3)=>`${c[0]},${c[2]}`;
 function islands(cells:Vec3[]){
-  const left=new Map([...cells].sort(compareCells).map(c=>[column(c),c])),out:Vec3[][]=[];
-  for(const [key,cell] of left){if(!left.delete(key))continue;const members=[cell];
-    for(let i=0;i<members.length;i++)for(const [dx,dz] of steps){const key=`${members[i][0]+dx},${members[i][2]+dz}`,next=left.get(key);if(next){left.delete(key);members.push(next);}}
-    out.push(members.sort(compareCells));
-  }return out;
+  // Both callers group one Y plane first. Six-neighbour partitioning therefore
+  // gives exactly the same X/Z islands, without a second string-key BFS.
+  return partitionNormalizedCells([...cells].sort(compareCells)).map(part=>part.cells);
 }
 /** Full DAG, including re-merges. Slice IDs are diagnostics only, never random inputs. */
 export function analyzeMass(cells:readonly Vec3[],policy:MassPolicy):MassRelations {

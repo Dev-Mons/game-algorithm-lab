@@ -1,5 +1,25 @@
 # 현재 환경 생성 인수 보고서
 
+## 2026-09-23 A~D 리팩터링
+
+이번 작업의 기준과 결과는 이전 인수 자료를 덮어쓰지 않고 별도로 보관합니다.
+
+- `concept-preservation-baseline.json`: 이전 커밋의 의미 있는 배치·재료·완성형 geometry 기준.
+- `concept-render-baseline.json`, `concept-render-after.json`: 같은 입력·Seed·카메라의 실제 Viewer 렌더 비교.
+- `facade-core-before.json`, `facade-core-after.json`: 캐시 없는 수직/입면 계산, 스타일별 최초 1회와 반복 40회.
+- `building-edit.before.json`, `building-edit.after.json`: 넓은 상단의 실제 E/Q·연속 드래그, 최초 추가/제거와 반복 편집의 원시 표본.
+- `building-startup.before.json`, `building-startup.after.json`: 빈 계획/geometry 캐시에서 최초 장면 수락, A/C 각각 3회. 적은 표본이므로 p95를 안정적인 꼬리 지연 추정으로 쓰지 않습니다.
+
+[결과 보존](../docs/BUILDING_REFACTOR_PRESERVATION.md), [측정 구간·성능·남은 히치](../docs/BUILDING_EDIT_PERFORMANCE.md), [이식할 규칙](../docs/BUILDING_RULES_PORTING.md)을 함께 확인하세요. CPU render submission은 GPU 완료·실제 화면 paint와 구분합니다.
+
+```powershell
+npm run build
+$env:BUILDING_MEASURE_OUTPUT='benchmarks/building-edit.after.json'
+npx playwright test --config playwright.building-measure.config.ts e2e/building-edit-measure.spec.ts --grep '@measure'
+```
+
+아래는 기존 환경/도시 인수 보고서이며, 이번 편집 측정과 입력·측정 구간이 다릅니다.
+
 프로젝트 디렉터리에서 `npm run build` 후 `npx playwright test e2e/environment.spec.ts --grep '@measure'`를 실행합니다.
 
 - application-cold: 새 context/page/Viewer20개, 자동 생성0, 빈 planner/환경 geometry cache에서 최초 수락·검증부터 sync/수락 publication까지. 사전 예열 없음.

@@ -2,8 +2,6 @@ import type {AssetRow} from "./banded-facade-assets";
 import {facadeTileAsset,facadeTileBand} from './facade-tile-settings';
 import {FACADE_ASSETS,type FacadeAssetKey} from './facade-assets';
 import {
-  BASES,
-  add,
   cellId,
   type Surface,
   type Direction,
@@ -17,7 +15,7 @@ import {
   type FacadePattern,
 } from "./building-style";
 import type { FaceTrace, SelectionOptions } from "./selection";
-import type { VolumeAnalysis } from "./regions";
+import type {WallDirection} from './vertical-design';
 
 export interface FacadeTrace {
   styleId: string;
@@ -44,30 +42,38 @@ export interface FacadeTrace {
 }
 export interface PatternRunBand {role: VerticalBand; patterns:string[];moduleSet:string[];align?:string}
 const cmp = (a:string,b:string) => a < b ? -1 : a > b ? 1 : 0;
+// Negative/positive U neighbors for the four authored vertical face bases.
+const CORNER_DIRECTIONS:Record<WallDirection,readonly [WallDirection,WallDirection]>={PX:['PZ','NZ'],NX:['NZ','PZ'],PZ:['NX','PX'],NZ:['PX','NX']};
+const wallU=(s:Surface)=>s.direction==='PX'?-s.cell[2]:s.direction==='NX'?s.cell[2]:s.direction==='NZ'?-s.cell[0]:s.cell[0];
+const wallPlane=(s:Surface)=>s.direction==='PX'?s.cell[0]+1:s.direction==='NX'?s.cell[0]:s.direction==='PZ'?s.cell[2]+1:s.cell[2];
+type PatternRun = {
+  width: number; start: number; anchor: number; level: PatternRunBand;
+  kind: FacadeKind; direction: Direction;
+};
+type PatternFit = {pattern:FacadePattern;filler:number;prefix:number;repeats:number};
+
+/** Per evaluation indexes only: no retained style cache or invalidation policy. */
+function patternLookup(style:BuildingStyle) {
+  return {modules:new Map(style.modules.map(m=>[m.id,m])),patterns:new Map(style.patterns.map(p=>[p.id,p]))};
+}
+function compareFits(a:PatternFit,b:PatternFit) {
+  return Number(a.filler!==0)-Number(b.filler!==0)||a.filler-b.filler||b.pattern.priority-a.pattern.priority||cmp(a.pattern.id,b.pattern.id);
+}
 
 export function chooseFacadePattern(
   style: BuildingStyle,
-  run: {
-    width: number;
-    start: number;
-    anchor: number;
-    level: PatternRunBand;
-    kind: FacadeKind;
-    direction: Direction;
-  },
+  run: PatternRun,
   forced?: string,
 ) {
-  const modules = new Map(style.modules.map((m) => [m.id, m]));
+  return fitFacadePattern(patternLookup(style),run,forced);
+}
+
+function fitFacadePattern(lookup:ReturnType<typeof patternLookup>,run:PatternRun,forced?:string) {
+  const {modules,patterns}=lookup;
   const candidates: FacadeTrace["candidates"] = [];
-  const fitted: {
-    pattern: FacadePattern;
-    tokens: string[];
-    filler: number;
-    prefix: number;
-    repeats: number;
-  }[] = [];
+  let bestFit:PatternFit|undefined;
   for (const id of run.level.patterns) {
-    const p = style.patterns.find((p) => p.id === id)!;
+    const p = patterns.get(id)!;
     let reason =
       forced && id !== forced
         ? "shared-floor-pattern"
@@ -111,33 +117,26 @@ export function chooseFacadePattern(
       prefix -
       repeats * p.repeat.length;
     const filler = prefix + suffix;
-    fitted.push({
-      pattern: p,
-      filler,
-      prefix,
-      repeats,
-      tokens: [
-        ...p.start,
-        ...Array<string>(prefix).fill(p.remainder),
-        ...Array.from({ length: repeats }, () => p.repeat).flat(),
-        ...Array<string>(suffix).fill(p.remainder),
-        ...p.end,
-      ],
-    });
+    const fit={pattern:p,filler,prefix,repeats};
+    if(!bestFit||compareFits(fit,bestFit)<0)bestFit=fit;
     candidates.push({
       id,
       filler,
       reason: filler ? "integer-remainder" : "exact-fit",
     });
   }
-  fitted.sort(
-    (a, b) =>
-      Number(a.filler !== 0) - Number(b.filler !== 0) ||
-      a.filler - b.filler ||
-      b.pattern.priority - a.pattern.priority ||
-      cmp(a.pattern.id, b.pattern.id),
-  );
-  const best = fitted[0];
+  // Materialize only the winning pattern. Rejected candidates never need a
+  // width-sized token array; this also avoids sorting the one stock candidate.
+  let best:(PatternFit&{tokens:string[]})|undefined;
+  if(bestFit){
+    const {pattern:p,prefix,repeats,filler}=bestFit;
+    const tokens=[...p.start];
+    for(let i=0;i<prefix;i++)tokens.push(p.remainder);
+    for(let i=0;i<repeats;i++)tokens.push(...p.repeat);
+    for(let i=prefix;i<filler;i++)tokens.push(p.remainder);
+    tokens.push(...p.end);
+    best={...bestFit,tokens};
+  }
   for (const c of candidates)
     if (c.id !== best?.pattern.id && c.filler !== undefined)
       c.reason += ":lower-ranked";
@@ -150,7 +149,8 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
   if(!context?.verticalBands||!context.entrances)throw new Error('ENV_PIPELINE_NOT_READY:facade-context');
   const vertical=context.verticalBands,entrances=context.entrances;
   const caps=new Set(vertical.boundaries.filter(b=>b.kind==='local-cap').map(b=>b.hostFaceId)),catalogIds=new Set(options.catalog?.map(t=>t.tileId));
-  const defs=new Map(style.modules.map(m=>[m.id,m])),faces=new Map(base.surfaces.map(s=>[s.faceId,s]));
+  const lookup=patternLookup(style);
+  const defs=lookup.modules,faces=new Map(base.surfaces.map(s=>[s.faceId,s]));
   for(const c of context.columns?.faces??[])if(!defs.has(c.assetKey))defs.set(c.assetKey,{id:c.assetKey,assetId:c.assetKey,semantic:'wall',width:1,height:1,directions:['PX','NX','PZ','NZ']});
   const bands=new Map(vertical.faceBands.map(b=>[b.faceId,b]));
   const family=style.alignedFamilies.find(f=>f.id===vertical.alignment.familyId)!;
@@ -163,9 +163,10 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     if(!catalogIds.has(tileId))throw new Error(`MISSING_FACADE_ASSET:${tileId}`);
     p.tileId=tileId;p.ruleId='building.roof-finish';trace.selection={...trace.selection,ruleId:p.ruleId,tileId};
   }
-  const u=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*BASES[s.direction].u[i],0);
-  const plane=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*Math.abs(BASES[s.direction].n[i]),0)+(BASES[s.direction].n.some(n=>n===1)?1:0);
-  const kind=(s:Surface):FacadeKind=>entrances.frontages.some(f=>f.direction===s.direction&&f.plane===plane(s))?'front':'side';
+  const u=wallU,plane=wallPlane;
+  const frontages=new Set(entrances.frontages.map(f=>`${f.direction}:${f.plane}`));
+  const kind=(s:Surface):FacadeKind=>frontages.has(`${s.direction}:${plane(s)}`)?'front':'side';
+  const cornerModules=new Map(Object.entries(style.bands).map(([band,definition])=>[band,definition.moduleSet.find(k=>defs.get(k)?.semantic==='pier')??style.corner.module]));
   const assign=(s:Surface,key:string,patternId:string,reason:string,candidates:FacadeTrace['candidates']=[],groupId?:string,portal?:typeof entrances.entrances[number])=>{
     const def=defs.get(key),band=bands.get(s.faceId),p=byPlacement.get(s.faceId),trace=byTrace.get(s.faceId);
     if(!def||!band||!p||!trace||!def.directions.includes(s.direction))throw new Error('INVALID_FACADE_MODULE');
@@ -173,12 +174,8 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     const rowAsset=(isCap?`${band.rowRole}-cap`:band.rowRole) as AssetRow;
     const rooftopAsset=s.wallKind==='rooftop'?def.rooftopAssets?.[rowAsset]:undefined;
     let asset=rooftopAsset??def.rowAssets?.[rowAsset]??def.assetId;
-    const tangent=BASES[s.direction].u;
-    const exposed=(sign:number)=>{
-      const direction=(['PX','NX','PZ','NZ'] as const).find(d=>BASES[d].n.every((n,i)=>n===tangent[i]*sign))!;
-      return faces.has(`${cellId(s.cell)}|${direction}`);
-    };
-    const left=exposed(-1),right=exposed(1);
+    const [leftDirection,rightDirection]=CORNER_DIRECTIONS[s.direction as WallDirection],cell=cellId(s.cell);
+    const left=faces.has(`${cell}|${leftDirection}`),right=faces.has(`${cell}|${rightDirection}`);
     const tileBand=facadeTileBand(band.band),corner=patternId==='corner'||left||right;
     const tileSet=!portal&&patternId!=='approved-facility-wall'&&patternId!=='column-display'&&patternId!=='multi-floor-frame'
       ?(corner?style.tileSettings?.corner??style.tileSettings?.[tileBand]:style.tileSettings?.[tileBand]):undefined;
@@ -210,12 +207,12 @@ export function applyFacadeStyle<T extends {surfaces:Surface[];placements:Placem
     let all:Surface[]=[];
     const fill=()=>{
       if(!all.length)return;
-      if(all.length>=style.corner.minRunWidth)for(const face of [all[0],all[all.length-1]])if(!claimed.has(face.faceId))assign(face,style.bands[bands.get(face.faceId)!.band].moduleSet.find(k=>defs.get(k)?.semantic==='pier')??style.corner.module,'corner','actual run end');
+      if(all.length>=style.corner.minRunWidth)for(const face of [all[0],all[all.length-1]])if(!claimed.has(face.faceId))assign(face,cornerModules.get(bands.get(face.faceId)!.band)!,'corner','actual run end');
       let open:Surface[]=[];
       const flush=()=>{
         if(!open.length)return;
         const first=open[0],band=bands.get(first.faceId)!.band;
-        const result=chooseFacadePattern(style,{width:open.length,start:u(first),anchor:vertical.alignment.phaseByDirection[first.direction as 'PX'|'NX'|'PZ'|'NZ'],level:{role:band,patterns:family.patterns[band],moduleSet:style.bands[band].moduleSet,align:family.id},kind:kind(first),direction:first.direction});
+        const result=fitFacadePattern(lookup,{width:open.length,start:u(first),anchor:vertical.alignment.phaseByDirection[first.direction as 'PX'|'NX'|'PZ'|'NZ'],level:{role:band,patterns:family.patterns[band],moduleSet:style.bands[band].moduleSet,align:family.id},kind:kind(first),direction:first.direction});
         const tokens=result.best?.tokens??Array<string>(open.length).fill(style.bands[band].fallback);
         let groupId:string|undefined;
         tokens.forEach((key,i)=>{const def=defs.get(key)!;if(def.connection?.part==='left')groupId=`group:${first.componentId}:${first.direction}:${first.cell[1]}:${u(open[i])}:${plane(first)}`;assign(open[i],key,result.best?.pattern.id??'single-fallback','absolute anchor / complete connected groups',result.candidates,groupId);if(def.connection?.part==='right'||def.connection?.part==='single'||!def.connection)groupId=undefined;});

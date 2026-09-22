@@ -1,4 +1,4 @@
-import { add, BASES, cellId, DIRECTIONS, normalizeGrid, type Direction, type Vec3, type Surface } from "./analysis";
+import { add, BASES, cellId, DIRECTIONS, normalizeGrid, validateGrid, type Direction, type Vec3, type Surface } from "./analysis";
 import type { ParkingAreaInput, SourceRef, Heading, Box16 } from "./environment-contract";
 import { exactKeys } from "./canonical";
 import {FACILITY_KINDS,type FacilityKind} from './wall-facility-assets';
@@ -55,7 +55,7 @@ export function validateSceneInputs(grid: Vec3[], inputs: SceneInputs): SceneInp
     cells.forEach(c => parkingUsed.add(cellId(c)));
     return {id:input.id,cells,anchor};
   }).sort((a,b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-  normalizeGrid([...grid, ...roads, ...objects.flatMap(o => o.cells), ...parkingAreas.flatMap(p => p.cells)]);
+  validateGrid([...grid, ...roads, ...objects.flatMap(o => o.cells), ...parkingAreas.flatMap(p => p.cells)]);
   return { version: 2, roads, objects, parkingAreas };
 }
 export interface ObjectCategoryRule {

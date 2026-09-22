@@ -54,6 +54,8 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 코드와 검증 자료
 
+A~D의 현재 디자인을 유지하는 최소 계산 순서와 엔진 어댑터 경계는 [건물 규칙 이식 문서](docs/BUILDING_RULES_PORTING.md)에 정리했습니다. [배치·geometry·실제 렌더 보존 증거](docs/BUILDING_REFACTOR_PRESERVATION.md)와 [큰 부피의 실제 편집 성능](docs/BUILDING_EDIT_PERFORMANCE.md)에서 변경 전후 결과, 재현 명령과 측정 한계를 확인할 수 있습니다.
+
 설계·개발 계획과 계약 문서는 [docs 폴더](docs/)에 모았습니다.
 
 - `src/core/environment-generation.ts`: 단일 실행과 단계 상태

@@ -1,0 +1,38 @@
+{
+  "browser": "153.0.8010.12",
+  "seed": 42,
+  "profile": "urban-shop",
+  "initialDimensions": [
+    8,
+    3,
+    5
+  ],
+  "comparison": "exact PNG SHA256 to a fresh Viewer, UI overlays hidden",
+  "comparisons": [
+    {
+      "state": "add",
+      "cells": 160,
+      "sha256": "6953b3e981416d333a68d3a675ac039cb60d0bd1c2cfbbec26453287b1f101a0"
+    },
+    {
+      "state": "remove",
+      "cells": 120,
+      "sha256": "72c5a68fe1a4948a0f88f0321cea2f60c76a944bac133e2a6342c2306a29a150"
+    },
+    {
+      "state": "undo",
+      "cells": 160,
+      "sha256": "6953b3e981416d333a68d3a675ac039cb60d0bd1c2cfbbec26453287b1f101a0"
+    },
+    {
+      "state": "redo",
+      "cells": 120,
+      "sha256": "72c5a68fe1a4948a0f88f0321cea2f60c76a944bac133e2a6342c2306a29a150"
+    },
+    {
+      "state": "restore",
+      "cells": 120,
+      "sha256": "72c5a68fe1a4948a0f88f0321cea2f60c76a944bac133e2a6342c2306a29a150"
+    }
+  ]
+}

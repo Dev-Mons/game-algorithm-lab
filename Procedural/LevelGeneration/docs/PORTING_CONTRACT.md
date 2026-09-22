@@ -1,6 +1,8 @@
 # 환경 생성 포팅 계약
 
-현재 문서 실행 기준은 schema5 / environment-plans-v1입니다. 언어를 바꿀 때 원본 입력과 파생 계획을 분리하고 동일한 공통 실행 순서를 유지합니다. 구버전 형식 재현은 범위에 없습니다.
+현재 문서 실행 기준은 schema6 / environment-plans-v1 / SceneInputs2 / catalog13입니다. 언어를 바꿀 때 원본 입력과 파생 계획을 분리하고 동일한 공통 실행 순서를 유지합니다. schema5 읽기 호환은 `document.ts`에 남아 있습니다.
+
+A~D의 최소 입력·출력, 높이별 배분, 가로 반복, 코너·출입구·옥상 우선순위와 계산 예제는 [건물 규칙 이식 문서](BUILDING_RULES_PORTING.md)를 먼저 참고하세요. 이번 리팩터링의 [결과 보존 증거](BUILDING_REFACTOR_PRESERVATION.md)와 [실제 편집 성능](BUILDING_EDIT_PERFORMANCE.md)은 별도 문서에 기록합니다.
 
 - 정수 좌표 Y-up, 방향 순서는 `analysis.ts`/`environment-contract.ts`의 등록 순서를 사용합니다. numeric cell→고정 방향→ASCII ID의 동점을 그대로 유지합니다.
 - Box16은 1/16셀 단위, min 포함/max 제외입니다. 면 기저와 배치 행렬은 `BASES`, `faceCenter2`, `faceBounds16`의 정의를 따릅니다. 빈 셀을 덮는 AABB 근사로 사전 외피를 바꾸지 않습니다.

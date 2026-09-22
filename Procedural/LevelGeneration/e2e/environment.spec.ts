@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test';
 // Explicit screenshots below cover normal cases; performance contexts avoid failure capture overhead.
 test.use({screenshot:'off',trace:'off'});
 import {createDocument,setBuildingRule} from '../src/core/document';
-import {emptySceneInputs} from '../src/core/scene-inputs';
+import {emptySceneInputs,type ScenePlacement} from '../src/core/scene-inputs';
 import {box} from '../src/fixtures';
 import type {Page} from '@playwright/test';
 async function savedDocument(page:Page){const waiting=page.waitForEvent('download');await page.locator('#save').click();const path=await(await waiting).path();const {readFile}=await import('node:fs/promises');return JSON.parse(await readFile(path!,'utf8')) as ReturnType<typeof createDocument>;}
@@ -126,10 +126,19 @@ test('contextual fixtures render authored clusters and refresh after a road chan
   await page.locator('.layers > summary').click();await page.locator('#environment-inputs').uncheck();await page.locator('#environment-plans').uncheck();
   await page.screenshot({path:info.outputPath('contextual-fixtures.png')});
   doc.sceneInputs.roads=[];await page.locator('#file').setInputFiles({name:'no-road.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
+  await expect(page.locator('#scene-name')).toHaveText('no-road.json');
   await expect(page.locator('canvas')).not.toHaveAttribute('data-scene-assets',/fixture.(bin|hydrant)/);
+  // Painted ground facilities remain at their cells; removing the road changes
+  // their context to utility service with explicitly unverified public access.
+  const fixtures:ScenePlacement[]=JSON.parse((await page.locator('canvas').getAttribute('data-fixtures'))!);
+  expect(fixtures).toHaveLength(scene.objects[0].cells.length);
+  expect(fixtures.every(p=>p.asset==='fixture.utility-cabinet')).toBe(true);
+  expect(fixtures.every(p=>JSON.parse(p.context).accessMode==='service-unverified')).toBe(true);
+  expect(new Set(fixtures.map(p=>p.center.map(Math.floor).join(',')))).toEqual(new Set(scene.objects[0].cells.map(c=>c.join(','))));
   await page.locator('#source-select').selectOption(JSON.stringify({kind:'object',id:'intent'}));
   await page.locator('#plan-inspector summary').filter({hasText:'선택 · 탈락 근거'}).click();
-  await expect(page.locator('#plan-inspector')).toContainText('NO_PUBLIC_ACCESS');
+  await expect(page.locator('#plan-inspector')).toContainText('MAINTENANCE_ROUTE_UNVERIFIED');
+  await expect(page.locator('#plan-inspector')).toContainText('NO_ROAD');
 });
 
 import {environmentPerformanceFixtures} from '../src/performance-fixtures';

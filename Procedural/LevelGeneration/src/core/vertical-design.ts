@@ -19,6 +19,14 @@ export interface VerticalPlan {
 }
 export const positiveMod=(n:number,d:number)=>((n%d)+d)%d;
 const clamp=(n:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,n));
+/** Each integer floor has one section and row role; evaluate it once per scope,
+ * then reuse it for all of that floor's facade cells. */
+function rowsByHeight(bands:VerticalPlan['bands']) {
+  const rows=new Map<number,{band:VerticalPlan['bands'][number];rowRole:RowRole}>();
+  for(const band of bands)for(let y=band.yMin;y<band.yMaxExclusive;y++)
+    rows.set(y,{band,rowRole:band.yMaxExclusive-band.yMin===1?'single':y===band.yMin?'foot':y===band.yMaxExclusive-1?'head':'repeat'});
+  return rows;
+}
 export function verticalCounts(height:number,style:Pick<BuildingStyle,'id'>) {
   const baseRatio=style.id==='shop'?250:200,crownRatio=style.id==='office'?200:100;
   if(!Number.isInteger(height)||height<0)throw new Error('INVALID_BUILDING_HEIGHT');
@@ -40,23 +48,28 @@ export function planVertical(buildingId:string,cells:readonly Vec3[],surfaces:re
   let datumY=Infinity,top=-Infinity;for(const c of cells){datumY=Math.min(datumY,c[1]);top=Math.max(top,c[1]);}
   const heightCells=top-datumY+1,counts=verticalCounts(heightCells,style);
   const bands:VerticalPlan['bands']=[];let y=datumY;
-  const allocation=profile?allocateProgram(heightCells,style.programs!.find(p=>p.id===profile.programId)!,datumY===style.groundY):undefined;
+  const program=profile?style.programs!.find(p=>p.id===profile.programId)!:undefined;
+  const allocation=program?allocateProgram(heightCells,program,datumY===style.groundY):undefined;
   for(const {id:band,count:n} of allocation?.sections??VERTICAL_BANDS.map(b=>({id:b,count:counts[b]}))){if(n)bands.push({band,yMin:y,yMaxExclusive:y+n});y+=n;}
 
-  const walls=surfaces.filter(s=>s.componentId===buildingId&&s.role==='wall'),faceSet=new Set(walls.map(s=>s.faceId));
+  const walls=surfaces.filter(s=>s.componentId===buildingId&&s.role==='wall');
   const mass=style.massPolicy?analyzeMass(cells,style.massPolicy):undefined;
   const scopeColumns=new Map(mass?.scopes.flatMap(s=>s.columns.map(c=>[c,s] as const))??[]);
-  const scopedBands=new Map(mass?.scopes.map(s=>{
-    const allocation=allocateProgram(s.yMaxExclusive-s.yMin,style.programs!.find(p=>p.id===profile!.programId)!,s.yMin===style.groundY);let y=s.yMin;
-    return [s.id,allocation.sections.map(section=>{const b={band:section.id,yMin:y,yMaxExclusive:y+section.count};y+=section.count;return b;})] as const;
+  const globalRows=rowsByHeight(bands);
+  const scopedRows=new Map(mass?.scopes.map(s=>{
+    const allocation=allocateProgram(s.yMaxExclusive-s.yMin,program!,s.yMin===style.groundY);let y=s.yMin;
+    const local=allocation.sections.map(section=>{const b={band:section.id,yMin:y,yMaxExclusive:y+section.count};y+=section.count;return b;});
+    return [s.id,rowsByHeight(local)] as const;
   })??[]);
   const zones:NonNullable<VerticalPlan['zones']>=[],zoneMap=new Map<string,typeof zones[number]>();
   const faceBands=walls.map(s=>{
-    const scope=scopeColumns.get(`${s.cell[0]},${s.cell[2]}`),local=scope?scopedBands.get(scope.id)!:bands;
-    const band=local.find(b=>s.cell[1]>=b.yMin&&s.cell[1]<b.yMaxExclusive)??bands.find(b=>s.cell[1]>=b.yMin&&s.cell[1]<b.yMaxExclusive)!;
-    const massId=scope?.id??'building',regionId=s.architecture?.regionId??`${s.direction}:${s.faceId}`,key=`${massId}|${band.band}|${regionId}`;
-    if(mass){let zone=zoneMap.get(key);if(!zone){zone={id:`zone:${key}`,massId,regionId,sectionId:band.band,yMin:band.yMin,yMaxExclusive:band.yMaxExclusive,faceIds:[]};zoneMap.set(key,zone);zones.push(zone);}zone.faceIds.push(s.faceId);}
-    return {faceId:s.faceId,band:band.band,rowRole:(band.yMaxExclusive-band.yMin===1?'single':s.cell[1]===band.yMin?'foot':s.cell[1]===band.yMaxExclusive-1?'head':'repeat') as RowRole};
+    const scope=scopeColumns.get(`${s.cell[0]},${s.cell[2]}`);
+    const {band,rowRole}=(scope?scopedRows.get(scope.id)!.get(s.cell[1]):undefined)??globalRows.get(s.cell[1])!;
+    if(mass){
+      const massId=scope?.id??'building',regionId=s.architecture?.regionId??`${s.direction}:${s.faceId}`,key=`${massId}|${band.band}|${regionId}`;
+      let zone=zoneMap.get(key);if(!zone){zone={id:`zone:${key}`,massId,regionId,sectionId:band.band,yMin:band.yMin,yMaxExclusive:band.yMaxExclusive,faceIds:[]};zoneMap.set(key,zone);zones.push(zone);}zone.faceIds.push(s.faceId);
+    }
+    return {faceId:s.faceId,band:band.band,rowRole};
   });
   const assigned=new Map(faceBands.map(f=>[f.faceId,f]));
   const boundaries=new Map<string,VerticalPlan['boundaries'][number]>();
@@ -70,7 +83,7 @@ export function planVertical(buildingId:string,cells:readonly Vec3[],surfaces:re
   };
   for(const s of walls){
     const above=`${cellId(add(s.cell,[0,1,0]))}|${s.direction}`,below=`${cellId(add(s.cell,[0,-1,0]))}|${s.direction}`;
-    if(!faceSet.has(above))emit(s,'local-cap',true);
+    if(!assigned.has(above))emit(s,'local-cap',true);
     const band=assigned.get(s.faceId)!,lower=assigned.get(below);
     if(lower&&lower.band!==band.band)emit(s,band.band==='crown'||band.band==='upper'?'crown-belt':'base-belt',false);
   }

@@ -26,6 +26,8 @@ export const PANEL_ASSETS = [
   "crafted.soffit",
   "unit-panel",
 ] as const;
+// Registered asset metadata is invariant; validation still checks every tile.
+const panelAssetKeys:ReadonlySet<string>=new Set(PANEL_ASSETS);
 export const PALETTES = ["clay", "sage", "sand"] as const;
 export type Palette = (typeof PALETTES)[number];
 
@@ -168,7 +170,7 @@ export function validateSelection(options: SelectionOptions) {
     if (!tile || !validId(tile.tileId) || tiles.has(tile.tileId))
       throw new Error("Invalid or duplicate tile ID.");
     if (
-      !PANEL_ASSETS.includes(tile.assetKey) ||
+      !panelAssetKeys.has(tile.assetKey) ||
       (tile.assetKey.startsWith("crafted.") && tile.relief16 !== 2) ||
       (tile.palette !== undefined && !PALETTES.includes(tile.palette)) ||
       (tile.assetKey !== "unit-panel" && tile.palette === undefined) ||

@@ -19,10 +19,11 @@ export const add = (a: Vec3, b: Vec3): Vec3 => [
   a[1] + b[1],
   a[2] + b[2],
 ];
-export function normalizeGrid(input: unknown): Vec3[] {
+/** Full cell/combined-span validation without allocating a sorted voxel copy. */
+export function validateGrid(input: unknown): asserts input is Vec3[] {
   if (!Array.isArray(input))
     throw new Error("Grid must be an array of integer triples.");
-  const unique = new Map<string, Vec3>();
+  const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
   for (const value of input) {
     if (
       !Array.isArray(value) ||
@@ -33,25 +34,15 @@ export function normalizeGrid(input: unknown): Vec3[] {
     ) {
       throw new Error("Cell coordinates must be integers within ±1,000,000.");
     }
-    const c = value.map((n) => (n === 0 ? 0 : n)) as Vec3;
-    unique.set(cellId(c), c);
+    for(let axis=0;axis<3;axis++){min[axis]=Math.min(min[axis],value[axis]);max[axis]=Math.max(max[axis],value[axis]);}
   }
-  const cells = [...unique.values()].sort(compareCells);
-  if (cells.length) {
-    for (let axis = 0; axis < 3; axis++) {
-      let min = Infinity,
-        max = -Infinity;
-      for (const c of cells) {
-        min = Math.min(min, c[axis]);
-        max = Math.max(max, c[axis]);
-      }
-      if (max - min + 1 > 32)
-        throw new Error(
-          "Occupied bounds must be at most 32 cells on each axis.",
-        );
-    }
-  }
-  return cells;
+  if(max.some((n,axis)=>n-min[axis]+1>32))throw new Error("Occupied bounds must be at most 32 cells on each axis.");
+}
+export function normalizeGrid(input: unknown): Vec3[] {
+  validateGrid(input);
+  const unique=new Map<string,Vec3>();
+  for(const value of input){const c=value.map(n=>n===0?0:n) as Vec3;unique.set(cellId(c),c);}
+  return [...unique.values()].sort(compareCells);
 }
 export interface Surface {
   faceId: string;
@@ -104,6 +95,31 @@ export function faceCorners(cell: Vec3, direction: Direction): Vec3[] {
   );
 }
 export interface AnalysisComponent {id:string;cells:Vec3[]}
+/** Six-neighbour partition of a normalizeGrid result. The supported 32-cell
+ * axis span makes padded local integer keys small and collision-free, including
+ * negative/million-unit world coordinates. External IDs remain world cell IDs.
+ * This is shared by document inheritance and exterior analysis; no edit cache. */
+export function partitionNormalizedCells(cells:readonly Vec3[]):AnalysisComponent[] {
+  if(!cells.length)return [];
+  let minX=Infinity,minY=Infinity,minZ=Infinity,maxY=-Infinity,maxZ=-Infinity;
+  for(const [x,y,z] of cells){minX=Math.min(minX,x);minY=Math.min(minY,y);minZ=Math.min(minZ,z);maxY=Math.max(maxY,y);maxZ=Math.max(maxZ,z);}
+  const strideY=maxZ-minZ+3,strideX=(maxY-minY+3)*strideY;
+  const keys=cells.map(([x,y,z])=>(x-minX+1)*strideX+(y-minY+1)*strideY+z-minZ+1);
+  const remaining=new Map(keys.map((key,i)=>[key,i]));
+  const offsets=[strideX,-strideX,strideY,-strideY,1,-1],parts:AnalysisComponent[]=[];
+  for(let root=0;root<cells.length;root++){
+    if(!remaining.delete(keys[root]))continue;
+    const members=[root];
+    for(let i=0;i<members.length;i++)for(const offset of offsets){
+      const key=keys[members[i]]+offset,index=remaining.get(key);
+      if(index!==undefined){remaining.delete(key);members.push(index);}
+    }
+    // normalizeGrid's numeric XYZ order is also the component ordering contract.
+    members.sort((a,b)=>a-b);
+    parts.push({id:cellId(cells[root]),cells:members.map(i=>cells[i])});
+  }
+  return parts;
+}
 export function analyze(input: unknown,onComponents?:(components:AnalysisComponent[])=>void) {
   const cells = normalizeGrid(input),
     occupied = new Set(cells.map(cellId));
@@ -138,23 +154,12 @@ export function analyze(input: unknown,onComponents?:(components:AnalysisCompone
     string,
     { id: string; minY: number; maxY: number }
   >();
-  for (const root of cells) {
-    if (components.has(cellId(root))) continue;
-    const component = { id: cellId(root), minY: root[1], maxY: root[1] },
-      queue = [root];
-    components.set(component.id, component);
-    for (let i = 0; i < queue.length; i++)
-      for (const d of DIRECTIONS) {
-        const next = add(queue[i], BASES[d].n),
-          id = cellId(next);
-        if (!occupied.has(id) || components.has(id)) continue;
-        components.set(id, component);
-        queue.push(next);
-        component.minY = Math.min(component.minY, next[1]);
-        component.maxY = Math.max(component.maxY, next[1]);
-      }
+  const parts=partitionNormalizedCells(cells);
+  for(const part of parts){
+    const component={id:part.id,minY:Infinity,maxY:-Infinity};
+    for(const c of part.cells){component.minY=Math.min(component.minY,c[1]);component.maxY=Math.max(component.maxY,c[1]);components.set(cellId(c),component);}
   }
-  if(onComponents){const groups=new Map<string,AnalysisComponent>();for(const c of cells){const owner=components.get(cellId(c))!.id;let part=groups.get(owner);if(!part){part={id:owner,cells:[]};groups.set(owner,part);}part.cells.push(c);}onComponents([...groups.values()]);}
+  onComponents?.(parts);
   const surfaces: Surface[] = [];
   // A local roof is sky-exposed in its own column, independent of component height.
   // Covered terraces and walls ending beneath an overhang are not rooftop walls.

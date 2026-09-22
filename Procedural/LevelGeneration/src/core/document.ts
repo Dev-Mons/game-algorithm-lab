@@ -62,9 +62,7 @@ export function profileData(profile: Profile) {
       rules: CRAFTED_RULES,
       style: "environment-panels",
       rolePolicy: "region-context-v1" as const,
-      architecture: JSON.parse(
-        JSON.stringify(BUILDING_PROFILES[profile]),
-      ) as BuildingStyle,
+      architecture: cloneJSON(BUILDING_PROFILES[profile]),
     };
   throw new Error("Unknown current building profile.");
 }
@@ -113,7 +111,9 @@ export function createDocument(
     grid: cells, seed,
     catalog: {
       id: profile, version: 13,
-      tiles: canonicalCatalog(profileData("office").catalog),
+      // All four concepts use the same registered catalog; profileData already
+      // prepared it for selection validation above.
+      tiles: canonicalCatalog(options.catalog),
       modules: cloneJSON(canonicalModules([...FACADE_MODULE_ASSETS])),
     },
     ruleSet: { id: "environment", version: 1 },
@@ -181,7 +181,7 @@ export function loadDocument(text: string): GenerationDocument {
   validateSelection({ catalog: raw.catalog.version===11?raw.catalog.tiles.filter((t:Tile)=>!retiredKeys.has(t.assetKey)):raw.catalog.tiles });
   const normalized = {
     ...raw,
-    grid: normalizeGrid(raw.grid),
+    grid: expected.grid,
     buildings: expected.buildings,
     sceneInputs: expected.sceneInputs,
     catalog: {

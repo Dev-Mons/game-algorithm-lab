@@ -1,0 +1,254 @@
+diff --git a/Procedural/LevelGeneration/src/crafted-geometry.ts b/Procedural/LevelGeneration/src/crafted-geometry.ts
+index dfa6353..702828f 100644
+--- a/Procedural/LevelGeneration/src/crafted-geometry.ts
++++ b/Procedural/LevelGeneration/src/crafted-geometry.ts
+@@ -200,9 +200,14 @@ export function buildCraftedGeometry(assetKey: string): THREE.BufferGeometry {
+ }
+ export class CraftedGeometryLibrary {
+   private cache = new Map<string, THREE.BufferGeometry>();
++  buildTimeMs = 0;
+   get size(){return this.cache.size;}
+   get(key: string) {
+-    if (!this.cache.has(key)) this.cache.set(key, buildCraftedGeometry(key));
++    if (!this.cache.has(key)) {
++      const start=performance.now();
++      this.cache.set(key, buildCraftedGeometry(key));
++      this.buildTimeMs+=performance.now()-start;
++    }
+     return this.cache.get(key)!;
+   }
+   dispose() {
+diff --git a/Procedural/LevelGeneration/src/main.ts b/Procedural/LevelGeneration/src/main.ts
+index f9a5a63..95a796e 100644
+--- a/Procedural/LevelGeneration/src/main.ts
++++ b/Procedural/LevelGeneration/src/main.ts
+@@ -31,6 +31,7 @@ import { stepSurface, type SurfaceSelection } from "./surface-edit";
+ import { generateCity } from "./core/city";
+ import {
+   measuredGeneration,
++  BuildingEditMeasurement,
+   benchmark,
+   type BenchmarkReport,
+ } from "./measurement";
+@@ -111,6 +112,9 @@ export let lastEditTotalMs=0;
+ export let lastMeasurement:MeasurementSample|undefined;
+ export let startupGenerationCount=0;
+ const measureMode=new URLSearchParams(location.search).get('measure')==='1';
++const buildingEditMeasurement=measureMode?new BuildingEditMeasurement():undefined;
++if(buildingEditMeasurement)viewer.onRendered=ms=>buildingEditMeasurement.rendered(ms);
++const timeBuildingStep=<T>(stage:string,run:()=>T):T=>buildingEditMeasurement?buildingEditMeasurement.time(stage,run):run();
+ function initialization(){return {plannerCacheEntries:environmentCache.stats().entries,geometryCacheEntries:viewer.geometryCacheEntries,startupGenerationCount};}
+ function finishMeasurement(start:number,initializationState:MeasurementSample['initializationState'],before:string,counts:number[],runKind:MeasurementSample['runKind'],operation:MeasurementSample['operation'],editId?:number){
+  const inputAfterSignature=inputSignature(history.serializedCurrent),outputSignature=inputSignature(canonicalJSON({placements:currentResult.placements,modules:currentResult.modules,scenePlacements:currentResult.scenePlacements,parking:currentResult.environment?.parking?.map(a=>({quality:a.quality,stalls:a.plans.flatMap(p=>p.stalls)}))}));
+@@ -347,6 +351,7 @@ export function selectFace(id: string, attachmentId?: string) {
+ export function regenerate(fit = false) {
+   try {
+     const { result, timings, execution } = measuredGeneration(currentDocument, viewer);
++    const publicationStarted=buildingEditMeasurement?.active?performance.now():undefined;
+     immutableJSON(currentDocument);
+     acceptedState = {document:currentDocument,execution};
+     lastTimings=timings;generationCount+=timings.generationCalls;viewerSyncCount+=timings.viewerSyncCalls;
+@@ -363,6 +368,7 @@ export function regenerate(fit = false) {
+           b.classList.toggle("active", b.dataset.camera === "iso"),
+         );
+     }
++    if(publicationStarted!==undefined&&buildingEditMeasurement?.active)buildingEditMeasurement.active.steps.publication=performance.now()-publicationStarted;
+     return true;
+   } catch (error) {
+     showError(error);
+@@ -376,14 +382,14 @@ function acceptDocument(
+ ) {
+   if (busy) return false;
+   if (!keepSelection) viewer.clearEditSelection();
+-  if (acceptedState&&canonicalJSON(next)===canonicalJSON(currentDocument)) return true;
++  if (acceptedState&&timeBuildingStep('acceptanceComparison',()=>canonicalJSON(next)===canonicalJSON(currentDocument))) return true;
+   const previous = currentDocument;
+   currentDocument = next;
+   if (!regenerate(fit)) {
+     currentDocument = previous;
+     return false;
+   }
+-  if(history.commitAccepted(next))historyCommitCount++;
++  if(timeBuildingStep('history',()=>history.commitAccepted(next)))historyCommitCount++;
+   el<HTMLInputElement>("seed").value = String(next.seed);
+   el<HTMLSelectElement>("profile").value = next.catalog.id;
+   return true;
+@@ -533,7 +539,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
+       }
+       return undefined;
+     }
+-    const next = stepSurface(currentDocument.grid, selection, mode);
++    buildingEditMeasurement?.begin(mode,selection.cells.length,currentDocument.grid.length,initialization());
++    const next = timeBuildingStep('surfaceEdit',()=>stepSurface(currentDocument.grid, selection, mode));
+     if (!next.changed) {
+       el("edit-note").textContent =
+         mode === "add"
+@@ -541,7 +548,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
+           : "제거할 층이 비어 있습니다. 영역을 유지합니다.";
+       return undefined;
+     }
+-    if (!acceptDocument(replaceGrid(currentDocument, next.grid), false, true))
++    const nextDocument=timeBuildingStep('replaceGrid',()=>replaceGrid(currentDocument, next.grid));
++    if (!acceptDocument(nextDocument, false, true))
+       return undefined;
+     fixture.selectedIndex = -1;
+     el("scene-name").textContent = "Custom volume";
+@@ -553,6 +561,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
+     el("edit-note").textContent =
+       error instanceof Error ? error.message : String(error);
+     return undefined;
++  } finally {
++    buildingEditMeasurement?.finish(currentDocument.grid.length,lastTimings);
+   }
+ }
+ el("new").addEventListener("click", () => applyGrid([], true, true));
+@@ -702,6 +712,7 @@ for(const [id,group] of [['environment-inputs',viewer.environmentPreview.inputs]
+ el('source-select').addEventListener('change',()=>selectSource(el<HTMLSelectElement>('source-select').value?JSON.parse(el<HTMLSelectElement>('source-select').value):undefined));
+ document.querySelector<HTMLDetailsElement>('.inspect-details')!.addEventListener('toggle',event=>{if((event.currentTarget as HTMLDetailsElement).open&&currentResult){refreshFaceOptions();selectFace(faceSelect.value||currentResult.surfaces[0]?.faceId);}});
+ if(!measureMode){startupGenerationCount++;regenerate(true);}else {
+- Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),point:(cell:Vec3)=>viewer.projectCell(cell),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
++ Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),timings:()=>lastTimings,point:(cell:Vec3)=>viewer.projectCell(cell),buildingEdits:()=>buildingEditMeasurement!.samples,resetBuildingEdits:()=>buildingEditMeasurement!.reset(),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
+ }
+ if (import.meta.hot) import.meta.hot.dispose(() => viewer.dispose());
++
+diff --git a/Procedural/LevelGeneration/src/measurement.ts b/Procedural/LevelGeneration/src/measurement.ts
+index f24122e..ce4906a 100644
+--- a/Procedural/LevelGeneration/src/measurement.ts
++++ b/Procedural/LevelGeneration/src/measurement.ts
+@@ -12,6 +12,7 @@ export interface Timings {
+   generationCalls: number;
+   viewerSyncCalls: number;
+   stages: Record<string,number>;
++  rendererStages?:Record<string,number>;
+   telemetry?:ExecutionTelemetry;
+ }
+ export function measuredGeneration(
+@@ -27,7 +28,7 @@ export function measuredGeneration(
+   const selected=performance.now();
+   viewer.sync(result,documentCatalog(document),document);
+   const synced=performance.now();
+-  return {result,execution,timings:{analysis:stages.analysis??0,selection:selected-start-(stages.analysis??0),rendererSync:synced-selected,total:synced-start,generationCalls:1,viewerSyncCalls:1,stages,telemetry}};
++  return {result,execution,timings:{analysis:stages.analysis??0,selection:selected-start-(stages.analysis??0),rendererSync:synced-selected,total:synced-start,generationCalls:1,viewerSyncCalls:1,stages,rendererStages:viewer.lastSyncStages,telemetry}};
+ }
+ 
+ export const percentile=(values:number[],p:number)=>[...values].sort((a,b)=>a-b)[Math.ceil(values.length*p)-1];
+@@ -40,3 +41,47 @@ export interface MeasurementSample {
+ }
+ export async function benchmark(run:()=>MeasurementSample,progress:(text:string)=>void){const samples:MeasurementSample[]=[];for(let i=0;i<60;i++){progress(`현재 입력 · 준비 10회 / 측정 50회 (${i+1}/60)`);const sample=run();if(i>=10)samples.push(sample);await new Promise<void>(r=>requestAnimationFrame(()=>r()));}const totals=samples.map(s=>s.totalMs);return {protocol:{warmup:10,samples:50,scope:'acceptance through generation, Viewer sync, history and accepted publication'},rows:[{name:'current-input',timings:{total:{p50:percentile(totals,.5),p95:percentile(totals,.95),max:Math.max(...totals)}},samples}]};}
+ export type BenchmarkReport=Awaited<ReturnType<typeof benchmark>>;
++
++/** Opt-in UI latency samples. Time ends at CPU render submission, not GPU completion/paint. */
++export interface BuildingEditSample {
++  id:number; input:'key'|'drag'; mode:'add'|'remove'; selectionCells:number;
++  inputStartedAt:number; handlerStartedAt:number; editStartedAt:number;
++  inputQueueMs:number; inputHandlingMs:number; synchronousMs:number;
++  cellsBefore:number; cellsAfter:number; initializationState:MeasurementSample['initializationState'];
++  steps:Record<string,number>; generation?:Timings;
++  inputToRenderMs?:number; renderSubmissionMs?:number; supersededBeforeRender?:boolean;
++}
++
++export class BuildingEditMeasurement {
++  readonly samples:BuildingEditSample[]=[];
++  active?:BuildingEditSample;
++  private input?:{kind:'key'|'drag';startedAt:number;handlerAt:number};
++  private pending:BuildingEditSample[]=[];
++  private nextId=0;
++  constructor(){
++    // Capture precedes SurfaceInteraction's bubble handlers, including every drag step.
++    document.addEventListener('keydown',event=>{
++      if(!event.ctrlKey&&!event.metaKey&&!event.altKey&&['e','q'].includes(event.key.toLowerCase()))this.capture('key',event);
++    },true);
++    document.addEventListener('pointermove',event=>this.capture('drag',event),true);
++  }
++  private capture(kind:'key'|'drag',event:Event){this.input={kind,startedAt:event.timeStamp,handlerAt:performance.now()};}
++  begin(mode:'add'|'remove',selectionCells:number,cellsBefore:number,initializationState:BuildingEditSample['initializationState']){
++    const editStartedAt=performance.now(),input=this.input??{kind:'key' as const,startedAt:editStartedAt,handlerAt:editStartedAt};
++    this.active={id:++this.nextId,input:input.kind,mode,selectionCells,inputStartedAt:input.startedAt,handlerStartedAt:input.handlerAt,editStartedAt,inputQueueMs:input.handlerAt-input.startedAt,inputHandlingMs:editStartedAt-input.handlerAt,synchronousMs:0,cellsBefore,cellsAfter:cellsBefore,initializationState,steps:{}};
++  }
++  time<T>(stage:string,run:()=>T):T{
++    const sample=this.active;if(!sample)return run();const start=performance.now();
++    try{return run();}finally{sample.steps[stage]=(sample.steps[stage]??0)+performance.now()-start;}
++  }
++  finish(cellsAfter:number,generation:Timings|undefined){
++    const sample=this.active;this.active=undefined;if(!sample||cellsAfter===sample.cellsBefore)return;
++    sample.cellsAfter=cellsAfter;sample.generation=generation;sample.synchronousMs=performance.now()-sample.inputStartedAt;
++    this.samples.push(sample);if(this.samples.length>256)this.samples.shift();this.pending.push(sample);
++  }
++  rendered(renderSubmissionMs:number){
++    const now=performance.now();for(const sample of this.pending){sample.inputToRenderMs=now-sample.inputStartedAt;sample.renderSubmissionMs=renderSubmissionMs;sample.supersededBeforeRender=sample!==this.pending.at(-1);}
++    this.pending=[];
++  }
++  reset(){this.samples.length=0;this.pending=[];}
++}
+diff --git a/Procedural/LevelGeneration/src/viewer.ts b/Procedural/LevelGeneration/src/viewer.ts
+index b026e06..fe1e74c 100644
+--- a/Procedural/LevelGeneration/src/viewer.ts
++++ b/Procedural/LevelGeneration/src/viewer.ts
+@@ -39,6 +39,9 @@ export type Layer =
+   | "normals"
+   | "regions";
+ export class Viewer {
++  /** Measurement-only CPU render submission callback; GPU completion is excluded. */
++  onRendered?: (renderSubmissionMs:number)=>void;
++  lastSyncStages:Record<string,number>={};
+   get geometryCacheEntries(){return this.crafted.size+this.fixtures.size+this.wallFacilities.size+this.vegetation.size+this.assets.size+this.sceneMaterials.size+this.environmentPreview.inputs.children.length+(this.parkingArrow?1:0);}
+   projectCell(cell:Vec3){this.camera.updateMatrixWorld();const p=new THREE.Vector3(cell[0]+.5,cell[1],cell[2]+.5).add(this.displayOrigin).project(this.camera),r=this.renderer.domElement.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
+ 
+@@ -219,7 +222,9 @@ export class Viewer {
+       this.interaction.updateHandle();
+       const pose = JSON.stringify({position:this.camera.position.toArray(),target:this.controls.target.toArray(),quaternion:this.camera.quaternion.toArray()});
+       if (canvas.dataset.cameraPose !== pose) canvas.dataset.cameraPose = pose;
++      const renderStart=this.onRendered?performance.now():0;
+       this.renderer.render(this.scene, this.camera);
++      this.onRendered?.(performance.now()-renderStart);
+     });
+   }
+   private moveCamera(delta: number) {
+@@ -339,7 +344,12 @@ export class Viewer {
+     this.reportFaceMeshes();
+   }
+   sync(result: GenerationResult, catalog: Tile[], document?: GenerationDocument) {
++    this.lastSyncStages={};
++    let mark=performance.now();
++    const stage=(name:string)=>{const now=performance.now();this.lastSyncStages[name]=now-mark;mark=now;};
++    const geometryStart=this.crafted.buildTimeMs;
+     this.clear();
++    stage('clear');
+     this.result = result;
+     this.inputDocument=document;
+     const bounds = new THREE.Box3();
+@@ -369,7 +379,9 @@ export class Viewer {
+       2,
+       bounds.isEmpty() ? 2 : bounds.getSize(new THREE.Vector3()).length() / 2,
+     );
++    stage('boundsAndInteraction');
+     this.environmentPreview.sync(document,result,this.displayOrigin);
++    stage('environmentPreview');
+     const sceneBatches=new Map<string,NonNullable<GenerationResult['scenePlacements']>>();
+     for(const p of result.scenePlacements??[]){const key=`${p.asset}|${p.color}|${p.kind}`,batch=sceneBatches.get(key)??[];batch.push(p);sceneBatches.set(key,batch);}
+     const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
+@@ -389,6 +401,7 @@ export class Viewer {
+     this.renderer.domElement.dataset.entrances = JSON.stringify(result.environment?.entrances??[]);
+     this.renderer.domElement.dataset.parkingQuality=JSON.stringify(result.environment?.parking?.map(p=>p.quality)??[]);
+     this.renderer.domElement.dataset.fixtures=JSON.stringify(result.environment?.fixtures?.placements??[]);
++    stage('sceneMeshesAndPublication');
+     const count = result.surfaces.length;
+     if (!count) return;
+     const surfaces = new THREE.InstancedMesh(
+@@ -416,6 +429,8 @@ export class Viewer {
+       this.groups.placements.add(mesh);
+     }
+     this.reportFaceMeshes();
++    stage('faceMeshes');
++    this.lastSyncStages.geometryBuild=this.crafted.buildTimeMs-geometryStart;
+     surfaces.userData.faceIds = result.surfaces.map((s) => s.faceId);
+     for (let i = 0; i < count; i++) {
+       // Build the analysis view from surfaces independently of placement transforms.
+@@ -452,6 +467,7 @@ export class Viewer {
+       this.groups.edges.add(this.lines(points, this.lineMaterials[kind]));
+     }
+     if(this.groups.normals.visible)this.buildNormals();
++    stage('analysisMeshes');
+   }
+   private reportFaceMeshes() {
+     // Inspect actual render objects, excluding analysis/selection and scene objects.

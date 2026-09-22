@@ -70,3 +70,20 @@ it('only fixed, non-overlapping finish alternatives can select a complete protot
   expect(()=>selectCompleteFaceAsset('facade.wall',['trim.cap.plain','trim.cap.outer-negative'])).toThrow('UNKNOWN_COMPLETE_FACE_VARIANT');
   expect(()=>selectCompleteFaceAsset('facade.wall',['trim.cap.stretched'])).toThrow('UNKNOWN_COMPLETE_FACE_VARIANT');
 });
+
+it('a reused face refreshes geometry, finishes, material and shifted world transform like a fresh Mesh',()=>{
+  const library=new CraftedGeometryLibrary(),document=createDocument([[0,0,0]]);
+  const materials=[0,1,2,3].map(()=>new MeshBasicMaterial()),changedMaterials=[new MeshBasicMaterial()];
+  const tile=document.catalog.tiles.find(t=>t.assetKey==='facade.banded-shop-body-repeat-single')!;
+  const base={placementId:'p',faceId:'0,0,0|PX',tileId:tile.tileId,ruleId:'test',position2:[2,1,1] as Vec3,orientationId:'PX' as const};
+  const mesh=createFaceMesh({...base,faceAssetKey:selectCompleteFaceAsset(tile.assetKey,['trim.cap.plain']),finishIds:['cap']},tile,library,materials,new Vector3());
+  mesh.updateMatrixWorld(true);
+  const changed={...base,position2:[2,3,1] as Vec3,faceAssetKey:selectCompleteFaceAsset('facade.wall'),finishIds:[]};
+  const origin=new Vector3(-.5,-8.5,1000000);
+  expect(createFaceMesh(changed,tile,library,changedMaterials,origin,mesh)).toBe(mesh);
+  const fresh=createFaceMesh(changed,tile,library,changedMaterials,origin);
+  mesh.updateMatrixWorld();fresh.updateMatrixWorld();
+  expect(mesh.geometry).toBe(fresh.geometry);expect(mesh.material).toBe(fresh.material);
+  expect(mesh.userData).toEqual(fresh.userData);expect(mesh.matrixWorld.elements).toEqual(fresh.matrixWorld.elements);
+  library.dispose();[...materials,...changedMaterials].forEach(m=>m.dispose());
+});

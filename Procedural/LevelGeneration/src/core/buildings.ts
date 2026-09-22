@@ -3,24 +3,13 @@ import { adapterReferenceFor, resolveRuleSpatialAdapter } from "./rule-spatial-a
 import type { SpatialAdapterReference } from "./rule-spatial-contract";
 import { type BuildingDesignV1 } from "./environment-contract";
 import { cloneJSON, exactKeys } from "./canonical";
-import { add, BASES, cellId, compareCells, DIRECTIONS, normalizeGrid, type Vec3 } from "./analysis";
+import { cellId, compareCells, normalizeGrid, partitionNormalizedCells, type Vec3 } from "./analysis";
 import { validateBuildingStyle, type BuildingStyle } from "./building-style";
 
 export interface BuildingMetadata { componentId: string; theme?: BuildingStyle; rule?: BuildingRuleReference; design?: BuildingDesignV1; spatialAdapterRef?: SpatialAdapterReference }
 export interface ResolvedBuildingMetadata extends BuildingMetadata { rule: BuildingRuleReference; design: BuildingDesignV1; spatialAdapterRef: SpatialAdapterReference }
 export function buildingComponents(input: Vec3[]) {
-  const cells = normalizeGrid(input), remaining = new Set(cells.map(cellId));
-  const result: { id: string; cells: Vec3[] }[] = [];
-  for (const root of cells) {
-    if (!remaining.delete(cellId(root))) continue;
-    const members = [root];
-    for (let i = 0; i < members.length; i++) for (const d of DIRECTIONS) {
-      const next = add(members[i], BASES[d].n);
-      if (remaining.delete(cellId(next))) members.push(next);
-    }
-    result.push({ id: cellId(root), cells: members.sort(compareCells) });
-  }
-  return result;
+  return partitionNormalizedCells(normalizeGrid(input));
 }
 export function validateBuildings(grid: Vec3[], metadata: BuildingMetadata[]): ResolvedBuildingMetadata[] {
   if (!Array.isArray(metadata)) throw new Error("Invalid building metadata.");

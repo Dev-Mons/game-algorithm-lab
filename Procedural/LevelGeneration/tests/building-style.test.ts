@@ -22,3 +22,22 @@ it("fits only complete connected window groups at an absolute repeat anchor",()=
     best.tokens.forEach((token,i)=>{if(token==='body-left') {expect(best.tokens[i+1]).toBe('body-right');expect(((start+i)%3+3)%3).toBe(0);} if(token==='body-right') expect(best.tokens[i-1]).toBe('body-left');});
   }
 });
+
+it('keeps custom multi-candidate fit, priority, ASCII ties and forced-pattern behavior',()=>{
+  const style=structuredClone(SHOP_STYLE),body=style.patterns.find(p=>p.id==='body-rhythm')!;
+  for(const [id,priority] of [['z-exact',200],['a-exact',200],['low-exact',10]] as const)
+    style.patterns.push({...structuredClone(body),id,priority,start:['body-single','body-single']});
+  const run={width:8,start:1,anchor:0,direction:'PZ' as const,kind:'side' as const,level:{role:'body',patterns:['body-rhythm','z-exact','a-exact','low-exact'],moduleSet:style.bands.body.moduleSet,align:'absolute'}};
+  const selected=chooseFacadePattern(style,run);
+  expect(selected.best?.pattern.id).toBe('a-exact');
+  expect(selected.best?.tokens).toEqual(['body-single','body-single','body-left','body-right','body-pier','body-left','body-right','body-pier']);
+  expect(selected.candidates).toEqual([
+    {id:'body-rhythm',filler:2,reason:'integer-remainder:lower-ranked'},
+    {id:'z-exact',filler:0,reason:'exact-fit:lower-ranked'},
+    {id:'a-exact',filler:0,reason:'exact-fit'},
+    {id:'low-exact',filler:0,reason:'exact-fit:lower-ranked'},
+  ]);
+  expect(chooseFacadePattern(style,run,'low-exact').best?.pattern.id).toBe('low-exact');
+  expect(chooseFacadePattern(style,{...run,width:1}).best).toBeUndefined();
+  expect(chooseFacadePattern(style,{...run,level:{...run.level,moduleSet:['body-single']}}).candidates.every(c=>c.reason==='module-set-or-direction')).toBe(true);
+});

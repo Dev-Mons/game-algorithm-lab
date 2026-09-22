@@ -1,4 +1,4 @@
-import {cloneJSON,immutableJSON} from './canonical';
+import {immutableJSON} from './canonical';
 import type {BuildingRuleInput} from './building-rule-contract';
 import {applyFacadeStyle} from './facade-patterns';
 import type {BuildingGenerationRule} from './building-rule-contract';
@@ -13,14 +13,7 @@ import {TRIM_ASSETS} from './banded-facade-assets';
 export const CONTEXTUAL_RULE_DEFINITION={pipeline:'environment-contextual-v1',portals:'planned',facade:'banded'};
 const decisionKey=(surface:Pick<Surface,'role'|'direction'|'wallKind'|'architecture'>)=>`${surface.role}:${surface.direction}:${surface.wallKind??''}:${surface.architecture&&surface.architecture.interpretation!=='unsupported'?'supported':'basic'}`;
 const decisionSurfaces=(input:BuildingRuleInput)=>[...new Map(input.analysis.surfaces.map(s=>[decisionKey(s),s])).values()];
-/** Dependencies of the panel-only template selection. Derived mass/facade plans and
- * reservation bodies are consumed later; serializing them here evicts the analysis
- * cache on large urban volumes. Keep actual representative surfaces, style/catalog,
- * diagnostics, design and palette so reuse cannot change a template decision. */
-export function contextualTemplateDependencies(input:BuildingRuleInput){
-  return {surfaces:decisionSurfaces(input),diagnostics:input.analysis.diagnostics,rolePolicy:input.analysis.rolePolicy,options:input.options,design:input.context.design,palette:input.context.verticalBands?.profile?.palette};
-}
-/** Cache only the required panel decision templates; facade decisions/traces are rebuilt from current plans. */
+/** Evaluate representative panel decisions once per building execution. */
 export function contextualTemplates(input:BuildingRuleInput):FaceTrace[]{
  const surfaces=decisionSurfaces(input);
  const supportedRules=input.options.rules?.filter(r=>r.predicate==='supported')??[];

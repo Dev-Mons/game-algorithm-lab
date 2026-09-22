@@ -1,5 +1,4 @@
 import {ENVIRONMENT} from './environment-settings';
-import {contextualBase,contextualOutput,contextualTemplates,contextualTemplateDependencies} from './contextual-building-rule';
 import type {BuildingRuleInput} from './building-rule-contract';
 import {environmentCache,type EnvironmentCache,type ExecutionTelemetry} from './environment-cache';
 import {cloneJSON,immutableJSON} from './canonical';
@@ -141,10 +140,10 @@ export function executeEnvironment(input:GenerationDocument, options:ExecutionOp
       const geometryVertical=currentVertical?(({traces,...plan})=>plan)(currentVertical):undefined,geometryEntrances=currentEntrances?(({traces,reservations,...plan})=>plan)(currentEntrances):undefined;
       const ruleInput:BuildingRuleInput={componentId:component.id,cells:component.cells,analysis:part,options:{...documentOptions(document),architecture:entry.theme??document.buildingDefinition},metadata:entry.rule.metadata,context:{design:entry.design,columns:columns.find(c=>c.buildingId===component.id),facadeChanges:wallFacilities?.changes,facadePlan:facades.find(f=>f.buildingId===component.id),sourceRefs:[{kind:"building",id:component.id}],reservations:finalBook?.snapshot(entry.rule.id==='standard-contextual'?new Set([`solid:building:${component.id}`]):undefined)??[],envelope,verticalBands:entry.rule.id==='standard-contextual'?geometryVertical:currentVertical,entrances:entry.rule.id==='standard-contextual'?geometryEntrances:currentEntrances}};
       immutableJSON(ruleInput);
-      const key=entry.rule.id==='standard-contextual'?cache?.key('building-panels',{rule:entry.rule,adapter:entry.spatialAdapterRef,input:contextualTemplateDependencies(ruleInput)}):undefined;
-      let base=key?cache!.get<ReturnType<typeof contextualTemplates>>(key):undefined;
-      if(entry.rule.id==='standard-contextual'&&!base){base=contextualTemplates(ruleInput);if(key)cache!.putImmutable(key,base);}
-      const result:GenerationResult=base?contextualOutput(ruleInput,contextualBase(ruleInput,base)):resolveBuildingRule(entry.rule).generate(ruleInput);
+      // Panel templates contain only a few role/direction decisions. Evaluate
+      // them inline without a full-catalog cache key; retain the bounded cache
+      // for document/volume analysis and spatial plans.
+      const result:GenerationResult=resolveBuildingRule(entry.rule).generate(ruleInput);
       if(result.status==='error')throw new Error('INVALID_BUILDING_OUTPUT');
       if(result.modules?.length)throw new Error('RULE_OUTPUT_BOUNDS_UNKNOWN');
       const portalFaces=new Set(entrances.find(e=>e.buildingId===component.id)?.entrances.flatMap(e=>e.faceIds)??[]);

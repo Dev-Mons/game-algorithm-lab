@@ -1,0 +1,326 @@
+{
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "seed": 42,
+  "shots": {
+    "A-reference-iso": {
+      "sha256": "6ce543ab15a5099bc68bd65f5e07368c14301d0e6f75cce0c217ddad5bfd9a9c",
+      "bytes": 408806,
+      "meshes": {
+        "count": 2492,
+        "uniqueFaces": 2492,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 236,
+        "glassFaces": 2116
+      }
+    },
+    "A-reference-front": {
+      "sha256": "5e11c2cd67deffb4ddbd821c66ff54e8e6ec9767139fdc3b4f82b32d6d7e4cc1",
+      "bytes": 355760,
+      "meshes": {
+        "count": 2492,
+        "uniqueFaces": 2492,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 236,
+        "glassFaces": 2116
+      }
+    },
+    "A-low-iso": {
+      "sha256": "2d2b52358876b89f33b3f5a0a2e0dd72197aaf21c877e480ff375ffc5c31808e",
+      "bytes": 267457,
+      "meshes": {
+        "count": 118,
+        "uniqueFaces": 118,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 24,
+        "glassFaces": 48
+      }
+    },
+    "A-high-iso": {
+      "sha256": "34023454a8bb4763a38955f8acae61fdcd32c6d26ea680b4c84ac01eb646b98f",
+      "bytes": 323487,
+      "meshes": {
+        "count": 828,
+        "uniqueFaces": 828,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 90,
+        "glassFaces": 720
+      }
+    },
+    "A-stepped-iso": {
+      "sha256": "6f36bac64fb98d3330bd4bfcdf8ba0f6e3d91f5435a642d80c664cd4367026de",
+      "bytes": 326905,
+      "meshes": {
+        "count": 472,
+        "uniqueFaces": 472,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 76,
+        "glassFaces": 332
+      }
+    },
+    "A-tiles-iso": {
+      "sha256": "84758a298afcf8cafc05d92bb90c11ef75cbf45537113f5a25924088b1e4334b",
+      "bytes": 371628,
+      "meshes": {
+        "count": 254,
+        "uniqueFaces": 254,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 44,
+        "glassFaces": 182
+      }
+    },
+    "B-reference-iso": {
+      "sha256": "bfe65a1fe1887d170b65b757e45bbb19eabc12c3393f41dcd89c2088fccc9bf7",
+      "bytes": 365198,
+      "meshes": {
+        "count": 636,
+        "uniqueFaces": 636,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 336
+      }
+    },
+    "B-reference-front": {
+      "sha256": "8d1ba081d21868b866542882e983c95c05d28725e24159503e34eae97dbd6ad5",
+      "bytes": 317669,
+      "meshes": {
+        "count": 636,
+        "uniqueFaces": 636,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 336
+      }
+    },
+    "B-low-iso": {
+      "sha256": "f24a720eafb9784d53ae786a79ef93f762e8e4fb2b0e1606473a9682d5d7c0c2",
+      "bytes": 254488,
+      "meshes": {
+        "count": 118,
+        "uniqueFaces": 118,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 26
+      }
+    },
+    "B-high-iso": {
+      "sha256": "8cd6f498cf6a43e5fb90c2f2289bb39865a9d092e988db4f2a7f375e9ca5f78d",
+      "bytes": 281583,
+      "meshes": {
+        "count": 828,
+        "uniqueFaces": 828,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 660
+      }
+    },
+    "B-stepped-iso": {
+      "sha256": "53d4652d66852e79083cdd2bb7fc13428eaa4bb5c7248e97820dcb60529afac3",
+      "bytes": 288164,
+      "meshes": {
+        "count": 472,
+        "uniqueFaces": 472,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 284
+      }
+    },
+    "B-tiles-iso": {
+      "sha256": "472f8140fca840a7bbf675c6b3b080b0a6bfa59e7838a4c1eb8163c2f679499a",
+      "bytes": 367088,
+      "meshes": {
+        "count": 254,
+        "uniqueFaces": 254,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 182
+      }
+    },
+    "C-reference-iso": {
+      "sha256": "9affdafade0a28b1a8923006ffe25f3b0dc28b188cc827d0c1d7f7652f548d7a",
+      "bytes": 332080,
+      "meshes": {
+        "count": 488,
+        "uniqueFaces": 488,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 352
+      }
+    },
+    "C-reference-front": {
+      "sha256": "58474121d926cafa186733b6ea74c2468db677887378d1db438caeb352e1d706",
+      "bytes": 309096,
+      "meshes": {
+        "count": 488,
+        "uniqueFaces": 488,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 352
+      }
+    },
+    "C-low-iso": {
+      "sha256": "d2706f412841968779bd194793d8619371db432ab90fd607ac451d9193f11cac",
+      "bytes": 249195,
+      "meshes": {
+        "count": 118,
+        "uniqueFaces": 118,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 32
+      }
+    },
+    "C-high-iso": {
+      "sha256": "d5f300287965e093f9b958048a50e89d8547ee40b9dd55c62b6cbd45daced111",
+      "bytes": 304702,
+      "meshes": {
+        "count": 828,
+        "uniqueFaces": 828,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 704
+      }
+    },
+    "C-stepped-iso": {
+      "sha256": "7c8153b2cead7264daaff6079c87efbae790b7d175d71529ce43a3664e641af2",
+      "bytes": 303973,
+      "meshes": {
+        "count": 472,
+        "uniqueFaces": 472,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 316
+      }
+    },
+    "C-tiles-iso": {
+      "sha256": "6ad0ac4a9796c510dac61efbdf8d76cd7d5cb3e780475e5e249e4cbfc208c120",
+      "bytes": 367831,
+      "meshes": {
+        "count": 254,
+        "uniqueFaces": 254,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 182
+      }
+    },
+    "D-reference-iso": {
+      "sha256": "80043081a126272f7857fc355fd027855b9410b5edbaf87899cb3b651d230ada",
+      "bytes": 290954,
+      "meshes": {
+        "count": 1200,
+        "uniqueFaces": 1200,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 1000
+      }
+    },
+    "D-reference-front": {
+      "sha256": "d3ddbdab1b05f1083d028a66161d7281c7f8d869b088c53132ae0cfe74d824dd",
+      "bytes": 228977,
+      "meshes": {
+        "count": 1200,
+        "uniqueFaces": 1200,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 1000
+      }
+    },
+    "D-low-iso": {
+      "sha256": "de79ad1e8d2783638899f4cd89b34f17e3a9e927e5a6865dc0b1ac6f66d856f8",
+      "bytes": 265359,
+      "meshes": {
+        "count": 118,
+        "uniqueFaces": 118,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 48
+      }
+    },
+    "D-high-iso": {
+      "sha256": "b498e20402b25702ef6f1acb521a6a653d9afe331a1717a2260512aa88794884",
+      "bytes": 312133,
+      "meshes": {
+        "count": 828,
+        "uniqueFaces": 828,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 720
+      }
+    },
+    "D-stepped-iso": {
+      "sha256": "8f374fbb21151213e7da369b3f0319820934cce28e49e89618fb2890bcce4660",
+      "bytes": 320098,
+      "meshes": {
+        "count": 472,
+        "uniqueFaces": 472,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 332
+      }
+    },
+    "D-tiles-iso": {
+      "sha256": "f4bb6bc510cb02a39d082f7f446d92e4350a708bb458e421a45f208115bc1fb3",
+      "bytes": 371762,
+      "meshes": {
+        "count": 254,
+        "uniqueFaces": 254,
+        "instanced": 0,
+        "childObjects": 0,
+        "extraPlacementObjects": 0,
+        "finishedFaces": 0,
+        "glassFaces": 190
+      }
+    }
+  },
+  "buildArtifacts": {
+    "index-D-Lvt-Uq.js": "94ab1eab636584179c4e129d4b8c169e2b9ea662bf71d410ccef4e8ed0c25671",
+    "index-o8zqimnd.css": "b52082e0cb4de47f8de60283fc369b7017dca85448280835af39086468a98a70"
+  }
+}
