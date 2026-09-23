@@ -1,35 +1,14 @@
-import {createHash} from 'node:crypto';
+import {digest,fingerprint,meaningfulResult} from './concept-preservation-contract';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {expect,it} from 'vitest';
-import {canonicalJSON,createDocument,exportDocument,loadDocument,replaceGrid,type GenerationDocument} from '../src/core/document';
+import {createDocument,exportDocument,loadDocument,replaceGrid,type GenerationDocument} from '../src/core/document';
 import {generateDocument} from '../src/core/generate-document';
 import {EnvironmentCache} from '../src/core/environment-cache';
 import {DocumentHistory} from '../src/editor';
-import {facadeColors,facadeFinish} from '../src/facade-finishes';
 import {buildCraftedGeometry} from '../src/crafted-geometry';
 import {box} from '../src/fixtures';
-import type {GenerationResult,Vec3} from '../src/core/generate';
+import type {Vec3} from '../src/core/generate';
 import {CONCEPTS,conceptPreservationCases} from './concept-preservation-fixtures';
-
-const digest=(value:unknown)=>createHash('sha256').update(canonicalJSON(value)).digest('hex');
-// Only authored output and externally visible ownership/contracts are golden.
-// Candidate traces, cache records, logical counters and intermediate facade plans may change.
-export function meaningfulResult(result:GenerationResult){
-  const env=result.environment!;
-  return {
-    status:result.status,diagnostics:result.diagnostics,
-    surfaces:result.surfaces.map(({faceId,cell,direction,componentId,role,wallKind,undersideKind})=>({faceId,cell,direction,componentId,role,...wallKind?{wallKind}:{},...undersideKind?{undersideKind}:{}})),
-    placements:result.placements,modules:result.modules,scenePlacements:result.scenePlacements,
-    vertical:env.vertical?.map(({buildingId,datumY,heightCells,bands,alignment,faceBands})=>({buildingId,datumY,heightCells,bands,alignment,faceBands})),
-    entrances:env.entrances?.map(({buildingId,entrances,frontages,desiredCount,unmetCount})=>({buildingId,entrances,frontages,desiredCount,unmetCount})),
-    reservations:env.reservations,stages:env.stages,
-  };
-}
-function fingerprint(document:GenerationDocument,result:GenerationResult){
-  const used=new Set(result.placements.map(p=>p.tileId)),tiles=document.catalog.tiles.filter(t=>used.has(t.tileId));
-  const colors=tiles.filter(t=>t.assetKey.startsWith('facade.')).map(t=>({tileId:t.tileId,finish:facadeFinish(t.assetKey),colors:facadeColors(facadeFinish(t.assetKey),t.palette!)}));
-  return {semantic:digest(meaningfulResult(result)),materials:digest(colors),tiles:digest(tiles),cells:document.grid.length,faces:result.placements.length,entrances:result.environment!.entrances!.reduce((n,p)=>n+p.entrances.length,0),reservations:result.environment!.reservations.length,status:result.status};
-}
 
 it('preserves the pre-refactor A–D placements, ownership, proportions, materials, access and complete geometry',()=>{
   const cases=conceptPreservationCases(),rows:Record<string,ReturnType<typeof fingerprint>>={},assets=new Set<string>();

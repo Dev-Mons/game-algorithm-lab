@@ -1,5 +1,8 @@
 # A–D 건물 규칙과 이식 범위
 
+대상 언어 재구현의 시작점과 TypeScript 없이 읽는 입력/기대 출력·geometry 자료는
+[네이티브 이식 진입점](NATIVE_PORTING.md)에 있다. 아래의 TS 파일명은 참조 구현 위치다.
+
 현재 기준은 schema 6 / SceneInputs 2 / catalog 13이다. `building-style.ts`의 현재
 `SHOP_STYLE`, `OFFICE_STYLE`, `URBAN_SHOP_STYLE`, `TOWER11_D_STYLE`를 대상으로 한다.
 옛 저장 문서가 가진 사용자 스타일·수직 프로그램·패턴은 검증된 정의를 그대로 실행한다.

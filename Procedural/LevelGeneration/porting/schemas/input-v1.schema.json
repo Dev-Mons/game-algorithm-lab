@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Packed native port input",
+  "description": "The catalog, buildingDefinition and optional theme references are bundle-root paths. Resolve them to get the existing schema-6 document. This schema describes packaging, not all authored style validation rules.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "native-port-input-v1"
+    },
+    "document": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 6
+        },
+        "algorithmVersion": {
+          "const": "environment-plans-v1"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "grid": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "catalog": {
+          "type": "object",
+          "properties": {
+            "$ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "$ref"
+          ],
+          "additionalProperties": false
+        },
+        "buildingDefinition": {
+          "type": "object",
+          "properties": {
+            "$ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "$ref"
+          ],
+          "additionalProperties": false
+        },
+        "buildings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "componentId",
+              "rule",
+              "design",
+              "spatialAdapterRef"
+            ],
+            "properties": {
+              "componentId": {
+                "type": "string"
+              },
+              "theme": {
+                "type": "object",
+                "properties": {
+                  "$ref": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "$ref"
+                ],
+                "additionalProperties": false
+              },
+              "rule": {
+                "type": "object"
+              },
+              "design": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "const": 1
+                  },
+                  "anchor": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "required": [
+                  "version",
+                  "anchor"
+                ],
+                "additionalProperties": false
+              },
+              "spatialAdapterRef": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sceneInputs": {
+          "type": "object"
+        },
+        "ruleSet": {
+          "type": "object"
+        },
+        "style": {
+          "type": "object"
+        },
+        "settings": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "algorithmVersion",
+        "seed",
+        "grid",
+        "catalog",
+        "buildingDefinition",
+        "buildings",
+        "sceneInputs",
+        "ruleSet",
+        "style",
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "document"
+  ],
+  "additionalProperties": false
+}

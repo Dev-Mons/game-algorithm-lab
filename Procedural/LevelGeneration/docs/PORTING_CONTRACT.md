@@ -1,5 +1,8 @@
 # 환경 생성 포팅 계약
 
+다른 언어·엔진으로의 기본 이식은 대상 언어로의 재구현이다. 실행 브리지 금지 범위,
+순수 JSON/메시 자료와 독립 비교 절차는 [네이티브 이식 진입점](NATIVE_PORTING.md)을 따른다.
+
 현재 문서 실행 기준은 schema6 / environment-plans-v1 / SceneInputs2 / catalog13입니다. 언어를 바꿀 때 원본 입력과 파생 계획을 분리하고 동일한 공통 실행 순서를 유지합니다. schema5 읽기 호환은 `document.ts`에 남아 있습니다.
 
 A~D의 최소 입력·출력, 높이별 배분, 가로 반복, 코너·출입구·옥상 우선순위와 계산 예제는 [건물 규칙 이식 문서](BUILDING_RULES_PORTING.md)를 먼저 참고하세요. 이번 리팩터링의 [결과 보존 증거](BUILDING_REFACTOR_PRESERVATION.md)와 [실제 편집 성능](BUILDING_EDIT_PERFORMANCE.md)은 별도 문서에 기록합니다.

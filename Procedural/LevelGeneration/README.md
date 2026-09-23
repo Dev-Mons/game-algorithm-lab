@@ -54,6 +54,11 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 ## 코드와 검증 자료
 
+다른 언어·엔진으로 이식할 때는 [네이티브 이식 진입점](docs/NATIVE_PORTING.md)을 먼저 읽으세요.
+`npm run port:export`로 기존 baseline에 일치하는 순수 JSON 입력·기대 출력·정점/인덱스 자료를 내보낼 수 있습니다.
+대상에서는 TypeScript/Three.js 실행 브리지를 붙이지 않고 엔진의 기본 언어와 API로 구현합니다.
+웹 데모와 원본 런타임은 개발 중 결과를 비교하는 참조 도구입니다.
+
 A~D의 현재 디자인을 유지하는 최소 계산 순서와 엔진 어댑터 경계는 [건물 규칙 이식 문서](docs/BUILDING_RULES_PORTING.md)에 정리했습니다. [배치·geometry·실제 렌더 보존 증거](docs/BUILDING_REFACTOR_PRESERVATION.md)와 [큰 부피의 실제 편집 성능](docs/BUILDING_EDIT_PERFORMANCE.md)에서 변경 전후 결과, 재현 명령과 측정 한계를 확인할 수 있습니다.
 
 설계·개발 계획과 계약 문서는 [docs 폴더](docs/)에 모았습니다.

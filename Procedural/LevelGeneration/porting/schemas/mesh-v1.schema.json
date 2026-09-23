@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Native complete-face mesh",
+  "description": "Flat vertex attributes and triangle indices; local U/V/N coordinates in cell units. Groups address index elements, not triangles.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "native-face-mesh-v1"
+    },
+    "key": {
+      "type": "string"
+    },
+    "bounds": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "max": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "materialIndex": {
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              }
+            },
+            "required": [
+              "start",
+              "count",
+              "materialIndex"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "index": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "attributes": {
+          "type": "object",
+          "required": [
+            "position",
+            "normal",
+            "uv"
+          ],
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "itemSize": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "array": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "itemSize",
+              "array"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "groups",
+        "index",
+        "attributes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "key",
+    "bounds",
+    "geometry"
+  ],
+  "additionalProperties": false
+}

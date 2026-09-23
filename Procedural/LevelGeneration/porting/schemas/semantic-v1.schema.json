@@ -1,0 +1,670 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Native building output — semantic-v1",
+  "description": "Object member order is irrelevant. Array order, identifiers, absent versus null and all numbers are significant. No JS or engine objects.",
+  "type": "object",
+  "properties": {
+    "status": {
+      "enum": [
+        "ok",
+        "degraded",
+        "error"
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "location",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/surface"
+      }
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/placement"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "Legacy module output; current contextual fixtures use an empty array."
+      }
+    },
+    "scenePlacements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scenePlacement"
+      }
+    },
+    "vertical": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/vertical"
+      }
+    },
+    "entrances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entrancePlan"
+      }
+    },
+    "reservations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reservation"
+      }
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "enum": [
+              "vertical",
+              "preflight",
+              "spatial",
+              "parkingCirculation",
+              "entrances",
+              "parkingStalls",
+              "facade",
+              "fixtures",
+              "attachments"
+            ]
+          },
+          "state": {
+            "enum": [
+              "ready",
+              "not-applicable",
+              "blocked",
+              "not-implemented"
+            ]
+          },
+          "reasonCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "stage",
+          "state",
+          "reasonCodes"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "status",
+    "diagnostics",
+    "surfaces",
+    "placements",
+    "modules",
+    "scenePlacements",
+    "vertical",
+    "entrances",
+    "reservations",
+    "stages"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "int3": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "direction": {
+      "enum": [
+        "PX",
+        "NX",
+        "PY",
+        "NY",
+        "PZ",
+        "NZ"
+      ]
+    },
+    "sourceRef": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "building",
+            "object",
+            "road",
+            "parking"
+          ]
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "box16": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "$ref": "#/$defs/int3"
+        },
+        "max": {
+          "$ref": "#/$defs/int3"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "surface": {
+      "type": "object",
+      "properties": {
+        "faceId": {
+          "type": "string"
+        },
+        "cell": {
+          "$ref": "#/$defs/int3"
+        },
+        "direction": {
+          "$ref": "#/$defs/direction"
+        },
+        "componentId": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "wall",
+            "roof",
+            "terrace",
+            "underside"
+          ]
+        },
+        "wallKind": {
+          "enum": [
+            "regular",
+            "rooftop"
+          ]
+        },
+        "undersideKind": {
+          "enum": [
+            "base",
+            "overhang"
+          ]
+        }
+      },
+      "required": [
+        "faceId",
+        "cell",
+        "direction",
+        "componentId",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "placement": {
+      "type": "object",
+      "properties": {
+        "placementId": {
+          "type": "string"
+        },
+        "faceId": {
+          "type": "string"
+        },
+        "tileId": {
+          "type": "string"
+        },
+        "position2": {
+          "$ref": "#/$defs/int3"
+        },
+        "orientationId": {
+          "$ref": "#/$defs/direction"
+        },
+        "ruleId": {
+          "type": "string"
+        },
+        "faceAssetKey": {
+          "type": "string"
+        },
+        "finishIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "placementId",
+        "faceId",
+        "tileId",
+        "position2",
+        "orientationId",
+        "ruleId"
+      ],
+      "additionalProperties": false
+    },
+    "vertical": {
+      "type": "object",
+      "properties": {
+        "buildingId": {
+          "type": "string"
+        },
+        "datumY": {
+          "type": "integer"
+        },
+        "heightCells": {
+          "type": "integer"
+        },
+        "bands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "band": {
+                "type": "string"
+              },
+              "yMin": {
+                "type": "integer"
+              },
+              "yMaxExclusive": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "band",
+              "yMin",
+              "yMaxExclusive"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "alignment": {
+          "type": "object",
+          "properties": {
+            "anchor": {
+              "$ref": "#/$defs/int3"
+            },
+            "familyId": {
+              "type": "string"
+            },
+            "periodCells": {
+              "type": "integer"
+            },
+            "phaseByDirection": {
+              "type": "object",
+              "properties": {
+                "PX": {
+                  "type": "integer"
+                },
+                "NX": {
+                  "type": "integer"
+                },
+                "PZ": {
+                  "type": "integer"
+                },
+                "NZ": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "PX",
+                "NX",
+                "PZ",
+                "NZ"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "anchor",
+            "familyId",
+            "periodCells",
+            "phaseByDirection"
+          ],
+          "additionalProperties": false
+        },
+        "faceBands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "faceId": {
+                "type": "string"
+              },
+              "band": {
+                "type": "string"
+              },
+              "rowRole": {
+                "enum": [
+                  "foot",
+                  "repeat",
+                  "head",
+                  "single"
+                ]
+              }
+            },
+            "required": [
+              "faceId",
+              "band",
+              "rowRole"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "buildingId",
+        "datumY",
+        "heightCells",
+        "bands",
+        "alignment",
+        "faceBands"
+      ],
+      "additionalProperties": false
+    },
+    "reservation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "kind": {
+          "enum": [
+            "solid",
+            "public-vehicle",
+            "walk",
+            "vehicle-aisle",
+            "entrance",
+            "stall",
+            "safety",
+            "lighting",
+            "fixture",
+            "attachment"
+          ]
+        },
+        "priority": {
+          "enum": [
+            1000,
+            900,
+            800,
+            700,
+            600,
+            500,
+            400,
+            300,
+            200
+          ]
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/int3"
+          }
+        },
+        "boxes16": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/box16"
+          }
+        },
+        "crossingId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "sourceRefs",
+        "kind",
+        "priority",
+        "cells",
+        "boxes16"
+      ],
+      "additionalProperties": false
+    },
+    "entrance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "buildingId": {
+          "type": "string"
+        },
+        "faceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "widthCells": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "role": {
+          "enum": [
+            "main",
+            "secondary"
+          ]
+        },
+        "outward": {
+          "enum": [
+            "PX",
+            "NX",
+            "PZ",
+            "NZ"
+          ]
+        },
+        "access": {
+          "enum": [
+            "road",
+            "local"
+          ]
+        },
+        "landingCells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/int3"
+          }
+        },
+        "pathCells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/int3"
+          }
+        },
+        "roadTargetCell": {
+          "$ref": "#/$defs/int3"
+        },
+        "roadFrontageId": {
+          "type": "string"
+        },
+        "traceId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "buildingId",
+        "faceIds",
+        "widthCells",
+        "role",
+        "outward",
+        "access",
+        "landingCells",
+        "pathCells",
+        "traceId"
+      ],
+      "additionalProperties": false
+    },
+    "entrancePlan": {
+      "type": "object",
+      "properties": {
+        "buildingId": {
+          "type": "string"
+        },
+        "entrances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entrance"
+          }
+        },
+        "frontages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "enum": [
+                  "PX",
+                  "NX",
+                  "PZ",
+                  "NZ"
+                ]
+              },
+              "plane": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "direction",
+              "plane"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "desiredCount": {
+          "type": "integer"
+        },
+        "unmetCount": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "buildingId",
+        "entrances",
+        "frontages",
+        "desiredCount",
+        "unmetCount"
+      ],
+      "additionalProperties": false
+    },
+    "scenePlacement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "object",
+            "road",
+            "building",
+            "parking"
+          ]
+        },
+        "asset": {
+          "type": "string"
+        },
+        "center": {
+          "$ref": "#/$defs/vec3"
+        },
+        "size": {
+          "$ref": "#/$defs/vec3"
+        },
+        "color": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "worldBounds16": {
+          "$ref": "#/$defs/box16"
+        },
+        "planId": {
+          "type": "string"
+        },
+        "yawQuarterTurns": {
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "componentId": {
+          "type": "string"
+        },
+        "input": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "asset",
+        "center",
+        "size",
+        "color",
+        "context"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
