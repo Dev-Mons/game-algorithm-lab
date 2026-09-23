@@ -79,3 +79,62 @@ npx playwright test e2e/concept-preservation.spec.ts --grep '@preservation'
 ## 범위와 한계
 
 32층까지 모든 높이의 배분 경계와 좁은 폭을 검사했지만, 허용되는 모든 32³ 격자 조합의 전수 검사는 아니다. 실제 렌더는 위 20개 입력·24시점으로 한정된다. 큰 부피의 실제 마우스 드래그 지연, 최초 편집과 반복 편집의 시간 분포는 별도 성능 보고서에서 다룬다. 이 문서의 SHA256 비교로 속도 향상을 주장하지 않는다.
+
+## e1c3c07 이후 책임 분리 검증 (2026-09-23)
+
+이번 작업의 시작 HEAD는 `e1c3c07`이며 작업 트리는 깨끗했다. 위의
+0254855 기반 생성 결과/geometry baseline은 그대로 사용했고, 기존 기준값과 테스트
+기대값은 수정하지 않았다. 아래 내용은 앞선 최적화 검증에 추가되는 별도 기록이다.
+
+- 수직 배분/층별 조회표/경계 구성, C 층 DAG/지역 scope, 입면 선점/구간/패턴 적합도/
+  에셋 적용을 명시적인 단계로 나눴다. 중첩 클로저가 placement/trace 변경을 읽어
+  다음 면의 배치를 판단하던 결합을 없앴다.
+- 마감 후보와 원자적 예약 승인, 규칙 입력 준비/실행/출력 검증, 결과/overlay 조립을
+  분리했다. 새로운 클래스 계층·설정 UI·지속 캐시·디자인 규칙은 추가하지 않았다.
+- 기존 공개 import 경로와 사용자 정의 규칙의 전체 분석/진단/예약 문맥을 보존했다.
+  정렬·ID·anchor·에셋 등록·완성형 geometry·렌더러·저장 schema는 변경하지 않았다.
+
+최종 `npm run verify`가 통과했다. DOM 없는 core를 포함한 TypeScript 검사,
+50개 파일의 **309개 테스트**, production 빌드를 확인했다. 이 실행에 기존
+**214개 입력의 생성 결과 해시**, **419종 완성형 geometry 해시**, A–D 편집·분리·
+Undo/Redo·JSON 복원과 캐시 없는 전체 생성 비교가 포함된다. 기존 사용자 프로그램/
+패턴, 등록 건물 규칙, bounds/출입구 거부, 공간 예약/캐시 검사도 기존 테스트로 통과했다.
+테스트의 내부 함수 분할에 맞춘 기대값이나 baseline 갱신은 하지 않았다.
+
+빌드는 성공했고 기존 500kB 초과 번들 경고는 남아 있다. 테스트가 부수적으로
+재작성한 `parking-quality.json`은 작업 시작 버전으로 되돌려 변경 범위에서 제외했다.
+
+책임 경계와 데이터 흐름은 [건물 규칙 이식 문서](BUILDING_RULES_PORTING.md),
+이번 순수 규칙 성능과 전체 편집 측정의 제약은
+[편집 성능 보고서의 후속 측정 절](BUILDING_EDIT_PERFORMANCE.md)을 참고한다.
+
+실제 렌더 비교도 통과했다. 수정 전에 빌드한 e1c3c07 production 결과를
+`artifacts/structure-preservation/baseline`에 별도로 캡처한 뒤, 최종 빌드의
+같은 20개 입력·24개 시점과 비교했다. Chromium 153.0.8010.12, 1440×960,
+Seed42 조건이며 **24개 PNG 모두 byte까지 동일**하다. 차이 픽셀은 0개라
+기존 camera overlay 제외 규칙을 적용하기 전에도 완전히 같다.
+실제 면 Mesh 수·유일 면 수·마감/유리 수와 면당 Mesh 하나 계약도 일치했다.
+
+원본 PNG는 로컬 `artifacts/structure-preservation/{baseline,after}`에 있다.
+재검토 가능한 manifest는 [변경 전](../benchmarks/concept-structure-render-before.json),
+[변경 후](../benchmarks/concept-structure-render-after.json),
+[픽셀 비교](../benchmarks/concept-structure-render-comparison.json)에 보관한다.
+각 manifest에 브라우저와 production JS/CSS SHA256이 남아 있다.
+기존 `concept-render-baseline.json`과 `concept-preservation-baseline.json`을
+이 캡처로 대체하지 않았다.
+
+A의 7→8층, C의 3→4층을 실제 E/Q로 편집하는 두 회귀 검사도 통과했다.
+스타일당 추가·제거·Undo·Redo·JSON 복원 5개 상태 모두에서 기존 Mesh를 재사용한
+Viewer와 독립 context의 새 Viewer PNG가 동일했다. 각 상태의 Mesh 수도
+캐시 없는 전체 생성과 비교했다. 결과 manifest는
+[A 편집](../benchmarks/concept-structure-edit-A.json),
+[C 편집](../benchmarks/concept-structure-edit-C.json)에 있고,
+비교 PNG는 로컬 `artifacts/structure-preservation/edits-{A,C}`에 있다.
+
+최종 브라우저 실행은 **49개 모두 통과**했다(13.1분). 일반 회귀 48개와 명시적으로
+활성화한 전후 렌더 비교 1개이며, 도로 편집 후 접근/예약·출입구·시설 갱신,
+주차 계획, 연속 표면 드래그, D 및 기존 사용자 다층 프레임도 포함한다.
+`CONCEPT_PRESERVATION_OUTPUT=artifacts/structure-preservation`,
+`CONCEPT_PRESERVATION_PHASE=after`를 지정한 뒤
+`npx playwright test --grep-invert '@measure'`로 최종 production build를 검사했다.
+이후 코드 변경이나 미해결 실패가 없어 단위/브라우저 검사를 반복하지 않았다.

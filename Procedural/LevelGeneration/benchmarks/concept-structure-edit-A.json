@@ -1,0 +1,38 @@
+{
+  "browser": "153.0.8010.12",
+  "seed": 42,
+  "profile": "shop",
+  "initialDimensions": [
+    8,
+    7,
+    5
+  ],
+  "comparison": "exact PNG SHA256 to a fresh Viewer, UI overlays hidden",
+  "comparisons": [
+    {
+      "state": "add",
+      "cells": 320,
+      "sha256": "390edeec4c51ce19a8e945dc6a41fd6e9944485c05a9593e0ca6e54c75c61973"
+    },
+    {
+      "state": "remove",
+      "cells": 280,
+      "sha256": "afab236a3aac67cd2423ca452b77bd5af2baed5fbe39e06b0b347a8fe0cd56e7"
+    },
+    {
+      "state": "undo",
+      "cells": 320,
+      "sha256": "390edeec4c51ce19a8e945dc6a41fd6e9944485c05a9593e0ca6e54c75c61973"
+    },
+    {
+      "state": "redo",
+      "cells": 280,
+      "sha256": "afab236a3aac67cd2423ca452b77bd5af2baed5fbe39e06b0b347a8fe0cd56e7"
+    },
+    {
+      "state": "restore",
+      "cells": 280,
+      "sha256": "afab236a3aac67cd2423ca452b77bd5af2baed5fbe39e06b0b347a8fe0cd56e7"
+    }
+  ]
+}

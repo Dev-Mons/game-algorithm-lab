@@ -17,3 +17,9 @@ A~D의 최소 입력·출력, 높이별 배분, 가로 반복, 코너·출입구
 - 일반 건물은 완성형 면 키를 선택하고 면당 Mesh 객체 하나에 본체·프레임·유리·채택 마감을 모두 포함합니다. 고정 finish profile과 호스트 소유 규칙은 `COMPLETE_FACE_ASSETS.md`를 따릅니다. 마감 예약/결정은 유지하지만 별도 마감 렌더 모듈은 만들지 않습니다. 여러 재질 슬롯과 공유 geometry는 허용하며 단일 객체가 단일 draw call을 뜻하지는 않습니다.
 
 `npm run verify`, `npm run test:e2e`와 `e2e/environment.spec.ts --grep '@measure'`를 현재 구현의 인수 경로로 사용합니다. JS/GPU 표시 원점은 파생 표시 변환이며 문서 좌표·계획을 변경하지 않습니다.
+
+책임 분리 후에도 단계 순서와 규칙/어댑터 등록 계약은 동일합니다.
+`environment-generation.ts`가 단계 상태와 예약 전달을 조율하고,
+`building-plans.ts`가 건물 선점을 준비하며, `building-execution.ts`가 불변 입력 준비·규칙 실행·출력 검증을 담당합니다.
+`environment-output.ts`와 `environment-presentation.ts`는 확정 결과와 표시용 진단을 조립합니다.
+이 내부 분할은 문서 schema, 에셋 catalog, 규칙 version을 변경하지 않습니다.

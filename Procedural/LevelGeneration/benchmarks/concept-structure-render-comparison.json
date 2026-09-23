@@ -1,0 +1,211 @@
+{
+  "browser": "153.0.8010.12",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "excludedOverlay": {
+    "selector": ".camera-bar",
+    "xMin": 268,
+    "yMin": 745,
+    "xMaxExclusive": 604,
+    "yMaxExclusive": 789,
+    "boxShadow": "none",
+    "shadowMargin": 0
+  },
+  "modelPixelTolerance": 0,
+  "comparisons": [
+    {
+      "id": "A-reference-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "A-reference-front",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "A-low-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "A-high-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "A-stepped-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "A-tiles-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-reference-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-reference-front",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-low-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-high-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-stepped-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "B-tiles-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-reference-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-reference-front",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-low-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-high-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-stepped-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "C-tiles-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-reference-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-reference-front",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-low-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-high-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-stepped-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    },
+    {
+      "id": "D-tiles-iso",
+      "byteIdentical": true,
+      "differentPixels": 0,
+      "outsideOverlayPixels": 0,
+      "maxChannelDelta": 0,
+      "differingBounds": null
+    }
+  ]
+}

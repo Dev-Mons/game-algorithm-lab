@@ -157,3 +157,51 @@ handler는 native 입력 대기를 제외한 수락 완료까지이며, 생성�
 측정은 전후 모두 통과했다. 각 키 편집은 채택 표본 하나, 각 held drag는 3층 추가/3층 제거의 채택 표본 여섯 개와 원래 셀 수 복귀를 확인한다. 변경 후 표본에서 render 전에 대체된 중간 상태는 0개다. 결과의 의미/geometry/실제 이미지·Undo/Redo·저장 복원과 전체 재생성 동등성은 [별도 보존 보고서](BUILDING_REFACTOR_PRESERVATION.md)에 있다.
 
 원시 표본: [편집 전](../benchmarks/building-edit.before.json), [편집 후](../benchmarks/building-edit.after.json), [최초 장면 전](../benchmarks/building-startup.before.json), [최초 장면 후](../benchmarks/building-startup.after.json). 병목 진단: [별도 CPU profile 요약](../benchmarks/building-edit.profile-summary.json), [원본 profile](../benchmarks/building-edit.baseline.cpuprofile).
+
+## e1c3c07 이후 책임 분리 측정 (2026-09-23)
+
+이 절은 위의 0254855→e1c3c07 최적화 보고서와 별개다. 시작 HEAD는 e1c3c07이며
+작업 트리가 깨끗한 상태에서 먼저 기존 실험을 실행했다. 같은 Node v22.19.0,
+24³/Seed17, 스타일별 최초 1회와 반복 40회, 분석/기본 배치 준비는 계측 밖이라는
+조건을 유지했다. 최종 비교 실행은 다른 단위·브라우저 검사와 겹치지 않았다.
+기존 baseline/after 파일은 수정하지 않았다.
+
+| 스타일 | 구간 | e1c3c07 p50 / p95 / 최대(ms) | 책임 분리 후 p50 / p95 / 최대(ms) |
+| --- | --- | --- | --- |
+| A | vertical | 2.36 / 4.01 / 4.61 | 1.99 / 3.74 / 6.11 |
+| A | facade | 6.24 / 10.12 / 12.59 | 5.32 / 8.79 / 18.18 |
+| A | 같은 회차 vertical+facade | 8.57 / 12.56 / 17.19 | 7.41 / 13.14 / 20.96 |
+| B | vertical | 1.51 / 2.81 / 4.71 | 1.67 / 3.37 / 3.87 |
+| B | facade | 5.85 / 8.48 / 9.43 | 5.56 / 8.47 / 11.33 |
+| B | 같은 회차 vertical+facade | 8.01 / 11.30 / 13.19 | 7.62 / 11.00 / 14.36 |
+| C | vertical | 18.54 / 21.70 / 37.02 | 15.92 / 21.20 / 42.08 |
+| C | facade | 5.85 / 7.26 / 9.57 | 7.16 / 8.70 / 12.07 |
+| C | 같은 회차 vertical+facade | 24.41 / 28.88 / 45.43 | 23.33 / 27.82 / 49.43 |
+| D | vertical | 1.86 / 3.41 / 5.72 | 2.22 / 4.13 / 4.26 |
+| D | facade | 5.84 / 8.09 / 9.45 | 5.27 / 7.38 / 8.03 |
+| D | 같은 회차 vertical+facade | 7.79 / 10.90 / 13.81 | 7.77 / 10.99 / 11.48 |
+
+합계는 서로 다른 구간의 중앙값을 더한 값이 아니라, 원시 표본의 같은 회차 시간을
+더한 뒤 nearest-rank로 다시 계산한 것이다. 최초 표본은 합계에서도 제외한다.
+
+처음 분리한 구현에서 입면 시간이 늘어 중간 배치 저장을 수정했다. 최종 구현은
+필수 선점 Map과 반복 구간만 보관하고, 구간마다 행·패턴 진단을 공유한다.
+코너 변형이 없는 기본 에셋과 사용자 설정이 없는 조합에서는 이웃 면 조회를 생략한다.
+C의 층 DAG 변화 링크는 Set으로 공유하며 footprint 폭은 임시 좌표 배열 없이 계산한다.
+기존 승자 패턴만 토큰화, scope별 층 조회표, 실행당 인덱스, 제한된 문서/분석 캐시는 유지한다.
+
+A/B/D 입면 중앙값은 감소했고 C 입면 중앙값은 5.85→7.16ms로 증가했다.
+C 수직 중앙값은 18.54→15.92ms, 같은 회차 두 규칙 합계 중앙값은 24.41→23.33ms다.
+A 합계 p95와 A/B/C 합계 최댓값은 증가했고, D 합계 중앙값은 사실상 같다.
+짧은 단일 실행의 시간 분포로 모든 구간이나 tail latency가 개선됐다고 주장하지 않는다.
+
+대형 편집 전체 표본 수집도 시작했으나 중간 단위 검사와 실행이 겹쳐 중단했다.
+불완전한 로컬 파일 `artifacts/building-structure.incomplete.json`은 비교/성공 증거에서 제외한다.
+이번 변경의 성능 비교 범위는 순수 규칙 평가이며, 전체 E/Q·드래그 지연이나 최초 장면
+성능을 다시 검증했다고 보지 않는다. 편집·Undo/Redo·복원의 결과 계약은 별도 브라우저
+회귀 검사로 확인한다. 기존 큰 건물 측정 절차와 과거 수치는 위에 그대로 남겨 둔다.
+
+원시 표본: [e1c3c07](../benchmarks/facade-structure-before.json),
+[책임 분리 후](../benchmarks/facade-structure-after.json).
+재현 시 `FACADE_BENCH_REPORT`를 새 경로로 지정하고
+`npx vitest run experiments/facade-core-performance.test.ts`를 실행한다.

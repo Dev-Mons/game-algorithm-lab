@@ -13,12 +13,17 @@
 |---|---|
 | `analysis.ts`, `regions.ts` | 정수 점유, 연결 성분, 실제 외피, 면 역할·지지 해석 |
 | `building-style.ts` | A–D의 작은 스타일 데이터와 기존 사용자 정의 검증 |
-| `vertical-design.ts` | `verticalCounts`, `planVertical`: 층 구간, 행 역할, 절대 정렬, 경계 |
-| `architectural-program.ts`, `design-profile.ts`, `mass-relations.ts` | C의 프로그램 선택과 지역별 높이; 이전 사용자 프로그램 호환 |
-| `facade-patterns.ts` | `chooseFacadePattern`, `applyFacadeStyle`: 정수 반복 배치와 우선순위 |
-| `contextual-building-rule.ts` | 소수 대표 면의 기본 패널 결정 → 전체 면 배치 → 현재 입면 규칙 적용 |
-| `facade-tile-settings.ts` | 기존 저층·중앙·상층·코너 사용자 타일 덮어쓰기 |
-| `*-assets.ts`, `facade-trims.ts`, `complete-face-assets.ts` | 에셋 치수, 마감 예약·소유, 완성형 면 키 |
+| `vertical-design.ts`, `vertical-allocation.ts`, `vertical-boundaries.ts` | 수직 계획 조율, 층 배분/층별 행 조회표, 실제 월드 경계와 호스트 우선순위 |
+| `architectural-program.ts`, `design-profile.ts`, `mass-relations.ts` | C의 프로그램 선택; 층 DAG → 변화/연속 구간 → 같은 옥상 높이의 지역 scope |
+| `facade-patterns.ts`, `facade-layout.ts` | 실행당 입력 인덱스/출력 사본 준비; 필수 선점 → 물리 run → 반복 구간 계획 |
+| `facade-fitting.ts` | 후보 호환성, 정수 적합도, 결정론적 순위, 승자의 토큰만 구체화 |
+| `facade-face-selection.ts`, `facade-tile-settings.ts` | 구간 연결 group, 행/cap → 옥상 → 사용자 타일 → 볼록 코너 에셋 적용 |
+| `contextual-building-rule.ts`, `contextual-envelope.ts` | 대표 패널 결정/면별 확장/입면 적용과 출력 전 원본 기반 envelope 기술의 분리 |
+| `building-plans.ts`, `building-execution.ts` | 시설·기둥·구형 프레임의 선점 조율; 불변 규칙 입력 → 등록 규칙 실행 → bounds/출입구 검증 |
+| `facade-trims.ts`, `building-output.ts`, `complete-face-assets.ts` | 마감 조인트 후보 → 충돌/원자적 예약 → 호스트 면에 마감 및 완성형 키 결합 |
+| `environment-generation.ts`, `environment-analysis.ts` | 단계 순서/준비 상태/예약 전달과 문서·외피 분석 캐시의 분리 |
+| `environment-output.ts`, `environment-presentation.ts` | 확정 계획의 결과·진단 조립과 표시용 overlay; 규칙 판단에 역으로 전달하지 않음 |
+| `*-assets.ts` | 변경하지 않은 실제 에셋 치수·재료·geometry 계약 |
 
 규칙 평가에 필요한 최소 입력은 정규화한 `cells: [x,y,z][]`, 외피 `Surface[]`,
 `buildingId`, `design.anchor`, 전역 `seed`, 검증된 `BuildingStyle`이다.
@@ -217,3 +222,31 @@ Viewer는 직전 화면의 `faceId → Mesh`만 현재 동기화 동안 참조�
 편집의 화면 반영 지연은 별도의 편집 경로 보고서를 기준으로 판단한다.
 중앙값(p50)과 p95는 앱과 같은 nearest-rank인 `sorted[ceil(n*p)-1]`을 사용한다.
 최초 표본은 반복 통계에서 제외한다. 최초1회만으로 cold 지연의 분포를 추정할 수는 없다.
+
+## 책임 분리 후 내부 데이터 흐름
+
+`planVertical`은 스타일/Seed를 해석한 뒤 전역 배분과 지역 scope별 배분을 계산한다.
+`rowsByHeight`를 scope마다 한 번 만들고 외벽은 열 scope와 Y로 조회한다.
+`mass-relations.ts`의 진단 DAG/변화 라벨과 실제 층 배분 scope는 별도 단계이며,
+지역 프로그램의 높이는 계속 같은 높이의 옥상 열 그룹에서 결정한다.
+
+입면은 `FacadeLayoutInput`의 읽기 전용 조회표를 공유한다. `planFacadeLayout`은
+출입구·시설·기둥·프레임·실제 run 끝을 선점한 작은 Map과 반복 구간을 반환한다.
+일반 면마다 중간 배치 객체를 보관하지 않는다. 구간의 패턴/진단/행 정보를 공유하면서
+`applyPatternSection`이 연결 group을 만들고 `applyWallModule`이 결과 사본에 적용한다.
+레이아웃 판단은 placement/trace 변경을 읽지 않는다. 원본 base 객체는 수정하지 않는다.
+코너 설정 또는 코너 변형 descriptor가 있을 때만 이웃 면을 조회하며, 등록된 모든
+코너·옥상·사용자 타일 선택 순서는 위 계약과 같다.
+
+`planFacadeTrims`의 후보 구성은 호스트와 양끝 절삭을 먼저 확정한다.
+`reserveTrimCandidate`만 예약 book을 변경하며, 채택 결과는
+`completeBuildingFaces`에서 호스트·변환을 검증하고 기존 완성형 에셋 키에 결합한다.
+시설과 마감이 동일 book을 순서대로 사용하는 원자적 우선순위를 유지한다.
+
+`generateBuildings`는 건물별 면/영역과 계획을 실행당 한 번 인덱싱한다.
+일반 contextual 규칙은 해당 성분의 셀과 geometry 계획, 자기 solid 예약을 받고,
+사용자 정의 규칙은 기존 전체 분석 셀/features와 trace/예약 문맥을 그대로 받는다.
+모든 등록 규칙은 동일 실행/검증 경로를 거친다. `assembleEnvironmentResult`는
+확정된 계획과 예약 snapshot만 받으며 생성·예약·캐시 결정을 수행하지 않는다.
+공개 `planVertical`, `verticalCounts`, `chooseFacadePattern`, `applyFacadeStyle`의
+기존 import 경로와 호출 계약은 유지한다.
