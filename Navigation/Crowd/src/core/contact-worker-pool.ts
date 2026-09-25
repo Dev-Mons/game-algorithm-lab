@@ -19,6 +19,7 @@ export class ContactWorkerPool {
   constraints=0;
   energyDamped=0;
   maximumImpulse=0;
+  pairCount=0;pairCandidates=0;pairFallbacks=0;pairCells=0;pairMaximum=0;pairOwnershipSkips=0;
   constructor(module:WebAssembly.Module,memory:WebAssembly.Memory,private readonly api:ParallelContactExports) {
     this.participants=Math.max(1,Math.min(4,Math.floor((navigator.hardwareConcurrency??2)/2)));
     this.control=new Int32Array(memory.buffer,WORKER_CONTROL_OFFSET,WORKER_CONTROL_LENGTH);
@@ -38,14 +39,15 @@ export class ContactWorkerPool {
   begin():void {if(!this.disabled&&this.depth++===0)Atomics.store(this.control,C.active,1);}
   end():void {if(this.depth>0&&--this.depth===0)Atomics.store(this.control,C.active,0);}
   resetCounters():void {this.phaseMs=0;this.passes=0;}
-  run(kind:1|2,groups:number,a:number,b:number,c=0):void {
+  run(kind:1|2|3,groups:number,a:number,b:number,c=0,d=0,e=0,f=0,g=0):void {
     if(!this.ready)throw new ContactWorkerFailure('Contact workers unavailable.');
     const control=this.control,start=performance.now(),command=this.command=(this.command+1)|0,p=WORKER_PARAMETER_INDEX;
     this.values[p]=a;this.values[p+1]=b;this.values[p+2]=c;
+    this.values[p+3]=d;this.values[p+4]=e;this.values[p+5]=f;this.values[p+6]=g;
     Atomics.store(control,C.kind,kind);Atomics.store(control,C.groups,groups);
     Atomics.store(control,C.command,command);Atomics.notify(control,C.command,this.workers.length);
     try {
-      const success=kind===1?this.api.parallelVelocity(groups,a,b,c,0,this.participants):this.api.parallelPosition(groups,a,b,0,this.participants);
+      const success=kind===1?this.api.parallelVelocity(groups,a,b,c,0,this.participants):kind===2?this.api.parallelPosition(groups,a,b,0,this.participants):this.api.parallelBuildPairs(groups,a,b,c,d,e,f,g,0,this.participants);
       if(!success||Atomics.load(control,C.failed))throw new ContactWorkerFailure('Contact worker phase failed.');
       let polls=0;
       for(let worker=1;worker<this.participants;worker++) {
@@ -59,6 +61,17 @@ export class ContactWorkerPool {
           this.maximumImpulse=Math.max(this.maximumImpulse,this.values[worker*4]!);
           this.constraints+=this.values[worker*4+1]!;this.energyDamped+=this.values[worker*4+2]!;
         }
+      }
+      if(kind===3) {
+        this.pairCount=0;this.pairCandidates=0;this.pairFallbacks=0;this.pairCells=0;this.pairMaximum=0;this.pairOwnershipSkips=0;
+        let overflow=false;
+        for(let worker=0;worker<this.participants;worker++) {
+          const at=worker*8,count=this.values[at]!;if(count<0)overflow=true;else this.pairCount+=count;
+          this.pairCandidates+=this.values[at+1]!;this.pairFallbacks+=this.values[at+2]!;
+          this.pairCells+=this.values[at+3]!;this.pairMaximum=Math.max(this.pairMaximum,this.values[at+4]!);
+          this.pairOwnershipSkips+=this.values[at+5]!;
+        }
+        if(overflow||this.pairCount>a)this.pairCount=-1;
       }
       this.passes++;
     } catch(error) {this.dispose();throw error;}

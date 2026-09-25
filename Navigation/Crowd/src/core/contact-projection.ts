@@ -1,3 +1,4 @@
+import { EXTERNAL_PROFILE } from './external-influences';
 import type { CrowdMovementInput } from './crowd-movement-solver';
 import { segmentDistanceSquaredToRect } from './obstacle-collision';
 import { StaticFreeSpace } from './static-free-space';
@@ -25,6 +26,7 @@ export class ContactProjection {
     pairA:Int32Array,pairB:Int32Array,pairs:number,tolerance:number,minimumRadius:number,
     move:(agent:number,dx:number,dy:number)=>void,proxyFraction=1):number {
     const s=input.next,stats=input.external!.stats;
+    stats.projectionPasses++;
     if(this.first.length<s.count) {
       this.first=new Int32Array(s.count);this.second=new Int32Array(s.count);this.marks=new Uint32Array(s.count);
       this.anchorX=new Float64Array(s.count);this.anchorY=new Float64Array(s.count);
@@ -32,7 +34,7 @@ export class ContactProjection {
     input.index.rebuild(s.x,s.y,s.active);stats.rebuilds++;
     this.anchorX.set(s.x);this.anchorY.set(s.y);this.indexDisplacement=0;
     let accepted=0,attempts=0;
-    for(let pair=0;pair<pairs&&attempts<16;pair++) {
+    for(let pair=0;pair<pairs&&attempts<EXTERNAL_PROFILE.maximumProjectionAttempts;pair++) {
       const a=pairA[pair]!,b=pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
       const d=Math.hypot(dx,dy),target=this.radius(input,a)+this.radius(input,b)-tolerance;
       if(d>=target||d<1e-9)continue;

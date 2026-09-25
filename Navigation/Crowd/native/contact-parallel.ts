@@ -1,4 +1,4 @@
-import { address, resetVelocityCounters, velocityRange, positionRange, constraintCount, energyDampedContacts } from './contact-kernel';
+import { address, resetVelocityCounters, velocityRange, positionRange, constraintCount, energyDampedContacts, buildPairsRange, pairCandidates, pairFallbacks, pairCells, pairMaximum, pairOwnershipSkips } from './contact-kernel';
 export * from './contact-kernel';
 
 @external('env','clockNow')
@@ -49,5 +49,18 @@ export function parallelPosition(groups:i32,gap:f64,minimumRadius:f64,worker:i32
     }
     if(!barrier(participants))return 0;
   }
+  return 1;
+}
+
+/** Agent-owned chunks preserve the full original query order when concatenated.
+ * Each chunk has the global capacity: a skewed workload cannot silently drop a
+ * pair or cause a false per-partition capacity limit. */
+export function parallelBuildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize:f64,maximumRadius:f64,gap:f64,padding:f64,worker:i32,participants:i32):i32 {
+  const size=(agents+participants-1)/participants,begin=worker*size,end=agents<begin+size?agents:begin+size;
+  const offset=<usize>worker*<usize>capacity<<2;
+  const count=buildPairsRange(begin,end,capacity,columns,rows,cellSize,maximumRadius,gap,padding,address(34)+offset,address(35)+offset);
+  const result=address(31)+(<usize>worker<<6);
+  store<f64>(result,<f64>count);store<f64>(result+8,<f64>pairCandidates());store<f64>(result+16,<f64>pairFallbacks());
+  store<f64>(result+24,<f64>pairCells());store<f64>(result+32,<f64>pairMaximum());store<f64>(result+40,<f64>pairOwnershipSkips());
   return 1;
 }

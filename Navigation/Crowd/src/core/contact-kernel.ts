@@ -39,6 +39,7 @@ export class ContactKernel {
   energyDamped=0;
   lastParallel=false;
   lastPhaseMs=0;
+  pairCandidates=0;pairFallbacks=0;pairCells=0;pairMaximum=0;pairOwnershipSkips=0;
   count = 0;
   capacity = 0;
   private cells = 0;
@@ -53,6 +54,7 @@ export class ContactKernel {
     active:Uint8Array; cellStart:Int32Array; cellIndices:Int32Array;
     anchorX:Float64Array; anchorY:Float64Array;
     colorStarts:Int32Array;control:Int32Array;parallelResults:Float64Array;deferred:Int8Array;velocityStarts:Int32Array;
+    pairScratchA:Int32Array;pairScratchB:Int32Array;
   };
   private shadow: AgentBuffer | null = null;
 
@@ -81,7 +83,7 @@ export class ContactKernel {
     if(this.arrays&&count===this.count&&capacity<=this.capacity&&cells<=this.cells)return;
     const saved=this.arrays?Object.fromEntries(Object.entries(this.arrays).slice(0,11).map(([k,v])=>[k,v.slice()])):null;
     this.count=count;this.capacity=Math.max(capacity,this.capacity);this.cells=Math.max(cells,this.cells);
-    const bytes=CONTACT_ARENA_OFFSET+count*128+this.capacity*104+this.cells*4;
+    const bytes=CONTACT_ARENA_OFFSET+count*128+this.capacity*(this.shared?136:104)+this.cells*4;
     const pages=Math.ceil(bytes/65536);
     if(this.memory.buffer.byteLength<pages*65536)this.memory.grow(pages-this.memory.buffer.byteLength/65536);
     let offset=CONTACT_ARENA_OFFSET;
@@ -97,8 +99,9 @@ export class ContactKernel {
       control:new Int32Array(this.memory.buffer,WORKER_CONTROL_OFFSET,WORKER_CONTROL_LENGTH),
       parallelResults:new Float64Array(this.memory.buffer,WORKER_RESULTS_OFFSET,WORKER_RESULTS_LENGTH),
       deferred:new Int8Array(u(m).buffer,offset-m,m),
-      velocityStarts:new Int32Array(this.memory.buffer,VELOCITY_COLORS_OFFSET,65)};
-    const table=new Uint32Array(this.memory.buffer,CONTACT_TABLE_OFFSET,34);
+      velocityStarts:new Int32Array(this.memory.buffer,VELOCITY_COLORS_OFFSET,65),
+      pairScratchA:i(this.shared?m*4:0),pairScratchB:i(this.shared?m*4:0)};
+    const table=new Uint32Array(this.memory.buffer,CONTACT_TABLE_OFFSET,36);
     Object.values(this.arrays).forEach((a,j)=>{table[j]=a.byteOffset;});
     this.arrays.deferred.fill(0);
     if(saved)for(const [key,value] of Object.entries(saved)) {
@@ -153,6 +156,30 @@ export class ContactKernel {
       try {pool.run(2,this.groups,gap,minimumRadius);}
       finally {this.lastPhaseMs=pool.phaseMs-before;}
     } else this.exports.position(count,gap,minimumRadius);
+  }
+
+  buildPairs(agents:number,capacity:number,columns:number,rows:number,cellSize:number,maximumRadius:number,gap:number,padding:number):number {
+    const pool=this.pool,data=this.arrays;
+    this.lastParallel=!!pool?.ready&&agents>=5000;this.lastPhaseMs=0;
+    if(this.lastParallel&&pool) {
+      data.anchorX.set(data.x);data.anchorY.set(data.y);
+      const before=pool.phaseMs;
+      try {pool.run(3,agents,capacity,columns,rows,cellSize,maximumRadius,gap,padding);}
+      finally {this.lastPhaseMs=pool.phaseMs-before;}
+      this.pairCandidates=pool.pairCandidates;this.pairFallbacks=pool.pairFallbacks;this.pairCells=pool.pairCells;
+      this.pairMaximum=pool.pairMaximum;this.pairOwnershipSkips=pool.pairOwnershipSkips;
+      if(pool.pairCount<0)return -1;
+      let offset=0;
+      for(let worker=0;worker<pool.participants;worker++) {
+        const count=data.parallelResults[worker*8]!,start=worker*capacity;
+        data.a.set(data.pairScratchA.subarray(start,start+count),offset);
+        data.b.set(data.pairScratchB.subarray(start,start+count),offset);offset+=count;
+      }
+      return offset;
+    }
+    const result=this.exports.buildPairs(agents,capacity,columns,rows,cellSize,maximumRadius,gap,padding);
+    this.pairCandidates=this.exports.pairCandidates();this.pairFallbacks=this.exports.pairFallbacks();this.pairCells=this.exports.pairCells();
+    this.pairMaximum=this.exports.pairMaximum();this.pairOwnershipSkips=this.exports.pairOwnershipSkips();return result;
   }
 
   private bind(shadow:AgentBuffer):void {

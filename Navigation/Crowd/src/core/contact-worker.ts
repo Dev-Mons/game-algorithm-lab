@@ -27,7 +27,8 @@ self.onmessage=({data}:{data:ContactWorkerSetup})=>{
       const p=WORKER_PARAMETER_INDEX;
       const success=Atomics.load(control,C.kind)===1
         ? api.parallelVelocity(groups,values[p]!,values[p+1]!,values[p+2]!,worker,participants)
-        : api.parallelPosition(groups,values[p]!,values[p+1]!,worker,participants);
+        : Atomics.load(control,C.kind)===2?api.parallelPosition(groups,values[p]!,values[p+1]!,worker,participants)
+        : api.parallelBuildPairs(groups,values[p]!,values[p+1]!,values[p+2]!,values[p+3]!,values[p+4]!,values[p+5]!,values[p+6]!,worker,participants);
       if(!success)fail();
       Atomics.store(control,WORKER_DONE_BASE+worker*WORKER_DONE_STRIDE,command);
     }

@@ -7,7 +7,7 @@ export const EXTERNAL_PROFILE = Object.freeze({
   maximumAcceleration: 1200, maximumProxySpeed: 300, maximumProxies: 8,
   maximumInputs: 32, maximumRecords: 4096, maximumSubsteps: 16,
   candidates: 64, iterations: 4, drag: 1.5, control: .25,
-  maximumContactAttempts: 5,
+  maximumContactAttempts: 5, maximumProjectionAttempts: 512, maximumProjectionRounds: 4,
   velocityIterations: 16, positionIterations: 128, maximumPairFactor: 128,
   positionTolerance: .45, velocityWorksetHalo: 1,
   recoverySeconds: 4, compressionTolerance: .5,
@@ -50,7 +50,7 @@ export class ExternalInfluences {
     rebuilds: 0, pairs: 0, saturatedQueries: 0, candidateFallbacks: 0, velocityPasses: 0, stabilizationPasses: 0, unresolvedCompression: 0, speedClamps: 0, crushed: 0,
     velocityPairVisits: 0, velocityWorksets: 0, velocityFallbacks: 0,
     positionBudgetExhaustions: 0, maxExhaustedPenetration: 0,
-    projectionAttempts: 0, projectionGroups: 0, projectedBodies: 0, projectionCandidates: 0,
+    projectionPasses: 0, projectionAttempts: 0, projectionGroups: 0, projectedBodies: 0, projectionCandidates: 0,
     warmRejections: 0, warmDamping: 0,
     energyDampedContacts: 0,
     wasm: 0, kernelBytes: 0, retainedBytes: 0, queryMs: 0, predictionMs: 0, contactMs: 0, staticMs: 0 };

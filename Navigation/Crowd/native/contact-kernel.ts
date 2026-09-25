@@ -40,11 +40,14 @@ export function constraintCount():i32 { return constraints; }
 // A capacity miss returns -1 before any simulation state is modified; the host
 // grows the pair storage and retries the complete query instead of dropping IDs.
 export function buildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize:f64,maximumRadius:f64,gap:f64,padding:f64):i32 {
+  memory.copy(ptr(27),ptr(0),<usize>agents<<3);memory.copy(ptr(28),ptr(1),<usize>agents<<3);
+  return buildPairsRange(0,agents,capacity,columns,rows,cellSize,maximumRadius,gap,padding,ptr(11),ptr(12));
+}
+export function buildPairsRange(begin:i32,endAgent:i32,capacity:i32,columns:i32,rows:i32,cellSize:f64,maximumRadius:f64,gap:f64,padding:f64,outA:usize,outB:usize):i32 {
   candidateVisits=0;overflowQueries=0;cellVisits=0;maximumNeighbors=0;ownershipSkips=0;
-  const x=ptr(0),y=ptr(1),radii=ptr(4),outA=ptr(11),outB=ptr(12),active=ptr(24),starts=ptr(25),indices=ptr(26);
-  memory.copy(ptr(27),x,<usize>agents<<3);memory.copy(ptr(28),y,<usize>agents<<3);
+  const x=ptr(0),y=ptr(1),radii=ptr(4),active=ptr(24),starts=ptr(25),indices=ptr(26);
   let pairs:i32=0;
-  for(let a:i32=0;a<agents;a++) {
+  for(let a:i32=begin;a<endAgent;a++) {
     if(load<u8>(active+<usize>a)==0)continue;
     const ax=read(x,a),ay=read(y,a),ar=read(radii,a),range=ar+maximumRadius+gap+padding;
     const minColumn=imax(0,<i32>Math.floor((ax-range)/cellSize)),maxColumn=imin(columns-1,<i32>Math.floor((ax+range)/cellSize));

@@ -762,3 +762,46 @@ Scalar f64x2 SIMD experiments preserved exact state but did not improve the
 three-repeat frame measurements; a 1.5 position over-relaxation experiment
 increased convergence work. Both were removed. Their source and raw evidence
 are preserved with the worker evidence in `baselines/frame-20260926/`.
+
+
+### Parallel candidate construction and collective convergence
+
+Pair generation now partitions agent ownership across the ready contact workers.
+Each chunk receives the full global pair capacity, so a dense cluster entirely
+inside one chunk does not encounter an artificial fraction-of-capacity limit.
+The main thread concatenates chunks in original agent order, checks the total
+against the global capacity and retries after growth on an explicit overflow.
+The skewed browser fixture compares every pair and diagnostic counter with the
+scalar query (2,415 pairs, including a deliberately insufficient 32-pair buffer).
+Actual 660-tick state/warm equivalence and injected pair-phase failure recovery
+also pass. Two scratch ID arrays reserve four times the global pair capacity;
+these are included in reported kernel/retained bytes, not hidden worker copies.
+
+Dense collective repairs now begin after the minimum four ordinary position
+passes. Up to 512 group attempts per round, for at most four consecutive rounds,
+finish a nearly converged repair before returning to local sweeps. Every round
+retains the exact swept frontier/static checks, rebuilds the complete pair list
+and checks the published positions. Failure resumes the existing bounded local
+solver and finer-substep retry. Population, force, radius, dt, minimum local
+iterations and penetration thresholds are unchanged. `projectionPasses` and the
+existing attempt/group/candidate counters expose this extra work.
+
+The residual probe explains the change: at several long wind ticks, a group
+pass left only one or two violating pairs, but the following ordinary sweeps
+redistributed compression over hundreds of pairs. More group attempts alone
+reduced cost yet retained >100ms stalls; consecutive bounded group rounds
+removed those stalls in the first measured run. The probe is a diagnostic on
+the archived `wide-projection-source.zip`, not performance evidence.
+
+With source hash `c9f72338dcea8b59c219ccb1415029d8b8730cca336e7d14edc3dc094c24d2a2`,
+one audit-OFF 660-tick rocky wind run measured CPU P95 29.475ms, sim/wall 0.58881,
+zero >100ms pauses and >50ms ratio 0.001588. **60Hz still fails**, and one run is
+not the final repeated gate. Four separate audit-ON runs (wind/blast, seeds 42
+and 7) stayed below 0.449998px penetration with zero walls/nonfinite values.
+A 660-tick wind worker/JS comparison matched 858 MB of state and 55,844,375 warm
+values; a 20K proxy replay matched 468 MB through 180 ticks. The complete
+217-test/type/build/generated-source verification passed. Current source/raw
+results are under `residual-rounds-*`; the earlier 16/128/512-attempt variants
+are retained as source-identified comparisons, not interchangeable results.
+The original complete #32 matrix predates this structural change and remains
+a historical comparison until the final matrix is rerun.

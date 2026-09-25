@@ -14,6 +14,7 @@ export const WORKER_DONE_STRIDE=16;
 export const WORKER_CONTROL={command:0,active:1,stop:2,kind:3,groups:4,participants:5,failed:6} as const;
 export interface ParallelContactExports {
   configure:(table:number)=>void;
+  parallelBuildPairs:(agents:number,capacity:number,columns:number,rows:number,cellSize:number,maximumRadius:number,gap:number,padding:number,worker:number,participants:number)=>number;
   setDeferredPositions:(value:number)=>void;
   parallelVelocity:(groups:number,dt:number,friction:number,motor:number,worker:number,participants:number)=>number;
   parallelPosition:(groups:number,gap:number,minimumRadius:number,worker:number,participants:number)=>number;

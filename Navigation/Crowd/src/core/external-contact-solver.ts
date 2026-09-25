@@ -297,14 +297,21 @@ export class ExternalContactSolver {
         // Check the published positions, not a pre-correction residual. Later
         // constraints can compress an earlier pair in a sequential sweep.
         if(iteration>=EXTERNAL_PROFILE.iterations-1&&!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance,kernel??undefined))break;
-        if(iteration===7||iteration===15||iteration===31||iteration===63||iteration===95||iteration===127) {
-          if(this.projection.solve(input,this.index,this.freeSpace,this.pairA,this.pairB,this.pairCount,
-            EXTERNAL_PROFILE.positionTolerance,minimumRadius,(a,dx,dy)=>this.move(input,a,dx,dy,false,dt),(sub+1)/substeps)) {
+        if(iteration===3||iteration===7||iteration===15||iteration===31||iteration===63||iteration===95||iteration===127) {
+          // Finish a nearly converged collective repair before another full
+          // local sweep can redistribute compression across hundreds of pairs.
+          // Every round still validates its swept frontier and rebuilds the
+          // complete pair set; bounded failure resumes the ordinary solver.
+          let converged=false;
+          for(let round=0;round<EXTERNAL_PROFILE.maximumProjectionRounds;round++) {
+            if(!this.projection.solve(input,this.index,this.freeSpace,this.pairA,this.pairB,this.pairCount,
+              EXTERNAL_PROFILE.positionTolerance,minimumRadius,(a,dx,dy)=>this.move(input,a,dx,dy,false,dt),(sub+1)/substeps))break;
             pairMargin=minimumRadius*.5;
             this.buildPairs(input,external,result,2*pairMargin,kernel??undefined);
             if(kernel)this.uploadKernelPairs(kernel,count);
-            if(!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance,kernel??undefined))break;
+            if(!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance,kernel??undefined)){converged=true;break;}
           }
+          if(converged)break;
         }
         if(iteration===EXTERNAL_PROFILE.positionIterations-1) {
           stats.positionBudgetExhaustions++;
@@ -504,17 +511,18 @@ export class ExternalContactSolver {
         this.corrected=data.corrected;this.correctionLengths=data.lengths;
         this.pairA=data.a;this.pairB=data.b;
         data.active.set(next.active);data.cellStart.set(input.index.cellStart);data.cellIndices.set(input.index.agentIndices);
-        const pairs=kernel.exports.buildPairs(count,data.a.length,input.index.columns,input.index.rows,input.index.cellSize,
+        const pairs=kernel.buildPairs(count,data.a.length,input.index.columns,input.index.rows,input.index.cellSize,
           input.maxAgentRadius??input.agentRadius,input.agentGap,padding);
+        if(kernel.lastParallel){stats.parallelPasses++;stats.parallelPhaseMs+=kernel.lastPhaseMs;}
         if(pairs>=0) {
           this.pairCount=pairs;
-          result.candidateChecks+=kernel.exports.pairCandidates();
-          stats.candidateFallbacks+=kernel.exports.pairFallbacks();
-          stats.contactCellUpperBound+=kernel.exports.pairCells();
-          stats.pairOwnershipSkips+=kernel.exports.pairOwnershipSkips();
+          result.candidateChecks+=kernel.pairCandidates;
+          stats.candidateFallbacks+=kernel.pairFallbacks;
+          stats.contactCellUpperBound+=kernel.pairCells;
+          stats.pairOwnershipSkips+=kernel.pairOwnershipSkips;
           result.totalNeighbors+=pairs;
-          result.maxNeighbors=Math.max(result.maxNeighbors,kernel.exports.pairMaximum());
-          result.maxContacts=Math.max(result.maxContacts,kernel.exports.pairMaximum());
+          result.maxNeighbors=Math.max(result.maxNeighbors,kernel.pairMaximum);
+          result.maxContacts=Math.max(result.maxContacts,kernel.pairMaximum);
           stats.pairs+=pairs;result.contactChecks+=pairs;
           this.orderPairs(count,external,kernel);
           return;

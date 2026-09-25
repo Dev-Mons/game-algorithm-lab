@@ -13,7 +13,7 @@ if(!row||!row.commands)throw new Error('Missing input fixture.');
 const ticks=Number(arg('ticks',String(row.steps?.length??row.ticks))),failTick=Number(arg('fail-tick','-1'));
 const failPhase=arg('fail-phase','velocity'),failPass=Number(arg('fail-pass','3'));
 const quality=arg('quality','off')==='on';
-if(!['velocity','position'].includes(failPhase))throw new Error('Unknown failure phase.');
+if(!['pairs','velocity','position'].includes(failPhase))throw new Error('Unknown failure phase.');
 function sourceHash(root) {
  const h=createHash('sha256');
  const walk=p=>{for(const e of readdirSync(p,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){const f=`${p}/${e.name}`;if(e.isDirectory())walk(f);else{h.update(f.slice(root.length));h.update(readFileSync(f));}}};
@@ -40,10 +40,11 @@ try {
     if(tick===failTick) {
       const kernel=actual.movement.externalContact.kernel,control=kernel.arrays.control;
       const fail=()=>{Atomics.store(control,6,1);Atomics.store(control,2,1);};
-      if(failPhase==='velocity')fail();
+      if(failPhase==='pairs')fail();
       else {
-        const solve=kernel.solvePosition.bind(kernel);let passes=0;
-        kernel.solvePosition=(...args)=>{if(++passes===failPass)fail();return solve(...args);};
+        const method=failPhase==='velocity'?'solveVelocity':'solvePosition';
+        const solve=kernel[method].bind(kernel);let passes=0;
+        kernel[method]=(...args)=>{if(++passes===failPass)fail();return solve(...args);};
       }
     }
     for(const command of row.commands)if(command.tick===tick){actual.enqueueExternal(structuredClone(command));expected.enqueueExternal(structuredClone(command));}
