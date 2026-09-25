@@ -20,12 +20,12 @@ export class ExternalContactSolver {
   private readonly planningCandidates = new Int32Array(EXTERNAL_PROFILE.candidates * 2 + 1);
   private staticAgents = new Int32Array(0);
   private staticCount = 0;
-  private pairA = new Int32Array(0);
-  private pairB = new Int32Array(0);
+  private pairA: Int32Array = new Int32Array(0);
+  private pairB: Int32Array = new Int32Array(0);
   private pairCount = 0;
-  private pairRadius = new Float64Array(0);
-  private pairDX = new Float64Array(0);
-  private pairDY = new Float64Array(0);
+  private pairRadius: Float64Array = new Float64Array(0);
+  private pairDX: Float64Array = new Float64Array(0);
+  private pairDY: Float64Array = new Float64Array(0);
   private velocityPairs = new Int32Array(0);
   private velocityPairCount = 0;
   private velocityAnchorX = new Float64Array(0);
@@ -33,7 +33,7 @@ export class ExternalContactSolver {
   private warmCorrected = new Uint8Array(0);
   private warmAffected = new Uint8Array(0);
   private readonly contactCache = new WarmContactCache();
-  private pairContacts = new Int32Array(0);
+  private pairContacts: Int32Array = new Int32Array(0);
   reset():void { this.contactCache.reset();this.kernelInput=null;this.kernel?.detach(); }
   hashState(mix:(value:number)=>void):void { this.contactCache.hashState(mix); }
   private overflowCandidates = new Int32Array(0);
@@ -86,7 +86,7 @@ export class ExternalContactSolver {
       });
     const kernel=external.backend==='auto'?this.kernel:null;
     if(kernel) {
-      kernel.ensure(count,this.pairA.length);
+      kernel.ensure(count,this.pairA.length,input.index.cellStart.length);
       next=kernel.attach(output);input={...input,next};
       this.corrected=kernel.arrays.corrected;this.correctionLengths=kernel.arrays.lengths;
       this.corrected.set(corrected);this.correctionLengths.set(correctionLengths);
@@ -132,24 +132,23 @@ export class ExternalContactSolver {
       }
       const travel = maximumSpeed*dt;
       let pairMargin=travel+minimumRadius*.5;
-      this.buildPairs(input,external,result,2*pairMargin);
-      if(this.pairRadius.length<this.pairA.length) {
+      this.buildPairs(input,external,result,2*pairMargin,kernel??undefined);
+      if(kernel) {
+        this.pairRadius=kernel.arrays.radius;this.pairDX=kernel.arrays.dx;this.pairDY=kernel.arrays.dy;
+      } else if(this.pairRadius.length<this.pairA.length) {
         this.pairRadius=new Float64Array(this.pairA.length);this.pairDX=new Float64Array(this.pairA.length);this.pairDY=new Float64Array(this.pairA.length);
-        this.velocityPairs=new Int32Array(this.pairA.length);
       }
+      if(this.velocityPairs.length<this.pairA.length)this.velocityPairs=new Int32Array(this.pairA.length);
       this.velocityPairCount=0;
-      for(let pair=0;pair<this.pairCount;pair++) {
+      if(!kernel)for(let pair=0;pair<this.pairCount;pair++) {
         const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=next.x[b]!-next.x[a]!,dy=next.y[b]!-next.y[a]!;
         const radius=this.radius(input,a)+this.radius(input,b)+input.agentGap;
         this.pairRadius[pair]=radius;this.pairDX[pair]=dx;this.pairDY[pair]=dy;
       }
-      this.prepareWarmContacts(input,dt);
+      this.prepareWarmContacts(input,dt,kernel??undefined);
       if(kernel) {
         this.uploadKernelPairs(kernel,count);
         const data=kernel.arrays;
-        data.dx.set(this.pairDX.subarray(0,this.pairCount));data.dy.set(this.pairDY.subarray(0,this.pairCount));
-        data.radius.set(this.pairRadius.subarray(0,this.pairCount));
-        data.kind.fill(0,0,this.pairCount);
         for(let pair=0;pair<this.pairCount;pair++) {
           const c=this.pairContacts[pair]!,values=this.contactCache.values;if(c<0)continue;
           data.kind[pair]=1;data.nx[pair]=values[c+2]!;data.ny[pair]=values[c+3]!;data.normal[pair]=values[c]!;data.tangent[pair]=values[c+1]!;
@@ -255,23 +254,23 @@ export class ExternalContactSolver {
         for (const p of external.proxies) this.proxyContacts(input,external,p,(sub+1)/substeps,dt,true);
         // Keep the swept-pair superset valid after mutable position repairs.
         // Both endpoints may move by pairMargin from the query coordinates.
-        const moved=this.maximumPairDisplacement(input);
+        const moved=this.maximumPairDisplacement(input,kernel??undefined);
         if(moved>pairMargin) {
           input.index.rebuild(next.x,next.y,next.active);stats.rebuilds++;
           pairMargin=minimumRadius*.5;
-          this.buildPairs(input,external,result,2*pairMargin);
+          this.buildPairs(input,external,result,2*pairMargin,kernel??undefined);
           if(kernel)this.uploadKernelPairs(kernel,count);
         }
         // Check the published positions, not a pre-correction residual. Later
         // constraints can compress an earlier pair in a sequential sweep.
-        if(iteration>=EXTERNAL_PROFILE.iterations-1&&!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance))break;
+        if(iteration>=EXTERNAL_PROFILE.iterations-1&&!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance,kernel??undefined))break;
         if(iteration===7||iteration===15||iteration===31||iteration===63||iteration===95||iteration===127) {
           if(this.projection.solve(input,this.index,this.freeSpace,this.pairA,this.pairB,this.pairCount,
             EXTERNAL_PROFILE.positionTolerance,minimumRadius,(a,dx,dy)=>this.move(input,a,dx,dy,false,dt),(sub+1)/substeps)) {
             pairMargin=minimumRadius*.5;
-            this.buildPairs(input,external,result,2*pairMargin);
+            this.buildPairs(input,external,result,2*pairMargin,kernel??undefined);
             if(kernel)this.uploadKernelPairs(kernel,count);
-            if(!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance))break;
+            if(!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance,kernel??undefined))break;
           }
         }
         if(iteration===EXTERNAL_PROFILE.positionIterations-1) {
@@ -314,9 +313,11 @@ export class ExternalContactSolver {
     }
     result.constraintIterations=stats.velocityPasses+stats.stabilizationPasses;
     if(kernel){kernel.publish(output,corrected,correctionLengths);stats.kernelBytes=kernel.memory.buffer.byteLength;stats.wasm=1;}
+    const kernelBuffer=this.kernel?.memory.buffer;
+    const owned=(view:ArrayBufferView)=>view.buffer===kernelBuffer?0:view.byteLength;
     stats.retainedBytes=this.candidates.byteLength+this.planningCandidates.byteLength+this.staticAgents.byteLength
-      +this.pairA.byteLength+this.pairB.byteLength+this.pairRadius.byteLength+this.pairDX.byteLength+this.pairDY.byteLength
-      +this.velocityPairs.byteLength+this.pairContacts.byteLength+this.overflowCandidates.byteLength
+      +owned(this.pairA)+owned(this.pairB)+owned(this.pairRadius)+owned(this.pairDX)+owned(this.pairDY)
+      +this.velocityPairs.byteLength+owned(this.pairContacts)+this.overflowCandidates.byteLength
       +this.anchorX.byteLength+this.anchorY.byteLength+this.velocityAnchorX.byteLength+this.velocityAnchorY.byteLength
       +this.warmCorrected.byteLength
       +this.warmAffected.byteLength
@@ -357,7 +358,8 @@ export class ExternalContactSolver {
     this.corrected=kernel.arrays.corrected;this.correctionLengths=kernel.arrays.lengths;
     kernel.arrays.a.set(this.pairA.subarray(0,this.pairCount));kernel.arrays.b.set(this.pairB.subarray(0,this.pairCount));
   }
-  private hasResidualCompression(input:CrowdMovementInput,tolerance:number):boolean {
+  private hasResidualCompression(input:CrowdMovementInput,tolerance:number,kernel?:ContactKernel):boolean {
+    if(kernel)return kernel.exports.hasCompression(this.pairCount,tolerance)!==0;
     const s=input.next;
     for(let pair=0;pair<this.pairCount;pair++) {
       const a=this.pairA[pair]!,b=this.pairB[pair]!;
@@ -367,7 +369,7 @@ export class ExternalContactSolver {
     }
     return false;
   }
-  private prepareWarmContacts(input:CrowdMovementInput,dt:number):void {
+  private prepareWarmContacts(input:CrowdMovementInput,dt:number,kernel?:ContactKernel):void {
     const s=input.next;
     this.velocityAnchorX.set(s.vx);this.velocityAnchorY.set(s.vy);this.warmCorrected.set(this.corrected);
     this.warmAffected.set(input.external!.affected);
@@ -375,8 +377,8 @@ export class ExternalContactSolver {
     for(let a=0;a<s.count;a++)before+=s.vx[a]!*s.vx[a]!+s.vy[a]!*s.vy[a]!;
     if(this.pairContacts.length<this.pairA.length)this.pairContacts=new Int32Array(this.pairA.length);
     this.pairContacts.fill(-1,0,this.pairCount);
-    let touching=0;
-    for(let pair=0;pair<this.pairCount;pair++) {
+    let touching=kernel?kernel.exports.classifyGeometry(this.pairCount,input.agentGap):0;
+    if(!kernel)for(let pair=0;pair<this.pairCount;pair++) {
       const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
       const radius=this.radius(input,a)+this.radius(input,b)+input.agentGap,d2=dx*dx+dy*dy;
       if(d2>radius*radius+1e-6)continue;
@@ -386,9 +388,10 @@ export class ExternalContactSolver {
     }
     this.contactCache.begin(touching);
     for(let pair=0;pair<this.pairCount;pair++) {
-      if(this.pairContacts[pair]!==-2)continue;
+      if(kernel?kernel.arrays.kind[pair]!==1&&kernel.arrays.kind[pair]!==3:this.pairContacts[pair]!==-2)continue;
       const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
-      this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);
+      if(kernel&&kernel.arrays.kind[pair]===1){this.nx=kernel.arrays.nx[pair]!;this.ny=kernel.arrays.ny[pair]!;}
+      else this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);
       const key=a*s.count+b;
       const base=this.contactCache.add(key,this.nx,this.ny,dt,input.contactFriction),values=this.contactCache.values;
       this.pairContacts[pair]=base;
@@ -430,10 +433,33 @@ export class ExternalContactSolver {
       }
     }
   }
-  private buildPairs(input:CrowdMovementInput,external:ExternalInfluences,result:CrowdMovementResult,padding:number):void {
+  private buildPairs(input:CrowdMovementInput,external:ExternalInfluences,result:CrowdMovementResult,padding:number,kernel?:ContactKernel):void {
     const next=input.next,count=next.count,stats=external.stats;
     this.pairCount=0;
     this.anchorX.set(next.x);this.anchorY.set(next.y);
+    if(kernel) {
+      for(;;) {
+        const data=kernel.arrays;
+        this.corrected=data.corrected;this.correctionLengths=data.lengths;
+        this.pairA=data.a;this.pairB=data.b;
+        data.active.set(next.active);data.cellStart.set(input.index.cellStart);data.cellIndices.set(input.index.agentIndices);
+        const pairs=kernel.exports.buildPairs(count,data.a.length,input.index.columns,input.index.rows,input.index.cellSize,
+          input.maxAgentRadius??input.agentRadius,input.agentGap,padding);
+        if(pairs>=0) {
+          this.pairCount=pairs;
+          result.candidateChecks+=kernel.exports.pairCandidates();
+          stats.candidateFallbacks+=kernel.exports.pairFallbacks();
+          stats.contactCellUpperBound+=kernel.exports.pairCells();
+          result.totalNeighbors+=pairs;
+          result.maxNeighbors=Math.max(result.maxNeighbors,kernel.exports.pairMaximum());
+          result.maxContacts=Math.max(result.maxContacts,kernel.exports.pairMaximum());
+          stats.pairs+=pairs;result.contactChecks+=pairs;
+          return;
+        }
+        if(data.a.length>=count*EXTERNAL_PROFILE.maximumPairFactor){stats.saturatedQueries++;throw new RangeError('External contact pair budget exceeded; overlapping/overpacked initial state.');}
+        kernel.ensure(count,Math.min(count*EXTERNAL_PROFILE.maximumPairFactor,Math.max(32,data.a.length*2)));
+      }
+    }
       for (let a=0;a<count;a++) {
         if (!next.active[a]) continue;
         const range = this.radius(input,a)+(input.maxAgentRadius ?? input.agentRadius)+input.agentGap+padding;
@@ -465,7 +491,8 @@ export class ExternalContactSolver {
       }
       stats.pairs += this.pairCount; result.contactChecks += this.pairCount;
   }
-  private maximumPairDisplacement(input:CrowdMovementInput):number {
+  private maximumPairDisplacement(input:CrowdMovementInput,kernel?:ContactKernel):number {
+    if(kernel)return kernel.exports.maximumDisplacement(input.next.count);
     let squared=0;
     for(let a=0;a<input.next.count;a++) if(input.next.active[a]) {
       squared=Math.max(squared,(input.next.x[a]!-this.anchorX[a]!)**2+(input.next.y[a]!-this.anchorY[a]!)**2);

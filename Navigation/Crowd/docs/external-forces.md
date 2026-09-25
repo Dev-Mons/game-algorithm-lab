@@ -457,6 +457,50 @@ The same declining population and fixed input were used, so this is an overhead
 observation only. Full CPU/RAF samples and state hashes are in `clock.json.gz`
 and `trace-off.json.gz`; no zero-overhead or all-population bound is inferred.
 
+### Exact native pair-pass follow-up
+
+The next candidate moves exhaustive center-first pair generation, immutable
+pair geometry, displacement bounds and residual-compression checks into the
+existing f64 kernel. Pair order and all current physical iteration/force/step
+limits are preserved. Capacity misses retry the complete query after growth;
+the original global capacity failure remains explicit. Native arrays are shared
+with the host and are counted once in retained-memory diagnostics.
+
+Source `2a24fc671be354e4466a5f1d5a816f9c0109f3c2f2bdef669feb6e79302e8d00`
+is preserved in `native-source.zip`. Three rocky 10K wind runs, ticks 30–179, audit
+OFF, gave step P95 63.0 / 63.8 / 64.4ms (median 63.8ms, compared with 71.6ms for
+the previous native candidate). This is a short exact optimization comparison,
+not a newly passed whole-frame gate.
+
+The complete follow-up verify passed 209 tests, typecheck and production build;
+the three affected browser tests also passed.
+
+The recorded UI wind and blast inputs were also replayed against the archived
+previous candidate for 660 ticks each, with 10,000 agents. Every tick compared every
+byte of both current and previous AgentBuffers, direct/affected flags and state
+hashes, followed by the complete command record. Both runs had zero mismatches
+(858,000,000 state bytes compared per run). `byte-wind.json` and `byte-blast.json`
+identify both source fingerprints and retain every tick hash. The reference
+module is required to be distinct from the candidate module. These headless
+comparisons are not timing or independent geometry audits.
+
+An additional attempt to move the warm-impulse tables into native memory was
+rejected: median mean step time rose from 48.68ms to 49.59ms, while P95 was nearly
+unchanged. Its raw result and source are retained as `native-warm.json.gz` and
+`rejected-native-warm-source.zip`; the current implementation keeps the prior
+cache ownership. An instrumented relative-speed planner probe also showed that
+simply removing the ordinary-speed upper bound could affect only 88 of 630 wind
+ticks before considering stronger wall bounds, so this is not a demonstrated
+solution for the expensive recovery interval.
+
+To repeat the byte comparison, extract the `src/` tree from `backend-source.zip`
+into an isolated directory and run:
+
+```sh
+npx vite-node scripts/compare-frame-state.ts --reference=test-results/native-reference --mode=wind --ticks=660
+npx vite-node scripts/compare-frame-state.ts --reference=test-results/native-reference --mode=blast --ticks=660
+```
+
 ### Verification and remaining gates
 
 The complete type/test/build check passed 205 tests and the browser suite passed

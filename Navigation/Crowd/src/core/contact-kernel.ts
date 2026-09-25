@@ -8,6 +8,14 @@ interface Exports {
   constraintCount: () => number;
   buildWorkset: (pairs:number,agents:number,dt:number,halo:number) => number;
   validWorkset: (agents:number,limitSquared:number) => number;
+  buildPairs: (agents:number,capacity:number,columns:number,rows:number,cellSize:number,maximumRadius:number,gap:number,padding:number) => number;
+  pairCandidates: () => number;
+  pairFallbacks: () => number;
+  pairCells: () => number;
+  pairMaximum: () => number;
+  classifyGeometry: (pairs:number,gap:number) => number;
+  maximumDisplacement: (agents:number) => number;
+  hasCompression: (pairs:number,tolerance:number) => number;
 }
 
 let compiled: WebAssembly.Module | null | undefined;
@@ -19,6 +27,7 @@ export class ContactKernel {
   readonly exports: Exports;
   count = 0;
   capacity = 0;
+  private cells = 0;
   arrays!: {
     x:Float64Array; y:Float64Array; vx:Float64Array; vy:Float64Array;
     radii:Float64Array; freeX:Float64Array; freeY:Float64Array; freeRadius:Float64Array;
@@ -27,6 +36,8 @@ export class ContactKernel {
     nx:Float64Array; ny:Float64Array; normal:Float64Array; tangent:Float64Array;
     kind:Int8Array; velocityPairs:Int32Array;
     anchorVX:Float64Array; anchorVY:Float64Array;
+    active:Uint8Array; cellStart:Int32Array; cellIndices:Int32Array;
+    anchorX:Float64Array; anchorY:Float64Array;
   };
   private shadow: AgentBuffer | null = null;
 
@@ -41,11 +52,11 @@ export class ContactKernel {
     this.exports=new WebAssembly.Instance(module,{env:{memory:this.memory,separated,correctPair}}).exports as unknown as Exports;
   }
 
-  ensure(count:number,capacity:number):void {
-    if(count===this.count&&capacity<=this.capacity)return;
+  ensure(count:number,capacity:number,cells=this.cells):void {
+    if(count===this.count&&capacity<=this.capacity&&cells<=this.cells)return;
     const saved=this.arrays?Object.fromEntries(Object.entries(this.arrays).slice(0,11).map(([k,v])=>[k,v.slice()])):null;
-    this.count=count;this.capacity=Math.max(capacity,this.capacity);
-    const bytes=8192+count*100+this.capacity*96;
+    this.count=count;this.capacity=Math.max(capacity,this.capacity);this.cells=Math.max(cells,this.cells);
+    const bytes=8192+count*128+this.capacity*96+this.cells*4;
     const pages=Math.ceil(bytes/65536);
     if(this.memory.buffer.byteLength<pages*65536)this.memory.grow(pages-this.memory.buffer.byteLength/65536);
     let offset=8192;
@@ -55,8 +66,9 @@ export class ContactKernel {
     const m=this.capacity;
     this.arrays={x:f(count),y:f(count),vx:f(count),vy:f(count),radii:f(count),freeX:f(count),freeY:f(count),freeRadius:f(count),
       corrected:u(count),lengths:f(count),affected:u(count),a:i(m),b:i(m),dx:f(m),dy:f(m),radius:f(m),nx:f(m),ny:f(m),normal:f(m),tangent:f(m),
-      kind:new Int8Array(u(m).buffer,offset-m,m),velocityPairs:i(m),anchorVX:f(count),anchorVY:f(count)};
-    const table=new Uint32Array(this.memory.buffer,4096,24);
+      kind:new Int8Array(u(m).buffer,offset-m,m),velocityPairs:i(m),anchorVX:f(count),anchorVY:f(count),
+      active:u(count),cellStart:i(this.cells),cellIndices:i(count),anchorX:f(count),anchorY:f(count)};
+    const table=new Uint32Array(this.memory.buffer,4096,29);
     Object.values(this.arrays).forEach((a,j)=>{table[j]=a.byteOffset;});
     if(saved)for(const [key,value] of Object.entries(saved)) {
       const target=this.arrays[key as keyof typeof this.arrays];

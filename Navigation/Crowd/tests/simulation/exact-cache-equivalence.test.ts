@@ -14,6 +14,7 @@ it('matches JS state bytes with WASM/caches through mixed radii, forces and geom
       if(tick===50)s.setGoal(s.goal.x,s.goal.y+30);
       if(tick===70)s.updateObstacles([...s.scenario.obstacles,{x:1150,y:20,width:10,height:10}]);
     }
+    a.external.backend=tick>=30&&tick<40?'js':'auto';
     a.step();
     if(tick===20)expect(a.external.stats.wasm).toBe(1);
     const contains=vi.spyOn(StaticFreeSpace.prototype,'contains').mockReturnValue(false);

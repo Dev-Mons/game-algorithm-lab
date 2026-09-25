@@ -6,6 +6,13 @@ declare function separated(a:i32,b:i32):i32;
 declare function correctPair(a:i32,b:i32,dx:f64,dy:f64,d:f64,correction:f64):void;
 let table:usize=0;
 let constraints:i32=0;
+let candidateVisits:i32=0,overflowQueries:i32=0,cellVisits:i32=0,maximumNeighbors:i32=0;
+@inline function imax(a:i32,b:i32):i32 { return a>b?a:b; }
+@inline function imin(a:i32,b:i32):i32 { return a<b?a:b; }
+export function pairCandidates():i32 { return candidateVisits; }
+export function pairFallbacks():i32 { return overflowQueries; }
+export function pairCells():i32 { return cellVisits; }
+export function pairMaximum():i32 { return maximumNeighbors; }
 export function configure(pointer:usize):void { table=pointer; }
 @inline function ptr(column:i32):usize { return <usize>load<u32>(table+(<usize>column<<2)); }
 @inline function get(column:i32,index:i32):f64 { return load<f64>(ptr(column)+(<usize>index<<3)); }
@@ -20,6 +27,102 @@ export function configure(pointer:usize):void { table=pointer; }
   return r>0&&dx*dx+dy*dy<r*r;
 }
 export function constraintCount():i32 { return constraints; }
+
+// Keep SpatialHash's exact center-first traversal and descending-ID cell order.
+// A capacity miss returns -1 before any simulation state is modified; the host
+// grows the pair storage and retries the complete query instead of dropping IDs.
+export function buildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize:f64,maximumRadius:f64,gap:f64,padding:f64):i32 {
+  candidateVisits=0;overflowQueries=0;cellVisits=0;maximumNeighbors=0;
+  const x=ptr(0),y=ptr(1),radii=ptr(4),outA=ptr(11),outB=ptr(12),active=ptr(24),starts=ptr(25),indices=ptr(26);
+  memory.copy(ptr(27),x,<usize>agents<<3);memory.copy(ptr(28),y,<usize>agents<<3);
+  let pairs:i32=0;
+  for(let a:i32=0;a<agents;a++) {
+    if(load<u8>(active+<usize>a)==0)continue;
+    const ax=read(x,a),ay=read(y,a),ar=read(radii,a),range=ar+maximumRadius+gap+padding;
+    const minColumn=imax(0,<i32>Math.floor((ax-range)/cellSize)),maxColumn=imin(columns-1,<i32>Math.floor((ax+range)/cellSize));
+    const minRow=imax(0,<i32>Math.floor((ay-range)/cellSize)),maxRow=imin(rows-1,<i32>Math.floor((ay+range)/cellSize));
+    const centerColumn=imax(minColumn,imin(maxColumn,<i32>Math.floor(ax/cellSize)));
+    const centerRow=imax(minRow,imin(maxRow,<i32>Math.floor(ay/cellSize)));
+    const rings=imax(imax(centerColumn-minColumn,maxColumn-centerColumn),imax(centerRow-minRow,maxRow-centerRow));
+    cellVisits+=imax(0,maxColumn-minColumn+1)*imax(0,maxRow-minRow+1);
+    let candidates:i32=0,owned:i32=0;
+    for(let ring:i32=0;ring<=rings;ring++) {
+      const left=centerColumn-ring,right=centerColumn+ring,top=centerRow-ring,bottom=centerRow+ring;
+      // Two horizontal edges, then paired left/right cells down the vertical
+      // edges. This order is part of the sequential contact solver contract.
+      for(let edge:i32=0;edge<2;edge++) {
+        const row=edge==0?top:bottom;
+        if(edge==0?row<minRow:(row==top||row>maxRow))continue;
+        for(let column=imax(left,minColumn);column<=imin(right,maxColumn);column++) {
+          const cell=row*columns+column,end=load<i32>(starts+(<usize>(cell+1)<<2));
+          for(let slot=load<i32>(starts+(<usize>cell<<2));slot<end;slot++) {
+            candidates++;
+            const b=load<i32>(indices+(<usize>slot<<2));if(b<=a)continue;
+            const dx=read(x,b)-ax,dy=read(y,b)-ay,r=ar+read(radii,b)+gap+padding;
+            if(dx*dx+dy*dy>r*r)continue;
+            if(pairs==capacity)return -1;
+            store<i32>(outA+(<usize>pairs<<2),a);store<i32>(outB+(<usize>pairs<<2),b);pairs++;owned++;
+          }
+        }
+      }
+      for(let row=imax(top+1,minRow);row<=imin(bottom-1,maxRow);row++) {
+        for(let edge:i32=0;edge<2;edge++) {
+          const column=edge==0?left:right;
+          if(edge==0?column<minColumn:(column==left||column>maxColumn))continue;
+          const cell=row*columns+column,end=load<i32>(starts+(<usize>(cell+1)<<2));
+          for(let slot=load<i32>(starts+(<usize>cell<<2));slot<end;slot++) {
+            candidates++;
+            const b=load<i32>(indices+(<usize>slot<<2));if(b<=a)continue;
+            const dx=read(x,b)-ax,dy=read(y,b)-ay,r=ar+read(radii,b)+gap+padding;
+            if(dx*dx+dy*dy>r*r)continue;
+            if(pairs==capacity)return -1;
+            store<i32>(outA+(<usize>pairs<<2),a);store<i32>(outB+(<usize>pairs<<2),b);pairs++;owned++;
+          }
+        }
+      }
+    }
+    candidateVisits+=candidates;if(candidates>=65)overflowQueries++;
+    maximumNeighbors=imax(maximumNeighbors,owned);
+  }
+  return pairs;
+}
+export function maximumDisplacement(agents:i32):f64 {
+  const x=ptr(0),y=ptr(1),ax=ptr(27),ay=ptr(28),active=ptr(24);
+  let squared:f64=0;
+  for(let a:i32=0;a<agents;a++)if(load<u8>(active+<usize>a)!=0) {
+    const dx=read(x,a)-read(ax,a),dy=read(y,a)-read(ay,a);
+    squared=Math.max(squared,dx*dx+dy*dy);
+  }
+  return Math.sqrt(squared);
+}
+export function hasCompression(pairs:i32,tolerance:f64):i32 {
+  const x=ptr(0),y=ptr(1),radii=ptr(4),a=ptr(11),b=ptr(12);
+  for(let pair:i32=0;pair<pairs;pair++) {
+    const ia=load<i32>(a+(<usize>pair<<2)),ib=load<i32>(b+(<usize>pair<<2));
+    const r=read(radii,ia)+read(radii,ib)-tolerance,dx=read(x,ia)-read(x,ib),dy=read(y,ia)-read(y,ib);
+    if(dx*dx+dy*dy<r*r)return 1;
+  }
+  return 0;
+}
+export function classifyGeometry(pairs:i32,gap:f64):i32 {
+  const x=ptr(0),y=ptr(1),radii=ptr(4),fx=ptr(5),fy=ptr(6),fr=ptr(7),a=ptr(11),b=ptr(12);
+  const dxOut=ptr(13),dyOut=ptr(14),radiusOut=ptr(15),nxOut=ptr(16),nyOut=ptr(17),kind=ptr(20);
+  let touching:i32=0;
+  for(let pair:i32=0;pair<pairs;pair++) {
+    const ia=load<i32>(a+(<usize>pair<<2)),ib=load<i32>(b+(<usize>pair<<2));
+    const ax=read(x,ia),ay=read(y,ia),bx=read(x,ib),by=read(y,ib),dx=bx-ax,dy=by-ay,radius=read(radii,ia)+read(radii,ib)+gap;
+    write(dxOut,pair,dx);write(dyOut,pair,dy);write(radiusOut,pair,radius);store<i8>(kind+<usize>pair,0);
+    const d2=dx*dx+dy*dy;
+    if(d2>radius*radius+1e-6)continue;
+    if(!(inside(fx,fy,fr,ia,ax,ay)&&inside(fx,fy,fr,ia,bx,by))&&separated(ia,ib)!=0){store<i8>(kind+<usize>pair,-1);continue;}
+    touching++;
+    const d=Math.sqrt(d2);
+    // Degenerate normals use the host's exact sin/cos implementation.
+    if(d<=1e-9){store<i8>(kind+<usize>pair,3);continue;}
+    store<i8>(kind+<usize>pair,1);write(nxOut,pair,dx/d);write(nyOut,pair,dy/d);
+  }
+  return touching;
+}
 export function buildWorkset(pairs:i32,agents:i32,dt:f64,halo:f64):i32 {
   const vx=ptr(2),vy=ptr(3),a=ptr(11),b=ptr(12),dx=ptr(13),dy=ptr(14),radius=ptr(15),output=ptr(21);
   memory.copy(ptr(22),vx,<usize>agents<<3);memory.copy(ptr(23),vy,<usize>agents<<3);

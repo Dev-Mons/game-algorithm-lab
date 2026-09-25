@@ -211,6 +211,8 @@
     "baseline-none.json.gz": "066e61b05ea44642496f63bdb2c417dcc0833d3b0819050fdd19e6bde1f34658",
     "browser-tests.txt": "dc3ca24820da3f1c26033d1ccf5ad94b5a3b6f30ba40b14fc0217de7f26c37d8",
     "build.txt": "c95cd42764d4f3f77775223fdf8cc884fd86d6e093bcf3207b8a86b8f211c394",
+    "byte-blast.json": "900c9303833fee7277dc2d46f618056100f1fc967e5145d52a43085cd197f5f6",
+    "byte-wind.json": "039dd7fa4c7381ba599646a74cd496dc98573698302d65e615689ae3ed2cd75c",
     "candidate-none.json.gz": "499e76f121db2683ff641e5b657bc66bb6379d07ce691ae9e4c132381e241a05",
     "candidate-source.zip": "ad91e0d2ade133ce77c1d7a36a91c5c2a10b16752fb32996853ccbcff5d64908",
     "clock.json.gz": "410fddad53d758c218ce49dcc834f43042b32545f75f77f6c32b6a7136649761",
@@ -218,13 +220,39 @@
     "final-profile.json.gz": "863cbf0df0d87fe8f262ecd2948a4e8a1c26b9540a65d5ace7909eefdf30ce4b",
     "kernel-auto.json.gz": "3b97d34329ffa3f812f5df1ba0743e06c5bb1b50efa59c86d5f50aeb3297675d",
     "kernel-js.json.gz": "40d51eecaede21f25fbbd8429248e6bc4426f25d79b06f805ea194bb899d3770",
+    "native-browser-tests.txt": "222b3bafcdb5790e988fb61bb853ff9e210e8caa1003e6b0943bbc523c5c1999",
+    "native-geometry.json.gz": "d3246b65194c33e96ecd1915009103f8265a15c09c2e588513866ecd5edcd5d5",
+    "native-pairs.json.gz": "819e86da68ae45349897b3cca10c4763fbe506262ad70db2917e3d670f707fa3",
+    "native-reductions.json.gz": "a308d3b144f457b52f8f0d805cca42e21540409fc4d2629fd1775ae78d5ad0a6",
+    "native-source.zip": "6eec575d37ac6f3dd3ffbced4a4598c8f6c664e3ecd7fe99a438949c836a855c",
+    "native-verify.txt": "c43b6a5cc63b5f1625fb36d2e981c3caa77d51fe19a98fbd22bcac6a9fb84229",
+    "native-warm.json.gz": "e0770307f6542f94eadcd6dc2b90c0dd8641ec94a10c838d3eb304e537d55c51",
     "proxy-1000.json": "f91766239612431ec2315ca5592301a8220370f7925f2e60df70008dad9c0ab6",
     "proxy-10000.json": "1494d8805a35f288ec3f8883a763d3de0901e77a34ee4abf09a72e66a7fb94e3",
     "proxy-20000.json": "329fdcb965dafa99165a56b2be6c89b5f7a1e1d83acd1d099d2466030e53a827",
+    "rejected-native-warm-source.zip": "d8033b33631bc92da368ee2d9e44bcb74613eb27b9f0a501c7cf70db95f5635c",
+    "relative-plan-probe.json": "39e2c6f1943c9b649c2a3cd21f39e3c75179ed1fbca14eba39587631a83984c6",
     "rocky-ui-quality.json.gz": "cdf61f5f1354b70084bf89b4270d73fd9783bdb26bc67bbdceab7ad7120d2bb6",
     "targeted-tests.txt": "bf41fb797106e693e7fe6cf1f64fad17f0c36c11e8a2e73ef07364de8d727c3c",
     "trace-off.json.gz": "31399316a1c4e14772a7516cf7872a3503083f617120be4caa153260e8dffdc0",
     "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be"
   },
-  "logFormatting": "Console logs use LF line endings with trailing formatting whitespace removed; measured JSON and source archives are byte-preserved."
+  "logFormatting": "Console logs use LF line endings with trailing formatting whitespace removed; measured JSON and source archives are byte-preserved.",
+  "nativeFollowup": {
+    "sourceSha256": "2a24fc671be354e4466a5f1d5a816f9c0109f3c2f2bdef669feb6e79302e8d00",
+    "stepP95MedianBeforeMs": 71.6,
+    "stepP95MedianAfterMs": 63.8,
+    "ticksPerPerformanceRun": 180,
+    "performanceRepeats": 3,
+    "byteComparisonTicksPerMode": 660,
+    "byteComparisonModes": [
+      "wind",
+      "blast"
+    ],
+    "comparedBytesPerMode": 858000000,
+    "mismatches": 0,
+    "fullVerifyTests": 209,
+    "affectedBrowserTests": 3,
+    "acceptanceStatus": "Still incomplete; short exact optimization comparison only."
+  }
 }
