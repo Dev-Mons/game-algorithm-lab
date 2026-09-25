@@ -10,6 +10,12 @@ export function renderPlanInspector(host:HTMLElement,document:GenerationDocument
   const matching=(refs:readonly SourceRef[])=>refs.some(r=>same(r,source));
   const sections:[string,unknown][]=[
     ['원본 입력 · 수동 설정',sourceInput],['실행 단계',environment?.stages],
+    ['지지 · 경계 · 도로 관계',{
+      supports:environment?.relations?.supports.filter(r=>matching(r.sourceRefs)),
+      boundaries:environment?.spatial?.buildingRuns.filter(r=>same(r.owner,source)),
+      roads:environment?.relations?.roads.filter(r=>source.kind==='road'||environment.traces.some(t=>matching(t.sourceRefs)&&t.relationIds?.includes(r.module.id))),
+      installationProof:'설치 지지이며 하중·이동 증명이 아닙니다. 실제 접근 상태는 선택·탈락 근거에서 확인합니다.',
+    }],
     ['분석 · 계획',{wallFacilities:environment?.wallFacilities?.groups.filter(g=>g.objectId===source.id),columns:environment?.columns?.filter(p=>p.buildingId===source.id),facades:environment?.facades?.filter(p=>p.buildingId===source.id),fixtureCounters:environment?.fixtures?.counters,parking:environment?.parking?.filter(a=>a.areaId===source.id),entrances:environment?.entrances?.filter(e=>e.buildingId===source.id),parkingCirculation:environment?.parkingCirculation?.filter(a=>a.areaId===source.id),vertical:environment?.vertical?.filter(v=>v.buildingId===source.id),relations:environment?.spatial?.relations.filter(r=>same(r.from,source)||same(r.to,source)),diagnostics:environment?.spatial?.diagnostics.filter(d=>d.ownerId===source.id)}],
     ['예약 · 실제 경로',{reservations:environment?.reservations.filter(r=>matching(r.sourceRefs)),paths:environment?.overlays?.filter(o=>matching(o.sourceRefs)&&o.path)}],
     ['선택 · 탈락 근거',environment?.traces.filter(t=>matching(t.sourceRefs))],

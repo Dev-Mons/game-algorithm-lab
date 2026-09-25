@@ -7,7 +7,7 @@ import {boundaryRuns,type SpatialAnalysis} from './spatial-analysis';
 import {AccessSearch,authorizeCrossing,bodyBox16,walkSweep16} from './access-graph';
 import {BoundsIndex,ReservationBook,type CrossingCertificate} from './reservations';
 import {boxesOverlap,cellBox16} from './placement-bounds';
-import {analyzeRoads} from './roads';
+import {analyzeRoads,isRoadJunction,type RoadModule} from './roads';
 import {allocateParkingBudget,ParkingCharge,ParkingBudgetExceeded,type BudgetComponent} from './parking-budget';
 import {positiveMod} from './vertical-design';
 import {buildVehicleGraph,vehicleBFS,vehicleFootprint,vehicleTransitions,vehicleCorridor,corridorTransition,validState,stateKey,compareStates,StateHeap,type VehicleState} from './vehicle-motion';
@@ -132,9 +132,9 @@ const noAllocation=(key:string):ParkingBudgetAllocation=>({componentKey:key,layo
 function failed(area:ParkingAreaInput,cells:Vec3[],reason:string,allocation=noAllocation(cellId(cells[0]))):ParkingCirculationPlan {
   return {areaId:area.id,componentKey:cellId(cells[0]),status:'unplannable',axis:'X',offset:0,periodCells:0,eligibleCells:cells,incompleteBayCells:[],gates:[],aisleCells:[],walkCells:[],crossings:[],bayStrips:[],reachableStates:[],reservations:[],traces:[],budget:allocation,reasonCodes:[reason],counters:{layoutCandidates:0,stateExpansions:0,unservedCells:cells.length,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:0,boxChecks:0,proofEdgeChecks:0}};
 }
-export function planParkingCirculation(document:GenerationDocument,spatial:SpatialAnalysis,initialBook:ReservationBook,solid:BoundsIndex<string>):{areas:ParkingCirculationArea[];book:ReservationBook;domains:Map<string,VehicleDomain>}{
+export function planParkingCirculation(document:GenerationDocument,spatial:SpatialAnalysis,initialBook:ReservationBook,solid:BoundsIndex<string>,roadModules:readonly RoadModule[]=analyzeRoads(document.sceneInputs.roads)):{areas:ParkingCirculationArea[];book:ReservationBook;domains:Map<string,VehicleDomain>}{
   const startChecks=solid.checks,domains=new Map<string,VehicleDomain>();let book=initialBook;const areas:ParkingCirculationArea[]=[],road=mask(document.sceneInputs.roads),settings=ENVIRONMENT.parking;
-  const keepout=analyzeRoads(document.sceneInputs.roads).filter(r=>r.shape==='tee'||r.shape==='cross').flatMap(r=>r.cells);
+  const keepout=roadModules.filter(isRoadJunction).flatMap(r=>r.cells);
   for(const area of document.sceneInputs.parkingAreas){
     const excludedRoadCells=area.cells.filter(c=>road.has(cellId(c))),excludedSolidCells=area.cells.filter(c=>!road.has(cellId(c))&&solid.query(cellBox16(c)).length),excluded=mask([...excludedRoadCells,...excludedSolidCells]);
     const parts=components(area.cells.filter(c=>!excluded.has(cellId(c)))),prepared=parts.map(cells=>{

@@ -33,8 +33,13 @@ python porting/check.py verify artifacts/native-porting
 
 기본 출력은 `artifacts/native-porting`이다. 이미 있는 출력 폴더는 덮어쓰지 않는다.
 실패한 부분 출력에는 `manifest.json`이 없으며 유효한 번들로 사용하지 않는다.
-기존 `concept-preservation-baseline.json`의 214개 입력·419종 완성형 면 geometry에
-모두 일치해야 마지막에 manifest를 쓴다. baseline을 새로 만드는 기능은 없다.
+기존 `concept-preservation-baseline.json`의 214개 입력·419종 완성형 면 geometry를
+보존 검사한 뒤 마지막에 manifest를 쓴다. baseline을 새로 만드는 기능은 없다.
+도로 표시 개선으로 도시 4개 입력의 `scenePlacements[kind=road]`는 의도적으로 달라진다.
+그 외 필드와 419종 geometry는 기존 baseline과 일치해야 한다. [도로 규칙](ROAD_RULES.md)의
+과거 도로 출력 근거로 변경 범위를 분리하며, 새 결과로 기존 baseline을 덮어쓰지 않는다.
+`expected.json`은 현재 결과이고 fixture의 `outputFingerprint`와 `intentionalChanges`,
+manifest의 `intentionalChanges`에 과거 비교 지문과 변경 사실을 구분해 남긴다.
 원본 커밋과 실제 소스 파일별 SHA256을 남겨 미커밋 변경도 구분할 수 있다.
 
 자료 작업 검증:

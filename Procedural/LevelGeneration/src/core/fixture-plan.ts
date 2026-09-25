@@ -2,7 +2,7 @@ import {ENVIRONMENT} from './environment-settings';
 import {add,BASES,cellId,compareCells,type Vec3,type Direction} from './analysis';
 import type {GenerationDocument} from './document';
 import type {VolumeAnalysis} from './regions';
-import {objectContext,type ObjectInput,type ScenePlacement} from './scene-inputs';
+import {type ObjectInput,type ScenePlacement} from './scene-inputs';
 import {HEADING_VECTORS,type Heading,type Box16,type SourceRef,type Reservation,type DecisionTrace,type CandidateTrace} from './environment-contract';
 import {FIXTURE_CATALOG,transformFixtureBox,type FixturePrototypeId} from './fixture-catalog';
 import {BoundsIndex,ReservationBook} from './reservations';
@@ -11,7 +11,7 @@ import {segmentOccluded,type SpatialAnalysis} from './spatial-analysis';
 import {boxesOverlap,sceneBounds16} from './placement-bounds';
 import {hash33} from './selection';
 import {positiveMod} from './vertical-design';
-import {analyzeRoads} from './roads';
+import {SceneRelationIndex,SupportIndex} from './scene-relations';
 import type {ParkingAreaPlan} from './parking-contract';
 
 export interface FixtureContext {
@@ -33,30 +33,30 @@ const manhattan=(a:Vec3,b:Vec3)=>a.reduce((n,v,i)=>n+Math.abs(v-b[i]),0);
 const sameHeightDistance=(a:Vec3,b:Vec3)=>a[1]===b[1]?Math.abs(a[0]-b[0])+Math.abs(a[2]-b[2]):Infinity;
 const intersects=(a:Box16[],b:Box16[])=>a.some(x=>b.some(y=>boxesOverlap(x,y)));
 function occupiedCells(box:Box16):Vec3[]{const cells:Vec3[]=[];for(let x=Math.floor(box.min[0]/16);x<Math.ceil(box.max[0]/16);x++)for(let y=Math.floor(box.min[1]/16);y<Math.ceil(box.max[1]/16);y++)for(let z=Math.floor(box.min[2]/16);z<Math.ceil(box.max[2]/16);z++)cells.push([x,y,z]);return cells;}
-function makePatches(document:GenerationDocument,analysis:VolumeAnalysis):Patch[]{
+function makePatches(support:SupportIndex):Patch[]{
   const groups=new Map<string,Patch>();
-  for(const input of document.sceneInputs.objects){if(input.category==='vegetation'||input.category==='facility'&&input.direction!=='PY')continue;let context:ReturnType<typeof objectContext>;
-    try{context=objectContext(input,document.grid,document.sceneInputs.roads,analysis);}catch{continue;}
-    const support=context==='roof'?'roof':context==='wall'?'wall':'ground',footY=Math.min(...input.cells.map(c=>c[1])),key=`${input.category}:${input.direction}:${support}:${footY}`;
-    const patch=groups.get(key)??{category:input.category,direction:input.direction,support,footY,columns:[],inputs:[],volume:new Set<string>()};
-    patch.inputs.push(input);input.cells.forEach(c=>patch.volume.add(cellId(c)));groups.set(key,patch);
+  for(const relation of support.records){if(!relation.accepted||relation.category==='vegetation'||relation.category==='facility'&&relation.direction!=='PY')continue;
+    const footY=relation.cell[1],key=`${relation.category}:${relation.direction}:${relation.support}:${footY}`;
+    const patch=groups.get(key)??{category:relation.category,direction:relation.direction,support:relation.support,footY,columns:[],inputs:[],volume:new Set<string>()};
+    for(const c of relation.cells){const input=support.ownerAt(c)!;if(!patch.inputs.includes(input))patch.inputs.push(input);patch.volume.add(cellId(c));}
+    groups.set(key,patch);
   }
   const patches:Patch[]=[];
   for(const group of groups.values()){
     const columns=new Map<string,Column>();
-    for(const input of group.inputs)for(const c of input.cells)if(group.support==='wall'||c[1]===group.footY){let height=1;while(group.support!=='wall'&&group.volume.has(cellId([c[0],c[1]+height,c[2]])))height++;columns.set(cellId(c),{cell:c,height});}
+    group.inputs.sort((a,b)=>ascii(a.id,b.id));
+    for(const id of group.volume){const c=id.split(',').map(Number) as Vec3;if(group.support==='wall'||c[1]===group.footY)columns.set(id,{cell:c,height:group.support==='wall'?1:support.columnAt(c)!.height});}
     const remaining=new Set(columns.keys());
     for(const root of [...columns.values()].sort((a,b)=>compareCells(a.cell,b.cell))){if(!remaining.delete(cellId(root.cell)))continue;const queue=[root];for(let i=0;i<queue.length;i++)for(const d of HEADING_VECTORS){const id=cellId(add(queue[i].cell,d));if(remaining.delete(id))queue.push(columns.get(id)!);}patches.push({...group,columns:queue.sort((a,b)=>compareCells(a.cell,b.cell))});}
   }
   return patches;
 }
-export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,parking:ParkingAreaPlan[],wallMounts:Map<string,{outset16:number;ownerId:string}>=new Map()):FixturePlan {
+export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,parking:ParkingAreaPlan[],wallMounts:Map<string,{outset16:number;ownerId:string}>=new Map(),relations=new SceneRelationIndex(new SupportIndex(document,analysis),document,spatial)):FixturePlan {
   const counters:FixturePlan['counters']={slots:0,emptySlots:0,candidates:0,accepted:0,maxVariantsPerAnchor:0,companionCandidates:0,neighborChecks:0},placements:ScenePlacement[]=[],reservations:Reservation[]=[],traces:DecisionTrace[]=[];
-  const exposedFaces=new Set(analysis.surfaces.map(s=>s.faceId));
   const settings=ENVIRONMENT.fixtures,search=new AccessSearch(spatial,document,book,solid),fixed=book.snapshot(),protectedWalk=new Set(fixed.filter(r=>r.kind==='walk'&&(r.priority===900||r.priority===700)).flatMap(r=>r.cells.map(cellId))),roadSet=new Set(document.sceneInputs.roads.map(cellId));
-  const trees=document.sceneInputs.objects.filter(o=>o.category==='vegetation'&&fixed.some(r=>r.kind==='solid'&&r.ownerId===o.id)).flatMap(o=>{const y=Math.min(...o.cells.map(c=>c[1]));return o.cells.filter(c=>c[1]===y).map(cell=>({cell,id:o.id}));});
+  const trees=relations.support.records.filter(r=>r.category==='vegetation'&&r.accepted).map(r=>({cell:r.cell,id:relations.support.ownerAt(r.cell)!.id}));
   const areas=document.sceneInputs.parkingAreas.map(a=>({...a,mask:new Set(a.cells.map(cellId)),plans:parking.find(p=>p.areaId===a.id)?.plans??[]}));
-  const keepout=analyzeRoads(document.sceneInputs.roads).filter(r=>r.shape==='tee'||r.shape==='cross').flatMap(r=>r.cells);
+  const vegetationSources=new Map<string,string>();
   const horizontalHeading=(from:Vec3,to:Vec3):Heading=>{
     const ranked=HEADING_VECTORS.map((d,h)=>({h,score:d[0]*(to[0]-from[0])+d[2]*(to[2]-from[2])})).sort((a,b)=>b.score-a.score||a.h-b.h);return ranked[0].h as Heading;
   };
@@ -68,12 +68,12 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
       else if(area.plans.some(p=>p.rowEnds.some(e=>sameHeightDistance(e.cell,cell)<=2)))context.parkingZone='row-end';
       else if(HEADING_VECTORS.some(d=>!area.mask.has(cellId(add(cell,d)))))context.parkingZone='edge';else context.parkingZone='interior';
     }
-    const roads=document.sceneInputs.roads.map(c=>({cell:c,distance:sameHeightDistance(cell,c)})).sort((a,b)=>a.distance-b.distance||compareCells(a.cell,b.cell));
-    if(roads.length&&Number.isFinite(roads[0].distance)){context.roadDistanceCells=roads[0].distance;context.roadHeading=horizontalHeading(roads[0].cell,cell);}
+    const road=relations.roadAt(cell,settings.intersectionKeepoutCells);
+    if(road.distanceCells!==undefined){context.roadDistanceCells=road.distanceCells;context.roadHeading=road.heading;}
     const adjacent=HEADING_VECTORS.map(d=>roadSet.has(cellId(add(cell,d))));context.median=adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3];
     const nearby=trees.map(t=>({...t,distance:sameHeightDistance(cell,t.cell)})).filter(t=>t.distance<=settings.vegetationRadiusCells).sort((a,b)=>a.distance-b.distance||compareCells(a.cell,b.cell));
     const tree=nearby.find(t=>!segmentOccluded(cell,t.cell,solid,ENVIRONMENT.access.pedestrianWidth16,ENVIRONMENT.access.pedestrianHeight16,new Set([`solid:object:${t.id}`])));
-    if(tree){context.vegetationDistanceCells=tree.distance;context.vegetationDirection=horizontalHeading(cell,tree.cell);}
+    if(tree){context.vegetationDistanceCells=tree.distance;context.vegetationDirection=horizontalHeading(cell,tree.cell);vegetationSources.set(cellId(cell),tree.id);}
     return context;
   };
   const contextCache=new Map<string,FixtureContext>();
@@ -90,7 +90,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     return {prototype:(['bench','empty','bin','empty','hydrant','empty'] as const)[positiveMod(index,6)]};
   };
   const slots:Slot[]=[];
-  for(const patch of makePatches(document,analysis)){
+  for(const patch of makePatches(relations.support)){
     // Painted lighting owns one fixture per support cell; vertical ground/roof cells set pole height.
     if(patch.category==='lighting'){
       for(const column of patch.columns)slots.push({id:`cell:lighting:${patch.direction}:${cellId(column.cell)}`,columns:[column],patch,family:familyAt(getContext(column,patch),patch),center2:column.cell.map(n=>2*n) as Vec3,prototype:patch.support==='wall'?'wall-lamp':'lamp'});
@@ -125,8 +125,8 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   };
   const attempt=(slot:Slot,column:Column,prototype:FixturePrototypeId,heading:Heading,offset:number):{candidate?:FixtureCandidate;reason?:string;conflicts?:string[]}=>{
     counters.candidates++;const c=column.cell,context={...getContext(column,slot.patch)},descriptor=FIXTURE_CATALOG[prototype],d=HEADING_VECTORS[heading];
-    if(slot.patch.support==='wall'&&!exposedFaces.has(`${cellId(add(c,BASES[slot.patch.direction].n.map(n=>-n) as Vec3))}|${slot.patch.direction}`))return {reason:'NO_WALL_SUPPORT'};
-    if(slot.patch.support==='roof'&&!exposedFaces.has(`${cellId(add(c,[0,-1,0]))}|PY`))return {reason:'NO_SUPPORTED_SURFACE'};
+    if(slot.patch.support==='wall'&&!relations.support.face(`${cellId(add(c,BASES[slot.patch.direction].n.map(n=>-n) as Vec3))}|${slot.patch.direction}`))return {reason:'NO_WALL_SUPPORT'};
+    if(!relations.support.at(c)?.accepted)return {reason:relations.support.at(c)?.reasonCodes[0]??'NO_SUPPORTED_SURFACE'};
     const center16:Vec3=[c[0]*16+8+offset*d[0],c[1]*16,c[2]*16+8+offset*d[2]];
     let supportOwner:string|undefined;
     if(slot.patch.support==='wall'){
@@ -137,7 +137,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     }
     const bodies=descriptor.bodyBoxes16.map(b=>transformFixtureBox(b,center16,heading));
     if(bodies.some(b=>occupiedCells(b).some(cell=>!slot.patch.volume.has(cellId(cell)))))return {reason:'BODY_OUTSIDE_INTENT'};
-    if(keepout.some(k=>sameHeightDistance(k,c)<=settings.intersectionKeepoutCells))return {reason:'INTERSECTION_KEEPOUT'};
+    if(relations.roadAt(c,settings.intersectionKeepoutCells).junctionIds.length)return {reason:'INTERSECTION_KEEPOUT'};
     if(context.median&&['bench','bin','pay-station'].includes(prototype))return {reason:'MEDIAN_NOT_FOR_REST'};
     const bodyReservation:Reservation={id:'fixture-query',ownerId:'fixture-query',sourceRefs:[],kind:descriptor.priority===500?'safety':descriptor.priority===400?'lighting':'fixture',priority:descriptor.priority,cells:[c],boxes16:bodies};
     const conflicts=book.conflicts(bodyReservation);
@@ -158,20 +158,26 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   const preference=(a:FixtureCandidate,b:FixtureCandidate)=>Number(b.context.accessMode==='public')-Number(a.context.accessMode==='public')||b.frontFree-a.frontFree||Number(a.context.vegetationDirection===a.heading)-Number(b.context.vegetationDirection===b.heading)||a.publicDistance-b.publicDistance||a.heading-b.heading||compareCells(a.center16,b.center16);
   const clusters:Cluster[]=[];
   for(const slot of slots){
-    counters.slots++;const trace:DecisionTrace={id:`slot:${slot.id}`,ownerId:slot.patch.inputs[0].id,ruleId:'contextual-fixtures',ruleVersion:'1.0.0',sourceRefs:slot.patch.inputs.map(o=>({kind:'object',id:o.id})),selectedIds:[],candidates:[]};traces.push(trace);
+    const support=relations.support.at(slot.columns[0].cell)!,road=relations.roadAt(slot.columns[0].cell,settings.intersectionKeepoutCells);
+    counters.slots++;const trace:DecisionTrace={id:`slot:${slot.id}`,ownerId:relations.support.ownerAt(slot.columns[0].cell)!.id,ruleId:'contextual-fixtures',ruleVersion:'1.0.0',sourceRefs:[...support.sourceRefs],selectedIds:[],candidates:[]};traces.push(trace);
+    trace.relationIds=[support.id,...(road.moduleId?[road.moduleId]:[]),...road.frontageIds,...road.junctionIds];
+    trace.readDependencies=[...support.readDependencies,'scene:objects','spatial:roadFrontages','spatial:roadArrivals','reservations:prior-stages','parking:plans'];
+    const tree=vegetationSources.get(cellId(slot.columns[0].cell)),area=getContext(slot.columns[0],slot.patch).parkingAreaId;
+    for(const ref of [...(road.moduleId?[{kind:'road' as const,id:'roads'}]:[]),...(tree?[{kind:'object' as const,id:tree}]:[]),...(area?[{kind:'parking' as const,id:area}]:[])])if(!trace.sourceRefs.some(r=>r.kind===ref.kind&&r.id===ref.id))trace.sourceRefs.push(ref);
     if(slot.prototype==='empty'){counters.emptySlots++;trace.candidates.push({candidateId:slot.id,accepted:false,reasonCodes:['EMPTY_PATTERN_SLOT'],metrics:{family:slot.family},conflictIds:[]});continue;}
     const columns=[...slot.columns].sort((a,b)=>manhattan(a.cell.map(n=>2*n) as Vec3,slot.center2)-manhattan(b.cell.map(n=>2*n) as Vec3,slot.center2)||hash33(document.seed,`fixtures-v1|${cellId(a.cell)}|${slot.prototype}`)-hash33(document.seed,`fixtures-v1|${cellId(b.cell)}|${slot.prototype}`)||compareCells(a.cell,b.cell));
     let main:FixtureCandidate|undefined;
     for(const column of columns){
       const prototype=slot.prototype==='lamp'?(column.height>=4?'lamp-64':column.height>=2?'lamp-32':'lamp-16'):slot.prototype;
       const paintedFacility=slot.patch.category==='facility',context=getContext(column,slot.patch);
-      const headings:Heading[]=paintedFacility?[context.roadHeading??(context.vegetationDirection===undefined?0:(context.vegetationDirection+2)%4 as Heading)]:slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[0,1,2,3];
+      const headings:Heading[]=paintedFacility?[context.roadHeading??(context.vegetationDirection===undefined?0:(context.vegetationDirection+2)%4 as Heading)]:slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[context.roadHeading??0];
       const poses:FixtureCandidate[]=[];let count=0;
       for(const h of headings)for(const offset of paintedFacility?[FIXTURE_CATALOG[prototype].size16[2]<=4?-6:0]:slot.patch.support==='wall'?[-6]:[0,-6]){
         count++;const result=attempt(slot,column,prototype,h,offset);if(result.candidate)poses.push(result.candidate);
         else trace.candidates.push({candidateId:`${slot.id}:${cellId(column.cell)}:${h}:${offset}`,accepted:false,reasonCodes:[result.reason!],metrics:{prototype,family:slot.family,context:JSON.stringify(getContext(column,slot.patch)),heading:h,offset},conflictIds:result.conflicts??[]});
       }
-      counters.maxVariantsPerAnchor=Math.max(counters.maxVariantsPerAnchor,count);if(poses.length){main=poses.sort(preference)[0];break;}
+      // A walk pocket is an access result, not permission to move a painted light.
+      counters.maxVariantsPerAnchor=Math.max(counters.maxVariantsPerAnchor,count);if(poses.length){main=poses.sort(slot.patch.category==='lighting'?(a,b)=>a.heading-b.heading||a.offset-b.offset:preference)[0];break;}
     }
     if(!main)continue;
     const items=[main];

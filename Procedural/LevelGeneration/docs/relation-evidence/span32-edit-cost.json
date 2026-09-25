@@ -1,0 +1,142 @@
+{
+  "browser": "153.0.8010.12",
+  "scope": "native E/Q through CPU render submission; 1 add + 1 remove; no performance threshold or tail estimate",
+  "samples": [
+    {
+      "id": 1,
+      "input": "key",
+      "mode": "add",
+      "selectionCells": 1,
+      "inputStartedAt": 2794,
+      "handlerStartedAt": 2874,
+      "editStartedAt": 2874.199999999255,
+      "inputQueueMs": 80,
+      "inputHandlingMs": 0.19999999925494194,
+      "synchronousMs": 166.09999999962747,
+      "cellsBefore": 960,
+      "cellsAfter": 961,
+      "initializationState": {
+        "plannerCacheEntries": 2,
+        "geometryCacheEntries": 53,
+        "startupGenerationCount": 0
+      },
+      "steps": {
+        "surfaceEdit": 0.5,
+        "replaceGrid": 7.699999999254942,
+        "acceptanceComparison": 4.600000001490116,
+        "publication": 4.5,
+        "history": 3.700000001117587
+      },
+      "generation": {
+        "analysis": 18.800000000745058,
+        "selection": 39.599999997764826,
+        "rendererSync": 6.300000000745058,
+        "total": 64.69999999925494,
+        "generationCalls": 1,
+        "viewerSyncCalls": 1,
+        "stages": {
+          "analysis": 18.800000000745058,
+          "vertical": 2.299999998882413,
+          "preflight": 3.300000000745058,
+          "spatial": 3.799999998882413,
+          "entrances": 1.900000000372529,
+          "facade": 6.800000000745058,
+          "attachments": 0
+        },
+        "rendererStages": {
+          "clear": 0.7000000011175871,
+          "boundsAndInteraction": 0.2999999988824129,
+          "environmentPreview": 3,
+          "sceneMeshesAndPublication": 0.10000000149011612,
+          "faceMeshes": 1.099999999627471,
+          "geometryBuild": 0.19999999925494194,
+          "analysisMeshes": 1.099999999627471
+        },
+        "telemetry": {
+          "cacheStats": {
+            "hits": 1,
+            "misses": 4,
+            "writes": 4,
+            "evictions": 0,
+            "entries": 4,
+            "bytes": 10168306
+          },
+          "actualExpansions": 0,
+          "logicalExpansions": 0,
+          "layoutTrials": 0
+        }
+      },
+      "inputToRenderMs": 172.5,
+      "renderSubmissionMs": 4.400000000372529,
+      "supersededBeforeRender": false
+    },
+    {
+      "id": 2,
+      "input": "key",
+      "mode": "remove",
+      "selectionCells": 1,
+      "inputStartedAt": 3911.5999999996275,
+      "handlerStartedAt": 3998.199999999255,
+      "editStartedAt": 3998.2999999988824,
+      "inputQueueMs": 86.59999999962747,
+      "inputHandlingMs": 0.09999999962747097,
+      "synchronousMs": 139.40000000037253,
+      "cellsBefore": 961,
+      "cellsAfter": 960,
+      "initializationState": {
+        "plannerCacheEntries": 4,
+        "geometryCacheEntries": 56,
+        "startupGenerationCount": 0
+      },
+      "steps": {
+        "surfaceEdit": 0.599999999627471,
+        "replaceGrid": 7.800000000745058,
+        "acceptanceComparison": 5.599999999627471,
+        "publication": 4.300000000745058,
+        "history": 2.300000000745058
+      },
+      "generation": {
+        "analysis": 0.09999999962747097,
+        "selection": 27,
+        "rendererSync": 5,
+        "total": 32.09999999962747,
+        "generationCalls": 1,
+        "viewerSyncCalls": 1,
+        "stages": {
+          "analysis": 0.09999999962747097,
+          "vertical": 2.400000000372529,
+          "preflight": 3.799999998882413,
+          "spatial": 4.5,
+          "entrances": 2.400000000372529,
+          "facade": 9,
+          "attachments": 0.09999999962747097
+        },
+        "rendererStages": {
+          "clear": 0.5,
+          "boundsAndInteraction": 0.10000000149011612,
+          "environmentPreview": 2.199999999254942,
+          "sceneMeshesAndPublication": 0.19999999925494194,
+          "faceMeshes": 0.900000000372529,
+          "geometryBuild": 0,
+          "analysisMeshes": 1.099999999627471
+        },
+        "telemetry": {
+          "cacheStats": {
+            "hits": 3,
+            "misses": 4,
+            "writes": 4,
+            "evictions": 0,
+            "entries": 4,
+            "bytes": 10168306
+          },
+          "actualExpansions": 0,
+          "logicalExpansions": 0,
+          "layoutTrials": 0
+        }
+      },
+      "inputToRenderMs": 146.59999999962747,
+      "renderSubmissionMs": 5.099999999627471,
+      "supersededBeforeRender": false
+    }
+  ]
+}

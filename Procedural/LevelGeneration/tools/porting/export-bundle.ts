@@ -5,6 +5,7 @@ import { join, dirname } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { conceptPreservationCases } from '../../tests/concept-preservation-fixtures';
 import { digest, fingerprint, meaningfulResult } from '../../tests/concept-preservation-contract';
+import { roadPreservationCheck } from '../../tests/road-preservation-contract';
 import { generateDocument } from '../../src/core/generate-document';
 import { BUILDING_PROFILES, SETTINGS, type GenerationDocument } from '../../src/core/document';
 import { canonicalJSON } from '../../src/core/canonical';
@@ -133,8 +134,8 @@ export async function exportPortingBundle(root: string, output: string): Promise
     meshKeys = new Set<string>();
   for (const { id, document } of cases) {
     const result = generateDocument(document, { cache: false });
-    const actual = fingerprint(document, result);
-    if (!isDeepStrictEqual(actual, baseline.rows[id])) throw new Error(`PORTING_BASELINE_MISMATCH:${id}`);
+    const comparison = roadPreservationCheck(document, result), actual = comparison.current;
+    if (!isDeepStrictEqual(comparison.preserved, baseline.rows[id])) throw new Error(`PORTING_BASELINE_MISMATCH:${id}`);
     const input = await portableDocument(document);
     if (canonicalJSON(expand(input)) !== canonicalJSON(document)) {
       throw new Error(`PORTING_INPUT_ROUNDTRIP_MISMATCH:${id}`);
@@ -156,7 +157,9 @@ export async function exportPortingBundle(root: string, output: string): Promise
       input: inputFile,
       expected: expectedFile,
       reference: referenceFile,
-      baseline: actual,
+      baseline: comparison.preserved,
+      outputFingerprint: actual,
+      intentionalChanges: comparison.changes,
     });
     for (const placement of result.placements)
       if (placement.faceAssetKey) meshKeys.add(placement.faceAssetKey);
@@ -196,9 +199,10 @@ export async function exportPortingBundle(root: string, output: string): Promise
   await put('hash-vectors.json', await readFile(join(root, 'fixtures/hash-vectors.json')));
   await put('check.py', await readFile(join(root, 'porting/check.py')));
   await put('START_HERE.md', await readFile(join(root, 'docs/NATIVE_PORTING.md')));
-  for (const name of ['NATIVE_PORTING.md', 'BUILDING_RULES_PORTING.md', 'PORTING_CONTRACT.md', 'COMPLETE_FACE_ASSETS.md']) {
+  for (const name of ['NATIVE_PORTING.md', 'BUILDING_RULES_PORTING.md', 'PORTING_CONTRACT.md', 'COMPLETE_FACE_ASSETS.md', 'ROAD_RULES.md']) {
     await put(`spec/${name}`, await readFile(join(root, 'docs', name)));
   }
+  const historicalRoads = await put('reference/road-presentation-v1.json', await readFile(join(root, 'tests/fixtures/road-presentation-v1.json')));
   for (const name of await readdir(join(root, 'porting/schemas'))) {
     await put(`schemas/${name}`, await readFile(join(root, 'porting/schemas', name)));
   }
@@ -216,6 +220,7 @@ export async function exportPortingBundle(root: string, output: string): Promise
     projection: baseline.projection,
     source: { commit: sourceCommit, files: sourceFiles },
     baseline: { sourceCommit: baseline.sourceCommit, sha256: sha256(baselineBytes) },
+    intentionalChanges: { policy: 'road-presentation-v2', fields: ['scenePlacements[kind=road]'], cases: fixtures.filter(f=>f.intentionalChanges.length).map(f=>f.id), historicalRoads },
     coverage: {
       cases: fixtures.length,
       meshes: meshes.length,
@@ -230,6 +235,6 @@ export async function exportPortingBundle(root: string, output: string): Promise
   };
   await writeFile(join(output, 'manifest.json'), canonicalJSON(manifest), { flag: 'wx' });
   console.log(
-    `Export complete: ${fixtures.length} baseline-matched cases, ${meshes.length} meshes: ${output}`,
+    `Export complete: ${fixtures.length} preservation-checked cases (${fixtures.filter(f=>f.intentionalChanges.length).length} declared road-presentation changes), ${meshes.length} meshes: ${output}`,
   );
 }

@@ -2,6 +2,7 @@ import { add, BASES, cellId, DIRECTIONS, normalizeGrid, validateGrid, type Direc
 import type { ParkingAreaInput, SourceRef, Heading, Box16 } from "./environment-contract";
 import { exactKeys } from "./canonical";
 import {FACILITY_KINDS,type FacilityKind} from './wall-facility-assets';
+import type {SupportIndex} from './scene-relations';
 export type ObjectCategory = "lighting" | "vegetation" | "facility";
 export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction; facilityKind?:FacilityKind|'auto';facadeRequest?:'solid' }
 export interface SceneInputs { version: 2; roads: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
@@ -77,8 +78,14 @@ export const OBJECT_CATEGORY_RULES: ObjectCategoryRule[] = [
   } },
 
 ];
-export function vegetationPlacements(grid: Vec3[], inputs?: SceneInputs,analysis?:{surfaces:Surface[]}): ScenePlacement[] {
+export function vegetationPlacements(grid: Vec3[], inputs?: SceneInputs,analysis?:{surfaces:Surface[]},support?:SupportIndex): ScenePlacement[] {
   return (inputs?.objects ?? []).filter(input=>input.category==='vegetation').flatMap(input => {
+    if(support)return input.cells.flatMap(cell=>{
+      const relation=support.at(cell);if(!relation?.accepted)return [];
+      const column=support.columnAt(cell)!;
+      const asset=column.height===1?(relation.context==='median'?'median-planter':relation.context==='roof'?'roof-planter':'shrub'):cell[1]===column.minY?'tree-bottom':cell[1]===column.maxY?'tree-top':'tree-middle';
+      return [{input,id:`${input.id}:${asset}:cell-${cellId(cell)}`,kind:'object' as const,asset,center:cell.map(n=>n+.5) as Vec3,size:[1,1,1] as Vec3,color:column.height===1?'#79a66b':cell[1]===column.minY?'#886348':'#62905c',context:relation.context}];
+    });
     let context: ObjectContext;
     try { context = objectContext(input, grid, inputs!.roads,analysis); } catch { return []; }
     return OBJECT_CATEGORY_RULES.find(r => r.category === input.category)!.generate(input, context);

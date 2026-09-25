@@ -382,7 +382,11 @@ function acceptDocument(
 ) {
   if (busy) return false;
   if (!keepSelection) viewer.clearEditSelection();
-  if (acceptedState&&timeBuildingStep('acceptanceComparison',()=>canonicalJSON(next)===canonicalJSON(currentDocument))) return true;
+  if (acceptedState&&timeBuildingStep('acceptanceComparison',()=>canonicalJSON(next)===canonicalJSON(currentDocument))) {
+    // A valid no-op import also recovers from an earlier rejected document.
+    if (!el('error').hidden) showResult(acceptedState.execution.result);
+    return true;
+  }
   const previous = currentDocument;
   currentDocument = next;
   if (!regenerate(fit)) {

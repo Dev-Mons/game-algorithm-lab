@@ -9,15 +9,19 @@ import {buildCraftedGeometry} from '../src/crafted-geometry';
 import {box} from '../src/fixtures';
 import type {Vec3} from '../src/core/generate';
 import {CONCEPTS,conceptPreservationCases} from './concept-preservation-fixtures';
+import {roadPreservationCheck} from './road-preservation-contract';
 
 it('preserves the pre-refactor A–D placements, ownership, proportions, materials, access and complete geometry',()=>{
-  const cases=conceptPreservationCases(),rows:Record<string,ReturnType<typeof fingerprint>>={},assets=new Set<string>();
+  const cases=conceptPreservationCases(),rows:Record<string,ReturnType<typeof fingerprint>>={},assets=new Set<string>(),roadChanges:string[]=[];
   for(const {id,document} of cases){
     const result=generateDocument(document,{cache:false});
-    rows[id]=fingerprint(document,result);
+    const comparison=roadPreservationCheck(document,result);
+    rows[id]=comparison.preserved;
+    if(comparison.changes.length){roadChanges.push(id);expect(comparison.current.semantic,id).not.toBe(comparison.preserved.semantic);}
     for(const p of result.placements)if(p.faceAssetKey)assets.add(p.faceAssetKey);
     expect(new Set(result.placements.map(p=>p.faceId)).size,id).toBe(result.surfaces.length);
   }
+  expect(roadChanges).toEqual(['A-city','B-city','C-city','D-city']);
   const geometry:Record<string,string>={};
   for(const key of [...assets].sort()){
     const g=buildCraftedGeometry(key);

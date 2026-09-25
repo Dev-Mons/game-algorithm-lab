@@ -6,7 +6,7 @@ import {HEADING_VECTORS} from "./environment-contract";
 import type {Box16,Reservation,SourceRef} from './environment-contract';
 import type {RuleSpatialEnvelope} from './rule-spatial-contract';
 import {cellBox16,mergeBoxes16} from './placement-bounds';
-import {objectContext} from './scene-inputs';
+import {SupportIndex} from './scene-relations';
 import {BoundsIndex,ReservationBook} from './reservations';
 import {buildAccessGraph,bodyBox16,type AccessGraphData,walkSweep16} from './access-graph';
 
@@ -14,7 +14,7 @@ export interface BoundaryRun {id:string;owner:SourceRef;footY:number;direction:'
 export interface SpatialRelation {from:SourceRef;to:SourceRef;contactLengthCells:number;planarDistanceCells:number;deltaY:number;containedCellCount:number;sourceCellCount:number;occluded:boolean}
 export interface SpatialAnalysis extends AccessGraphData {
   roadFrontages:BoundaryRun[];buildingRuns:BoundaryRun[];staticReservations:Reservation[];
-  relations:SpatialRelation[];diagnostics:{ownerId:string;code:string;message:string}[];
+  relations:SpatialRelation[];diagnostics:{ownerId:string;code:string;message:string;relationIds?:string[];reasonCodes?:string[]}[];
 }
 const directions=['PZ','PX','NZ','NX'] as const;
 export function boundaryRuns(cells:Vec3[],owner:SourceRef,exposed?:Set<string>):BoundaryRun[] {
@@ -32,7 +32,7 @@ export function boundaryRuns(cells:Vec3[],owner:SourceRef,exposed?:Set<string>):
   }
   return runs.sort((a,b)=>compareCells(a.cells[0],b.cells[0])||directions.indexOf(a.direction)-directions.indexOf(b.direction));
 }
-export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalysis,envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],knownComponents?:{id:string;cells:Vec3[]}[]):{spatial:SpatialAnalysis;book:ReservationBook;solidIndex:BoundsIndex<string>} {
+export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalysis,envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],knownComponents?:{id:string;cells:Vec3[]}[],support=new SupportIndex(document,analysis)):{spatial:SpatialAnalysis;book:ReservationBook;solidIndex:BoundsIndex<string>} {
   const fixed:Reservation[]=[],solidIndex=new BoundsIndex<string>(),diagnostics:SpatialAnalysis['diagnostics']=[];
   for(const b of document.buildings) {
     const envelope=envelopes.find(p=>p.buildingId===b.componentId)?.envelope;
@@ -50,8 +50,10 @@ export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalys
     const r=fixed.find(r=>r.ownerId===b.componentId)!;r.cells=queue;r.boxes16=mergeBoxes16([...r.boxes16,...mergeBoxes16(queue.map(cellBox16))]);
   }
   for(const object of document.sceneInputs.objects) {
-    try{objectContext(object,document.grid,document.sceneInputs.roads,analysis);}catch(error){diagnostics.push({ownerId:object.id,code:'UNSUPPORTED_OBJECT_SUPPORT',message:String(error)});continue;}
-    if(object.category==='vegetation')fixed.push({id:`solid:object:${object.id}`,ownerId:object.id,sourceRefs:[{kind:'object',id:object.id}],kind:'solid',priority:1000,cells:object.cells,boxes16:object.cells.map(cellBox16)});
+    const denied=support.forObject(object.id).filter(r=>!r.accepted);
+    if(denied.length)diagnostics.push({ownerId:object.id,code:'UNSUPPORTED_OBJECT_SUPPORT',message:'실제 설치 지지가 없는 열은 입력을 보존하고 배치에서 제외합니다.',relationIds:denied.map(r=>r.id),reasonCodes:[...new Set(denied.flatMap(r=>r.reasonCodes))]});
+    const cells=support.validCells(object);
+    if(object.category==='vegetation'&&cells.length)fixed.push({id:`solid:object:${object.id}`,ownerId:object.id,sourceRefs:[{kind:'object',id:object.id}],kind:'solid',priority:1000,cells,boxes16:cells.map(cellBox16)});
   }
   for(const r of fixed)for(const box of r.boxes16)solidIndex.add(box,r.id);
   const graph=buildAccessGraph(document,analysis,solidIndex);

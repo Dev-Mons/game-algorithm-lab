@@ -65,7 +65,7 @@ it('loads an A–D catalog 11 document, discards retired metadata and rejects ta
 it('street markings remain within authored road cells, with stable identities',()=>{
   const cells=FIXTURES.cityC.sceneInputs!.roads,placements=roadPlacements(cells);
   expect(placements.some(p=>p.asset.startsWith('crosswalk-'))).toBe(true);
-  expect(placements.some(p=>p.asset.includes('-dash-'))).toBe(true);
+  expect(placements.some(p=>p.asset.startsWith('center-'))).toBe(true);
   expect(new Set(placements.map(p=>p.id)).size).toBe(placements.length);
   const occupied=new Set(cells.map(([x,,z])=>`${x},${z}`));
   for(const p of placements)for(const a of [-.4999,.4999])for(const b of [-.4999,.4999])

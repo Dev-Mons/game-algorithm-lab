@@ -6,6 +6,7 @@ import type {VerticalPlan} from './vertical-design';
 import {faceBounds16,cellBox16,containedInUnion,scenePlacementBounds16} from './placement-bounds';
 import {ReservationBook} from './reservations';
 import {WALL_FACILITY_ASSETS,type FacilityPart} from './wall-facility-assets';
+import {SupportIndex} from './scene-relations';
 export interface WallFacilityPlan {
   placements:ScenePlacement[];reservations:Reservation[];traces:DecisionTrace[];
   changes:{faceId:string;moduleId:'wall';objectId:string}[];
@@ -18,20 +19,24 @@ export function automaticFacilityKind(input: ObjectInput): 'balcony'|'fire-escap
 }
 const part=(n:number,min:number,max:number):FacilityPart=>min===max?'single':n===min?'start':n===max?'end':'repeat';
 /** Raw support → protected-space approval → atomic wall/assembly output. No generated mesh input. */
-export function planWallFacilities(document:GenerationDocument,surfaces:readonly Surface[],vertical:VerticalPlan[],portals:ReadonlySet<string>,book:ReservationBook):WallFacilityPlan {
-  const plan:WallFacilityPlan={placements:[],reservations:[],changes:[],traces:[],groups:[]},faces=new Map(surfaces.filter(s=>s.role==='wall').map(s=>[s.faceId,s]));
+export function planWallFacilities(document:GenerationDocument,surfaces:readonly Surface[],vertical:VerticalPlan[],portals:ReadonlySet<string>,book:ReservationBook,support=new SupportIndex(document,{surfaces:[...surfaces]},vertical)):WallFacilityPlan {
+  const plan:WallFacilityPlan={placements:[],reservations:[],changes:[],traces:[],groups:[]};
   const zones=new Map(vertical.flatMap(v=>v.zones?.flatMap(z=>z.faceIds.map(id=>[id,z.id] as const))??v.faceBands.map(f=>[f.faceId,`band:${f.band}`] as const)));
   for(const input of document.sceneInputs.objects.filter(o=>o.category==='facility'&&['PX','NX','PZ','NZ'].includes(o.direction))){
-    const facilityKind=input.facilityKind&&input.facilityKind!=='auto'?input.facilityKind:automaticFacilityKind(input);
-    const normal=BASES[input.direction].n,hosts=input.cells.map(c=>faces.get(`${cellId(add(c,normal.map(n=>-n) as Vec3))}|${input.direction}`));
-    let reason=hosts.some(f=>!f)?'NO_WALL_SUPPORT':hosts.some(f=>f!.architecture?.interpretation==='unsupported')?'UNSUPPORTED_FACADE_TOPOLOGY':hosts.some(f=>!zones.has(f!.faceId))?'NO_BUILDING_CAPABILITY':hosts.some(f=>portals.has(f!.faceId))?'PROTECTED_PORTAL':'';
+    const kinds=input.cells.map(c=>input.facilityKind&&input.facilityKind!=='auto'?input.facilityKind:support.automaticWallKind(c));
+    const normal=BASES[input.direction].n,hosts=input.cells.map(c=>support.face(`${cellId(add(c,normal.map(n=>-n) as Vec3))}|${input.direction}`));
+    const supportRelations=support.forObject(input.id),denied=supportRelations.find(r=>!r.accepted);
+    let reason=hosts.some(f=>!f)?'NO_WALL_SUPPORT':denied?denied.reasonCodes[0]:hosts.some(f=>f!.architecture?.interpretation==='unsupported')?'UNSUPPORTED_FACADE_TOPOLOGY':hosts.some(f=>!zones.has(f!.faceId))?'NO_BUILDING_CAPABILITY':hosts.some(f=>portals.has(f!.faceId))?'PROTECTED_PORTAL':'';
     const us=input.cells.map(c=>c.reduce((n,v,i)=>n+v*BASES[input.direction].u[i],0)),ys=input.cells.map(c=>c[1]),planes=new Set(input.cells.map(c=>c.reduce((n,v,i)=>n+v*normal[i],0)));
-    const minU=Math.min(...us),maxU=Math.max(...us),minY=Math.min(...ys),maxY=Math.max(...ys);
+    const minY=Math.min(...ys),maxY=Math.max(...ys);
+    const kindAt=new Map(input.cells.map((_,i)=>[`${us[i]}:${ys[i]}`,kinds[i]]));
     if(planes.size!==1)reason='UNSUPPORTED_FACILITY_DEPTH';
     const placements:ScenePlacement[]=[],reservations:Reservation[]=[],assetKeys:string[]=[],intent=input.cells.map(cellBox16);
     if(!reason)for(let i=0;i<input.cells.length;i++){
       const face=hosts[i]!,center=faceCenter2(face.cell,face.direction).map((n,a)=>n/2+normal[a]*7/16) as Vec3;
-      const asset=`wall-facility.${facilityKind}.${part(us[i],minU,maxU)}.${part(ys[i],minY,maxY)}`,descriptor=WALL_FACILITY_ASSETS[asset];assetKeys.push(asset);
+      const facilityKind=kinds[i],left=kindAt.get(`${us[i]-1}:${ys[i]}`)===facilityKind,right=kindAt.get(`${us[i]+1}:${ys[i]}`)===facilityKind;
+      const horizontalPart:FacilityPart=left?(right?'repeat':'end'):(right?'start':'single');
+      const asset=`wall-facility.${facilityKind}.${horizontalPart}.${part(ys[i],minY,maxY)}`,descriptor=WALL_FACILITY_ASSETS[asset];assetKeys.push(asset);
       const heading=({PZ:0,PX:1,NZ:2,NX:3} as Record<string,Heading>)[input.direction],id=`facility:${input.id}:${face.faceId}`;
       const p:ScenePlacement={id,input,kind:'object',asset,center,size:[1,1,1],color:facilityKind==='elevator'?'#8fabb5':'#b8b0a0',context:'decorative-service-unverified',planId:`facility:${input.id}`,sourceRefs:[{kind:'object',id:input.id},{kind:'building',id:face.componentId}],yawQuarterTurns:heading};
       const bounds=scenePlacementBounds16(p);
@@ -48,6 +53,6 @@ export function planWallFacilities(document:GenerationDocument,surfaces:readonly
     if(!reason&&!decision.accepted)reason='PROTECTED_SPACE_CONFLICT';
     if(decision.accepted){plan.placements.push(...placements);plan.reservations.push(...reservations);if(input.facadeRequest==='solid')for(const face of hosts)plan.changes.push({faceId:face!.faceId,moduleId:'wall',objectId:input.id});}
     const faceIds=hosts.flatMap(f=>f?[f.faceId]:[]);plan.groups.push({objectId:input.id,faceIds,assetKeys,zoneIds:[...new Set(faceIds.flatMap(id=>zones.has(id)?[zones.get(id)!]:[]))].sort(),accepted:decision.accepted,reason:reason||'DECORATIVE_ASSEMBLY_APPROVED'});
-    plan.traces.push({id:`facility:${input.id}`,ownerId:input.id,ruleId:'wall-facility-prototype',ruleVersion:'1',sourceRefs:[{kind:'object',id:input.id}],selectedIds:decision.accepted?placements.map(p=>p.id):[],candidates:[{candidateId:input.id,accepted:decision.accepted,reasonCodes:[reason||'DECORATIVE_ASSEMBLY_APPROVED','MOVEMENT_NOT_IMPLEMENTED'],conflictIds:decision.conflictIds,metrics:{cells:input.cells.length,wallChanges:decision.accepted&&input.facadeRequest==='solid'?hosts.length:0}}]});
+    plan.traces.push({id:`facility:${input.id}`,ownerId:input.id,ruleId:'wall-facility-prototype',ruleVersion:'1',sourceRefs:[...new Map(supportRelations.flatMap(r=>r.sourceRefs).map(r=>[`${r.kind}:${r.id}`,r])).values()],relationIds:supportRelations.map(r=>r.id),readDependencies:[...new Set(supportRelations.flatMap(r=>r.readDependencies).concat(['entrances:portals','reservations:prior-stages']))],selectedIds:decision.accepted?placements.map(p=>p.id):[],candidates:[{candidateId:input.id,accepted:decision.accepted,reasonCodes:[reason||'DECORATIVE_ASSEMBLY_APPROVED','MOVEMENT_NOT_IMPLEMENTED'],conflictIds:decision.conflictIds,metrics:{cells:input.cells.length,wallChanges:decision.accepted&&input.facadeRequest==='solid'?hosts.length:0}}]});
   }return plan;
 }

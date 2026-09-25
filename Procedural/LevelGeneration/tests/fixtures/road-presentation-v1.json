@@ -1,0 +1,8757 @@
+{
+  "sourceCommit": "65701664aa9c4c4bb80320d58550e610511ea2b0",
+  "sourceSha256": "112209050f2bbb7d97c37dabd9e59e1472c8d4343fc0f29e920bf8c18f0b649a",
+  "purpose": "Read-only historical road output. Only road presentation differs in the four city preservation cases; never used by runtime generation.",
+  "samples": {
+    "826f48545fbca44484dd9d2f6d9f9e8c23e6b581343b6cecd18c0354a76430b5": {
+      "roads": [
+        [
+          -4,
+          0,
+          -3
+        ],
+        [
+          -4,
+          0,
+          -2
+        ],
+        [
+          -4,
+          0,
+          6
+        ],
+        [
+          -4,
+          0,
+          7
+        ],
+        [
+          -3,
+          0,
+          -4
+        ],
+        [
+          -3,
+          0,
+          -3
+        ],
+        [
+          -3,
+          0,
+          -2
+        ],
+        [
+          -3,
+          0,
+          -1
+        ],
+        [
+          -3,
+          0,
+          0
+        ],
+        [
+          -3,
+          0,
+          1
+        ],
+        [
+          -3,
+          0,
+          2
+        ],
+        [
+          -3,
+          0,
+          3
+        ],
+        [
+          -3,
+          0,
+          4
+        ],
+        [
+          -3,
+          0,
+          5
+        ],
+        [
+          -3,
+          0,
+          6
+        ],
+        [
+          -3,
+          0,
+          7
+        ],
+        [
+          -3,
+          0,
+          8
+        ],
+        [
+          -2,
+          0,
+          -4
+        ],
+        [
+          -2,
+          0,
+          -3
+        ],
+        [
+          -2,
+          0,
+          -2
+        ],
+        [
+          -2,
+          0,
+          -1
+        ],
+        [
+          -2,
+          0,
+          0
+        ],
+        [
+          -2,
+          0,
+          1
+        ],
+        [
+          -2,
+          0,
+          2
+        ],
+        [
+          -2,
+          0,
+          3
+        ],
+        [
+          -2,
+          0,
+          4
+        ],
+        [
+          -2,
+          0,
+          5
+        ],
+        [
+          -2,
+          0,
+          6
+        ],
+        [
+          -2,
+          0,
+          7
+        ],
+        [
+          -2,
+          0,
+          8
+        ],
+        [
+          -1,
+          0,
+          -3
+        ],
+        [
+          -1,
+          0,
+          -2
+        ],
+        [
+          -1,
+          0,
+          6
+        ],
+        [
+          -1,
+          0,
+          7
+        ],
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -2
+        ],
+        [
+          0,
+          0,
+          6
+        ],
+        [
+          0,
+          0,
+          7
+        ],
+        [
+          1,
+          0,
+          -3
+        ],
+        [
+          1,
+          0,
+          -2
+        ],
+        [
+          1,
+          0,
+          6
+        ],
+        [
+          1,
+          0,
+          7
+        ],
+        [
+          2,
+          0,
+          -3
+        ],
+        [
+          2,
+          0,
+          -2
+        ],
+        [
+          2,
+          0,
+          6
+        ],
+        [
+          2,
+          0,
+          7
+        ],
+        [
+          3,
+          0,
+          -3
+        ],
+        [
+          3,
+          0,
+          -2
+        ],
+        [
+          3,
+          0,
+          6
+        ],
+        [
+          3,
+          0,
+          7
+        ],
+        [
+          4,
+          0,
+          -3
+        ],
+        [
+          4,
+          0,
+          -2
+        ],
+        [
+          4,
+          0,
+          6
+        ],
+        [
+          4,
+          0,
+          7
+        ],
+        [
+          5,
+          0,
+          -3
+        ],
+        [
+          5,
+          0,
+          -2
+        ],
+        [
+          5,
+          0,
+          6
+        ],
+        [
+          5,
+          0,
+          7
+        ],
+        [
+          6,
+          0,
+          -3
+        ],
+        [
+          6,
+          0,
+          -2
+        ],
+        [
+          6,
+          0,
+          6
+        ],
+        [
+          6,
+          0,
+          7
+        ],
+        [
+          7,
+          0,
+          -4
+        ],
+        [
+          7,
+          0,
+          -3
+        ],
+        [
+          7,
+          0,
+          -2
+        ],
+        [
+          7,
+          0,
+          -1
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          1
+        ],
+        [
+          7,
+          0,
+          2
+        ],
+        [
+          7,
+          0,
+          3
+        ],
+        [
+          7,
+          0,
+          4
+        ],
+        [
+          7,
+          0,
+          5
+        ],
+        [
+          7,
+          0,
+          6
+        ],
+        [
+          7,
+          0,
+          7
+        ],
+        [
+          7,
+          0,
+          8
+        ],
+        [
+          8,
+          0,
+          -4
+        ],
+        [
+          8,
+          0,
+          -3
+        ],
+        [
+          8,
+          0,
+          -2
+        ],
+        [
+          8,
+          0,
+          -1
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          1
+        ],
+        [
+          8,
+          0,
+          2
+        ],
+        [
+          8,
+          0,
+          3
+        ],
+        [
+          8,
+          0,
+          4
+        ],
+        [
+          8,
+          0,
+          5
+        ],
+        [
+          8,
+          0,
+          6
+        ],
+        [
+          8,
+          0,
+          7
+        ],
+        [
+          8,
+          0,
+          8
+        ],
+        [
+          9,
+          0,
+          -3
+        ],
+        [
+          9,
+          0,
+          -2
+        ],
+        [
+          9,
+          0,
+          6
+        ],
+        [
+          9,
+          0,
+          7
+        ]
+      ],
+      "placements": [
+        {
+          "id": "road:-4,-3:road.tee.2-lane",
+          "kind": "road",
+          "asset": "road.tee.2-lane",
+          "center": [
+            -3,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -2.9,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            -2.3,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            -2.3,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            -2.3,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            -2.3,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            -2.3,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            -2.6,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -3,
+            0.087,
+            -1.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            -3.7199999999999998,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            -3.4399999999999995,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            -3.1599999999999997,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            -2.88,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            -2.5999999999999996,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            -3,
+            0.099,
+            -1.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -3,
+            0.087,
+            -2.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            -3.7199999999999998,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            -3.4399999999999995,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            -3.1599999999999997,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            -2.88,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            -2.5999999999999996,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            -3,
+            0.099,
+            -2.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,-3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -3.96,
+            0.088,
+            -2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:road.tee.2-lane",
+          "kind": "road",
+          "asset": "road.tee.2-lane",
+          "center": [
+            -3,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -2.9,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            -2.3,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            -2.3,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            -2.3,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            -2.3,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            -2.3,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            -2.6,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -3,
+            0.087,
+            7.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            -3.7199999999999998,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            -3.4399999999999995,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            -3.1599999999999997,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            -2.88,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            -2.5999999999999996,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            -3,
+            0.099,
+            7.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -3,
+            0.087,
+            6.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            -3.7199999999999998,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            -3.4399999999999995,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            -3.1599999999999997,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            -2.88,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            -2.5999999999999996,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            -3,
+            0.099,
+            6.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-4,6:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -3.96,
+            0.088,
+            7
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,north,south"
+        },
+        {
+          "id": "road:-3,-4:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            -2.5,
+            0.04,
+            -3.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:-3,-4:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -2.25,
+            0.087,
+            -3.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:-3,-4:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -2.5,
+            0.087,
+            -3.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:-3,-4:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            -3.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:-3,-4:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            -2.5,
+            0.088,
+            -3.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:-3,-1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            0
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            -0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            1.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            2.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            4
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            3.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            4.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            5.5
+          ],
+          "size": [
+            2,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            5.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            5.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,8:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            -2.5,
+            0.04,
+            8.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:-3,8:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -2.25,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:-3,8:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -2.5,
+            0.087,
+            8.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:-3,8:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            8.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:-3,8:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            -2.5,
+            0.088,
+            8.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:-2,-4:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            -1.5,
+            0.04,
+            -3.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:-2,-4:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            -1.75,
+            0.087,
+            -3.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:-2,-4:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -1.5,
+            0.087,
+            -3.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:-2,-4:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            -3.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:-2,-4:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            -1.5,
+            0.088,
+            -3.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:-2,-3:road.cross.2-lane",
+          "kind": "road",
+          "asset": "road.cross.2-lane",
+          "center": [
+            -1,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -0.9,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            -0.3,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            -0.3,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            -0.3,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            -0.3,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            -0.3,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            -0.6,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            -1.1,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            -1.7,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            -1.7,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            -1.7,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            -1.7,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            -1.7,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            -1.4,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -1,
+            0.087,
+            -1.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            -1.72,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            -1.44,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            -1.16,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            -0.8799999999999999,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            -0.5999999999999999,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            -1,
+            0.099,
+            -1.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -1,
+            0.087,
+            -2.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            -1.72,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            -1.44,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            -1.16,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            -0.8799999999999999,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            -0.5999999999999999,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,-3:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            -1,
+            0.099,
+            -2.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:road.cross.2-lane",
+          "kind": "road",
+          "asset": "road.cross.2-lane",
+          "center": [
+            -1,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -0.9,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            -0.3,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            -0.3,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            -0.3,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            -0.3,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            -0.3,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            -0.6,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            -1.1,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            -1.7,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            -1.7,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            -1.7,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            -1.7,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            -1.7,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            -1.4,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -1,
+            0.087,
+            7.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            -1.72,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            -1.44,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            -1.16,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            -0.8799999999999999,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            -0.5999999999999999,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            -1,
+            0.099,
+            7.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -1,
+            0.087,
+            6.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            -1.72,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            -1.44,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            -1.16,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            -0.8799999999999999,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            -0.5999999999999999,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,6:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            -1,
+            0.099,
+            6.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:-2,8:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            -1.5,
+            0.04,
+            8.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:-2,8:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            -1.75,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:-2,8:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -1.5,
+            0.087,
+            8.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:-2,8:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            8.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:-2,8:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            -1.5,
+            0.088,
+            8.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:0,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            1,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            0.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            1.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            1,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            1,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,6:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            1,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,6:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            0.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,6:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            1.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,6:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            1,
+            0.088,
+            7.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:0,6:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            1,
+            0.088,
+            6.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            3,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            2.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            3.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            3,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            3,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,6:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            3,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,6:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            2.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,6:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            3.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,6:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            3,
+            0.088,
+            7.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:2,6:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            3,
+            0.088,
+            6.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            5,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            4.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            5.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            5,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            5,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,6:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            5,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,6:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            4.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,6:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            5.5,
+            0.087,
+            7
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,6:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            5,
+            0.088,
+            7.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:4,6:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            5,
+            0.088,
+            6.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:6,-3:road.cross.2-lane",
+          "kind": "road",
+          "asset": "road.cross.2-lane",
+          "center": [
+            7,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            7.1,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            7.7,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            7.7,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            7.7,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            7.7,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            7.7,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            7.4,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            6.9,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            6.3,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            6.3,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            6.3,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            6.3,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            6.3,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            6.6,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            7,
+            0.087,
+            -1.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            6.28,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            6.5600000000000005,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            6.84,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            7.12,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            7.4,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            7,
+            0.099,
+            -1.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            7,
+            0.087,
+            -2.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            6.28,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            6.5600000000000005,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            6.84,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            7.12,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            7.4,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,-3:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            7,
+            0.099,
+            -2.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:road.cross.2-lane",
+          "kind": "road",
+          "asset": "road.cross.2-lane",
+          "center": [
+            7,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            7.1,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-east-0",
+          "kind": "road",
+          "asset": "crosswalk-east-0",
+          "center": [
+            7.7,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-east-1",
+          "kind": "road",
+          "asset": "crosswalk-east-1",
+          "center": [
+            7.7,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-east-2",
+          "kind": "road",
+          "asset": "crosswalk-east-2",
+          "center": [
+            7.7,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-east-3",
+          "kind": "road",
+          "asset": "crosswalk-east-3",
+          "center": [
+            7.7,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-east-4",
+          "kind": "road",
+          "asset": "crosswalk-east-4",
+          "center": [
+            7.7,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:stop-east",
+          "kind": "road",
+          "asset": "stop-east",
+          "center": [
+            7.4,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            6.9,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            6.3,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            6.3,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            6.3,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            6.3,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            6.3,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            6.6,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            7,
+            0.087,
+            7.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            6.28,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            6.5600000000000005,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            6.84,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            7.12,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            7.4,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            7,
+            0.099,
+            7.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            7,
+            0.087,
+            6.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            6.28,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            6.5600000000000005,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            6.84,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            7.12,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            7.4,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:6,6:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            7,
+            0.099,
+            6.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:east,west,north,south"
+        },
+        {
+          "id": "road:7,-4:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            7.5,
+            0.04,
+            -3.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:7,-4:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            7.75,
+            0.087,
+            -3.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:7,-4:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            7.5,
+            0.087,
+            -3.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:7,-4:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            -3.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:7,-4:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            7.5,
+            0.088,
+            -3.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,north"
+        },
+        {
+          "id": "road:7,-1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            0
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,-1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            8,
+            0.087,
+            -0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,-1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            8,
+            0.087,
+            0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,-1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,-1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            8,
+            0.087,
+            1.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            8,
+            0.087,
+            2.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            4
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            8,
+            0.087,
+            3.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            8,
+            0.087,
+            4.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,5:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            5.5
+          ],
+          "size": [
+            2,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,5:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            5.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,5:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            5.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:7,8:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            7.5,
+            0.04,
+            8.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:7,8:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            7.75,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:7,8:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            7.5,
+            0.087,
+            8.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:7,8:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            7.04,
+            0.088,
+            8.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:7,8:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            7.5,
+            0.088,
+            8.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:east,south"
+        },
+        {
+          "id": "road:8,-4:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            8.5,
+            0.04,
+            -3.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:8,-4:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            8.25,
+            0.087,
+            -3.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:8,-4:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            8.5,
+            0.087,
+            -3.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:8,-4:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            -3.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:8,-4:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            8.5,
+            0.088,
+            -3.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,north"
+        },
+        {
+          "id": "road:8,-3:road.tee.2-lane",
+          "kind": "road",
+          "asset": "road.tee.2-lane",
+          "center": [
+            9,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            8.9,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            8.3,
+            0.098,
+            -2.7199999999999998
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            8.3,
+            0.098,
+            -2.4399999999999995
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            8.3,
+            0.098,
+            -2.1599999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            8.3,
+            0.098,
+            -1.8799999999999997
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            8.3,
+            0.098,
+            -1.5999999999999996
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            8.6,
+            0.099,
+            -2
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            9,
+            0.087,
+            -1.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            8.28,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            8.559999999999999,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            8.84,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            9.12,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            9.399999999999999,
+            0.098,
+            -1.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            9,
+            0.099,
+            -1.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            9,
+            0.087,
+            -2.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            8.28,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            8.559999999999999,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            8.84,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            9.12,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            9.399999999999999,
+            0.098,
+            -2.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            9,
+            0.099,
+            -2.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,-3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            9.96,
+            0.088,
+            -2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:road.tee.2-lane",
+          "kind": "road",
+          "asset": "road.tee.2-lane",
+          "center": [
+            9,
+            0.04,
+            7
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            8.9,
+            0.087,
+            7
+          ],
+          "size": [
+            0.19999999999999996,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-west-0",
+          "kind": "road",
+          "asset": "crosswalk-west-0",
+          "center": [
+            8.3,
+            0.098,
+            6.28
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-west-1",
+          "kind": "road",
+          "asset": "crosswalk-west-1",
+          "center": [
+            8.3,
+            0.098,
+            6.5600000000000005
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-west-2",
+          "kind": "road",
+          "asset": "crosswalk-west-2",
+          "center": [
+            8.3,
+            0.098,
+            6.84
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-west-3",
+          "kind": "road",
+          "asset": "crosswalk-west-3",
+          "center": [
+            8.3,
+            0.098,
+            7.12
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-west-4",
+          "kind": "road",
+          "asset": "crosswalk-west-4",
+          "center": [
+            8.3,
+            0.098,
+            7.4
+          ],
+          "size": [
+            0.36,
+            0.012,
+            0.14
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:stop-west",
+          "kind": "road",
+          "asset": "stop-west",
+          "center": [
+            8.6,
+            0.099,
+            7
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1.6
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            9,
+            0.087,
+            7.1
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-north-0",
+          "kind": "road",
+          "asset": "crosswalk-north-0",
+          "center": [
+            8.28,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-north-1",
+          "kind": "road",
+          "asset": "crosswalk-north-1",
+          "center": [
+            8.559999999999999,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-north-2",
+          "kind": "road",
+          "asset": "crosswalk-north-2",
+          "center": [
+            8.84,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-north-3",
+          "kind": "road",
+          "asset": "crosswalk-north-3",
+          "center": [
+            9.12,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-north-4",
+          "kind": "road",
+          "asset": "crosswalk-north-4",
+          "center": [
+            9.399999999999999,
+            0.098,
+            7.7
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:stop-north",
+          "kind": "road",
+          "asset": "stop-north",
+          "center": [
+            9,
+            0.099,
+            7.4
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            9,
+            0.087,
+            6.9
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.19999999999999996
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-south-0",
+          "kind": "road",
+          "asset": "crosswalk-south-0",
+          "center": [
+            8.28,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-south-1",
+          "kind": "road",
+          "asset": "crosswalk-south-1",
+          "center": [
+            8.559999999999999,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-south-2",
+          "kind": "road",
+          "asset": "crosswalk-south-2",
+          "center": [
+            8.84,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-south-3",
+          "kind": "road",
+          "asset": "crosswalk-south-3",
+          "center": [
+            9.12,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:crosswalk-south-4",
+          "kind": "road",
+          "asset": "crosswalk-south-4",
+          "center": [
+            9.399999999999999,
+            0.098,
+            6.3
+          ],
+          "size": [
+            0.14,
+            0.012,
+            0.36
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:stop-south",
+          "kind": "road",
+          "asset": "stop-south",
+          "center": [
+            9,
+            0.099,
+            6.6
+          ],
+          "size": [
+            1.6,
+            0.012,
+            0.045
+          ],
+          "color": "#c9c8b8",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,6:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            9.96,
+            0.088,
+            7
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,north,south"
+        },
+        {
+          "id": "road:8,8:road.corner.1-lane",
+          "kind": "road",
+          "asset": "road.corner.1-lane",
+          "center": [
+            8.5,
+            0.04,
+            8.5
+          ],
+          "size": [
+            1,
+            0.08,
+            1
+          ],
+          "color": "#4d514e",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:8,8:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            8.25,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.5,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:8,8:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            8.5,
+            0.087,
+            8.25
+          ],
+          "size": [
+            0.045,
+            0.012,
+            0.5
+          ],
+          "color": "#c5aa6f",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:8,8:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            8.96,
+            0.088,
+            8.5
+          ],
+          "size": [
+            0.08,
+            0.04,
+            1
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,south"
+        },
+        {
+          "id": "road:8,8:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            8.5,
+            0.088,
+            8.96
+          ],
+          "size": [
+            1,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "1-lane:west,south"
+        }
+      ]
+    },
+    "75eb75e8c0b8a029870e6077913cf477dff83111483df08e7cbfe5beeae0cc82": {
+      "roads": [
+        [
+          -3,
+          0,
+          -3
+        ],
+        [
+          -3,
+          0,
+          -2
+        ],
+        [
+          -3,
+          0,
+          -1
+        ],
+        [
+          -3,
+          0,
+          0
+        ],
+        [
+          -3,
+          0,
+          1
+        ],
+        [
+          -3,
+          0,
+          2
+        ],
+        [
+          -3,
+          0,
+          3
+        ],
+        [
+          -3,
+          0,
+          4
+        ],
+        [
+          -3,
+          0,
+          5
+        ],
+        [
+          -3,
+          0,
+          6
+        ],
+        [
+          -3,
+          0,
+          7
+        ],
+        [
+          -3,
+          0,
+          8
+        ],
+        [
+          -3,
+          0,
+          9
+        ],
+        [
+          -3,
+          0,
+          10
+        ],
+        [
+          -3,
+          0,
+          11
+        ],
+        [
+          -3,
+          0,
+          12
+        ],
+        [
+          -2,
+          0,
+          -3
+        ],
+        [
+          -2,
+          0,
+          -2
+        ],
+        [
+          -2,
+          0,
+          -1
+        ],
+        [
+          -2,
+          0,
+          0
+        ],
+        [
+          -2,
+          0,
+          1
+        ],
+        [
+          -2,
+          0,
+          2
+        ],
+        [
+          -2,
+          0,
+          3
+        ],
+        [
+          -2,
+          0,
+          4
+        ],
+        [
+          -2,
+          0,
+          5
+        ],
+        [
+          -2,
+          0,
+          6
+        ],
+        [
+          -2,
+          0,
+          7
+        ],
+        [
+          -2,
+          0,
+          8
+        ],
+        [
+          -2,
+          0,
+          9
+        ],
+        [
+          -2,
+          0,
+          10
+        ],
+        [
+          -2,
+          0,
+          11
+        ],
+        [
+          -2,
+          0,
+          12
+        ],
+        [
+          -1,
+          0,
+          -3
+        ],
+        [
+          -1,
+          0,
+          -2
+        ],
+        [
+          -1,
+          0,
+          11
+        ],
+        [
+          -1,
+          0,
+          12
+        ],
+        [
+          0,
+          0,
+          -3
+        ],
+        [
+          0,
+          0,
+          -2
+        ],
+        [
+          0,
+          0,
+          11
+        ],
+        [
+          0,
+          0,
+          12
+        ],
+        [
+          1,
+          0,
+          -3
+        ],
+        [
+          1,
+          0,
+          -2
+        ],
+        [
+          1,
+          0,
+          11
+        ],
+        [
+          1,
+          0,
+          12
+        ],
+        [
+          2,
+          0,
+          -3
+        ],
+        [
+          2,
+          0,
+          -2
+        ],
+        [
+          2,
+          0,
+          11
+        ],
+        [
+          2,
+          0,
+          12
+        ],
+        [
+          3,
+          0,
+          -3
+        ],
+        [
+          3,
+          0,
+          -2
+        ],
+        [
+          3,
+          0,
+          11
+        ],
+        [
+          3,
+          0,
+          12
+        ],
+        [
+          4,
+          0,
+          -3
+        ],
+        [
+          4,
+          0,
+          -2
+        ],
+        [
+          4,
+          0,
+          11
+        ],
+        [
+          4,
+          0,
+          12
+        ],
+        [
+          5,
+          0,
+          -3
+        ],
+        [
+          5,
+          0,
+          -2
+        ],
+        [
+          5,
+          0,
+          11
+        ],
+        [
+          5,
+          0,
+          12
+        ],
+        [
+          6,
+          0,
+          -3
+        ],
+        [
+          6,
+          0,
+          -2
+        ],
+        [
+          6,
+          0,
+          11
+        ],
+        [
+          6,
+          0,
+          12
+        ],
+        [
+          7,
+          0,
+          -3
+        ],
+        [
+          7,
+          0,
+          -2
+        ],
+        [
+          7,
+          0,
+          11
+        ],
+        [
+          7,
+          0,
+          12
+        ],
+        [
+          8,
+          0,
+          -3
+        ],
+        [
+          8,
+          0,
+          -2
+        ],
+        [
+          8,
+          0,
+          11
+        ],
+        [
+          8,
+          0,
+          12
+        ],
+        [
+          9,
+          0,
+          -3
+        ],
+        [
+          9,
+          0,
+          -2
+        ],
+        [
+          9,
+          0,
+          11
+        ],
+        [
+          9,
+          0,
+          12
+        ],
+        [
+          10,
+          0,
+          -3
+        ],
+        [
+          10,
+          0,
+          -2
+        ],
+        [
+          10,
+          0,
+          11
+        ],
+        [
+          10,
+          0,
+          12
+        ],
+        [
+          11,
+          0,
+          -3
+        ],
+        [
+          11,
+          0,
+          -2
+        ],
+        [
+          11,
+          0,
+          -1
+        ],
+        [
+          11,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          1
+        ],
+        [
+          11,
+          0,
+          2
+        ],
+        [
+          11,
+          0,
+          3
+        ],
+        [
+          11,
+          0,
+          4
+        ],
+        [
+          11,
+          0,
+          5
+        ],
+        [
+          11,
+          0,
+          6
+        ],
+        [
+          11,
+          0,
+          7
+        ],
+        [
+          11,
+          0,
+          8
+        ],
+        [
+          11,
+          0,
+          9
+        ],
+        [
+          11,
+          0,
+          10
+        ],
+        [
+          11,
+          0,
+          11
+        ],
+        [
+          11,
+          0,
+          12
+        ],
+        [
+          12,
+          0,
+          -3
+        ],
+        [
+          12,
+          0,
+          -2
+        ],
+        [
+          12,
+          0,
+          -1
+        ],
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          1
+        ],
+        [
+          12,
+          0,
+          2
+        ],
+        [
+          12,
+          0,
+          3
+        ],
+        [
+          12,
+          0,
+          4
+        ],
+        [
+          12,
+          0,
+          5
+        ],
+        [
+          12,
+          0,
+          6
+        ],
+        [
+          12,
+          0,
+          7
+        ],
+        [
+          12,
+          0,
+          8
+        ],
+        [
+          12,
+          0,
+          9
+        ],
+        [
+          12,
+          0,
+          10
+        ],
+        [
+          12,
+          0,
+          11
+        ],
+        [
+          12,
+          0,
+          12
+        ]
+      ],
+      "placements": [
+        {
+          "id": "road:-3,-3:road.corner.2-lane",
+          "kind": "road",
+          "asset": "road.corner.2-lane",
+          "center": [
+            -2,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,north"
+        },
+        {
+          "id": "road:-3,-3:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -1.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            1,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north"
+        },
+        {
+          "id": "road:-3,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            -2,
+            0.087,
+            -1.5
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,north"
+        },
+        {
+          "id": "road:-3,-3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            -2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,north"
+        },
+        {
+          "id": "road:-3,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            -2,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,north"
+        },
+        {
+          "id": "road:-3,-1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            0
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            -0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,-1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            1.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            2.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            4
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            3.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            4.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            6
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            5.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            6.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            6
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,5:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            6
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,7:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            8
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,7:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            7.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,7:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,7:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            8
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,7:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            8
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,9:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            -2,
+            0.04,
+            10
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,9:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -2,
+            0.087,
+            9.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,9:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            -2,
+            0.087,
+            10.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,9:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            -1.04,
+            0.088,
+            10
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,9:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            10
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:-3,11:road.corner.2-lane",
+          "kind": "road",
+          "asset": "road.corner.2-lane",
+          "center": [
+            -2,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,south"
+        },
+        {
+          "id": "road:-3,11:junction-east",
+          "kind": "road",
+          "asset": "junction-east",
+          "center": [
+            -1.5,
+            0.087,
+            12
+          ],
+          "size": [
+            1,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,south"
+        },
+        {
+          "id": "road:-3,11:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            -2,
+            0.087,
+            11.5
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,south"
+        },
+        {
+          "id": "road:-3,11:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            -2.96,
+            0.088,
+            12
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,south"
+        },
+        {
+          "id": "road:-3,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            -2,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,south"
+        },
+        {
+          "id": "road:-1,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            0,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -0.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            0.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            0,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            0,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            0,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            -0.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            0.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            0,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:-1,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            0,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            2,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            1.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            2.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            2,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            2,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            2,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            1.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            2.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            2,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:1,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            2,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            4,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            3.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            4.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            4,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            4,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            4,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            3.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            4.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            4,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:3,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            4,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            6,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            5.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            6.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            6,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            6,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            6,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            5.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            6.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            6,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:5,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            6,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            7.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            8.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            8,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            8,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            8,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            7.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            8.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            8,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:7,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            8,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,-3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            10,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,-3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            9.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,-3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            10.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,-3:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            10,
+            0.088,
+            -1.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            10,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,11:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            10,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,11:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            9.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,11:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            10.5,
+            0.087,
+            12
+          ],
+          "size": [
+            0.58,
+            0.012,
+            0.04
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            10,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:9,11:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            10,
+            0.088,
+            11.04
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:east,west"
+        },
+        {
+          "id": "road:11,-3:road.corner.2-lane",
+          "kind": "road",
+          "asset": "road.corner.2-lane",
+          "center": [
+            12,
+            0.04,
+            -2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:west,north"
+        },
+        {
+          "id": "road:11,-3:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            11.5,
+            0.087,
+            -2
+          ],
+          "size": [
+            1,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north"
+        },
+        {
+          "id": "road:11,-3:junction-north",
+          "kind": "road",
+          "asset": "junction-north",
+          "center": [
+            12,
+            0.087,
+            -1.5
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,north"
+        },
+        {
+          "id": "road:11,-3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            -2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,north"
+        },
+        {
+          "id": "road:11,-3:edge-south",
+          "kind": "road",
+          "asset": "edge-south",
+          "center": [
+            12,
+            0.088,
+            -2.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,north"
+        },
+        {
+          "id": "road:11,-1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            0
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,-1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            -0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,-1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            0.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,-1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,-1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            0
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,1:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            2
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,1:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            1.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,1:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            2.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,1:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,1:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            2
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,3:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            4
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,3:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            3.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,3:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            4.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,3:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,3:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            4
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,5:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            6
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,5:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            5.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,5:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            6.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,5:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            6
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,5:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            6
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,7:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            8
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,7:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            7.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,7:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            8.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,7:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            8
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,7:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            8
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,9:road.straight.2-lane",
+          "kind": "road",
+          "asset": "road.straight.2-lane",
+          "center": [
+            12,
+            0.04,
+            10
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,9:lane-1-dash-0",
+          "kind": "road",
+          "asset": "lane-1-dash-0",
+          "center": [
+            12,
+            0.087,
+            9.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,9:lane-1-dash-1",
+          "kind": "road",
+          "asset": "lane-1-dash-1",
+          "center": [
+            12,
+            0.087,
+            10.5
+          ],
+          "size": [
+            0.04,
+            0.012,
+            0.58
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,9:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            10
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,9:edge-west",
+          "kind": "road",
+          "asset": "edge-west",
+          "center": [
+            11.04,
+            0.088,
+            10
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:north,south"
+        },
+        {
+          "id": "road:11,11:road.corner.2-lane",
+          "kind": "road",
+          "asset": "road.corner.2-lane",
+          "center": [
+            12,
+            0.04,
+            12
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "color": "#4d514e",
+          "context": "2-lane:west,south"
+        },
+        {
+          "id": "road:11,11:junction-west",
+          "kind": "road",
+          "asset": "junction-west",
+          "center": [
+            11.5,
+            0.087,
+            12
+          ],
+          "size": [
+            1,
+            0.012,
+            0.045
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,south"
+        },
+        {
+          "id": "road:11,11:junction-south",
+          "kind": "road",
+          "asset": "junction-south",
+          "center": [
+            12,
+            0.087,
+            11.5
+          ],
+          "size": [
+            0.045,
+            0.012,
+            1
+          ],
+          "color": "#c5aa6f",
+          "context": "2-lane:west,south"
+        },
+        {
+          "id": "road:11,11:edge-east",
+          "kind": "road",
+          "asset": "edge-east",
+          "center": [
+            12.96,
+            0.088,
+            12
+          ],
+          "size": [
+            0.08,
+            0.04,
+            2
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,south"
+        },
+        {
+          "id": "road:11,11:edge-north",
+          "kind": "road",
+          "asset": "edge-north",
+          "center": [
+            12,
+            0.088,
+            12.96
+          ],
+          "size": [
+            2,
+            0.04,
+            0.08
+          ],
+          "color": "#96988b",
+          "context": "2-lane:west,south"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "browser": "153.0.8010.12",
+  "operation": "real drag selection of 8 cells at the end of a 4x8 road, then Q",
+  "selected": "8",
+  "roadCellsAfterEdit": 24,
+  "roadAssets": "road.end.4-lane,lane-1-dash-0,lane-1-dash-1,lane-1-dash-2,lane-1-dash-3,lane-2-dash-0,lane-2-dash-1,lane-2-dash-2,lane-2-dash-3,lane-3-dash-0,lane-3-dash-1,lane-3-dash-2,lane-3-dash-3,edge-east,edge-west,edge-south,road.corner.2-lane,junction-east,junction-south,edge-west,edge-north,road.corner.2-lane,junction-west,junction-south,edge-east,edge-north",
+  "errors": []
+}

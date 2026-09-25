@@ -20,6 +20,7 @@ import { planParkingCirculation } from './parking-circulation';
 import { planVertical } from './vertical-design';
 
 import { analyzeSpatial } from './spatial-analysis';
+import { SupportIndex, SceneRelationIndex } from './scene-relations';
 import { AccessSearch } from './access-graph';
 import { documentOptions, type GenerationDocument } from './document';
 
@@ -140,8 +141,13 @@ export function executeEnvironment(
     hasFixtures = document.sceneInputs.objects.some((o) => o.category !== 'vegetation');
   const spatialReady = preflight.length === components.length;
   const spatialRun = spatialReady
-    ? measure('spatial', () => analyzeSpatial(document, analysis, preflight, components))
+    ? measure('spatial', () => {
+        const support = new SupportIndex(document, analysis, vertical);
+        const run = analyzeSpatial(document, analysis, preflight, components, support);
+        return {...run, support, relations: new SceneRelationIndex(support, document, run.spatial)};
+      })
     : undefined;
+  const support = spatialRun?.support, relations = spatialRun?.relations;
   report(
     'spatial',
     !hasSpatial ? 'not-applicable' : spatialReady ? 'ready' : 'blocked',
@@ -179,6 +185,7 @@ export function executeEnvironment(
             spatialRun.spatial,
             spatialRun.book,
             spatialRun.solidIndex,
+            relations?.view.roads.map(r=>r.module),
           );
           actualExpansions += run.areas.reduce(
             (n, a) => n + a.components.reduce((v, c) => v + c.counters.stateExpansions, 0),
@@ -234,6 +241,7 @@ export function executeEnvironment(
                 spatialRun.spatial,
                 activeBook,
                 spatialRun.solidIndex,
+                relations,
               ),
             ),
         )
@@ -305,6 +313,7 @@ export function executeEnvironment(
     vertical,
     entrances,
     finalBook,
+    support,
   );
   const generated = measure('facade', () =>
     generateBuildings(
@@ -341,6 +350,7 @@ export function executeEnvironment(
             spatialRun.solidIndex,
             parking ?? [],
             wallMounts,
+            relations,
           ),
         )
       : undefined;
@@ -391,6 +401,7 @@ export function executeEnvironment(
     probes,
     tileLookup,
     faceLookup,
+    support,
     plans: {
       stages,
       preflight,
@@ -404,6 +415,7 @@ export function executeEnvironment(
       ...(circulation ? { parkingCirculation: circulation.areas } : {}),
       reservations: finalBook?.snapshot() ?? [],
       ...(spatialRun ? { spatial: spatialRun.spatial } : {}),
+      ...(relations ? { relations: relations.view } : {}),
       counters: { preflightCalls, generationCalls: 1 },
     },
   });

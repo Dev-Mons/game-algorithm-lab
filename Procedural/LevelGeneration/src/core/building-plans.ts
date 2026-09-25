@@ -6,6 +6,7 @@ import type { ReservationBook } from './reservations';
 import { planColumns } from './column-prototype';
 import { planWallFacilities } from './wall-facilities';
 import { planFacade } from './facade-plan';
+import type { SupportIndex } from './scene-relations';
 
 /** Claims become stricter in order: entrances → facilities → columns → frames. */
 export function planBuildingStructure(
@@ -16,10 +17,11 @@ export function planBuildingStructure(
   vertical: VerticalPlan[],
   entrances: EntrancePlan[],
   finalBook: ReservationBook | undefined,
+  support?: SupportIndex,
 ) {
   const portalFacesForFacilities = new Set(entrances.flatMap((e) => e.entrances.flatMap((p) => p.faceIds)));
   const wallFacilities = finalBook
-    ? planWallFacilities(document, surfaces, vertical, portalFacesForFacilities, finalBook)
+    ? planWallFacilities(document, surfaces, vertical, portalFacesForFacilities, finalBook, support)
     : undefined;
   const facadeFixed = new Set([
     ...portalFacesForFacilities,

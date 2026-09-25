@@ -1,0 +1,1022 @@
+{
+  "observedDate": "2026-09-25",
+  "method": "Chrome YouTube watch player, paused keyboard seek; currentTime immediately before cropped screenshot; sampled frames, not continuous full viewing. Times approximate to 0.1 second; source animations and cuts remain.",
+  "videos": [
+    {
+      "id": "V01",
+      "youtubeId": "cyXMF96nGko",
+      "title": "A new minimal city builder - YouTube",
+      "duration": 23.821,
+      "sourceUrl": "https://www.youtube.com/shorts/cyXMF96nGko",
+      "viewedUrl": "https://www.youtube.com/watch?v=cyXMF96nGko",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V02",
+      "youtubeId": "LbF4JFzGAKI",
+      "title": "Voxel-like editing in my minimal city builder - YouTube",
+      "duration": 49.861,
+      "sourceUrl": "https://www.youtube.com/shorts/LbF4JFzGAKI",
+      "viewedUrl": "https://www.youtube.com/watch?v=LbF4JFzGAKI",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V03",
+      "youtubeId": "0MatZrjJUKQ",
+      "title": "Every city needs trees, even tiny virtual ones - YouTube",
+      "duration": 31.641,
+      "sourceUrl": "https://www.youtube.com/shorts/0MatZrjJUKQ",
+      "viewedUrl": "https://www.youtube.com/watch?v=0MatZrjJUKQ",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V04",
+      "youtubeId": "J5Rh9iAy1fg",
+      "title": "Voxel-based editing is so much fun! - YouTube",
+      "duration": 48.921,
+      "sourceUrl": "https://www.youtube.com/shorts/J5Rh9iAy1fg",
+      "viewedUrl": "https://www.youtube.com/watch?v=J5Rh9iAy1fg",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V05",
+      "youtubeId": "OvIxPjTo0uw",
+      "title": "Buildings of many shapes and sizes - YouTube",
+      "duration": 43.061,
+      "sourceUrl": "https://www.youtube.com/shorts/OvIxPjTo0uw",
+      "viewedUrl": "https://www.youtube.com/watch?v=OvIxPjTo0uw",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V06",
+      "youtubeId": "6KSujCB6H0Y",
+      "title": "It's never too late to change your mind - YouTube",
+      "duration": 29.621,
+      "sourceUrl": "https://www.youtube.com/shorts/6KSujCB6H0Y",
+      "viewedUrl": "https://www.youtube.com/watch?v=6KSujCB6H0Y",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V07",
+      "youtubeId": "j4KqLJu8GkU",
+      "title": "City weather in Miniopolis - YouTube",
+      "duration": 43.201,
+      "sourceUrl": "https://www.youtube.com/shorts/j4KqLJu8GkU",
+      "viewedUrl": "https://www.youtube.com/watch?v=j4KqLJu8GkU",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V08",
+      "youtubeId": "QDWMo_kGx44",
+      "title": "Building and walking through a small city - YouTube",
+      "duration": 45.781,
+      "sourceUrl": "https://www.youtube.com/shorts/QDWMo_kGx44",
+      "viewedUrl": "https://www.youtube.com/watch?v=QDWMo_kGx44",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V09",
+      "youtubeId": "iTpm-8ki6lE",
+      "title": "Building a large office complex on the edge of a city - YouTube",
+      "duration": 47.601,
+      "sourceUrl": "https://www.youtube.com/shorts/iTpm-8ki6lE",
+      "viewedUrl": "https://www.youtube.com/watch?v=iTpm-8ki6lE",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V10",
+      "youtubeId": "eKP9PxbGcv8",
+      "title": "Building a skyscraper on top of a park - YouTube",
+      "duration": 23.221,
+      "sourceUrl": "https://www.youtube.com/shorts/eKP9PxbGcv8",
+      "viewedUrl": "https://www.youtube.com/watch?v=eKP9PxbGcv8",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V11",
+      "youtubeId": "qevZAZd7MTY",
+      "title": "Building a small mall - YouTube",
+      "duration": 42.201,
+      "sourceUrl": "https://www.youtube.com/shorts/qevZAZd7MTY",
+      "viewedUrl": "https://www.youtube.com/watch?v=qevZAZd7MTY",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V12",
+      "youtubeId": "s-Rp72xX0NI",
+      "title": "A small apartment in my new minimal city builder - YouTube",
+      "duration": 16.961,
+      "sourceUrl": "https://www.youtube.com/shorts/s-Rp72xX0NI",
+      "viewedUrl": "https://www.youtube.com/watch?v=s-Rp72xX0NI",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V13",
+      "youtubeId": "SyHy2uBPy6I",
+      "title": "Building a parking garage in new minimal city builder - YouTube",
+      "duration": 25.161,
+      "sourceUrl": "https://www.youtube.com/shorts/SyHy2uBPy6I",
+      "viewedUrl": "https://www.youtube.com/watch?v=SyHy2uBPy6I",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V14",
+      "youtubeId": "mC2TjL7lFRg",
+      "title": "Starting a small seaside city - YouTube",
+      "duration": 28.201,
+      "sourceUrl": "https://www.youtube.com/shorts/mC2TjL7lFRg",
+      "viewedUrl": "https://www.youtube.com/watch?v=mC2TjL7lFRg",
+      "accessStatus": "playable-sampled"
+    },
+    {
+      "id": "V15",
+      "youtubeId": "Ud-w332yeLQ",
+      "title": "Hospital construction in a new minimal city builder - YouTube",
+      "duration": 33.561,
+      "sourceUrl": "https://www.youtube.com/shorts/Ud-w332yeLQ",
+      "viewedUrl": "https://www.youtube.com/watch?v=Ud-w332yeLQ",
+      "accessStatus": "playable-sampled"
+    }
+  ],
+  "captures": [
+    {
+      "id": "V01",
+      "time": 0,
+      "duration": 23.821,
+      "file": "V01-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "3f6aa78fa0acc549b0a466fc91d0bd4d6b57a0e299c80e9236bfe718e1abd93a",
+      "bytes": 43301
+    },
+    {
+      "id": "V01",
+      "time": 4.76,
+      "duration": 23.821,
+      "file": "V01-004760.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "9f2a2fc6d852a1d31036a14de74e0f96e3db8992c969da7f45f0fd74e3f60c11",
+      "bytes": 51747
+    },
+    {
+      "id": "V01",
+      "time": 9.52,
+      "duration": 23.821,
+      "file": "V01-009520.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "ce4895ca7b37fe38b04369d4fa3695424c0b18bef6a389af50e749ed5366dd33",
+      "bytes": 67646
+    },
+    {
+      "id": "V01",
+      "time": 14.28,
+      "duration": 23.821,
+      "file": "V01-014280.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "14459170ffc12751d46e384dd306f73c004b265774eecccdf3a2b815a3fe5804",
+      "bytes": 78108
+    },
+    {
+      "id": "V01",
+      "time": 19.04,
+      "duration": 23.821,
+      "file": "V01-019040.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "96683faa95bf9c183263f219a7d1b0236e72f869552e76613035b56f18dbcb1c",
+      "bytes": 83606
+    },
+    {
+      "id": "V01",
+      "time": 21.42,
+      "duration": 23.821,
+      "file": "V01-021420.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "2748404e2e65bd63081528020017a5da2a3947fd81fce913d9dd0fa47cfbeb27",
+      "bytes": 80147
+    },
+    {
+      "id": "V02",
+      "time": 0,
+      "duration": 49.861,
+      "file": "V02-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "91019c782434ecbc75712388284dcd6b89fb3f0917829ab80753bd296462c385",
+      "bytes": 45387
+    },
+    {
+      "id": "V02",
+      "time": 9.963333,
+      "duration": 49.861,
+      "file": "V02-009963.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "54836948f9de0b206df928191cbc9ff8905dcb46dadaf05d5bd46b9af0bc90da",
+      "bytes": 46273
+    },
+    {
+      "id": "V02",
+      "time": 14.945,
+      "duration": 49.861,
+      "file": "V02-014945.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4045e148b12511bc4e10aaa57f711ece5febcb31fc59f9736374914435cd4737",
+      "bytes": 51003
+    },
+    {
+      "id": "V02",
+      "time": 19.926666,
+      "duration": 49.861,
+      "file": "V02-019927.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "e4fc7c5eef7c23ac25168780c6e46118803ed5c4dc3bd1fc0891e49545d19f4b",
+      "bytes": 48507
+    },
+    {
+      "id": "V02",
+      "time": 24.908333,
+      "duration": 49.861,
+      "file": "V02-024908.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "0e02dc274adcb225e5973d40227ffa7ce5f7a889962e1029b7b14525f2fc7c64",
+      "bytes": 47340
+    },
+    {
+      "id": "V02",
+      "time": 29.89,
+      "duration": 49.861,
+      "file": "V02-029890.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "148295a77ba6c515d2728e6f508cb11f92e9e1cd37c890e8aaee6893dd8a5494",
+      "bytes": 52142
+    },
+    {
+      "id": "V02",
+      "time": 34.871666,
+      "duration": 49.861,
+      "file": "V02-034872.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "adc3e8a1780e00a1288de3d2143bc3d9baf83f962a37d5288b8890e7aa355515",
+      "bytes": 64323
+    },
+    {
+      "id": "V02",
+      "time": 39.853333,
+      "duration": 49.861,
+      "file": "V02-039853.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "9a777eba4faf103a75ff41e064ea52da43e0e7ae96d0ae72e8ca396744613693",
+      "bytes": 62767
+    },
+    {
+      "id": "V02",
+      "time": 44.835,
+      "duration": 49.861,
+      "file": "V02-044835.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "33c5f7c5f14ecba5282dd794898572a312a0959fd7cc08b131abe93e114f8730",
+      "bytes": 59288
+    },
+    {
+      "id": "V03",
+      "time": 0,
+      "duration": 31.641,
+      "file": "V03-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "c3f1037b14423f04f304054118f0733971ead6fd112886b7aa98335e5a045b21",
+      "bytes": 86751
+    },
+    {
+      "id": "V03",
+      "time": 6.32,
+      "duration": 31.641,
+      "file": "V03-006320.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "b79dbf5b3a99be5556c0e4c442ee56332b85e325c2f8d677115cef77e8e3bed8",
+      "bytes": 85328
+    },
+    {
+      "id": "V03",
+      "time": 12.64,
+      "duration": 31.641,
+      "file": "V03-012640.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "37be552b06efec9f5a05e14d6ec08d743d91fdae9facf1ba6e229354856347de",
+      "bytes": 76300
+    },
+    {
+      "id": "V03",
+      "time": 18.96,
+      "duration": 31.641,
+      "file": "V03-018960.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4a5699419bde4e835e431bd763c485c783189d81f717e04e749a6d2bd3683bc2",
+      "bytes": 96084
+    },
+    {
+      "id": "V03",
+      "time": 25.28,
+      "duration": 31.641,
+      "file": "V03-025280.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "8f0e775015be2064e6dca07934dac0ecdb1d00cbfba3b466135753150cd3374d",
+      "bytes": 78961
+    },
+    {
+      "id": "V03",
+      "time": 28.44,
+      "duration": 31.641,
+      "file": "V03-028440.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "d6bb4140bb440445ed09e418e2ebf8d4b94dbe5f51b702975f8456df28908f6d",
+      "bytes": 86220
+    },
+    {
+      "id": "V04",
+      "time": 0,
+      "duration": 48.921,
+      "file": "V04-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "01f804c0a2bc28ac0cddc1030469115ec67fcc5833169c787fed36559260d09f",
+      "bytes": 47987
+    },
+    {
+      "id": "V04",
+      "time": 9.78,
+      "duration": 48.921,
+      "file": "V04-009780.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "490f9b44c0599e88e5252f738d1f36604034d2987d4b8b41d4fa9c8ab8e8556f",
+      "bytes": 46628
+    },
+    {
+      "id": "V04",
+      "time": 19.56,
+      "duration": 48.921,
+      "file": "V04-019560.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "e333775b859616e2b459c571121db4f4d7aa21fd93198878cf1b779b493f4ec8",
+      "bytes": 63350
+    },
+    {
+      "id": "V04",
+      "time": 29.339999,
+      "duration": 48.921,
+      "file": "V04-029340.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "abf218cff70c71137d0cc4d951dfee3eb4d80e8c0bce7d3c3cc82bff02fcd115",
+      "bytes": 59465
+    },
+    {
+      "id": "V04",
+      "time": 39.12,
+      "duration": 48.921,
+      "file": "V04-039120.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4e934367d5c8de9f89c52e475188579e0685df978f54f0ac4a97b5a66d0a77d4",
+      "bytes": 77684
+    },
+    {
+      "id": "V04",
+      "time": 44.01,
+      "duration": 48.921,
+      "file": "V04-044010.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "eb5e33178011a94ffc925b13a4dad254e4b75b51f46db885286b220ce2b0c6f0",
+      "bytes": 89416
+    },
+    {
+      "id": "V05",
+      "time": 0,
+      "duration": 43.061,
+      "file": "V05-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "04275ac5625346c855a7c9c13175b9d704cb2c6ff89d97be8d8ae41ed831b7a9",
+      "bytes": 31534
+    },
+    {
+      "id": "V05",
+      "time": 8.606666,
+      "duration": 43.061,
+      "file": "V05-008607.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "3fe80b1dc969ec1b83638e2f6b66259e5ce591c997f674445b7303a2959df1af",
+      "bytes": 31094
+    },
+    {
+      "id": "V05",
+      "time": 17.213333,
+      "duration": 43.061,
+      "file": "V05-017213.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "5bb7fb96219dbdb23016d586bdebcf1887e3e9ff85b800df373221a1af826ad8",
+      "bytes": 65036
+    },
+    {
+      "id": "V05",
+      "time": 25.819999,
+      "duration": 43.061,
+      "file": "V05-025820.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "71e75984ac32321d896890de4da9c4ecad35338611587698e484619b8ed7d3c1",
+      "bytes": 49976
+    },
+    {
+      "id": "V05",
+      "time": 34.426666,
+      "duration": 43.061,
+      "file": "V05-034427.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "c1714a1f7999e54a7f9394583ed2dbc7e5134a9aadf1238a313129fdcd04e8d3",
+      "bytes": 59333
+    },
+    {
+      "id": "V05",
+      "time": 38.73,
+      "duration": 43.061,
+      "file": "V05-038730.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "05d068705879979f2e39ac260a0cd94131d4bdc1803fec417ac36e8bc79cc479",
+      "bytes": 52008
+    },
+    {
+      "id": "V06",
+      "time": 0,
+      "duration": 29.621,
+      "file": "V06-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "44f5819581704b2bc6a966e6817c92058e00099d859d8dfc6d6e7d10f11a99f6",
+      "bytes": 100840
+    },
+    {
+      "id": "V06",
+      "time": 5.92,
+      "duration": 29.621,
+      "file": "V06-005920.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "1d04aa7da56b0d81ccdb3b913038ef80ab39efbafa75c4dbc067b2da4224417b",
+      "bytes": 108430
+    },
+    {
+      "id": "V06",
+      "time": 11.84,
+      "duration": 29.621,
+      "file": "V06-011840.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "503ca09d2e02126c3d1d0cddf8e2b65633a5975247a14c217a1af21f054648e0",
+      "bytes": 100103
+    },
+    {
+      "id": "V06",
+      "time": 17.76,
+      "duration": 29.621,
+      "file": "V06-017760.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "d9b28aa5a04d90e468184868a95c123e03c4ad9e11017120cba0897dac8525ec",
+      "bytes": 88540
+    },
+    {
+      "id": "V06",
+      "time": 23.68,
+      "duration": 29.621,
+      "file": "V06-023680.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "505b70ff83afd430beb8d82fdcd1cd2962ca79557e15ca0fd5fc77d97764e3cd",
+      "bytes": 70755
+    },
+    {
+      "id": "V06",
+      "time": 26.64,
+      "duration": 29.621,
+      "file": "V06-026640.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "523b8938f77c89975c3ee934023fffb0ac6b1e519af01fc300f44e593f0631a4",
+      "bytes": 72272
+    },
+    {
+      "id": "V07",
+      "time": 0,
+      "duration": 43.201,
+      "file": "V07-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "ae880eeb58e742760f90396212aebde1368fba6fb59d17dd1174e207e22d23f4",
+      "bytes": 50430
+    },
+    {
+      "id": "V07",
+      "time": 8.633333,
+      "duration": 43.201,
+      "file": "V07-008633.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "a2311dc5da7593cc0a33370744645fe8b9aa25646d94968210be1dec529652f1",
+      "bytes": 62499
+    },
+    {
+      "id": "V07",
+      "time": 17.266666,
+      "duration": 43.201,
+      "file": "V07-017267.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4427fbfed9e259dc899a15597fb9ba8b52bf13c98bdfc3f8ce704b8576cdf9a0",
+      "bytes": 52345
+    },
+    {
+      "id": "V07",
+      "time": 25.9,
+      "duration": 43.201,
+      "file": "V07-025900.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4066959627111b7e23d4fbeba216b2b4fe73bb5d659c7170bf636a6ba1c25f2d",
+      "bytes": 41540
+    },
+    {
+      "id": "V07",
+      "time": 34.533333,
+      "duration": 43.201,
+      "file": "V07-034533.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "7798af90cf7821dbf457ea74c875266fc3d9ffc2633245b46f8a7367820282f6",
+      "bytes": 34839
+    },
+    {
+      "id": "V07",
+      "time": 38.85,
+      "duration": 43.201,
+      "file": "V07-038850.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "cb078b7aa0b8fbf255e175d9162286dfce59d14296fb3df809d253b9988d8b69",
+      "bytes": 35301
+    },
+    {
+      "id": "V08",
+      "time": 0,
+      "duration": 45.781,
+      "file": "V08-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "2acdf351aaadd705da9bfa39f82a4cef8857ba507c5356365994d2a1d898462a",
+      "bytes": 68153
+    },
+    {
+      "id": "V08",
+      "time": 9.15,
+      "duration": 45.781,
+      "file": "V08-009150.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "3e3b15e4e2452bd19ff937e193b8fdb2953cc29839aad31df74b1720bbff46c3",
+      "bytes": 75677
+    },
+    {
+      "id": "V08",
+      "time": 18.3,
+      "duration": 45.781,
+      "file": "V08-018300.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4bcb067f114e5e33e1325911fe57f6f7f74d36ff64742954fb5fbcf9e6bca012",
+      "bytes": 112023
+    },
+    {
+      "id": "V08",
+      "time": 27.45,
+      "duration": 45.781,
+      "file": "V08-027450.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "69cb80d2e371079cd0b477c2d9d7af7e807c46e0c301721801cfa05825de20fe",
+      "bytes": 78981
+    },
+    {
+      "id": "V08",
+      "time": 36.6,
+      "duration": 45.781,
+      "file": "V08-036600.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "9deba402a4ec99aea6e17c633c0329cf231765e0bc9dfb550a32d93b9669b37f",
+      "bytes": 78192
+    },
+    {
+      "id": "V08",
+      "time": 41.175,
+      "duration": 45.781,
+      "file": "V08-041175.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "24ecc19087ae836137b1909d85248df1795d3302c4a612c632d29e8766d03de7",
+      "bytes": 76762
+    },
+    {
+      "id": "V09",
+      "time": 0,
+      "duration": 47.601,
+      "file": "V09-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "cf69aa63fdf96debe3b5ba0bd45f73e9610817d8fe0adfbd6d5bf02653db55a6",
+      "bytes": 48947
+    },
+    {
+      "id": "V09",
+      "time": 9.513333,
+      "duration": 47.601,
+      "file": "V09-009513.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "2e99cbe015e6f726c1de06025a925581b9f43ae65166c757a0d7716d5a634a1d",
+      "bytes": 67531
+    },
+    {
+      "id": "V09",
+      "time": 19.026666,
+      "duration": 47.601,
+      "file": "V09-019027.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "69e2ed755861e9ef4a8689b8c816a0aa783ca9241ae9a85e925624265d87f985",
+      "bytes": 99770
+    },
+    {
+      "id": "V09",
+      "time": 23.783333,
+      "duration": 47.601,
+      "file": "V09-023783.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "226608618e865631413898f976cdef5f98b82ccd1f82c650a7ccba10cb323d41",
+      "bytes": 85138
+    },
+    {
+      "id": "V09",
+      "time": 28.54,
+      "duration": 47.601,
+      "file": "V09-028540.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "c01a5e138227b283abd140d23ecfc5fb206ed4fe4717a0c80c67b4f7d3cdbf76",
+      "bytes": 72871
+    },
+    {
+      "id": "V09",
+      "time": 38.053333,
+      "duration": 47.601,
+      "file": "V09-038053.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "a0cacd2ced8ba3edacce8219175cba86c47c182c69b49fefa3a800cd6745ce13",
+      "bytes": 87447
+    },
+    {
+      "id": "V09",
+      "time": 42.81,
+      "duration": 47.601,
+      "file": "V09-042810.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "87f152a2f4a904e307468319d151bc5108b597b0ff65296f2427184c05c5785b",
+      "bytes": 107277
+    },
+    {
+      "id": "V10",
+      "time": 0,
+      "duration": 23.221,
+      "file": "V10-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "cbb5910a58d6047c4797accb2cebbd2f78083eb50ff7982dfc8d13811b4028ad",
+      "bytes": 90594
+    },
+    {
+      "id": "V10",
+      "time": 4.64,
+      "duration": 23.221,
+      "file": "V10-004640.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "04ecf2d2b52a5128fb9bb4c157a868a2905f26ddeca52d4bd4d8d1da709fa153",
+      "bytes": 107942
+    },
+    {
+      "id": "V10",
+      "time": 9.28,
+      "duration": 23.221,
+      "file": "V10-009280.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "1ad3932127553a1d517c318f49467586c0404c391ee4fc8aa6f68b6d774b334b",
+      "bytes": 128525
+    },
+    {
+      "id": "V10",
+      "time": 13.92,
+      "duration": 23.221,
+      "file": "V10-013920.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "9391e48becf7215798adf78523c7a28d86b101f5784d9c8b284cf79714c3f6d9",
+      "bytes": 104619
+    },
+    {
+      "id": "V10",
+      "time": 18.56,
+      "duration": 23.221,
+      "file": "V10-018560.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "5da618aff281e1c0601981473c4d73a98060b6c04a448900f22cb33f7b55d32f",
+      "bytes": 101188
+    },
+    {
+      "id": "V10",
+      "time": 20.88,
+      "duration": 23.221,
+      "file": "V10-020880.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "e4d459f35663222d52b9778be7334a7c961d9e3eac99096308aed50d2c5332ac",
+      "bytes": 90297
+    },
+    {
+      "id": "V11",
+      "time": 0,
+      "duration": 42.201,
+      "file": "V11-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "26d34c0f534dc98cbef8832466e0c68c59ba6dd3a179feea80935a554210a0c8",
+      "bytes": 87342
+    },
+    {
+      "id": "V11",
+      "time": 8.4366,
+      "duration": 42.201,
+      "file": "V11-008437.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "b989b2dbdc10b28bf996c9437d30d836039dc3a466b2ec088088f7838a4c83dc",
+      "bytes": 104577
+    },
+    {
+      "id": "V11",
+      "time": 16.8732,
+      "duration": 42.201,
+      "file": "V11-016873.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "96af26ce581d5d16216bd84ab34053bdc376bfe90e5162653be7d26596495966",
+      "bytes": 102652
+    },
+    {
+      "id": "V11",
+      "time": 25.3098,
+      "duration": 42.201,
+      "file": "V11-025310.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "90c149cb17507ed2233c51ab5b5f06003f74452bf2880c8da84167a8b597b5fe",
+      "bytes": 103884
+    },
+    {
+      "id": "V11",
+      "time": 33.7464,
+      "duration": 42.201,
+      "file": "V11-033746.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "f034274b5d5e8fee682e361a74647b3973528bf8b68a08b21b25178bd707c6ad",
+      "bytes": 55668
+    },
+    {
+      "id": "V11",
+      "time": 37.9647,
+      "duration": 42.201,
+      "file": "V11-037965.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "d2fa917285acbe3178707472c6a56823c57e72847af51d0df30826a9a7309d04",
+      "bytes": 61448
+    },
+    {
+      "id": "V12",
+      "time": 0,
+      "duration": 16.961,
+      "file": "V12-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "96d53d6524e4d2ef41309e01e50d29b1bfe29a92cb5a5d1fb43a8d5b04c6171d",
+      "bytes": 70132
+    },
+    {
+      "id": "V12",
+      "time": 3.39,
+      "duration": 16.961,
+      "file": "V12-003390.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "8418a7165aa4005996e56924819e670ef9c6ed9373ff2296c0b99eba99b3ada9",
+      "bytes": 79291
+    },
+    {
+      "id": "V12",
+      "time": 6.78,
+      "duration": 16.961,
+      "file": "V12-006780.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "22cc980d6b08c2e4f89e49f4026b1c55f860af85a952c3600201ba22b3ec3df8",
+      "bytes": 88373
+    },
+    {
+      "id": "V12",
+      "time": 10.17,
+      "duration": 16.961,
+      "file": "V12-010170.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "341e14eb4c97a7e49aeb8c154e07962677f00ffff12193b771a1b4578ee98a51",
+      "bytes": 92208
+    },
+    {
+      "id": "V12",
+      "time": 13.56,
+      "duration": 16.961,
+      "file": "V12-013560.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "1f4a0fb2d25a5df78e02c6307fdd76704f16a4f10a11b219f47e018f22dca504",
+      "bytes": 91353
+    },
+    {
+      "id": "V12",
+      "time": 15.254999,
+      "duration": 16.961,
+      "file": "V12-015255.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "f9d22eb6af1ad72627b6db7317933708a2b544121b711585a301f507a2c89dd0",
+      "bytes": 70980
+    },
+    {
+      "id": "V13",
+      "time": 0,
+      "duration": 25.161,
+      "file": "V13-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "c523cecc53ba75897125984cef4b89217aba95e7565baae4eabfb1eb6bf6ef3e",
+      "bytes": 98270
+    },
+    {
+      "id": "V13",
+      "time": 5.0266,
+      "duration": 25.161,
+      "file": "V13-005027.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "adcc7f053e889c4779959bff57bbfb146e42445864ed48db9906d935ffbdbdb0",
+      "bytes": 104482
+    },
+    {
+      "id": "V13",
+      "time": 10.0532,
+      "duration": 25.161,
+      "file": "V13-010053.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "f48dedc8abc0f60b115760c45de971e3929fcde777570fd65511341f0639e801",
+      "bytes": 127078
+    },
+    {
+      "id": "V13",
+      "time": 15.079799,
+      "duration": 25.161,
+      "file": "V13-015080.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "a6910d16ab69d091a9e77f9130cb650a59737596528a5fb94c73d5a42db534b9",
+      "bytes": 110920
+    },
+    {
+      "id": "V13",
+      "time": 20.1064,
+      "duration": 25.161,
+      "file": "V13-020106.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "85c15d954e090b7f4be8efee73018a0670f376fd4b5cbd58189422bcf5bb4f4b",
+      "bytes": 52340
+    },
+    {
+      "id": "V13",
+      "time": 22.6197,
+      "duration": 25.161,
+      "file": "V13-022620.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "d898dcddea907966a798c0a51083f26e23e352b9efc75076a06b2cdddbcab572",
+      "bytes": 52828
+    },
+    {
+      "id": "V14",
+      "time": 0,
+      "duration": 28.201,
+      "file": "V14-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "9619591280f31ed059dbe8d4a9c4cb9d43bb52850df250bf18a5cd11fa6cbf03",
+      "bytes": 84972
+    },
+    {
+      "id": "V14",
+      "time": 2.816666,
+      "duration": 28.201,
+      "file": "V14-002817.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "4c1b75a95419d33fbf737473f97366463c9a10d95934f242c072868de8d0e306",
+      "bytes": 96002
+    },
+    {
+      "id": "V14",
+      "time": 5.6334,
+      "duration": 28.201,
+      "file": "V14-005633.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "7d128a26df840945b011e93c9d794d1d04ccfc40b355a5dfc0ee55f094a62410",
+      "bytes": 108026
+    },
+    {
+      "id": "V14",
+      "time": 11.266666,
+      "duration": 28.201,
+      "file": "V14-011267.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "34454e30c8b04952991e10db48d7672738af46ff3bc0329f1b807a490bd799e0",
+      "bytes": 114873
+    },
+    {
+      "id": "V14",
+      "time": 16.9,
+      "duration": 28.201,
+      "file": "V14-016900.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "8d00abb9fcea5f7a91c5e697e78fffaba8e11a8b7ed131749e9952e3a9f38cf2",
+      "bytes": 101682
+    },
+    {
+      "id": "V14",
+      "time": 22.533333,
+      "duration": 28.201,
+      "file": "V14-022533.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "6f309ecee8b39f0a38556854190f2dd1112f2602da9c971b1584d9ce47991fce",
+      "bytes": 112591
+    },
+    {
+      "id": "V14",
+      "time": 25.35,
+      "duration": 28.201,
+      "file": "V14-025350.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "07860f9562dfea351ceb376a6173dbdaddf6570b5ec7bdd89d341aed1e23e2fd",
+      "bytes": 53233
+    },
+    {
+      "id": "V15",
+      "time": 0,
+      "duration": 33.561,
+      "file": "V15-000000.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "2c785ffb6c1554411b32b6507c28c858429411074a2fa399c236f99688a15fd9",
+      "bytes": 65119
+    },
+    {
+      "id": "V15",
+      "time": 6.7066,
+      "duration": 33.561,
+      "file": "V15-006707.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "e879da0d4d7ab85f11b1131effdbef24682ddb56661a69b5dd896098d9c565f9",
+      "bytes": 72298
+    },
+    {
+      "id": "V15",
+      "time": 10.0599,
+      "duration": 33.561,
+      "file": "V15-010060.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "aced44a22b431408ab6bfcdd497e9c6488008869420c2117c9e1eebdc287fe41",
+      "bytes": 77584
+    },
+    {
+      "id": "V15",
+      "time": 13.4132,
+      "duration": 33.561,
+      "file": "V15-013413.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "25d3188fdefc43d07bac0723ea87a31387f0d423920546d6f0edd9b440886cc4",
+      "bytes": 79606
+    },
+    {
+      "id": "V15",
+      "time": 16.7665,
+      "duration": 33.561,
+      "file": "V15-016767.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "33d502aa8f88d9461a15ef0c4b0398353e07b4374cd26d5f3d5aca11c75d1f36",
+      "bytes": 72656
+    },
+    {
+      "id": "V15",
+      "time": 20.1198,
+      "duration": 33.561,
+      "file": "V15-020120.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "5a478c87ea922f8094f08008367bbd9d047fa2af845985971f37c4242ae36f21",
+      "bytes": 77813
+    },
+    {
+      "id": "V15",
+      "time": 26.8264,
+      "duration": 33.561,
+      "file": "V15-026826.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "21e85979446a5b3e30b2ba1a75674e1e18204af0f097a784c3fa796460373798",
+      "bytes": 110402
+    },
+    {
+      "id": "V15",
+      "time": 30.1797,
+      "duration": 33.561,
+      "file": "V15-030180.jpg",
+      "mimeType": "image/jpeg",
+      "sha256": "77fb95d2ee97d456f4463497bd526db896dec7963e0ace77ffe68eb7886e4f25",
+      "bytes": 107847
+    }
+  ],
+  "limitations": [
+    "Not continuous full viewing; unsampled intervals and final approximately 10 percent unverified.",
+    "Original edit commands, hidden source state, playback speed and frame-exact synchronization are not established.",
+    "Three early V02 captures made during playback were discarded; scrolling-corrupted captures were replaced.",
+    "JPEG screenshot bytes are retained without image recompression; suffix corrected to match the actual format."
+  ]
+}

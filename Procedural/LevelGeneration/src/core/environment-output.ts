@@ -11,6 +11,7 @@ import { parkingPlacements } from './parking-placement';
 import { roadPlacements } from './roads';
 import { vegetationPlacements } from './scene-inputs';
 import { sceneBounds16 } from './placement-bounds';
+import type { SupportIndex } from './scene-relations';
 
 interface EnvironmentOutputInput {
   document: GenerationDocument;
@@ -21,6 +22,7 @@ interface EnvironmentOutputInput {
   probes: readonly AccessProbe[];
   tileLookup: ReadonlyMap<string, GenerationDocument['catalog']['tiles'][number]>;
   faceLookup: ReadonlyMap<string, Surface>;
+  support?: SupportIndex;
 }
 /** Publish accepted plans; this step makes no rule or reservation decisions. */
 export function assembleEnvironmentResult(input: EnvironmentOutputInput): GenerationResult {
@@ -47,7 +49,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
       ...(fixtures?.placements ?? []),
       ...parkingPlacements(parking ?? []),
       ...generated.flatMap((r) => r.scenePlacements ?? []),
-      ...roadPlacements(document.sceneInputs.roads),
+      ...roadPlacements(document.sceneInputs.roads,plans.relations?.roads.map(r=>r.module)),
       ...(spatial
         ? vegetationPlacements(
             document.grid,
@@ -56,6 +58,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
               objects: document.sceneInputs.objects.filter((o) => o.category === 'vegetation'),
             },
             analysis,
+            input.support,
           ).map((p) => ({
             ...p,
             planId: `vegetation:${p.input!.id}`,
@@ -78,6 +81,12 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
       ...plans,
       overlays: environmentOverlays(entrances, circulation ?? [], vertical, faceLookup, probes),
       traces: [
+        ...(input.support?.records??[]).map(r=>({
+          id:r.id,ownerId:r.sourceRefs.find(s=>s.kind==='object')!.id,ruleId:'installation-support',ruleVersion:'1',
+          sourceRefs:r.sourceRefs,relationIds:[r.id],readDependencies:r.readDependencies,
+          selectedIds:r.accepted?[r.id]:[],candidates:[{candidateId:r.id,accepted:r.accepted,reasonCodes:r.reasonCodes,
+            metrics:{support:r.support,context:r.context,cells:r.cells.length,covered:!!r.coveredBy,proof:'installation-only'},conflictIds:[]}],
+        })),
         ...(wallFacilities?.traces ?? []),
         ...(fixtures?.traces ?? []),
         ...(trims?.traces ?? []),

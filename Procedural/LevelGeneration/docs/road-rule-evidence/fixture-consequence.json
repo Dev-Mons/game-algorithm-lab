@@ -1,0 +1,238 @@
+[
+  {
+    "length": 6,
+    "placements": [
+      {
+        "id": "fixture:lamp-16:2,0,7:0:-6",
+        "kind": "object",
+        "asset": "fixture.lamp-16",
+        "center": [
+          2.5,
+          0.5,
+          7.125
+        ],
+        "size": [
+          0.25,
+          1,
+          0.25
+        ],
+        "color": "#b9cbd0",
+        "context": "{\"support\":\"ground\",\"median\":false,\"accessMode\":\"public\",\"roadDistanceCells\":2,\"roadHeading\":0}",
+        "sourceRefs": [
+          {
+            "kind": "object",
+            "id": "light"
+          }
+        ],
+        "planId": "cell:lighting:PY:2,0,7",
+        "yawQuarterTurns": 0,
+        "worldBounds16": {
+          "min": [
+            38,
+            0,
+            112
+          ],
+          "max": [
+            42,
+            16,
+            116
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "id": "slot:cell:lighting:PY:2,0,7",
+        "ownerId": "light",
+        "ruleId": "contextual-fixtures",
+        "ruleVersion": "1.0.0",
+        "sourceRefs": [
+          {
+            "kind": "object",
+            "id": "light"
+          },
+          {
+            "kind": "road",
+            "id": "roads"
+          }
+        ],
+        "selectedIds": [
+          "fixture:lamp-16:2,0,7:0:-6"
+        ],
+        "candidates": [
+          {
+            "candidateId": "fixture:lamp-16:2,0,7:0:-6",
+            "accepted": true,
+            "reasonCodes": [],
+            "metrics": {
+              "prototype": "lamp-16",
+              "heading": 0,
+              "offset": -6,
+              "accessMode": "public",
+              "frontFree": 6,
+              "family": "lamp",
+              "context": "{\"support\":\"ground\",\"median\":false,\"accessMode\":\"public\",\"roadDistanceCells\":2,\"roadHeading\":0}",
+              "companionCount": 0
+            },
+            "conflictIds": []
+          }
+        ],
+        "relationIds": [
+          "support:lighting:PY:2,0,7",
+          "road:0,5",
+          "boundary:road:roads:NX:0,0,0",
+          "boundary:road:roads:PX:4,0,0",
+          "boundary:road:roads:PZ:0,0,5"
+        ],
+        "readDependencies": [
+          "grid:occupancy",
+          "analysis:exterior",
+          "intent:lighting:PY::",
+          "scene:roads",
+          "scene:objects",
+          "spatial:roadFrontages",
+          "spatial:roadArrivals",
+          "reservations:prior-stages",
+          "parking:plans"
+        ]
+      }
+    ],
+    "junctions": []
+  },
+  {
+    "length": 7,
+    "placements": [],
+    "traces": [
+      {
+        "id": "slot:cell:lighting:PY:2,0,7",
+        "ownerId": "light",
+        "ruleId": "contextual-fixtures",
+        "ruleVersion": "1.0.0",
+        "sourceRefs": [
+          {
+            "kind": "object",
+            "id": "light"
+          },
+          {
+            "kind": "road",
+            "id": "roads"
+          }
+        ],
+        "selectedIds": [],
+        "candidates": [
+          {
+            "candidateId": "cell:lighting:PY:2,0,7:2,0,7:0:0",
+            "accepted": false,
+            "reasonCodes": [
+              "INTERSECTION_KEEPOUT"
+            ],
+            "metrics": {
+              "prototype": "lamp-16",
+              "family": "lamp",
+              "context": "{\"support\":\"ground\",\"median\":false,\"accessMode\":\"service-unverified\",\"roadDistanceCells\":1,\"roadHeading\":0}",
+              "heading": 0,
+              "offset": 0
+            },
+            "conflictIds": []
+          },
+          {
+            "candidateId": "cell:lighting:PY:2,0,7:2,0,7:0:-6",
+            "accepted": false,
+            "reasonCodes": [
+              "INTERSECTION_KEEPOUT"
+            ],
+            "metrics": {
+              "prototype": "lamp-16",
+              "family": "lamp",
+              "context": "{\"support\":\"ground\",\"median\":false,\"accessMode\":\"service-unverified\",\"roadDistanceCells\":1,\"roadHeading\":0}",
+              "heading": 0,
+              "offset": -6
+            },
+            "conflictIds": []
+          }
+        ],
+        "relationIds": [
+          "support:lighting:PY:2,0,7",
+          "road:2,5",
+          "boundary:road:roads:PZ:0,0,6",
+          "road:2,5"
+        ],
+        "readDependencies": [
+          "grid:occupancy",
+          "analysis:exterior",
+          "intent:lighting:PY::",
+          "scene:roads",
+          "scene:objects",
+          "spatial:roadFrontages",
+          "spatial:roadArrivals",
+          "reservations:prior-stages",
+          "parking:plans"
+        ]
+      }
+    ],
+    "junctions": [
+      {
+        "module": {
+          "id": "road:2,5",
+          "origin": [
+            2,
+            0,
+            5
+          ],
+          "size": [
+            2,
+            0.08,
+            2
+          ],
+          "width": 2,
+          "shape": "tee",
+          "ports": [
+            "east",
+            "west",
+            "south"
+          ],
+          "cells": [
+            [
+              2,
+              0,
+              5
+            ],
+            [
+              2,
+              0,
+              6
+            ],
+            [
+              3,
+              0,
+              5
+            ],
+            [
+              3,
+              0,
+              6
+            ]
+          ]
+        },
+        "frontageIds": [
+          "boundary:road:roads:PZ:0,0,6"
+        ],
+        "arrivalNodeIds": [
+          "2,0,7",
+          "3,0,7"
+        ],
+        "sourceRefs": [
+          {
+            "kind": "road",
+            "id": "roads"
+          }
+        ],
+        "readDependencies": [
+          "scene:roads",
+          "spatial:roadFrontages",
+          "spatial:roadArrivals"
+        ]
+      }
+    ]
+  }
+]

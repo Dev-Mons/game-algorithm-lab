@@ -20,6 +20,7 @@ export interface CandidateTrace {
 export interface DecisionTrace {
   id: string; ownerId: string; ruleId: string; ruleVersion: string;
   sourceRefs: SourceRef[]; selectedIds: string[]; candidates: CandidateTrace[];
+  relationIds?: string[]; readDependencies?: string[];
 }
 export interface ParkingBudgetAllocation {
   componentKey: string; layoutTickets: number; circulationLimit: number;
@@ -65,4 +66,5 @@ export interface EnvironmentResult {
   entrances?: import("./entrance-contract").EntrancePlan[];
   parking?: import("./parking-contract").ParkingAreaPlan[];
   fixtures?: import("./fixture-plan").FixturePlan;
+  relations?: import('./scene-relations').RelationView;
 }

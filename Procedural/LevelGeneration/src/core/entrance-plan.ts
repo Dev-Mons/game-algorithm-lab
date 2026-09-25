@@ -10,6 +10,7 @@ import type {Entrance,EntrancePlan} from './entrance-contract';
 import {FACADE_ASSETS} from './facade-assets';
 import type {BuildingStyle} from './building-style';
 import {planColumns} from './column-prototype';
+import type {SceneRelationIndex} from './scene-relations';
 
 export const desiredEntranceCount=(frontageCells:number,volumeCells:number,settings:typeof ENVIRONMENT.entrances)=>frontageCells===0?0:Math.min(settings.maxCount,Math.ceil(frontageCells/settings.facadeCellsPerEntry),Math.max(1,Math.ceil(volumeCells/settings.volumeCellsPerEntry)));
 interface Candidate {id:string;run:BoundaryRun;faces:Surface[];landing:Vec3[];path:AccessResult;centerDistance2:number;trace:CandidateTrace}
@@ -24,7 +25,7 @@ function supportsPortal(style:BuildingStyle,width:1|2,bodyWidth:number,bodyHeigh
   const clearanceWidth=(width===1?openings[0].maxX-openings[0].minX:1+openings[1].maxX-openings[0].minX)*16;
   return clearanceWidth>=bodyWidth&&openings.every(o=>o.minY<=-.5&&(o.maxY+.5)*16>=bodyHeight);
 }
-export function planEntrances(document:GenerationDocument,building:ResolvedBuildingMetadata,cells:Vec3[],surfaces:Surface[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>):EntrancePlan {
+export function planEntrances(document:GenerationDocument,building:ResolvedBuildingMetadata,cells:Vec3[],surfaces:Surface[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,relations?:SceneRelationIndex):EntrancePlan {
   const style=building.theme??document.buildingDefinition,settings=ENVIRONMENT,search=new AccessSearch(spatial,document,book,solid),roads=new Set(document.sceneInputs.roads.map(cellId)),faceMap=new Map(surfaces.map(s=>[s.faceId,s])),candidates:Candidate[]=[],traces:CandidateTrace[]=[];
   const columns=new Set(planColumns(building.componentId,cells,surfaces,style.programs?'auto':'building',new Set()).faces.map(f=>f.faceId));
   const runs=spatial.buildingRuns.filter(r=>r.owner.id===building.componentId&&r.footY===style.groundY);
@@ -41,6 +42,8 @@ export function planEntrances(document:GenerationDocument,building:ResolvedBuild
         if(landing.some(c=>roads.has(cellId(c)))){reject('NO_LANDING_SETBACK');continue;}
         const access=landing.map(c=>({cell:c,result:search.query(c)})).sort((a,b)=>(a.result.distanceCells??Infinity)-(b.result.distanceCells??Infinity)||compareCells(a.cell,b.cell));
         const roadAccess=access.every(a=>a.result.reachable);
+        const arrival=access[0].result,target=arrival.targetRoadCell?relations?.roadModuleAt(arrival.targetRoadCell):undefined;
+        if(target){trace.metrics.roadModuleId=target.module.id;trace.metrics.roadShape=target.module.shape;trace.metrics.roadPorts=target.module.ports.join(',');trace.metrics.roadFrontageId=arrival.targetFrontageId??'';}
         if(!roadAccess){
           reject(access.find(a=>!a.result.reachable)!.result.reasonCodes[0]);
           // A door still needs a clear, supported ground landing. Public-road
@@ -83,5 +86,6 @@ export function planEntrances(document:GenerationDocument,building:ResolvedBuild
   }
   for(const c of candidates)if(!c.trace.accepted&&!c.trace.reasonCodes.length)c.trace.reasonCodes=['LOWER_RANKED'];
   const entrances:Entrance[]=selected.map((c,i)=>({id:c.id,buildingId:building.componentId,faceIds:c.faces.map(f=>f.faceId),widthCells:c.faces.length as 1|2,role:i===0?'main':'secondary',outward:c.run.direction,access:c.path.reachable?'road':'local',landingCells:c.landing,pathCells:c.path.path,...(c.path.reachable?{roadTargetCell:c.path.targetRoadCell!,roadFrontageId:c.path.targetFrontageId!}:{}),traceId:`entrances:${building.componentId}`}));
-  return {buildingId:building.componentId,entrances,frontages:[...new Map(selected.map(c=>[`${c.run.direction}:${c.run.plane}`,{direction:c.run.direction,plane:c.run.plane}])).values()],desiredCount,unmetCount:desiredCount-entrances.length,reservations,traces:[{id:`entrances:${building.componentId}`,ownerId:building.componentId,ruleId:'accessible-portals',ruleVersion:'1.0.0',sourceRefs:[{kind:'building',id:building.componentId}],selectedIds:entrances.map(e=>e.id),candidates:traces}]};
+  const relationIds=[...new Set([...runs.map(r=>r.id),...traces.flatMap(t=>typeof t.metrics.roadModuleId==='string'?[t.metrics.roadModuleId,String(t.metrics.roadFrontageId)]:[])])];
+  return {buildingId:building.componentId,entrances,frontages:[...new Map(selected.map(c=>[`${c.run.direction}:${c.run.plane}`,{direction:c.run.direction,plane:c.run.plane}])).values()],desiredCount,unmetCount:desiredCount-entrances.length,reservations,traces:[{id:`entrances:${building.componentId}`,ownerId:building.componentId,ruleId:'accessible-portals',ruleVersion:'1.0.0',sourceRefs:[{kind:'building',id:building.componentId}],relationIds,readDependencies:['spatial:buildingRuns','spatial:roadArrivals','scene:roads','reservations:prior-stages'],selectedIds:entrances.map(e=>e.id),candidates:traces}]};
 }
