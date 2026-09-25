@@ -113,7 +113,9 @@ reapplied. Warm guesses cannot be treated as a source of stored kinetic energy.
 Persistent warm contact impulses are stored in two reusable open-addressed
 tables. Each substep rechecks current geometry, rescales impulses by substep dt,
 rejects a changed normal and drops absent contacts. Reset and return to the
-ordinary movement path clear both generations. Warm state contributes to the
+ordinary movement path clear both generations. A third reusable table checkpoints the current warm state for an eligible
+adaptive-step trial. A rejected trial restores the original hash mask and values;
+its checkpoint is scratch storage, not extra physical state. Warm state contributes to the
 state hash; replay tests also compare unquantized state arrays.
 
 Velocity geometry is immutable during its iterations. A tight workset includes
@@ -249,7 +251,7 @@ Agent flags cost 2 bytes/agent. Physical pair IDs initially reserve 8 pairs/agen
 (64 bytes/agent for both ends) and grow geometrically up to the explicit global
 budget. Geometry, workset IDs, anchors, full-query scratch and collective
 projection queues use reusable typed arrays. Each warm-cache slot uses 52 bytes
-(key, five f64 values and used-slot ID); two power-of-two tables retain their
+(key, five f64 values and used-slot ID); two power-of-two working tables and one trial checkpoint retain their
 high-water capacity, sized from touching contacts rather than broad-phase pairs.
 `external.stats.retainedBytes` reports the owned typed scratch, warm tables,
 empty-space certificates and kernel memory; `kernelBytes` reports the active
@@ -501,6 +503,99 @@ npx vite-node scripts/compare-frame-state.ts --reference=test-results/native-ref
 npx vite-node scripts/compare-frame-state.ts --reference=test-results/native-reference --mode=blast --ticks=660
 ```
 
+### Adaptive contact trial and exact index reuse
+
+The next candidate fixes a friction-release energy defect and verifies a cheaper
+temporal resolution before publishing it. A shrinking friction cone could force
+a cached tangential impulse to be released against the current slip. That update
+could increase kinetic energy even without input. When that happens, the normal
+and tangent impulse update is shortened to the energy minimum on the segment
+between the old and proposed feasible impulses. The segment stays in the convex
+friction cone. A new 64-body wall-bounded, multidirectional impulse fixture checks
+monotonic energy and the original compression limit without relaxing either.
+
+When the conservative response reserve suggests two substeps but actual input
+speeds fit the half-radius travel bound, the solver tries one. It checks solved
+velocities before motion; excessive concentrated speed selects two intervals.
+If any attempt exhausts position stabilization, its unpublished result is
+discarded, warm/activation/correction state is restored, and finer subdivisions
+are tried from the same tick input. There are at most five attempts and at most
+16 intervals in an accepted attempt; `attemptedSubsteps` includes discarded
+intervals and can exceed 16. A failed attempt stops after its first exhausted
+interval. External forces and voluntary prediction run once.
+`substepRetries`, `rejectedTrialBudgetExhaustions` and
+`rejectedTrialPenetration` retain discarded work; accepted residual diagnostics
+stay separate. All actual CPU work and pair/iteration work remain measured.
+
+The four rocky 10K blast/wind runs (seed 42/7, 660 ticks each) had published
+penetration ≤0.45px, sampled walls/nonfinite values 0 and accepted unresolved
+compression 0. Wind42 rejected one trial with 2.946450px compression and accepted
+the retried result. Every retried tick receives an independent audit. A 660-tick
+JS/WASM replay exercised the same retry in both implementations, comparing
+858,000,000 AgentBuffer bytes and 56,057,875 exact finite warm-cache values, with
+zero mismatches. These quality records use source
+`8199ef2a1b4157a1711a832dc1351093a138e4fa9929c9030e1a04c8bd57bd7b`.
+
+Collective position groups now share a frozen spatial index during their
+attempts. Queries expand by the largest body displacement from the index's
+anchor positions; exact current-position tests still determine the full
+frontier. The caller receives a fresh index after the group batch. An exhaustive
+frontier fixture covers dense groups, overflow and cell crossings. Full-state
+wind/blast comparisons also found zero differences from the earlier candidate.
+Native pair construction additionally skips the suffix of descending IDs once
+pair ownership proves it irrelevant. `pairOwnershipSkips` distinguishes those
+IDs from the full query population; `pairCapacityRetries` reports buffer-growth
+retries. Neither optimization caps the physical frontier.
+
+At source `d6b9cbfa3c3c1223dbf850f13c5ae20f093a85aa7381814ad028de995b125fa8`,
+three real HTTP runs per input (rocky 10K, seed42, ticks30–659, audit OFF) gave:
+
+| Input | Earlier adaptive frame CPU P95 median | Batched-index frame CPU P95 median | sim/wall median |
+|---|---:|---:|---:|
+| wind | 85.0ms | 72.5ms | 0.3496 |
+| blast | 79.1ms | 67.5ms | 0.3619 |
+
+The first wind run averaged 5.47 index rebuilds/tick, down from 32.16 before the
+batch, with the same simulation state. Owned retained contact capacity peaked
+at 29,492,940 bytes; that includes the trial checkpoint and reserved native memory,
+with the exclusions stated above. Seed7 was independently re-audited after the
+exact changes: both inputs remained ≤0.45px with walls/nonfinite values 0.
+**The whole-frame/real-time gate still fails.** These improvements do not justify
+closing issue #33 or hiding the earlier failed candidates.
+
+The 20K rocky moving-proxy audit exposed a later failure at tick161: a two-step
+attempt left 1.8455px compression inside its first interval, although the final
+published endpoint had recovered. General refinement now discards such attempts.
+The same input accepted 16 substeps after three rejected attempts (19 intervals
+actually computed), with accepted unresolved compression 0. A separate 180-tick
+JS/WASM replay compared 468,000,000 AgentBuffer bytes and every warm-cache value
+without differences, including all three retries. `refined-proxy-20000.json` and
+`refined-proxy-byte.json` preserve this evidence. Intermediate paths still need
+independent verification; runtime residual checks alone do not establish it.
+
+At source `53c72faae223ed144b7624873148c7eac8df998b2540a9005d5a412bd6f7e9db`,
+all six real HTTP flat 10K runs (blast/wind, seed42, three repeats each) met the
+frame gate over ticks30–659 with all 10,000 agents active. Median frame CPU P95
+was 13.7ms/14.4ms, RAF P95 ≤16.8ms, RAF P99 ≤16.8ms, no >50ms RAF frames, and
+sim/wall 0.9922/0.9953 over 10.55–10.59 seconds. The rocky gate remains failed.
+One flat 1K blast reproduction also passed its short timing check; its 2.52-second
+window does not count as final acceptance. Raw frames and executed source are
+in `refined-flat-performance.json.gz`, `refined-1k-blast.json.gz` and
+`refined-source.zip` in the existing evidence folder.
+
+The #32 flat matrix was run at the batched source: few-target impulses, blast,
+global acceleration, moving proxy and overlapping inputs at 1K/10K/20K. All 15
+independently sampled quality cases passed (120 ticks; audit every10 plus any
+retry/exhaustion). Agent penetration was 0, proxy penetration ≤0.000516px,
+walls/nonfinite/unresolved compression 0, and the proxy affected 41–55 bodies.
+Audit-OFF three-repeat median step P95 ranged 1.99–3.01ms at 1K, 15.35–21.63ms
+at 10K and 32.62–44.36ms at 20K, within the historical 20/120/240ms headless
+budgets. This is separate from #33's whole-frame gate. The 50K blast exploration
+also passed sampled quality while retaining all 50,000 agents. `matrix-*` records
+carry source identities; their historical source hash uses `src/...` paths,
+whereas frame/diagnostic records use `/src/...` paths. Do not compare these hash
+strings without accounting for the stated format.
+
 ### Verification and remaining gates
 
 The complete type/test/build check passed 205 tests and the browser suite passed
@@ -515,9 +610,11 @@ external input, goal edits and obstacle edits. Fixed-clock tests cover
 lost-time accounting. Regression fixtures cover zero-input energy amplification,
 stationary-proxy rebound and scaled-wall roundoff.
 
-Remaining work is the 10K whole-frame throughput gate, independent intermediate
-trajectory verification, final three-repeat/two-seed simultaneous acceptance,
-long-session allocation/GC and input-history stress, and the complete #32 input
-matrix. The kernel/workset changes do not make those remaining gates optional.
+The refined candidate passed the complete type/test/build check with 214 tests.
+Three affected browser tests passed before general refinement; that later change
+does not alter UI handling. Remaining work is the rocky 10K whole-frame throughput
+gate, independent intermediate trajectory verification, final three-repeat/two-
+seed simultaneous acceptance, and long-session allocation/GC and input-history
+stress. The kernel/workset changes do not make those remaining gates optional.
 No population, input force, radius or fixed delta was reduced to manufacture a
 pass. Neither issue should be closed from the sampled quality improvements alone.

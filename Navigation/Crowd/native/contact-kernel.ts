@@ -6,7 +6,11 @@ declare function separated(a:i32,b:i32):i32;
 declare function correctPair(a:i32,b:i32,dx:f64,dy:f64,d:f64,correction:f64):void;
 let table:usize=0;
 let constraints:i32=0;
+let energyDamped:i32=0;
+export function energyDampedContacts():i32 { return energyDamped; }
 let candidateVisits:i32=0,overflowQueries:i32=0,cellVisits:i32=0,maximumNeighbors:i32=0;
+let ownershipSkips:i32=0;
+export function pairOwnershipSkips():i32 { return ownershipSkips; }
 @inline function imax(a:i32,b:i32):i32 { return a>b?a:b; }
 @inline function imin(a:i32,b:i32):i32 { return a<b?a:b; }
 export function pairCandidates():i32 { return candidateVisits; }
@@ -32,7 +36,7 @@ export function constraintCount():i32 { return constraints; }
 // A capacity miss returns -1 before any simulation state is modified; the host
 // grows the pair storage and retries the complete query instead of dropping IDs.
 export function buildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize:f64,maximumRadius:f64,gap:f64,padding:f64):i32 {
-  candidateVisits=0;overflowQueries=0;cellVisits=0;maximumNeighbors=0;
+  candidateVisits=0;overflowQueries=0;cellVisits=0;maximumNeighbors=0;ownershipSkips=0;
   const x=ptr(0),y=ptr(1),radii=ptr(4),outA=ptr(11),outB=ptr(12),active=ptr(24),starts=ptr(25),indices=ptr(26);
   memory.copy(ptr(27),x,<usize>agents<<3);memory.copy(ptr(28),y,<usize>agents<<3);
   let pairs:i32=0;
@@ -55,9 +59,10 @@ export function buildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize
         if(edge==0?row<minRow:(row==top||row>maxRow))continue;
         for(let column=imax(left,minColumn);column<=imin(right,maxColumn);column++) {
           const cell=row*columns+column,end=load<i32>(starts+(<usize>(cell+1)<<2));
-          for(let slot=load<i32>(starts+(<usize>cell<<2));slot<end;slot++) {
-            candidates++;
-            const b=load<i32>(indices+(<usize>slot<<2));if(b<=a)continue;
+          const start=load<i32>(starts+(<usize>cell<<2));candidates+=end-start;
+          for(let slot=start;slot<end;slot++) {
+            const b=load<i32>(indices+(<usize>slot<<2));
+            if(b<=a){ownershipSkips+=end-slot;break;}
             const dx=read(x,b)-ax,dy=read(y,b)-ay,r=ar+read(radii,b)+gap+padding;
             if(dx*dx+dy*dy>r*r)continue;
             if(pairs==capacity)return -1;
@@ -70,9 +75,10 @@ export function buildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,cellSize
           const column=edge==0?left:right;
           if(edge==0?column<minColumn:(column==left||column>maxColumn))continue;
           const cell=row*columns+column,end=load<i32>(starts+(<usize>(cell+1)<<2));
-          for(let slot=load<i32>(starts+(<usize>cell<<2));slot<end;slot++) {
-            candidates++;
-            const b=load<i32>(indices+(<usize>slot<<2));if(b<=a)continue;
+          const start=load<i32>(starts+(<usize>cell<<2));candidates+=end-start;
+          for(let slot=start;slot<end;slot++) {
+            const b=load<i32>(indices+(<usize>slot<<2));
+            if(b<=a){ownershipSkips+=end-slot;break;}
             const dx=read(x,b)-ax,dy=read(y,b)-ay,r=ar+read(radii,b)+gap+padding;
             if(dx*dx+dy*dy>r*r)continue;
             if(pairs==capacity)return -1;
@@ -148,6 +154,7 @@ export function velocity(count:i32,dt:f64,friction:f64,motorSquared:f64):f64 {
   const p2=ptr(2);const p3=ptr(3);const p8=ptr(8);const p10=ptr(10);const p11=ptr(11);const p12=ptr(12);const p13=ptr(13);const p14=ptr(14);const p15=ptr(15);const p16=ptr(16);const p17=ptr(17);const p18=ptr(18);const p19=ptr(19);const p20=ptr(20);const p21=ptr(21);
 
   constraints=0;
+  energyDamped=0;
   let maximum:f64=0;
   for(let slot:i32=0;slot<count;slot++) {
     const pair=load<i32>(p21+(<usize>slot<<2)),kind=load<i8>(p20+<usize>pair);
@@ -173,10 +180,19 @@ export function velocity(count:i32,dt:f64,friction:f64,motorSquared:f64):f64 {
     constraints++;
     const closing=rvx*nx+rvy*ny,oldNormal=kind==1?read(p18,pair):0;
     if(closing>=0&&(kind!=1||oldNormal==0))continue;
-    const normal=Math.max(0,oldNormal-closing*.5),impulse=normal-oldNormal,tx=-ny,ty=nx;
+    let normal=Math.max(0,oldNormal-closing*.5),impulse=normal-oldNormal;
+    const tx=-ny,ty=nx;
     const oldTangent=kind==1?read(p19,pair):0;
-    const newTangent=Math.max(-normal*friction,Math.min(normal*friction,oldTangent+(rvx*tx+rvy*ty)*.5));
-    const tangent=newTangent-oldTangent,squared=impulse*impulse+tangent*tangent;
+    let newTangent=Math.max(-normal*friction,Math.min(normal*friction,oldTangent+(rvx*tx+rvy*ty)*.5));
+    let tangent=newTangent-oldTangent;
+    if(kind==1&&impulse<0&&Math.abs(oldTangent)>normal*friction) {
+      const work=impulse*closing-tangent*(rvx*tx+rvy*ty),length=impulse*impulse+tangent*tangent;
+      if(work+length>0&&length>0) {
+        const scale=work<0?Math.min(1,-work/(2*length)):0;
+        impulse*=scale;tangent*=scale;normal=oldNormal+impulse;newTangent=oldTangent+tangent;energyDamped++;
+      }
+    }
+    const squared=impulse*impulse+tangent*tangent;
     maximum=Math.max(maximum,squared);
     if(kind==1){write(p18,pair,normal);write(p19,pair,newTangent);}
     if(impulse==0&&tangent==0)continue;

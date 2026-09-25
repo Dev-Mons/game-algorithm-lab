@@ -32,3 +32,19 @@ it('keeps the world impulse fixed when a contact basis rotates within its fricti
   expect(-normal*nx-tangent*ny).toBeCloseTo(-10,12);
   expect(-normal*ny+tangent*nx).toBeCloseTo(2,12);
 });
+
+it('restores a trial checkpoint with its original hash mask after table growth',()=>{
+  const cache=new WarmContactCache();cache.begin(2);
+  for(const key of [1,17]){const base=cache.add(key,1,0,1/60,1);cache.values[base]=key;}
+  const original:number[]=[];cache.hashState(n=>original.push(n));cache.saveCurrent();
+  cache.begin(1024);
+  for(let i=0;i<100;i++)cache.add(i+100,0,1,1/120,1);
+  cache.restoreCurrent();
+  const restored:number[]=[];cache.hashState(n=>restored.push(n));expect(restored).toEqual(original);
+  cache.begin(2);
+  for(const key of [1,17])expect(cache.values[cache.add(key,1,0,1/60,1)]).toBe(key);
+  cache.restoreCurrent();
+  const again:number[]=[];cache.hashState(n=>again.push(n));expect(again).toEqual(original);
+  cache.reset();cache.saveCurrent();cache.begin(2);cache.add(1,1,0,1/60,1);cache.restoreCurrent();
+  const empty:number[]=[];cache.hashState(n=>empty.push(n));expect(empty).toEqual([]);
+});

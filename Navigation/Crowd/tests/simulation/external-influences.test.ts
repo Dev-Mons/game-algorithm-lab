@@ -59,6 +59,22 @@ describe('external physical movement', () => {
     for(let a=0;a<16;a++){expect(s.state.x[a]).toBeCloseTo(200+a*6.4+500/60,7);expect(s.state.vx[a]).toBeCloseTo(500,7);}
     expect(penetration(s)).toBeLessThan(.001);
   });
+  it('verifies actual slow motion instead of splitting solely for the response reserve near a wall',()=>{
+    const s=scene(5,[{x:234,y:100,width:1,height:500}]);
+    s.enqueueExternal({kind:'impulse',id:'coherent',tick:0,generation:1,target:{x:220,y:360,radius:100},dvx:86,dvy:0});
+    s.step();
+    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
+    for(let a=0;a<5;a++)expect(s.state.x[a]).toBeCloseTo(200+a*6.4+86/60,8);
+    expect(s.metrics.wallOverlapCount).toBe(0);
+  });
+  it('falls back before integration when contact concentrates speed beyond the one-step travel bound',()=>{
+    const s=scene(2);s.config.contactFriction=0;
+    kick(s,0,86,0,'a');kick(s,1,0,86,'b');s.step();
+    expect(s.external.stats.singleStepFallbacks).toBe(1);expect(s.external.stats.substeps).toBe(2);
+    expect(penetration(s)).toBeLessThanOrEqual(.5);
+    expect(s.state.vx[0]!+s.state.vx[1]!).toBeCloseTo(86,8);
+    expect(s.state.vy[0]!+s.state.vy[1]!).toBeCloseTo(86,8);
+  });
   it('keeps absolute-speed resolution when a coherent stream reaches a wall', () => {
     const s=scene(5,[{x:219,y:100,width:1,height:500}]);
     for(let a=0;a<5;a++)s.state.x[a]=180+a*6.4;
@@ -158,6 +174,19 @@ describe('external physical movement', () => {
       expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
       expect(Math.min(...s.state.vx),`rebound at tick ${tick}`).toBeGreaterThanOrEqual(-1e-8);
       energy=next;
+    }
+  });
+  it('does not amplify multidirectional impulses in a dense wall-bounded contact group',()=>{
+    const s=scene(64,[{x:250,y:200,width:1,height:250}]);
+    for(let a=0;a<64;a++){s.state.x[a]=200+(a%8)*6.4;s.state.y[a]=260+Math.floor(a/8)*6.4;}
+    kick(s,0,500,0,'left');kick(s,7,0,500,'top');kick(s,63,-200,0,'right');
+    let energy=500**2+500**2+200**2;
+    for(let tick=0;tick<90;tick++) {
+      s.step();
+      const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
+      expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
+      expect(penetration(s),`penetration at tick ${tick}`).toBeLessThanOrEqual(.5);
+      expect(s.metrics.wallOverlapCount).toBe(0);energy=next;
     }
   });
   it('sweeps thin walls and keeps removed wall-normal velocity removed next tick', () => {

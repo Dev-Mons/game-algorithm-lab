@@ -79,7 +79,7 @@ try {
                 const tick=sim.stepCount,start=performance.now(); step();
                 p.steps.push({tick,ms:performance.now()-start,active:sim.metrics.activeCount,
                   passes:{...sim.experimentStats.passMs},external:{...sim.external.stats}});
-                if(audit&&(sim.stepCount%10===0||sim.external.stats.positionBudgetExhaustions||sim.external.stats.unresolvedCompression)) {
+                if(audit&&(sim.stepCount%10===0||sim.external.stats.positionBudgetExhaustions||sim.external.stats.unresolvedCompression||sim.external.stats.substepRetries)) {
                   const auditStart=performance.now();
                   p.audits.push({step:sim.stepCount,...audit(sim),auditMs:performance.now()-auditStart});
                 }
@@ -116,7 +116,7 @@ try {
             const report=JSON.stringify({schema:'crowd-real-frame-v1',createdAt:new Date().toISOString(),url:base,
               commit,workingSourceSha256,sourceStable:sourceHash()===workingSourceSha256,
               cpu:cpus()[0]?.model,platform:platform(),node:process.version,browser:browser.version(),
-              profile:`Real HTTP app RAF/FixedClock/timedStep/Canvas/UI; quality ${quality?'ON: independent audit every 10 ticks and on every exhausted position budget; these frames are not performance results':'OFF'}; input tick 30 via Canvas click; seed/force/dt/radius unchanged; CPU submission, not GPU presentation`,rows});
+              profile:`Real HTTP app RAF/FixedClock/timedStep/Canvas/UI; quality ${quality?'ON: independent audit every 10 ticks and on every exhausted position budget or retried tick; these frames are not performance results':'OFF'}; input tick 30 via Canvas click; seed/force/dt/radius unchanged; CPU submission, not GPU presentation`,rows});
             writeFileSync(output,output.endsWith('.gz')?gzipSync(report):report);
             await page.close();
           }

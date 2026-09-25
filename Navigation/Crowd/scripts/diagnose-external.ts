@@ -63,7 +63,7 @@ for(let tick=0;tick<ticks;tick++) {
       if(depth>1e-6)console.log(JSON.stringify({firstWall:{tick,a,depth,x:sim.state.x[a],y:sim.state.y[a],previousX:sim.previousState.x[a],previousY:sim.previousState.y[a],rect}}));
     }
   }
-  if(tick%10!==0&&tick!==29&&tick!==30&&!sim.external.stats.positionBudgetExhaustions)continue;
+  if(tick%10!==0&&tick!==29&&tick!==30&&!sim.external.stats.positionBudgetExhaustions&&!sim.external.stats.substepRetries)continue;
   const audit=auditGeometry(sim);
   const witness=audit.maxPair,pair=witness?[witness.a,witness.b]:[];
   const row={tick,ms,penetration:audit.maxPenetration,maxProxyPenetration:audit.maxProxyPenetration,nonfinite:audit.nonfinite,
@@ -74,6 +74,7 @@ for(let tick=0;tick<ticks;tick++) {
 const output=arg('output','test-results/external-diagnostic.json');mkdirSync(dirname(output),{recursive:true});
 writeFileSync(output,JSON.stringify({schema:'crowd-external-diagnostic-v1',createdAt:new Date().toISOString(),commit,
   workingSourceSha256,sourceStable:sourceHash()===workingSourceSha256,cpu:cpus()[0]?.model,node:process.version,
-  quality:'ON; all-neighbor published-state audit every 10 ticks and every position-budget exhaustion; timing is diagnostic only',
+  quality:'ON; all-neighbor published-state audit every 10 ticks and every position-budget exhaustion or retried tick; timing is diagnostic only',
   count,spawned:sim.state.count,minimumActive,maximumRuntimeWalls,ticks,scenario:sim.scenario.id,
+  inputSource:'headless external API',commands:sim.external.record(),
   mode,seed:sim.config.seed,config:sim.config,peaks,rows},null,2));

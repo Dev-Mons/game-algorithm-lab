@@ -54,3 +54,28 @@ it('rejects a fully blocked group without partially moving its members',()=>{
   const before=[...f.state.x,...f.state.y];expect(run(f)).toBe(0);
   expect([...f.state.x,...f.state.y]).toEqual(before);
 });
+
+it('matches exhaustive frontiers after dense groups cross spatial cells',()=>{
+  const count=96,a:number[]=[],b:number[]=[];
+  for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){a.push(i);b.push(j);}
+  const make=(exhaustive:boolean)=>{
+    const state=new AgentBuffer(count);state.active.fill(1);
+    for(let i=0;i<count;i++){state.x[i]=12.01+(i%12)*.5;state.y[i]=12.01+Math.floor(i/12)*.5;}
+    const grid=new SpatialHash(500,500,12,count);
+    if(exhaustive)grid.queryCandidates=(_x,_y,_range,output,maximum=output.length)=>{
+      const n=Math.min(count,maximum,output.length);
+      for(let i=0;i<n;i++)output[i]=count-1-i;
+      return n;
+    };
+    const input={next:state,index:grid,worldWidth:500,worldHeight:500,agentRadius:3.2,maxAgentRadius:3.2,
+      wallClearance:3.55,obstacles:[],external:new ExternalInfluences(count,500,500)} as unknown as CrowdMovementInput;
+    const index=new StaticObstacleIndex();index.update([]);
+    const free=new StaticFreeSpace(index);free.begin(count,500,500);
+    const projected=new ContactProjection().solve(input,index,free,Int32Array.from(a),Int32Array.from(b),a.length,.45,3.2,
+      (i,dx,dy)=>{state.x[i]=state.x[i]!+dx;state.y[i]=state.y[i]!+dy;});
+    return {state,projected};
+  };
+  const actual=make(false),expected=make(true);
+  expect(actual.projected).toBeGreaterThan(1);expect(actual.projected).toBe(expected.projected);
+  expect(actual.state.x).toEqual(expected.state.x);expect(actual.state.y).toEqual(expected.state.y);
+});

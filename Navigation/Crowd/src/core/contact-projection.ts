@@ -15,8 +15,11 @@ export class ContactProjection {
   private marks=new Uint32Array(0);
   private candidates=new Int32Array(65);
   private overflow=new Int32Array(0);
+  private anchorX=new Float64Array(0);
+  private anchorY=new Float64Array(0);
+  private indexDisplacement=0;
   private epoch=0;
-  get bytes():number { return this.first.byteLength+this.second.byteLength+this.marks.byteLength+this.candidates.byteLength+this.overflow.byteLength; }
+  get bytes():number { return this.first.byteLength+this.second.byteLength+this.marks.byteLength+this.candidates.byteLength+this.overflow.byteLength+this.anchorX.byteLength+this.anchorY.byteLength; }
 
   solve(input:CrowdMovementInput,index:StaticObstacleIndex,free:StaticFreeSpace,
     pairA:Int32Array,pairB:Int32Array,pairs:number,tolerance:number,minimumRadius:number,
@@ -24,8 +27,10 @@ export class ContactProjection {
     const s=input.next,stats=input.external!.stats;
     if(this.first.length<s.count) {
       this.first=new Int32Array(s.count);this.second=new Int32Array(s.count);this.marks=new Uint32Array(s.count);
+      this.anchorX=new Float64Array(s.count);this.anchorY=new Float64Array(s.count);
     }
     input.index.rebuild(s.x,s.y,s.active);stats.rebuilds++;
+    this.anchorX.set(s.x);this.anchorY.set(s.y);this.indexDisplacement=0;
     let accepted=0,attempts=0;
     for(let pair=0;pair<pairs&&attempts<16;pair++) {
       const a=pairA[pair]!,b=pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
@@ -46,9 +51,9 @@ export class ContactProjection {
           const tx=ux*distance,ty=uy*distance;
           const members=this.group(input,index,free,side===0?a:b,side===0?b:a,tx,ty,tolerance,this.first,proxyFraction);
           if(members<0)continue;
-          for(let i=0;i<members;i++)move(this.first[i]!,tx,ty);
+          this.translate(input,this.first,members,tx,ty,move);
           stats.projectedBodies+=members;stats.projectionGroups++;accepted++;
-          input.index.rebuild(s.x,s.y,s.active);stats.rebuilds++;repaired=true;break;
+          repaired=true;break;
         }
         continue;
       }
@@ -58,20 +63,31 @@ export class ContactProjection {
         // Unit mass per body: opposite translations preserve the group's center
         // of mass. Each is shorter than its already validated full translation.
         const firstWeight=second/(first+second),secondWeight=first/(first+second);
-        for(let i=0;i<first;i++)move(this.first[i]!,-mx*firstWeight,-my*firstWeight);
-        for(let i=0;i<second;i++)move(this.second[i]!,mx*secondWeight,my*secondWeight);
+        this.translate(input,this.first,first,-mx*firstWeight,-my*firstWeight,move);
+        this.translate(input,this.second,second,mx*secondWeight,my*secondWeight,move);
         stats.projectedBodies+=first+second;
       } else if(first>=0&&(second<0||first<=second)) {
-        for(let i=0;i<first;i++)move(this.first[i]!,-mx,-my);
+        this.translate(input,this.first,first,-mx,-my,move);
         stats.projectedBodies+=first;
       } else {
-        for(let i=0;i<second;i++)move(this.second[i]!,mx,my);
+        this.translate(input,this.second,second,mx,my,move);
         stats.projectedBodies+=second;
       }
       accepted++;stats.projectionGroups++;
-      input.index.rebuild(s.x,s.y,s.active);stats.rebuilds++;
     }
+    // Queries above include every body's displacement from the frozen index.
+    // Publish one fresh index for the caller's next pair-list construction.
+    if(accepted){input.index.rebuild(s.x,s.y,s.active);stats.rebuilds++;}
     return accepted;
+  }
+
+  private translate(input:CrowdMovementInput,ids:Int32Array,count:number,dx:number,dy:number,move:(a:number,dx:number,dy:number)=>void):void {
+    const s=input.next;
+    for(let i=0;i<count;i++) {
+      const a=ids[i]!;move(a,dx,dy);
+      const x=s.x[a]!-this.anchorX[a]!,y=s.y[a]!-this.anchorY[a]!;
+      this.indexDisplacement=Math.max(this.indexDisplacement,Math.sqrt(x*x+y*y));
+    }
   }
 
   private group(input:CrowdMovementInput,index:StaticObstacleIndex,free:StaticFreeSpace,
@@ -96,7 +112,10 @@ export class ContactProjection {
           if(segmentDistanceSquaredToRect(x,y,ex,ey,input.obstacles[obstacle]!)<Math.max(0,clearance-1e-8)**2)return -1;
         }
       }
-      const range=radius+(input.maxAgentRadius??input.agentRadius)+travel;
+      // The query center is current, while indexed neighbors are at anchors.
+      // One neighbor-displacement bound (not an external-force radius) covers
+      // all moved frontiers. Exact current-position tests below decide inclusion.
+      const range=radius+(input.maxAgentRadius??input.agentRadius)+travel+this.indexDisplacement+1e-6;
       let candidates=this.candidates,n=input.index.queryCandidates(x,y,range,candidates);
       if(n===candidates.length) {
         if(this.overflow.length<s.count)this.overflow=new Int32Array(s.count);

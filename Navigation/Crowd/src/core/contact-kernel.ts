@@ -6,6 +6,7 @@ interface Exports {
   velocity: (count:number,dt:number,friction:number,motorSquared:number) => number;
   position: (count:number,gap:number,minimumRadius:number) => void;
   constraintCount: () => number;
+  energyDampedContacts: () => number;
   buildWorkset: (pairs:number,agents:number,dt:number,halo:number) => number;
   validWorkset: (agents:number,limitSquared:number) => number;
   buildPairs: (agents:number,capacity:number,columns:number,rows:number,cellSize:number,maximumRadius:number,gap:number,padding:number) => number;
@@ -13,6 +14,7 @@ interface Exports {
   pairFallbacks: () => number;
   pairCells: () => number;
   pairMaximum: () => number;
+  pairOwnershipSkips: () => number;
   classifyGeometry: (pairs:number,gap:number) => number;
   maximumDisplacement: (agents:number) => number;
   hasCompression: (pairs:number,tolerance:number) => number;

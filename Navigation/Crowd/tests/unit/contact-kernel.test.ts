@@ -11,11 +11,11 @@ it('preserves full center-first pair order through mixed radii, inactive bodies 
   const scratch=new Int32Array(count),expectedA:number[]=[],expectedB:number[]=[];
   kernel.ensure(count,32,grid.cellStart.length);
   for(const padding of [0,1,10,64]) {
-    expectedA.length=0;expectedB.length=0;let candidates=0,fallbacks=0;
+    expectedA.length=0;expectedB.length=0;let candidates=0,fallbacks=0,ownershipSkips=0;
     for(let a=0;a<count;a++)if(active[a]) {
       const n=grid.queryCandidates(x[a]!,y[a]!,radii[a]!+5+.4+padding,scratch);candidates+=n;if(n>=65)fallbacks++;
       for(let k=0;k<n;k++) {
-        const b=scratch[k]!;if(b<=a)continue;
+        const b=scratch[k]!;if(b<=a){ownershipSkips++;continue;}
         const radius=radii[a]!+radii[b]!+.4+padding;
         if((x[b]!-x[a]!)**2+(y[b]!-y[a]!)**2>radius*radius)continue;
         expectedA.push(a);expectedB.push(b);
@@ -33,6 +33,7 @@ it('preserves full center-first pair order through mixed radii, inactive bodies 
     expect([...kernel.arrays.b.subarray(0,pairs)]).toEqual(expectedB);
     expect(kernel.exports.pairCandidates()).toBe(candidates);
     expect(kernel.exports.pairFallbacks()).toBe(fallbacks);
+    expect(kernel.exports.pairOwnershipSkips()).toBe(ownershipSkips);
     expect(kernel.arrays.x).toEqual(x);expect(kernel.arrays.y).toEqual(y);
   }
 });

@@ -32,6 +32,9 @@ export class ExternalContactSolver {
   private velocityAnchorY = new Float64Array(0);
   private warmCorrected = new Uint8Array(0);
   private warmAffected = new Uint8Array(0);
+  private trialAffected = new Uint8Array(0);
+  private trialCorrected = new Uint8Array(0);
+  private trialLengths = new Float64Array(0);
   private readonly contactCache = new WarmContactCache();
   private pairContacts: Int32Array = new Int32Array(0);
   reset():void { this.contactCache.reset();this.kernelInput=null;this.kernel?.detach(); }
@@ -50,9 +53,11 @@ export class ExternalContactSolver {
   private correctionLengths: Float64Array = new Float64Array(0);
 
   solve(input: CrowdMovementInput, external: ExternalInfluences, vx: Float64Array, vy: Float64Array, headings: Float64Array, result: CrowdMovementResult,
-    corrected: Uint8Array, correctionLengths: Float64Array): void {
+    corrected: Uint8Array, correctionLengths: Float64Array, forcedSubsteps?:number, attempt=0): void {
+    const retryInput=input;
     this.corrected=corrected;this.correctionLengths=correctionLengths;
     const current=input.current, output=input.next, count=current.count, stats=external.stats;
+    stats.contactAttempts++;
     let next=output;
     const motorStep=external.settings.control>0?Math.max(0,input.maxAcceleration)*input.fixedDelta:0;
     // The legacy diameter-sized grid spends most query work traversing empty cells.
@@ -69,6 +74,7 @@ export class ExternalContactSolver {
       this.velocityAnchorX=new Float64Array(count);this.velocityAnchorY=new Float64Array(count);
       this.warmCorrected=new Uint8Array(count);
       this.warmAffected=new Uint8Array(count);
+      this.trialAffected=new Uint8Array(count);this.trialCorrected=new Uint8Array(count);this.trialLengths=new Float64Array(count);
     }
     if(external.backend==='auto'&&this.kernel===undefined)this.kernel=ContactKernel.create(
       (a,b)=>{
@@ -107,6 +113,7 @@ export class ExternalContactSolver {
     // Zero-restitution projection retains the tangent and replaces the normal
     // component with proxy motion. The shared 1.5x reserve already covers sqrt(2).
     for (const p of external.proxies) maximumSpeed = Math.max(maximumSpeed,Math.min(speedLimit,Math.hypot(p.toX-p.x,p.toY-p.y)/input.fixedDelta));
+    const inputMaximumSpeed=maximumSpeed;
     // Leave room for normal pair energy redistribution; clamp only if a later
     // response exceeds this conservative travel bound or the profile ceiling.
     maximumSpeed=Math.min(speedLimit,maximumSpeed*1.5);
@@ -116,14 +123,21 @@ export class ExternalContactSolver {
     // approaching each other, not for a coherent crowd translating at high speed.
     const absoluteSteps = Math.min(EXTERNAL_PROFILE.maximumSubsteps,Math.max(1,Math.ceil(maximumSpeed*input.fixedDelta/(minimumRadius*.5))));
     this.prepareStatics(input,maximumSpeed*input.fixedDelta+minimumRadius);
-    const substeps = this.planSubsteps(input,external,minimumRadius,maximumSpeed,maximumOrdinarySpeed,absoluteSteps);
-    stats.planningMs=performance.now()-planningStarted;
+    const verifySingleStep=forcedSubsteps===undefined&&absoluteSteps===2&&inputMaximumSpeed*input.fixedDelta<=minimumRadius*.5;
+    let substeps = forcedSubsteps??(verifySingleStep?1:this.planSubsteps(input,external,minimumRadius,maximumSpeed,maximumOrdinarySpeed,absoluteSteps));
+    const unresolvedBefore=stats.unresolvedCompression,budgetBefore=stats.positionBudgetExhaustions,maxExhaustedBefore=stats.maxExhaustedPenetration;
+    if(attempt===0) {
+      this.contactCache.saveCurrent();this.trialAffected.set(external.affected);
+      this.trialCorrected.set(corrected);this.trialLengths.set(correctionLengths);
+    }
+    stats.planningMs+=performance.now()-planningStarted;
     stats.substeps = substeps;
-    const dt = input.fixedDelta/substeps;
+    let dt = input.fixedDelta/substeps;
     this.kernelInput=input;this.kernelDelta=dt;
     if(kernel)this.freeSpace.copyCertificates(kernel.arrays.freeX,kernel.arrays.freeY,kernel.arrays.freeRadius);
-    result.constraintIterations = EXTERNAL_PROFILE.iterations * substeps; result.maxContacts = 0;
+    result.constraintIterations = EXTERNAL_PROFILE.iterations * substeps;
     for (let sub=0;sub<substeps;sub++) {
+      stats.attemptedSubsteps++;
       let start = performance.now();
       if(sub>0) {
         input.index.rebuild(next.x,next.y,next.active); stats.rebuilds++;
@@ -163,6 +177,7 @@ export class ExternalContactSolver {
           maximumImpulse=kernel.exports.velocity(this.velocityPairCount,dt,input.contactFriction,motorStep*motorStep);
           external.affected.set(kernel.arrays.affected);
           result.contactConstraints+=kernel.exports.constraintCount();
+          stats.energyDampedContacts+=kernel.exports.energyDampedContacts();
         } else for (let slot=0;slot<this.velocityPairCount;slot++) {
           const pair=this.velocityPairs[slot]!;
           const a = this.pairA[pair]!, b = this.pairB[pair]!;
@@ -181,12 +196,23 @@ export class ExternalContactSolver {
           // Accumulated nonnegative normal impulses with a friction cone.
           // Negative deltas release a previous warm-start guess.
           const oldNormal=cached>=0?values[cached]!:0;
-          const normal=Math.max(0,oldNormal-closing*.5);
-          const impulse=normal-oldNormal;
+          let normal=Math.max(0,oldNormal-closing*.5);
+          let impulse=normal-oldNormal;
           const tx = -this.ny, ty = this.nx;
           const oldTangent=cached>=0?values[cached+1]!:0;
-          const newTangent=Math.max(-normal*input.contactFriction,Math.min(normal*input.contactFriction,oldTangent+(rvx*tx+rvy*ty)*.5));
-          const tangent=newTangent-oldTangent;
+          let newTangent=Math.max(-normal*input.contactFriction,Math.min(normal*input.contactFriction,oldTangent+(rvx*tx+rvy*ty)*.5));
+          let tangent=newTangent-oldTangent;
+          // A shrinking friction cone can force release of a warm tangential
+          // impulse against the current slip, increasing kinetic energy. Both
+          // endpoints of this update are feasible; shorten along their convex
+          // segment to the energy minimum instead of injecting that energy.
+          if(cached>=0&&impulse<0&&Math.abs(oldTangent)>normal*input.contactFriction) {
+            const work=impulse*closing-tangent*(rvx*tx+rvy*ty),length=impulse*impulse+tangent*tangent;
+            if(work+length>0&&length>0) {
+              const scale=work<0?Math.min(1,-work/(2*length)):0;
+              impulse*=scale;tangent*=scale;normal=oldNormal+impulse;newTangent=oldTangent+tangent;stats.energyDampedContacts++;
+            }
+          }
           maximumImpulse=Math.max(maximumImpulse,impulse*impulse+tangent*tangent);
           if(cached>=0){values[cached]=normal;values[cached+1]=newTangent;}
           if(impulse===0&&tangent===0)continue;
@@ -220,6 +246,13 @@ export class ExternalContactSolver {
       }
       if(kernel)for(let pair=0;pair<this.pairCount;pair++) {
         const c=this.pairContacts[pair]!;if(c>=0){this.contactCache.values[c]=kernel.arrays.normal[pair]!;this.contactCache.values[c+1]=kernel.arrays.tangent[pair]!;}
+      }
+      if(sub===0&&verifySingleStep) {
+        const speed=minimumRadius*.5/input.fixedDelta,limit=speed*speed;
+        let fits=true;
+        for(let a=0;a<count;a++)if(next.active[a]&&next.vx[a]!*next.vx[a]!+next.vy[a]!*next.vy[a]!>limit){fits=false;break;}
+        if(fits)stats.singleStepVerified++;
+        else {substeps=absoluteSteps;dt=input.fixedDelta/substeps;this.kernelDelta=dt;stats.substeps=substeps;stats.singleStepFallbacks++;}
       }
       stats.contactMs += performance.now()-start;
       start = performance.now();
@@ -286,6 +319,19 @@ export class ExternalContactSolver {
 
       }
       stats.contactMs += performance.now()-start;
+      if(stats.positionBudgetExhaustions>budgetBefore&&substeps<EXTERNAL_PROFILE.maximumSubsteps&&attempt+1<EXTERNAL_PROFILE.maximumContactAttempts)break;
+    }
+    if(stats.positionBudgetExhaustions>budgetBefore&&substeps<EXTERNAL_PROFILE.maximumSubsteps&&attempt+1<EXTERNAL_PROFILE.maximumContactAttempts) {
+      // Reject before publication, restore warm/activation state and subdivide.
+      // Attempted intervals count as work, not additional simulated time or input.
+      stats.substepRetries++;stats.rejectedTrialCompressions+=stats.unresolvedCompression-unresolvedBefore;
+      stats.rejectedTrialBudgetExhaustions+=stats.positionBudgetExhaustions-budgetBefore;
+      stats.rejectedTrialPenetration=Math.max(stats.rejectedTrialPenetration,stats.maxExhaustedPenetration);
+      stats.unresolvedCompression=unresolvedBefore;stats.positionBudgetExhaustions=budgetBefore;stats.maxExhaustedPenetration=maxExhaustedBefore;
+      this.contactCache.restoreCurrent();external.affected.set(this.trialAffected);
+      corrected.set(this.trialCorrected);correctionLengths.set(this.trialLengths);
+      const retrySteps=verifySingleStep?absoluteSteps:Math.min(EXTERNAL_PROFILE.maximumSubsteps,Math.max(absoluteSteps,substeps*2));
+      return this.solve(retryInput,external,vx,vy,headings,result,corrected,correctionLengths,retrySteps,attempt+1);
     }
     for (let a=0;a<count;a++) {
       input.solvedVelocityX[a] = next.vx[a]!; input.solvedVelocityY[a] = next.vy[a]!;
@@ -321,6 +367,7 @@ export class ExternalContactSolver {
       +this.anchorX.byteLength+this.anchorY.byteLength+this.velocityAnchorX.byteLength+this.velocityAnchorY.byteLength
       +this.warmCorrected.byteLength
       +this.warmAffected.byteLength
+      +this.trialAffected.byteLength+this.trialCorrected.byteLength+this.trialLengths.byteLength
       +this.freeSpace.bytes+this.contactCache.bytes+this.projection.bytes+(this.kernel?.memory.buffer.byteLength??0);
   }
   /** Tight swept velocity workset. An excluded pair starts at least 1px from
@@ -450,6 +497,7 @@ export class ExternalContactSolver {
           result.candidateChecks+=kernel.exports.pairCandidates();
           stats.candidateFallbacks+=kernel.exports.pairFallbacks();
           stats.contactCellUpperBound+=kernel.exports.pairCells();
+          stats.pairOwnershipSkips+=kernel.exports.pairOwnershipSkips();
           result.totalNeighbors+=pairs;
           result.maxNeighbors=Math.max(result.maxNeighbors,kernel.exports.pairMaximum());
           result.maxContacts=Math.max(result.maxContacts,kernel.exports.pairMaximum());
@@ -457,6 +505,7 @@ export class ExternalContactSolver {
           return;
         }
         if(data.a.length>=count*EXTERNAL_PROFILE.maximumPairFactor){stats.saturatedQueries++;throw new RangeError('External contact pair budget exceeded; overlapping/overpacked initial state.');}
+        stats.pairCapacityRetries++;
         kernel.ensure(count,Math.min(count*EXTERNAL_PROFILE.maximumPairFactor,Math.max(32,data.a.length*2)));
       }
     }

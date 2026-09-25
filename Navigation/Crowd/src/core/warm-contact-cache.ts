@@ -6,8 +6,25 @@ const empty=():Table=>({keys:new Float64Array(0),values:new Float64Array(0),used
 export class WarmContactCache {
   private current=empty();
   private previous=empty();
+  private checkpoint=empty();
+  private checkpointWidth=0;
   get values():Float64Array { return this.current.values; }
-  get bytes():number { return [this.current,this.previous].reduce((n,t)=>n+t.keys.byteLength+t.values.byteLength+t.used.byteLength,0); }
+  get bytes():number { return [this.current,this.previous,this.checkpoint].reduce((n,t)=>n+t.keys.byteLength+t.values.byteLength+t.used.byteLength,0); }
+
+  saveCurrent():void {
+    const t=this.current,width=t.keys.length;
+    if(this.checkpoint.keys.length<width)this.checkpoint={keys:new Float64Array(width),values:new Float64Array(width*5),used:new Int32Array(width),count:0};
+    this.checkpointWidth=width;this.checkpoint.count=t.count;
+    this.checkpoint.keys.set(t.keys);this.checkpoint.values.set(t.values);this.checkpoint.used.set(t.used);
+  }
+  restoreCurrent():void {
+    const width=this.checkpointWidth,saved=this.checkpoint;
+    // Restore the original hash mask as well as entries. A larger mask with
+    // old slots would lose keys even though the copied bytes look intact.
+    if(this.current.keys.length!==width)this.current={keys:new Float64Array(width),values:new Float64Array(width*5),used:new Int32Array(width),count:0};
+    this.current.keys.set(saved.keys.subarray(0,width));this.current.values.set(saved.values.subarray(0,width*5));
+    this.current.used.set(saved.used.subarray(0,width));this.current.count=saved.count;
+  }
 
   begin(maximumEntries:number):void {
     const swap=this.previous;this.previous=this.current;this.current=swap;
@@ -49,6 +66,7 @@ export class WarmContactCache {
 
   reset():void {
     for(const t of [this.current,this.previous])if(t.count){t.count=0;t.keys.fill(0);}
+    this.checkpoint.count=0;this.checkpointWidth=0;
   }
 
   hashState(mix:(value:number)=>void):void {
