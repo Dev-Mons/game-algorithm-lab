@@ -1,0 +1,419 @@
+{
+  "commit": "db4608916a5199f20e76ee55c2b77cd9a396e90b",
+  "workingSourceSha256": "8e43c95c784dde67614bd80b78f6b3ee5720144d676a1ce208331e90adbf92a8",
+  "runtime": "v22.22.0",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "support": {
+    "name": "external-v1",
+    "maximumSpeed": 600,
+    "maximumDeltaVelocity": 600,
+    "maximumAcceleration": 1200,
+    "maximumProxySpeed": 300,
+    "maximumProxies": 8,
+    "maximumInputs": 32,
+    "maximumRecords": 4096,
+    "maximumSubsteps": 16,
+    "candidates": 64,
+    "iterations": 4,
+    "drag": 1.5,
+    "control": 0.25,
+    "recoverySeconds": 4,
+    "compressionTolerance": 0.5
+  },
+  "profile": "open-field; same density; seed 42; dt 1/60; radius 3.2; warmup 30; measured 90; quality independent full spatial audit every 10 ticks outside step timing; no rendering; allocation samples include Vite/Node/GC and are not allocator counts",
+  "rows": [
+    {
+      "count": 1000,
+      "repeat": 0,
+      "mode": "global",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "spawned": 1000,
+      "minActive": 1000,
+      "stepMs": {
+        "p50": 2.296699999999987,
+        "p95": 9.190400000000068,
+        "p99": 15.454200000000014
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 1000,
+        "queryCells": 874,
+        "candidates": 1000,
+        "substeps": 4,
+        "planningMs": 3.044499999999971,
+        "planningCandidates": 28614,
+        "planningFallbacks": 1,
+        "contactAffected": 718,
+        "contactCellUpperBound": 40877,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 512,
+        "staticExhaustions": 0,
+        "rebuilds": 4,
+        "pairs": 7740,
+        "saturatedQueries": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "queryMs": 0.3886999999999716,
+        "predictionMs": 0.3930000000000291,
+        "contactMs": 8.164499999999975,
+        "staticMs": 0.5370999999998958
+      },
+      "directHits": 1000,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "passes": {
+        "navigation": {
+          "p50": 0.0001999999999497959,
+          "p95": 0.0026000000000294676,
+          "p99": 0.03319999999996526
+        },
+        "desired": {
+          "p50": 0.09770000000003165,
+          "p95": 0.21100000000001273,
+          "p99": 0.4452999999999747
+        },
+        "avoidance": {
+          "p50": 0.42439999999999145,
+          "p95": 0.869899999999916,
+          "p99": 2.5014999999999645
+        },
+        "contact": {
+          "p50": 1.3836000000000013,
+          "p95": 8.470800000000054,
+          "p99": 13.131199999999922
+        },
+        "density": {
+          "p50": 0.08130000000005566,
+          "p95": 0.2778999999999314,
+          "p99": 0.9761999999999489
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 2.296299999999974,
+          "p95": 9.189799999999991,
+          "p99": 15.452099999999973
+        },
+        "external.planningMs": {
+          "p50": 0.023000000000024556,
+          "p95": 0.7171999999999343,
+          "p99": 3.044499999999971
+        },
+        "external.queryMs": {
+          "p50": 0.0009000000000014552,
+          "p95": 0.004400000000032378,
+          "p99": 0.3886999999999716
+        },
+        "external.predictionMs": {
+          "p50": 0.09720000000004347,
+          "p95": 0.30970000000002074,
+          "p99": 0.3930000000000291
+        },
+        "external.contactMs": {
+          "p50": 0.9886999999998807,
+          "p95": 6.64569999999992,
+          "p99": 8.164499999999975
+        },
+        "external.staticMs": {
+          "p50": 0.02460000000007767,
+          "p95": 0.30559999999991305,
+          "p99": 0.5370999999998958
+        }
+      },
+      "memoryBefore": {
+        "rss": 122687488,
+        "heapTotal": 59580416,
+        "heapUsed": 32961368,
+        "external": 7093769,
+        "arrayBuffers": 2247625
+      },
+      "memoryAfter": {
+        "rss": 126787584,
+        "heapTotal": 62726144,
+        "heapUsed": 36757720,
+        "external": 7156143,
+        "arrayBuffers": 2886401
+      },
+      "hash": "3f7b133d"
+    },
+    {
+      "count": 10000,
+      "repeat": 0,
+      "mode": "global",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "spawned": 10000,
+      "minActive": 10000,
+      "stepMs": {
+        "p50": 17.991799999999785,
+        "p95": 28.46510000000012,
+        "p99": 98.13250000000016
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 10000,
+        "queryCells": 8568,
+        "candidates": 10000,
+        "substeps": 1,
+        "planningMs": 11.623900000000049,
+        "planningCandidates": 296390,
+        "planningFallbacks": 0,
+        "contactAffected": 7108,
+        "contactCellUpperBound": 360000,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 2,
+        "pairs": 79929,
+        "saturatedQueries": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "queryMs": 1.4157999999999902,
+        "predictionMs": 1.2932000000000698,
+        "contactMs": 67.9362000000001,
+        "staticMs": 1.1222000000000207
+      },
+      "directHits": 10000,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "passes": {
+        "navigation": {
+          "p50": 0.0007000000000516593,
+          "p95": 0.001099999999951251,
+          "p99": 0.0014000000001033186
+        },
+        "desired": {
+          "p50": 1.0191999999997279,
+          "p95": 1.2218000000002576,
+          "p99": 1.244799999999941
+        },
+        "avoidance": {
+          "p50": 4.056999999999789,
+          "p95": 4.597700000000259,
+          "p99": 5.7198000000000775
+        },
+        "contact": {
+          "p50": 10.891999999999825,
+          "p95": 21.86310000000003,
+          "p99": 90.02510000000007
+        },
+        "density": {
+          "p50": 0.8296000000000276,
+          "p95": 0.9857999999999265,
+          "p99": 1.1253999999998996
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 17.989399999999932,
+          "p95": 28.46349999999984,
+          "p99": 98.13139999999999
+        },
+        "external.planningMs": {
+          "p50": 3.196899999999914,
+          "p95": 6.834599999999909,
+          "p99": 11.623900000000049
+        },
+        "external.queryMs": {
+          "p50": 0.004899999999906868,
+          "p95": 0.007700000000113505,
+          "p99": 1.4157999999999902
+        },
+        "external.predictionMs": {
+          "p50": 0.9705000000003565,
+          "p95": 1.1149000000000342,
+          "p99": 1.2932000000000698
+        },
+        "external.contactMs": {
+          "p50": 5.051400000000285,
+          "p95": 11.982600000000048,
+          "p99": 67.9362000000001
+        },
+        "external.staticMs": {
+          "p50": 0.11110000000007858,
+          "p95": 0.1790000000000873,
+          "p99": 1.1222000000000207
+        }
+      },
+      "memoryBefore": {
+        "rss": 152592384,
+        "heapTotal": 65761280,
+        "heapUsed": 46355200,
+        "external": 28663675,
+        "arrayBuffers": 24393933
+      },
+      "memoryAfter": {
+        "rss": 158646272,
+        "heapTotal": 68644864,
+        "heapUsed": 46907384,
+        "external": 35048447,
+        "arrayBuffers": 30778705
+      },
+      "hash": "e73ae1cd"
+    },
+    {
+      "count": 20000,
+      "repeat": 0,
+      "mode": "global",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "spawned": 20000,
+      "minActive": 20000,
+      "stepMs": {
+        "p50": 38.01890000000003,
+        "p95": 66.46169999999984,
+        "p99": 72.85760000000028
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 20000,
+        "queryCells": 16968,
+        "candidates": 20000,
+        "substeps": 1,
+        "planningMs": 19.672499999999673,
+        "planningCandidates": 595482,
+        "planningFallbacks": 0,
+        "contactAffected": 13949,
+        "contactCellUpperBound": 720000,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 2,
+        "pairs": 160173,
+        "saturatedQueries": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "queryMs": 2.0627999999996973,
+        "predictionMs": 2.896600000000035,
+        "contactMs": 28.504500000000007,
+        "staticMs": 0.561399999999594
+      },
+      "directHits": 20000,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "passes": {
+        "navigation": {
+          "p50": 0.0009000000000014552,
+          "p95": 0.0014000000001033186,
+          "p99": 0.0016999999998006388
+        },
+        "desired": {
+          "p50": 2.3293000000003303,
+          "p95": 2.8029999999998836,
+          "p99": 3.611699999999473
+        },
+        "avoidance": {
+          "p50": 8.9382999999998,
+          "p95": 9.662900000000263,
+          "p99": 14.333300000000236
+        },
+        "contact": {
+          "p50": 23.531599999999344,
+          "p95": 47.5014000000001,
+          "p99": 56.59360000000015
+        },
+        "density": {
+          "p50": 1.8589999999994689,
+          "p95": 2.512499999999818,
+          "p99": 2.9407000000001062
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 38.01710000000003,
+          "p95": 66.45979999999963,
+          "p99": 72.85570000000007
+        },
+        "external.planningMs": {
+          "p50": 7.236599999999271,
+          "p95": 15.349899999999252,
+          "p99": 19.672499999999673
+        },
+        "external.queryMs": {
+          "p50": 0.006900000000314321,
+          "p95": 0.010299999999915599,
+          "p99": 2.0627999999996973
+        },
+        "external.predictionMs": {
+          "p50": 1.9895000000005894,
+          "p95": 2.2906000000002678,
+          "p99": 2.896600000000035
+        },
+        "external.contactMs": {
+          "p50": 10.870900000000802,
+          "p95": 25.104699999999866,
+          "p99": 28.504500000000007
+        },
+        "external.staticMs": {
+          "p50": 0.22420000000056461,
+          "p95": 0.39720000000033906,
+          "p99": 0.561399999999594
+        }
+      },
+      "memoryBefore": {
+        "rss": 183971840,
+        "heapTotal": 69812224,
+        "heapUsed": 48153904,
+        "external": 72952444,
+        "arrayBuffers": 68718590
+      },
+      "memoryAfter": {
+        "rss": 202936320,
+        "heapTotal": 66658304,
+        "heapUsed": 32730392,
+        "external": 81797456,
+        "arrayBuffers": 77563602
+      },
+      "hash": "430cebad"
+    }
+  ]
+}

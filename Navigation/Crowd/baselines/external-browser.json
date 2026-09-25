@@ -1,0 +1,113 @@
+{
+  "browser": "151.0.7922.34",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "profile": "Headless Chromium; app CanvasRenderer; one fixed step per RAF (not catch-up); 30 warmup + 90 measurement; single observational run per case; frame intervals include display pacing, rendering and UI; no quality audit",
+  "rows": [
+    {
+      "count": 1000,
+      "mode": "none",
+      "spawned": 1000,
+      "active": 1000,
+      "frameMs": {
+        "p50": 16.700000000000045,
+        "p95": 16.799999999999955,
+        "p99": 16.800000000000182
+      },
+      "stepMs": {
+        "p50": 1.2999999998137355,
+        "p95": 1.5,
+        "p99": 2.2999999998137355
+      },
+      "walls": 0
+    },
+    {
+      "count": 1000,
+      "mode": "blast",
+      "spawned": 1000,
+      "active": 1000,
+      "frameMs": {
+        "p50": 16.700000000000045,
+        "p95": 16.799999999999955,
+        "p99": 16.800000000000182
+      },
+      "stepMs": {
+        "p50": 2.400000000372529,
+        "p95": 4.5,
+        "p99": 13.5
+      },
+      "walls": 0
+    },
+    {
+      "count": 10000,
+      "mode": "none",
+      "spawned": 10000,
+      "active": 10000,
+      "frameMs": {
+        "p50": 16.700000000000045,
+        "p95": 16.800000000000182,
+        "p99": 33.40000000000009
+      },
+      "stepMs": {
+        "p50": 13.5,
+        "p95": 13.900000000372529,
+        "p99": 14.399999999906868
+      },
+      "walls": 0
+    },
+    {
+      "count": 10000,
+      "mode": "blast",
+      "spawned": 10000,
+      "active": 10000,
+      "frameMs": {
+        "p50": 33.30000000000018,
+        "p95": 50,
+        "p99": 83.29999999999995
+      },
+      "stepMs": {
+        "p50": 22.799999999813735,
+        "p95": 43.200000000186265,
+        "p99": 70.70000000018626
+      },
+      "walls": 0
+    },
+    {
+      "count": 20000,
+      "mode": "none",
+      "spawned": 20000,
+      "active": 20000,
+      "frameMs": {
+        "p50": 33.30000000000018,
+        "p95": 50,
+        "p99": 50.100000000000364
+      },
+      "stepMs": {
+        "p50": 27.300000000279397,
+        "p95": 30.799999999813735,
+        "p99": 31.399999999906868
+      },
+      "walls": 0
+    },
+    {
+      "count": 20000,
+      "mode": "blast",
+      "spawned": 20000,
+      "active": 20000,
+      "frameMs": {
+        "p50": 66.59999999999945,
+        "p95": 100,
+        "p99": 133.4000000000001
+      },
+      "stepMs": {
+        "p50": 47.5,
+        "p95": 82.89999999990687,
+        "p99": 125.10000000009313
+      },
+      "walls": 0
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import { resolveExperiment, type ResolvedExperiment } from '../algorithms/lab/registry';
 import type { LabPipeline, AgentGoalCommand } from '../algorithms/lab/pipeline';
 import { emptyExperimentStats, type ExperimentStats } from '../algorithms/lab/contracts';
+import { ExternalInfluences, type ExternalInput } from './external-influences';
 
 const EPSILON = 1e-9;
 
@@ -60,6 +61,7 @@ const ZERO_METRICS: StepMetrics = {
  * navigation -> grid transport -> bounded residual contacts -> static sweep.
  */
 export class CrowdSimulation {
+  readonly external: ExternalInfluences;
   state: AgentBuffer;
   previousState: AgentBuffer;
   private nextState: AgentBuffer;
@@ -123,6 +125,7 @@ export class CrowdSimulation {
   private dynamicRebuildMsThisStep = 0;
 
   constructor(public config: SimulationConfig, scenario: ScenarioDefinition) {
+    this.external = new ExternalInfluences(config.agentCount, config.width, config.height);
     this.resolvedExperiment = resolveExperiment(config);
     this.scenario = scenario;
     this.goal = { ...scenario.goal };
@@ -169,6 +172,7 @@ export class CrowdSimulation {
   }
 
   reset(): void {
+    this.external.reset();
     this.pipeline = null;
     this.individualGoals.clear();
     this.terrainVersion = 0;
@@ -314,6 +318,7 @@ export class CrowdSimulation {
     const next = this.nextState;
     this.previousState.copyFrom(current);
     this.deactivateArrivals(current);
+    this.external.begin(current, this.agentFlow, this.stepCount, this.config.fixedDelta);
     let passStarted = performance.now();
     this.crowdField.update(
       current,
@@ -338,10 +343,12 @@ export class CrowdSimulation {
       maximumSpeed: this.config.maxSpeed,
       fixedDelta: this.config.fixedDelta,
       areaWeights: this.agentAreaWeights,
+      externallyDriven: this.external.active ? this.external.affected : undefined,
     });
     pass.avoidance = performance.now() - passStarted;
     passStarted = performance.now();
     const movement = this.movement.solve({
+      external: this.external.active ? this.external : undefined,
       current,
       next,
       index: this.contactGrid,
@@ -370,6 +377,7 @@ export class CrowdSimulation {
     // Legacy movement is a fused contacts/integration pass; the combined time is labeled contact.
     pass.contact = performance.now() - passStarted;
     this.deactivateArrivals(next);
+    this.external.finish(next);
     this.finalizeMetrics(current, next, movement);
     this.state = next;
     this.nextState = current;
@@ -388,6 +396,11 @@ export class CrowdSimulation {
 
   get goals(): readonly Vec2[] {
     return this.flowGoals;
+  }
+
+  enqueueExternal(input: ExternalInput): boolean {
+    if (this.pipeline) throw new RangeError('External inputs currently require Legacy.');
+    return this.external.enqueue(input, this.stepCount, this.state.count, this.config.fixedDelta);
   }
 
   get flowCount(): number {
@@ -459,6 +472,8 @@ export class CrowdSimulation {
       mix(Math.round(this.agentRadii[agent]! * 1000));
       mix(Math.round(this.state.heading[agent]! * 1_000_000));
     }
+    const external = this.external.fingerprint();
+    for (let i = 0; i < external.length; i++) mix(external.charCodeAt(i));
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
 
@@ -681,8 +696,8 @@ export class CrowdSimulation {
         backwardCount += 1;
       }
       const velocityDelta = Math.hypot(
-        next.vx[agent]! - current.vx[agent]!,
-        next.vy[agent]! - current.vy[agent]!,
+        next.vx[agent]! - this.previousState.vx[agent]!,
+        next.vy[agent]! - this.previousState.vy[agent]!,
       );
       velocityDeltaSum += velocityDelta;
       maximumVelocityDelta = Math.max(maximumVelocityDelta, velocityDelta);

@@ -31,6 +31,15 @@ export function appTemplate(): string {
           <div id="canvas-hint" class="canvas-hint">빨간 영역: 생성 · 파란 원: 목적지 · 클릭해 목표 이동</div>
           <div class="canvas-badges"><span id="scenario-badge">Open Field</span><span id="hash-badge">Hash —</span></div>
         </div>
+          <div class="external-controls">
+            <label for="external-tool">클릭 도구</label>
+            <select id="external-tool">
+              <option value="goal">목표 이동</option><option value="blast">폭발</option>
+              <option value="wave">확장 충격파</option><option value="wind">오른쪽 지속 밀림 (1초)</option>
+              <option value="vehicle">이동 원형 물체 (1초)</option>
+            </select>
+          </div>
+          <div id="external-status" role="status">외력 도구를 선택하고 군중 근처를 클릭하세요.</div>
         <div class="transport">
           <button id="run-toggle" class="primary" type="button">❚❚ 일시정지</button>
           <button id="single-step" type="button">＋ 한 스텝</button>

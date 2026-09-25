@@ -16,6 +16,8 @@
     "measure:quality": "vite-node scripts/measure-quality.ts",
     "measure:fluid": "vite-node scripts/measure-fluid.ts",
     "measure:lab": "vite-node scripts/measure-lab.ts",
+    "measure:external": "vite-node scripts/measure-external.ts",
+    "research:external": "vite-node scripts/compare-external-models.ts",
     "research:freeze": "vite-node scripts/measure-repair.ts --freeze --seeds=42,7,19,73",
     "research:repair": "vite-node scripts/measure-repair.ts",
     "research:audit": "vite-node scripts/check-repair-replays.ts",

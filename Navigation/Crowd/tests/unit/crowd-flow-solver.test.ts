@@ -8,6 +8,16 @@ const options: CrowdFlowOptions = {targetDensity: 8, pressureIterations: 8,
   maximumSpeed: 86, fixedDelta: 1/60};
 
 describe('directional grid transport', () => {
+  it('observes physical knockback separately from voluntary channel alignment', () => {
+    const field = new CrowdField(96,96,16), solver = new CrowdFlowSolver(field), state = new AgentBuffer(1);
+    state.active[0]=1;state.x[0]=48;state.y[0]=48;state.intentX[0]=1;state.vx[0]=-500;
+    field.update(state,8,1/60);
+    expect(sum(field.momentumX)).toBeCloseTo(-500,8);
+    const desired=new Float64Array([86]);
+    solver.solve(state,desired,new Float64Array(1),{...options,externallyDriven:new Uint8Array([1])});
+    expect(sum(solver.momentumX)).toBeCloseTo(86,8);expect(state.vx[0]).toBe(-500);
+    expect(desired[0]).toBeGreaterThan(0);
+  });
   it('conserves deposited mass, momentum and navigation velocity with two angular weights', () => {
     const field = new CrowdField(96,96,16);
     const solver = new CrowdFlowSolver(field);

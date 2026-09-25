@@ -1,5 +1,6 @@
 import type { CrowdSimulation } from '../core/simulation';
 import type { Rect, ScenarioDefinition, Vec2 } from '../core/types';
+import type { ExternalInput } from '../core/external-influences';
 
 export const LAB_SCENARIOS: readonly ScenarioDefinition[] = [
   {
@@ -40,6 +41,7 @@ export const LAB_SCENARIOS: readonly ScenarioDefinition[] = [
 ];
 
 export type LabCommand = { step: number; type: 'goal'; goal: Vec2 }
+  | { step: number; type: 'external'; input: ExternalInput }
   | { step: number; type: 'obstacles'; obstacles: Rect[] }
   | { step: number; type: 'agent-goals'; goals: Array<{ agent: number; goal: Vec2 }> };
 
@@ -55,6 +57,7 @@ export function applyCommands(simulation: CrowdSimulation, commands: readonly La
   for (const command of commands) {
     if (command.step !== simulation.stepCount) continue;
     if (command.type === 'goal') simulation.setGoal(command.goal.x, command.goal.y);
+    else if (command.type === 'external') simulation.enqueueExternal({ ...command.input, generation: simulation.external.generation });
     else if (command.type === 'agent-goals') simulation.setAgentGoals(command.goals);
     else simulation.updateObstacles(command.obstacles.map(obstacle => ({ ...obstacle })));
   }

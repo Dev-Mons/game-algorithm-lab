@@ -10,6 +10,8 @@ import {
 } from './obstacle-collision';
 import type { Rect } from './types';
 import { StaticObstacleIndex } from './static-obstacle-index';
+import type { ExternalInfluences } from './external-influences';
+import { ExternalContactSolver } from './external-contact-solver';
 
 const EPSILON = 1e-9;
 const REPORTABLE_PENETRATION = 0.01;
@@ -19,6 +21,7 @@ export const CONTACT_ITERATIONS = 8;
 export const MAX_CONTACT_QUERY_VISITS = 24;
 
 export interface CrowdMovementInput {
+  external?: ExternalInfluences;
   current: AgentBuffer;
   next: AgentBuffer;
   index: SpatialHash;
@@ -70,6 +73,7 @@ export interface CrowdMovementResult {
  * simultaneously before the existing swept static collision path runs.
  */
 export class CrowdMovementSolver {
+  private externalContact: ExternalContactSolver | null = null;
   constructor(private readonly obstacleIndex = new StaticObstacleIndex()) {}
   private readonly sweepObstacles: Rect[] = [];
   private velocityX = new Float64Array(0);
@@ -133,7 +137,15 @@ export class CrowdMovementSolver {
     const count = input.current.count;
     this.ensureCapacity(count);
     this.reset(input);
+    const predictionStarted = performance.now();
     this.predictPositions(input);
+    if (input.external?.active) {
+      input.external.stats.predictionMs = performance.now() - predictionStarted;
+      this.externalContact ??= new ExternalContactSolver();
+      this.externalContact.solve(input, input.external, this.velocityX, this.velocityY, this.headings, this.result,
+        this.contactCorrected, this.contactCorrectionLength);
+      return this.result;
+    }
 
     // The index is the contact-only grid owned by CrowdSimulation. It is
     // rebuilt from predicted positions, never from partially corrected ones.
@@ -193,6 +205,23 @@ export class CrowdMovementSolver {
 
       let velocityX = input.current.vx[agent]!;
       let velocityY = input.current.vy[agent]!;
+      if (input.external?.affected[agent]) {
+        const control = input.external.settings.control;
+        const maximumDelta = maximumVelocityDelta * control;
+        const speed = Math.hypot(velocityX, velocityY);
+        const forward = velocityX * input.current.intentX[agent]! + velocityY * input.current.intentY[agent]!;
+        const damping = speed > input.maxSpeed * 1.05 || forward < 0
+          ? Math.exp(-input.external.settings.drag * input.fixedDelta) : 1;
+        velocityX *= damping; velocityY *= damping;
+        const dx = input.desiredVelocityX[agent]! - velocityX, dy = input.desiredVelocityY[agent]! - velocityY;
+        const length = Math.hypot(dx, dy), scale = length > 0 ? Math.min(1, maximumDelta / length) : 0;
+        this.velocityX[agent] = velocityX + dx * scale; this.velocityY[agent] = velocityY + dy * scale;
+        this.predictedX[agent] = startX + this.velocityX[agent]! * input.fixedDelta;
+        this.predictedY[agent] = startY + this.velocityY[agent]! * input.fixedDelta;
+        const target = Math.atan2(input.current.intentY[agent]!, input.current.intentX[agent]!);
+        this.headings[agent] = angleDelta(0, this.headings[agent]! + clamp(angleDelta(this.headings[agent]!, target), -maximumTurn, maximumTurn));
+        continue;
+      }
       let deltaX = input.desiredVelocityX[agent]! - velocityX;
       let deltaY = input.desiredVelocityY[agent]! - velocityY;
       const deltaLength = Math.hypot(deltaX, deltaY);

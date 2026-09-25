@@ -16,6 +16,8 @@ export interface CrowdFlowOptions {
   maximumSpeed: number;
   fixedDelta: number;
   areaWeights?: Float64Array;
+  /** External momentum is observed by CrowdField, but is not voluntary channel alignment. */
+  externallyDriven?: Uint8Array;
 }
 
 /**
@@ -43,6 +45,7 @@ export class CrowdFlowSolver {
   private readonly rhs: Float64Array;
   private readonly bulkX: Float64Array;
   private readonly bulkY: Float64Array;
+  private readonly channelMass: Float64Array;
   private readonly faceX: Float64Array;
   private readonly faceY: Float64Array;
   private readonly faceDensityX: Float64Array;
@@ -70,6 +73,7 @@ export class CrowdFlowSolver {
     this.correctedDivergence = new Float64Array(field.cellCount);
     this.bulkX = new Float64Array(field.cellCount);
     this.bulkY = new Float64Array(field.cellCount);
+    this.channelMass = new Float64Array(field.cellCount);
     this.faceX = new Float64Array(field.cellCount);
     this.faceY = new Float64Array(field.cellCount);
     this.faceDensityX = new Float64Array(field.cellCount);
@@ -98,13 +102,13 @@ export class CrowdFlowSolver {
 
   solve(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
-    this.scatter(state, desiredX, desiredY, options.areaWeights);
+    this.scatter(state, desiredX, desiredY, options.areaWeights, options.externallyDriven);
     this.buildVelocities(options);
     this.project(options);
     this.gather(state, desiredX, desiredY, options);
   }
 
-  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array): void {
+  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array, external?: Uint8Array): void {
     this.mass.fill(0);
     this.momentumX.fill(0);
     this.momentumY.fill(0);
@@ -122,8 +126,8 @@ export class CrowdFlowSolver {
           const weight = this.weights[corner]! * angularWeight * (areaWeights?.[a] ?? 1);
           const i = this.cells[corner]! + offset;
           this.mass[i] = this.mass[i]! + weight;
-          this.momentumX[i] = this.momentumX[i]! + state.vx[a]! * weight;
-          this.momentumY[i] = this.momentumY[i]! + state.vy[a]! * weight;
+          this.momentumX[i] = this.momentumX[i]! + (external?.[a] ? desiredX[a]! : state.vx[a]!) * weight;
+          this.momentumY[i] = this.momentumY[i]! + (external?.[a] ? desiredY[a]! : state.vy[a]!) * weight;
           this.desiredX[i] = this.desiredX[i]! + desiredX[a]! * weight;
           this.desiredY[i] = this.desiredY[i]! + desiredY[a]! * weight;
         }
@@ -135,12 +139,20 @@ export class CrowdFlowSolver {
     const {cellCount, density} = this.field;
     this.bulkX.fill(0);
     this.bulkY.fill(0);
-    for (let cell = 0; cell < cellCount; cell++) {
-      let total = 0;
-      const blend = options.velocityBlend * clamp(density[cell]! / options.targetDensity, 0, 1);
-      for (let channel = 0; channel < FLOW_CHANNELS; channel++) {
-        const i = channel * cellCount + cell;
+    this.channelMass.fill(0);
+    // Channel-major traversal follows the actual contiguous buffer layout.
+    // Per-cell sums still visit channels in the original order for exact replay.
+    for (let channel = 0; channel < FLOW_CHANNELS; channel++) {
+      const offset = channel * cellCount;
+      for (let cell = 0; cell < cellCount; cell++) {
+        const i = offset + cell;
         const mass = this.mass[i]!;
+        if (mass === 0) {
+          this.velocityX[i] = 0; this.velocityY[i] = 0;
+          this.unprojectedX[i] = 0; this.unprojectedY[i] = 0;
+          continue;
+        }
+        const blend = options.velocityBlend * clamp(density[cell]! / options.targetDensity, 0, 1);
         const inverse = mass > EPSILON ? 1 / mass : 0;
         this.velocityX[i] = (this.desiredX[i]! * (1 - blend) + this.momentumX[i]! * blend) * inverse;
         this.velocityY[i] = (this.desiredY[i]! * (1 - blend) + this.momentumY[i]! * blend) * inverse;
@@ -148,8 +160,11 @@ export class CrowdFlowSolver {
         this.unprojectedY[i] = this.velocityY[i]!;
         this.bulkX[cell] = this.bulkX[cell]! + this.velocityX[i]! * mass;
         this.bulkY[cell] = this.bulkY[cell]! + this.velocityY[i]! * mass;
-        total += mass;
+        this.channelMass[cell] = this.channelMass[cell]! + mass;
       }
+    }
+    for (let cell = 0; cell < cellCount; cell++) {
+      const total = this.channelMass[cell]!;
       if (total > EPSILON) {
         this.bulkX[cell] = this.bulkX[cell]! / total;
         this.bulkY[cell] = this.bulkY[cell]! / total;

@@ -25,6 +25,7 @@ declare global {
         metrics: StepMetrics;
       };
       simulation: () => CrowdSimulation;
+      getFrameTimings: () => ReturnType<LabRecorder['frameTimings']>;
       ready: boolean;
     };
   }
@@ -115,6 +116,7 @@ window.crowdDebug = {
     metrics: { ...simulation.metrics },
   }),
   simulation: () => simulation,
+  getFrameTimings: () => recorder.frameTimings(),
   ready: !fastForwarding,
 };
 
@@ -155,8 +157,16 @@ function frame(now: number): void {
 
 function timedStep(): void {
   const startedAt = performance.now();
-  applyCommands(simulation, commandLog.filter(command => !appliedLiveCommands.has(command)));
-  simulation.step();
+  try {
+    applyCommands(simulation, commandLog.filter(command => !appliedLiveCommands.has(command)));
+    simulation.step();
+  } catch (error) {
+    running = false; fastForwarding = false;
+    element('external-status').textContent = `입력 처리 중지: ${String(error)} · 초기화 후 다시 실행하세요.`;
+    updateRunState();
+    if (comparisonRunning) throw error;
+    return;
+  }
   const elapsed = performance.now() - startedAt;
   runtimeMetrics.recordStep(elapsed);
   recorder.record(elapsed);
@@ -234,6 +244,26 @@ function initializeControls(): void {
     const bounds = canvas.getBoundingClientRect();
     const goal = { x: ((event.clientX - bounds.left) / bounds.width) * simulation.config.width,
       y: ((event.clientY - bounds.top) / bounds.height) * simulation.config.height };
+    const tool = element<HTMLSelectElement>('external-tool').value;
+    if (tool !== 'goal') {
+      const tick = simulation.stepCount, generation = simulation.external.generation;
+      const id = `ui-${tick}-${commandLog.length}`;
+      const add = (input: import('./core/external-influences').ExternalInput) => {
+        const command: LabCommand = { step: input.tick, type: 'external', input };
+        commandLog.push(command);
+      };
+      if (tool === 'blast' || tool === 'wave') add({ kind: 'blast', id, tick, generation,
+        x: goal.x, y: goal.y, radius: 100, speed: 400, ...(tool === 'wave' ? { expansionSpeed: 150 } : {}) });
+      else if (tool === 'wind') add({ kind: 'acceleration', id, tick, generation,
+        target: { ...goal, radius: 100 }, ax: 500, ay: 0, endTick: tick + 60 });
+      else if (tool === 'vehicle') {
+        for (let i = 0; i < 60; i++) add({ kind: 'proxy', id: `${id}-${i}`, body: id, tick: tick+i, generation,
+          x: goal.x+i*1.5, y: goal.y, toX: goal.x+(i+1)*1.5, toY: goal.y, radius: 18 });
+        add({ kind: 'remove-proxy', id: `${id}-remove`, body: id, tick: tick+60, generation });
+      }
+      element('external-status').textContent = `${tool} 입력 예약 · tick ${tick} · 일시정지 중에는 한 스텝 또는 실행으로 적용`;
+      return;
+    }
     simulation.setGoal(goal.x, goal.y);
     const command: LabCommand = { step: simulation.stepCount, type: 'goal', goal };
     commandLog.push(command);
@@ -341,6 +371,10 @@ function updateMetrics(): void {
   document.body.dataset.preset = simulation.resolvedExperiment.preset.id;
   const stats = simulation.experimentStats;
   element('lab-live').textContent = `생성 ${simulation.state.count.toLocaleString()} · 활성 ${metrics.activeCount.toLocaleString()} · 이동 ${stats.movingCount.toLocaleString()} · 대기 ${stats.waitingCount.toLocaleString()} · 도착 ${metrics.arrivedCount.toLocaleString()} · 접촉 활성 ${stats.contactActiveCount.toLocaleString()} · 벽시계 Hz ${recorder.achievedHz.toFixed(1)}`;
+  if (simulation.external.active || simulation.external.stats.affected) {
+    const e = simulation.external.stats;
+    element('external-status').textContent = `직접 영향 ${e.affected} · 접촉 영향 ${e.contactAffected} · substep ${e.substeps} · 후보 포화 ${e.saturatedQueries} · 속도 제한 ${e.speedClamps} · 끼임 ${e.crushed}`;
+  }
   element('lab-passes').textContent = Object.entries(stats.passMs).map(([key, value]) => `${key} ${value.toFixed(2)}ms`).join(' · ')
     + ` | 경로 요청 ${stats.pathRequests} · 공유 재사용 ${stats.cacheHits} · field 생성 ${stats.fieldBuilds} · 지형 v${stats.terrainVersion}`;
 }

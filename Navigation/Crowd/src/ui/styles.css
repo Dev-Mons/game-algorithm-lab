@@ -56,6 +56,11 @@ h1 { margin: 0; font-size: clamp(19px, 2vw, 27px); letter-spacing: -.03em; }
 .transport { display: flex; align-items: center; gap: 8px; padding: 11px 0; }
 .speed-control { display: flex; align-items: center; gap: 7px; margin-left: auto; color: #8fa5be; font-size: 12px; }
 .speed-control select { padding: 7px 8px; }
+.external-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: #9eb4cc; }
+.external-controls select { max-width: 100%; padding: 7px 8px; }
+.external-controls label { flex: none; white-space: nowrap; }
+#external-status { margin-top: 6px; color: #9eb4cc; font-size: 12px; overflow-wrap: anywhere; }
+.editing-map .external-controls, .editing-map #external-status { display: none; }
 
 .metrics-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .metric-card { min-width: 0; padding: 11px 12px; border: 1px solid #20344d; border-radius: 9px; background: rgba(13,26,44,.72); }

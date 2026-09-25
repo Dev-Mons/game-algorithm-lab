@@ -86,6 +86,10 @@ export class LabRecorder {
     if (this.renderTimes.length > 10000) this.renderTimes.shift();
   }
 
+  frameTimings(samples = 90) {
+    return { frameIntervalMs: distribution(this.frames.slice(-samples)), renderMs: distribution(this.renderTimes.slice(-samples)) };
+  }
+
   record(stepMs: number): void {
     const s = this.simulation;
     if (s.stepCount <= this.warmupSteps) return;

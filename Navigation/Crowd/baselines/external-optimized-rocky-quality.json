@@ -1,0 +1,288 @@
+{
+  "commit": "db4608916a5199f20e76ee55c2b77cd9a396e90b",
+  "workingSourceSha256": "8e43c95c784dde67614bd80b78f6b3ee5720144d676a1ce208331e90adbf92a8",
+  "runtime": "v22.22.0",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "support": {
+    "name": "external-v1",
+    "maximumSpeed": 600,
+    "maximumDeltaVelocity": 600,
+    "maximumAcceleration": 1200,
+    "maximumProxySpeed": 300,
+    "maximumProxies": 8,
+    "maximumInputs": 32,
+    "maximumRecords": 4096,
+    "maximumSubsteps": 16,
+    "candidates": 64,
+    "iterations": 4,
+    "drag": 1.5,
+    "control": 0.25,
+    "recoverySeconds": 4,
+    "compressionTolerance": 0.5
+  },
+  "profile": "rocky-pass; same density; seed 42; dt 1/60; radius 3.2; warmup 30; measured 90; quality independent full spatial audit every 10 ticks outside step timing; no rendering; allocation samples include Vite/Node/GC and are not allocator counts",
+  "rows": [
+    {
+      "count": 1000,
+      "repeat": 0,
+      "mode": "proxy",
+      "scenario": "rocky-pass",
+      "quality": true,
+      "fixedSpace": false,
+      "spawned": 1000,
+      "minActive": 1000,
+      "stepMs": {
+        "p50": 22.54729999999995,
+        "p95": 29.715599999999995,
+        "p99": 35.90009999999995
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 0,
+        "queryCells": 0,
+        "candidates": 0,
+        "substeps": 4,
+        "planningMs": 0.609700000000089,
+        "planningCandidates": 0,
+        "planningFallbacks": 1,
+        "contactAffected": 954,
+        "contactCellUpperBound": 95831,
+        "proxyCells": 2304,
+        "proxyCandidates": 1104,
+        "staticSweeps": 3297,
+        "staticExhaustions": 0,
+        "rebuilds": 4,
+        "pairs": 17649,
+        "saturatedQueries": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "queryMs": 0.02970000000004802,
+        "predictionMs": 0.3443999999999505,
+        "contactMs": 31.914400000000228,
+        "staticMs": 0.5759999999999081
+      },
+      "directHits": 0,
+      "proxyDrivenPeak": 331,
+      "maxPenetration": 0.2560964766580911,
+      "maxWalls": 0,
+      "passes": {
+        "navigation": {
+          "p50": 0.0015999999995983671,
+          "p95": 0.002300000000104774,
+          "p99": 0.012799999999970169
+        },
+        "desired": {
+          "p50": 1.3296000000000276,
+          "p95": 1.4815000000003238,
+          "p99": 1.6324000000004162
+        },
+        "avoidance": {
+          "p50": 0.42689999999993233,
+          "p95": 0.5397000000000389,
+          "p99": 1.4823000000000093
+        },
+        "contact": {
+          "p50": 20.379300000000057,
+          "p95": 27.594499999999698,
+          "p99": 33.282100000000014
+        },
+        "density": {
+          "p50": 0.08579999999983556,
+          "p95": 0.0969000000000051,
+          "p99": 0.15020000000004075
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 22.54650000000015,
+          "p95": 29.714600000000246,
+          "p99": 35.899400000000014
+        },
+        "external.planningMs": {
+          "p50": 0.12830000000008113,
+          "p95": 0.1433999999999287,
+          "p99": 0.609700000000089
+        },
+        "external.queryMs": {
+          "p50": 0.008299999999962893,
+          "p95": 0.012899999999945067,
+          "p99": 0.02970000000004802
+        },
+        "external.predictionMs": {
+          "p50": 0.1190999999998894,
+          "p95": 0.3201999999999998,
+          "p99": 0.3443999999999505
+        },
+        "external.contactMs": {
+          "p50": 19.597300000000132,
+          "p95": 26.771299999999428,
+          "p99": 31.914400000000228
+        },
+        "external.staticMs": {
+          "p50": 0.39090000000055625,
+          "p95": 0.4961000000000695,
+          "p99": 0.5759999999999081
+        }
+      },
+      "memoryBefore": {
+        "rss": 122712064,
+        "heapTotal": 60104704,
+        "heapUsed": 35292968,
+        "external": 6674533,
+        "arrayBuffers": 2404831
+      },
+      "memoryAfter": {
+        "rss": 127242240,
+        "heapTotal": 63774720,
+        "heapUsed": 28289288,
+        "external": 7222853,
+        "arrayBuffers": 2953111
+      },
+      "hash": "3cca2b02"
+    },
+    {
+      "count": 10000,
+      "repeat": 0,
+      "mode": "proxy",
+      "scenario": "rocky-pass",
+      "quality": true,
+      "fixedSpace": false,
+      "spawned": 10000,
+      "minActive": 10000,
+      "stepMs": {
+        "p50": 71.78839999999946,
+        "p95": 128.0576000000001,
+        "p99": 155.8158000000003
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 0,
+        "queryCells": 0,
+        "candidates": 0,
+        "substeps": 4,
+        "planningMs": 2.103299999999763,
+        "planningCandidates": 34814,
+        "planningFallbacks": 1,
+        "contactAffected": 9554,
+        "contactCellUpperBound": 942414,
+        "proxyCells": 2556,
+        "proxyCandidates": 2516,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 4,
+        "pairs": 201293,
+        "saturatedQueries": 6,
+        "speedClamps": 0,
+        "crushed": 0,
+        "queryMs": 0.08390000000053988,
+        "predictionMs": 1.5659999999998035,
+        "contactMs": 131.65759999999955,
+        "staticMs": 3.617099999999482
+      },
+      "directHits": 0,
+      "proxyDrivenPeak": 608,
+      "maxPenetration": 6.208797147374704,
+      "maxWalls": 0,
+      "passes": {
+        "navigation": {
+          "p50": 0.0006000000012136297,
+          "p95": 0.0011000000004059984,
+          "p99": 0.0011999999996987754
+        },
+        "desired": {
+          "p50": 8.227899999999863,
+          "p95": 8.96349999999984,
+          "p99": 13.222899999999754
+        },
+        "avoidance": {
+          "p50": 4.517799999999625,
+          "p95": 5.0659999999998035,
+          "p99": 7.079099999999926
+        },
+        "contact": {
+          "p50": 57.01039999999921,
+          "p95": 112.78219999999965,
+          "p99": 141.38680000000022
+        },
+        "density": {
+          "p50": 0.7613000000001193,
+          "p95": 1.1035000000001673,
+          "p99": 1.5649999999995998
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 71.78650000000016,
+          "p95": 128.05589999999938,
+          "p99": 155.8143
+        },
+        "external.planningMs": {
+          "p50": 1.030800000000454,
+          "p95": 1.4597999999987223,
+          "p99": 2.103299999999763
+        },
+        "external.queryMs": {
+          "p50": 0.011099999999714782,
+          "p95": 0.042000000000371074,
+          "p99": 0.08390000000053988
+        },
+        "external.predictionMs": {
+          "p50": 1.1264000000010128,
+          "p95": 1.4601999999995314,
+          "p99": 1.5659999999998035
+        },
+        "external.contactMs": {
+          "p50": 51.02879999999914,
+          "p95": 106.40259999999944,
+          "p99": 131.65759999999955
+        },
+        "external.staticMs": {
+          "p50": 1.4466000000011263,
+          "p95": 2.9585000000024593,
+          "p99": 3.617099999999482
+        }
+      },
+      "memoryBefore": {
+        "rss": 152182784,
+        "heapTotal": 66314240,
+        "heapUsed": 38324312,
+        "external": 28730385,
+        "arrayBuffers": 24460643
+      },
+      "memoryAfter": {
+        "rss": 158257152,
+        "heapTotal": 68673536,
+        "heapUsed": 39332224,
+        "external": 34209573,
+        "arrayBuffers": 29939831
+      },
+      "hash": "ca15f91b"
+    }
+  ]
+}
