@@ -3,10 +3,12 @@ import type { AgentBuffer } from './agent-state';
 
 /** px, seconds, unit inertial mass (independent of visual radius/area). */
 export const EXTERNAL_PROFILE = Object.freeze({
-  name: 'external-v1', maximumSpeed: 600, maximumDeltaVelocity: 600,
+  name: 'external-v2', maximumSpeed: 600, maximumDeltaVelocity: 600,
   maximumAcceleration: 1200, maximumProxySpeed: 300, maximumProxies: 8,
   maximumInputs: 32, maximumRecords: 4096, maximumSubsteps: 16,
   candidates: 64, iterations: 4, drag: 1.5, control: .25,
+  velocityIterations: 16, positionIterations: 128, maximumPairFactor: 128,
+  positionTolerance: .45, velocityWorksetHalo: 1,
   recoverySeconds: 4, compressionTolerance: .5,
 });
 export type ExternalTarget = { agent: number } | { x: number; y: number; radius: number; flow?: number };
@@ -28,6 +30,8 @@ function canonical(value: unknown): unknown {
 }
 
 export class ExternalInfluences {
+  /** Kernel choice changes computation only; it is not a physical input or hash component. */
+  backend: 'auto' | 'js' = 'auto';
   generation = 0;
   readonly affected: Uint8Array;
   readonly direct: Uint8Array;
@@ -37,8 +41,12 @@ export class ExternalInfluences {
     planningMs: 0, planningCandidates: 0, planningFallbacks: 0,
     contactAffected: 0,
     contactCellUpperBound: 0, proxyCells: 0, proxyCandidates: 0, staticSweeps: 0, staticExhaustions: 0,
-    rebuilds: 0, pairs: 0, saturatedQueries: 0, speedClamps: 0, crushed: 0,
-    queryMs: 0, predictionMs: 0, contactMs: 0, staticMs: 0 };
+    rebuilds: 0, pairs: 0, saturatedQueries: 0, candidateFallbacks: 0, velocityPasses: 0, stabilizationPasses: 0, unresolvedCompression: 0, speedClamps: 0, crushed: 0,
+    velocityPairVisits: 0, velocityWorksets: 0, velocityFallbacks: 0,
+    positionBudgetExhaustions: 0, maxExhaustedPenetration: 0,
+    projectionAttempts: 0, projectionGroups: 0, projectedBodies: 0, projectionCandidates: 0,
+    warmRejections: 0, warmDamping: 0,
+    wasm: 0, kernelBytes: 0, retainedBytes: 0, queryMs: 0, predictionMs: 0, contactMs: 0, staticMs: 0 };
   private readonly records = new Map<string, ExternalInput>();
   private pending: ExternalInput[] = [];
   private effects: Effect[] = [];

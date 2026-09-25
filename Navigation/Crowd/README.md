@@ -68,9 +68,23 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 입력은 고정 tick으로 기록되어 기존 재실행·결과 내보내기에 포함됩니다.
 외부 프로그램은 `CrowdSimulation.enqueueExternal()`을 사용합니다.
 
+실행 통계에는 시뮬레이션/실시간 비율, 누적 지연과 시간 손실이 표시됩니다.
+가벼운 프레임은 남은 CPU 예산으로 고정 tick을 따라잡고, 과부하의 시간 버림과
+긴 프레임 제한은 별도로 기록합니다. 상태 해시는 일시정지 및 명시적 결과 조회에서 계산합니다.
+`window.crowdDebug.getFrameTrace()`는 최근 4,096개 실제 앱 프레임의 원시 기록을 내보냅니다.
+실제 HTTP 앱 루프 측정은 `node scripts/measure-frame.mjs --url=http://127.0.0.1:4273`을 사용합니다.
+이 도구는 tick 30에 실제 캔버스 입력을 보내며, 구간별 요약과 원시 기록을 함께 저장합니다.
+`--quality=on`은 독립 품질 감사 실행입니다. 이 실행의 프레임 시간을 성능 결과로 사용하지 않습니다.
+
+외력 Contact는 동일한 f64 계산 순서의 WebAssembly 커널을 사용하며, 미지원 환경에서는
+TypeScript 경로로 실행합니다. 커널 수정 후 `npm run build:contact`로 생성 파일을 갱신하세요.
+`npm run verify`는 생성 파일과 원본의 일치도 확인합니다. 이 변경 자체가 10K 60FPS 수락을 뜻하지는 않습니다.
+
 지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),
 실제 수치와 한계는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
 외력 최적화 이후의 측정 조건과 남은 한계는 [외력 계약](docs/external-forces.md#performance-evidence-and-limits)에 정리되어 있습니다.
+현재 #33 후보는 외력 없는 성능과 표본 접촉 품질을 개선했지만, 실제 10K 외력의
+60FPS·실시간 진행률 수락 기준에는 미달합니다. 원시 측정은 `baselines/frame-20260926/`에 보존합니다.
 
 기본 경로 안내는 **동일 목표·반경 클래스당 하나의 고정 Flow Field**를 공유합니다.
 혼잡도에 따른 우회 재계산은 꺼져 있으며, 목표 또는 맵이 바뀔 때만 경로를 갱신합니다.

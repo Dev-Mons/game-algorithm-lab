@@ -2,12 +2,20 @@ import type { CrowdMovementInput, CrowdMovementResult } from './crowd-movement-s
 import { EXTERNAL_PROFILE, type ExternalInfluences, type MovingCircle } from './external-influences';
 import { SweptCircleStaticIntegrator, distanceSquaredToRect, segmentDistanceSquaredToRect, type SweptCircleSlideOutput } from './obstacle-collision';
 import { StaticObstacleIndex } from './static-obstacle-index';
+import { StaticFreeSpace } from './static-free-space';
 import type { Rect } from './types';
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import { angleDelta } from './math';
+import { ContactKernel } from './contact-kernel';
+import { WarmContactCache } from './warm-contact-cache';
+import { ContactProjection } from './contact-projection';
 
 /** Velocity contact response + split position stabilization. Only CrowdMovementSolver invokes this pass. */
 export class ExternalContactSolver {
+  private kernel:ContactKernel|null|undefined;
+  private kernelInput:CrowdMovementInput|null=null;
+  private kernelDelta=0;
+  private readonly projection=new ContactProjection();
   private candidates = new Int32Array(EXTERNAL_PROFILE.candidates + 1);
   private readonly planningCandidates = new Int32Array(EXTERNAL_PROFILE.candidates * 2 + 1);
   private staticAgents = new Int32Array(0);
@@ -15,11 +23,28 @@ export class ExternalContactSolver {
   private pairA = new Int32Array(0);
   private pairB = new Int32Array(0);
   private pairCount = 0;
+  private pairRadius = new Float64Array(0);
+  private pairDX = new Float64Array(0);
+  private pairDY = new Float64Array(0);
+  private velocityPairs = new Int32Array(0);
+  private velocityPairCount = 0;
+  private velocityAnchorX = new Float64Array(0);
+  private velocityAnchorY = new Float64Array(0);
+  private warmCorrected = new Uint8Array(0);
+  private warmAffected = new Uint8Array(0);
+  private readonly contactCache = new WarmContactCache();
+  private pairContacts = new Int32Array(0);
+  reset():void { this.contactCache.reset();this.kernelInput=null;this.kernel?.detach(); }
+  hashState(mix:(value:number)=>void):void { this.contactCache.hashState(mix); }
+  private overflowCandidates = new Int32Array(0);
+  private anchorX = new Float64Array(0);
+  private anchorY = new Float64Array(0);
   private contactGrid: SpatialHash | null = null;
   private readonly integrator = new SweptCircleStaticIntegrator();
   private readonly obstacles: Rect[] = [];
   private readonly sweep: SweptCircleSlideOutput = { x:0,y:0,velocityX:0,velocityY:0,normalX:0,normalY:0,contactCount:0,startedOverlapping:false,exhausted:false };
   private readonly index = new StaticObstacleIndex();
+  private readonly freeSpace = new StaticFreeSpace(this.index);
   private nx = 1; private ny = 0;
   private corrected: Uint8Array = new Uint8Array(0);
   private correctionLengths: Float64Array = new Float64Array(0);
@@ -27,18 +52,48 @@ export class ExternalContactSolver {
   solve(input: CrowdMovementInput, external: ExternalInfluences, vx: Float64Array, vy: Float64Array, headings: Float64Array, result: CrowdMovementResult,
     corrected: Uint8Array, correctionLengths: Float64Array): void {
     this.corrected=corrected;this.correctionLengths=correctionLengths;
-    const { current, next } = input, count = current.count, stats = external.stats;
+    const current=input.current, output=input.next, count=current.count, stats=external.stats;
+    let next=output;
     const motorStep=external.settings.control>0?Math.max(0,input.maxAcceleration)*input.fixedDelta:0;
     // The legacy diameter-sized grid spends most query work traversing empty cells.
     // A contact-horizon-sized grid uses fewer cells without reducing the candidate cap.
-    if(input.obstacles.length===0) {
+    {
       if (!this.contactGrid || this.contactGrid.agentIndices.length < count) {
         this.contactGrid = new SpatialHash(input.worldWidth,input.worldHeight,12,count);
       }
       input = { ...input, index: this.contactGrid };
     }
-    if (this.pairA.length < count*32) { this.pairA = new Int32Array(count*32); this.pairB = new Int32Array(count*32); this.staticAgents=new Int32Array(count); }
+    if (this.staticAgents.length < count) {
+      this.pairA = new Int32Array(count*8); this.pairB = new Int32Array(count*8); this.staticAgents=new Int32Array(count);
+      this.anchorX=new Float64Array(count);this.anchorY=new Float64Array(count);
+      this.velocityAnchorX=new Float64Array(count);this.velocityAnchorY=new Float64Array(count);
+      this.warmCorrected=new Uint8Array(count);
+      this.warmAffected=new Uint8Array(count);
+    }
+    if(external.backend==='auto'&&this.kernel===undefined)this.kernel=ContactKernel.create(
+      (a,b)=>{
+        const i=this.kernelInput!,n=i.next;
+        return this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!)?0:
+          Number(this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!));
+      },
+      (a,b,dx,dy,d,correction)=>{
+        const i=this.kernelInput!,n=i.next;
+        if(!(this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!))
+          &&this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!))return;
+        this.normal(dx,dy,d,a,b);const nx=this.nx,ny=this.ny;
+        this.move(i,a,-nx*correction,-ny*correction,false,this.kernelDelta);
+        this.move(i,b,nx*correction,ny*correction,false,this.kernelDelta);
+      });
+    const kernel=external.backend==='auto'?this.kernel:null;
+    if(kernel) {
+      kernel.ensure(count,this.pairA.length);
+      next=kernel.attach(output);input={...input,next};
+      this.corrected=kernel.arrays.corrected;this.correctionLengths=kernel.arrays.lengths;
+      this.corrected.set(corrected);this.correctionLengths.set(correctionLengths);
+      if(input.agentRadii)kernel.arrays.radii.set(input.agentRadii);else kernel.arrays.radii.fill(input.agentRadius);
+    }
     this.index.update(input.obstacles);
+    this.freeSpace.begin(count,input.worldWidth,input.worldHeight);
     next.copyFrom(current); next.vx.set(vx.subarray(0,count)); next.vy.set(vy.subarray(0,count)); next.heading.set(headings.subarray(0,count));
     let minimumRadius = input.agentRadius, maximumSpeed = 0, maximumOrdinarySpeed = 0;
     for (let a=0;a<count;a++) if (current.active[a]) minimumRadius = Math.min(minimumRadius,this.radius(input,a));
@@ -65,48 +120,78 @@ export class ExternalContactSolver {
     stats.planningMs=performance.now()-planningStarted;
     stats.substeps = substeps;
     const dt = input.fixedDelta/substeps;
-    result.constraintIterations = EXTERNAL_PROFILE.iterations * substeps; result.maxContacts = 32;
+    this.kernelInput=input;this.kernelDelta=dt;
+    if(kernel)this.freeSpace.copyCertificates(kernel.arrays.freeX,kernel.arrays.freeY,kernel.arrays.freeRadius);
+    result.constraintIterations = EXTERNAL_PROFILE.iterations * substeps; result.maxContacts = 0;
     for (let sub=0;sub<substeps;sub++) {
       let start = performance.now();
-      if(sub>0) {input.index.rebuild(next.x,next.y,next.active); stats.rebuilds++;}
-      this.pairCount = 0;
-      const travel = maximumSpeed*dt;
-      for (let a=0;a<count;a++) {
-        if (!next.active[a]) continue;
-        const range = this.radius(input,a)+(input.maxAgentRadius ?? input.agentRadius)+input.agentGap+2*travel+minimumRadius;
-        stats.contactCellUpperBound += this.queryCells(input,next.x[a]!,next.y[a]!,range);
-        const n = input.index.queryCandidates(next.x[a]!,next.y[a]!,range,this.candidates);
-        result.candidateChecks += n;
-        // Saturation is visible, and never falsely reported as collision-free.
-        if (n === this.candidates.length) stats.saturatedQueries++;
-        let owned = 0;
-        for (let k=0;k<Math.min(n,EXTERNAL_PROFILE.candidates);k++) {
-          const b = this.candidates[k]!;
-          if (b <= a) continue;
-          const r = this.radius(input,a)+this.radius(input,b)+input.agentGap+2*travel+minimumRadius;
-          if ((next.x[b]!-next.x[a]!)**2+(next.y[b]!-next.y[a]!)**2 > r*r) continue;
-          if (owned === 32) { stats.saturatedQueries++; break; }
-          this.pairA[this.pairCount] = a; this.pairB[this.pairCount++] = b; owned++;
-        }
-        result.totalNeighbors += owned; result.maxNeighbors = Math.max(result.maxNeighbors,owned);
+      if(sub>0) {
+        input.index.rebuild(next.x,next.y,next.active); stats.rebuilds++;
+        this.prepareStatics(input,maximumSpeed*dt+minimumRadius);
+        if(kernel)this.freeSpace.copyCertificates(kernel.arrays.freeX,kernel.arrays.freeY,kernel.arrays.freeRadius);
       }
-      stats.pairs += this.pairCount; result.contactChecks += this.pairCount;
-      for (let iteration=0;iteration<EXTERNAL_PROFILE.iterations;iteration++) {
-        for (let pair=0;pair<this.pairCount;pair++) {
+      const travel = maximumSpeed*dt;
+      let pairMargin=travel+minimumRadius*.5;
+      this.buildPairs(input,external,result,2*pairMargin);
+      if(this.pairRadius.length<this.pairA.length) {
+        this.pairRadius=new Float64Array(this.pairA.length);this.pairDX=new Float64Array(this.pairA.length);this.pairDY=new Float64Array(this.pairA.length);
+        this.velocityPairs=new Int32Array(this.pairA.length);
+      }
+      this.velocityPairCount=0;
+      for(let pair=0;pair<this.pairCount;pair++) {
+        const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=next.x[b]!-next.x[a]!,dy=next.y[b]!-next.y[a]!;
+        const radius=this.radius(input,a)+this.radius(input,b)+input.agentGap;
+        this.pairRadius[pair]=radius;this.pairDX[pair]=dx;this.pairDY[pair]=dy;
+      }
+      this.prepareWarmContacts(input,dt);
+      if(kernel) {
+        this.uploadKernelPairs(kernel,count);
+        const data=kernel.arrays;
+        data.dx.set(this.pairDX.subarray(0,this.pairCount));data.dy.set(this.pairDY.subarray(0,this.pairCount));
+        data.radius.set(this.pairRadius.subarray(0,this.pairCount));
+        data.kind.fill(0,0,this.pairCount);
+        for(let pair=0;pair<this.pairCount;pair++) {
+          const c=this.pairContacts[pair]!,values=this.contactCache.values;if(c<0)continue;
+          data.kind[pair]=1;data.nx[pair]=values[c+2]!;data.ny[pair]=values[c+3]!;data.normal[pair]=values[c]!;data.tangent[pair]=values[c+1]!;
+        }
+      }
+      this.buildVelocityWorkset(input,dt,kernel??undefined);
+      let velocityLimit:number=EXTERNAL_PROFILE.velocityIterations,fullVelocitySet=false;
+      for (let iteration=0;iteration<velocityLimit;iteration++) {
+        let maximumImpulse=0;
+        if(kernel) {
+          kernel.arrays.affected.set(external.affected);
+          maximumImpulse=kernel.exports.velocity(this.velocityPairCount,dt,input.contactFriction,motorStep*motorStep);
+          external.affected.set(kernel.arrays.affected);
+          result.contactConstraints+=kernel.exports.constraintCount();
+        } else for (let slot=0;slot<this.velocityPairCount;slot++) {
+          const pair=this.velocityPairs[slot]!;
           const a = this.pairA[pair]!, b = this.pairB[pair]!;
-          const dx = next.x[b]!-next.x[a]!, dy = next.y[b]!-next.y[a]!;
+
           const rvx = next.vx[b]!-next.vx[a]!, rvy = next.vy[b]!-next.vy[a]!;
-          const radius = this.radius(input,a)+this.radius(input,b)+input.agentGap;
-          if (!this.contactNormal(dx,dy,rvx,rvy,radius,dt,a,b)) continue;
-          if (this.wallSeparates(input,next.x[a]!,next.y[a]!,next.x[b]!,next.y[b]!)) continue;
+          const cached=this.pairContacts[pair]!,values=this.contactCache.values;
+          if(cached>=0){this.nx=values[cached+2]!;this.ny=values[cached+3]!;}
+          else {
+            if (!this.contactNormal(this.pairDX[pair]!,this.pairDY[pair]!,rvx,rvy,this.pairRadius[pair]!,dt,a,b)) continue;
+            if (!(this.freeSpace.contains(a,next.x[a]!,next.y[a]!)&&this.freeSpace.contains(a,next.x[b]!,next.y[b]!))
+              && this.wallSeparates(input,next.x[a]!,next.y[a]!,next.x[b]!,next.y[b]!)) continue;
+          }
           result.contactConstraints++;
           const closing = rvx*this.nx+rvy*this.ny;
-          if (closing >= 0) continue;
-          // Unit inertial mass; zero restitution. Sequential pair impulses cannot increase pair energy.
-          const impulse = -closing*.5;
-          this.corrected[a]=1;this.corrected[b]=1;
+          if (closing >= 0 && (cached<0||values[cached]===0)) continue;
+          // Accumulated nonnegative normal impulses with a friction cone.
+          // Negative deltas release a previous warm-start guess.
+          const oldNormal=cached>=0?values[cached]!:0;
+          const normal=Math.max(0,oldNormal-closing*.5);
+          const impulse=normal-oldNormal;
           const tx = -this.ny, ty = this.nx;
-          const tangent = Math.max(-impulse*input.contactFriction,Math.min(impulse*input.contactFriction,(rvx*tx+rvy*ty)*.5));
+          const oldTangent=cached>=0?values[cached+1]!:0;
+          const newTangent=Math.max(-normal*input.contactFriction,Math.min(normal*input.contactFriction,oldTangent+(rvx*tx+rvy*ty)*.5));
+          const tangent=newTangent-oldTangent;
+          maximumImpulse=Math.max(maximumImpulse,impulse*impulse+tangent*tangent);
+          if(cached>=0){values[cached]=normal;values[cached+1]=newTangent;}
+          if(impulse===0&&tangent===0)continue;
+          this.corrected[a]=1;this.corrected[b]=1;
           next.vx[a] = next.vx[a]!-impulse*this.nx+tangent*tx; next.vy[a] = next.vy[a]!-impulse*this.ny+tangent*ty;
           next.vx[b] = next.vx[b]!+impulse*this.nx-tangent*tx; next.vy[b] = next.vy[b]!+impulse*this.ny-tangent*ty;
           // Ordinary contact jitter must not perpetually infect the whole crowd
@@ -118,6 +203,24 @@ export class ExternalContactSolver {
         }
         for (const p of external.proxies) this.proxyContacts(input,external,p,sub/substeps,dt,false);
         for(let k=0;k<this.staticCount;k++)this.constrainStaticVelocity(input,this.staticAgents[k]!,dt);
+        stats.velocityPasses++;
+        stats.velocityPairVisits+=this.velocityPairCount;
+        if(!fullVelocitySet&&!this.velocityWorksetValid(input,dt,kernel??undefined)) {
+          if(iteration+1===velocityLimit) {
+            // Finish on the complete conservative pair set if the final update
+            // invalidates the swept frontier. Never integrate a stale workset.
+            fullVelocitySet=true;velocityLimit++;
+            this.velocityPairCount=this.pairCount;
+            for(let pair=0;pair<this.pairCount;pair++)this.velocityPairs[pair]=pair;
+            stats.velocityFallbacks++;
+            if(kernel)kernel.arrays.velocityPairs.set(this.velocityPairs.subarray(0,this.velocityPairCount));
+          } else this.buildVelocityWorkset(input,dt,kernel??undefined);
+          continue;
+        }
+        if(iteration>=EXTERNAL_PROFILE.iterations-1&&maximumImpulse<.0625)break;
+      }
+      if(kernel)for(let pair=0;pair<this.pairCount;pair++) {
+        const c=this.pairContacts[pair]!;if(c>=0){this.contactCache.values[c]=kernel.arrays.normal[pair]!;this.contactCache.values[c+1]=kernel.arrays.tangent[pair]!;}
       }
       stats.contactMs += performance.now()-start;
       start = performance.now();
@@ -131,21 +234,57 @@ export class ExternalContactSolver {
       stats.staticMs += performance.now()-start;
       start = performance.now();
       // Split corrections never become stored momentum. Each correction is swept against statics.
-      for (let iteration=0;iteration<EXTERNAL_PROFILE.iterations;iteration++) {
-        for (let pair=0;pair<this.pairCount;pair++) {
+      for (let iteration=0;iteration<EXTERNAL_PROFILE.positionIterations;iteration++) {
+        stats.stabilizationPasses++;
+        if(kernel)kernel.exports.position(this.pairCount,input.agentGap,minimumRadius);
+        else for (let pair=0;pair<this.pairCount;pair++) {
           const a = this.pairA[pair]!, b = this.pairB[pair]!;
           const dx = next.x[b]!-next.x[a]!, dy = next.y[b]!-next.y[a]!;
           const radius = this.radius(input,a)+this.radius(input,b)+input.agentGap;
           const distanceSquared = dx*dx+dy*dy;
           if (distanceSquared >= (radius-.001)*(radius-.001)) continue;
           const d = Math.sqrt(distanceSquared), depth = radius-d;
-          if (this.wallSeparates(input,next.x[a]!,next.y[a]!,next.x[b]!,next.y[b]!)) continue;
+          if (!this.freeSpace.contains(a,next.x[a]!,next.y[a]!) || !this.freeSpace.contains(a,next.x[b]!,next.y[b]!)) {
+            if(this.wallSeparates(input,next.x[a]!,next.y[a]!,next.x[b]!,next.y[b]!))continue;
+          }
           this.normal(dx,dy,d,a,b);
           const correction = Math.min(depth*.5,minimumRadius*.125), nx=this.nx, ny=this.ny;
           this.move(input,a,-nx*correction,-ny*correction,false,dt);
           this.move(input,b,nx*correction,ny*correction,false,dt);
         }
         for (const p of external.proxies) this.proxyContacts(input,external,p,(sub+1)/substeps,dt,true);
+        // Keep the swept-pair superset valid after mutable position repairs.
+        // Both endpoints may move by pairMargin from the query coordinates.
+        const moved=this.maximumPairDisplacement(input);
+        if(moved>pairMargin) {
+          input.index.rebuild(next.x,next.y,next.active);stats.rebuilds++;
+          pairMargin=minimumRadius*.5;
+          this.buildPairs(input,external,result,2*pairMargin);
+          if(kernel)this.uploadKernelPairs(kernel,count);
+        }
+        // Check the published positions, not a pre-correction residual. Later
+        // constraints can compress an earlier pair in a sequential sweep.
+        if(iteration>=EXTERNAL_PROFILE.iterations-1&&!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance))break;
+        if(iteration===7||iteration===15||iteration===31||iteration===63||iteration===95||iteration===127) {
+          if(this.projection.solve(input,this.index,this.freeSpace,this.pairA,this.pairB,this.pairCount,
+            EXTERNAL_PROFILE.positionTolerance,minimumRadius,(a,dx,dy)=>this.move(input,a,dx,dy,false,dt),(sub+1)/substeps)) {
+            pairMargin=minimumRadius*.5;
+            this.buildPairs(input,external,result,2*pairMargin);
+            if(kernel)this.uploadKernelPairs(kernel,count);
+            if(!this.hasResidualCompression(input,EXTERNAL_PROFILE.positionTolerance))break;
+          }
+        }
+        if(iteration===EXTERNAL_PROFILE.positionIterations-1) {
+          stats.positionBudgetExhaustions++;
+          let maximum=0;
+          for(let pair=0;pair<this.pairCount;pair++) {
+            const a=this.pairA[pair]!,b=this.pairB[pair]!;
+            maximum=Math.max(maximum,this.radius(input,a)+this.radius(input,b)-Math.hypot(next.x[a]!-next.x[b]!,next.y[a]!-next.y[b]!));
+          }
+          stats.maxExhaustedPenetration=Math.max(stats.maxExhaustedPenetration,maximum);
+          if(maximum>EXTERNAL_PROFILE.compressionTolerance)stats.unresolvedCompression++;
+        }
+
       }
       stats.contactMs += performance.now()-start;
     }
@@ -173,6 +312,165 @@ export class ExternalContactSolver {
         result.overlapPairs++; input.overlapFlags[a]=1;input.overlapFlags[b]=1;
       }
     }
+    result.constraintIterations=stats.velocityPasses+stats.stabilizationPasses;
+    if(kernel){kernel.publish(output,corrected,correctionLengths);stats.kernelBytes=kernel.memory.buffer.byteLength;stats.wasm=1;}
+    stats.retainedBytes=this.candidates.byteLength+this.planningCandidates.byteLength+this.staticAgents.byteLength
+      +this.pairA.byteLength+this.pairB.byteLength+this.pairRadius.byteLength+this.pairDX.byteLength+this.pairDY.byteLength
+      +this.velocityPairs.byteLength+this.pairContacts.byteLength+this.overflowCandidates.byteLength
+      +this.anchorX.byteLength+this.anchorY.byteLength+this.velocityAnchorX.byteLength+this.velocityAnchorY.byteLength
+      +this.warmCorrected.byteLength
+      +this.warmAffected.byteLength
+      +this.freeSpace.bytes+this.contactCache.bytes+this.projection.bytes+(this.kernel?.memory.buffer.byteLength??0);
+  }
+  /** Tight swept velocity workset. An excluded pair starts at least 1px from
+   * contact throughout its relative segment. It remains excluded only while
+   * both changed velocity trajectories together can move by less than 1px.
+   * Geometry stays fixed for this entire phase; changed frontiers wake this tick. */
+  private buildVelocityWorkset(input:CrowdMovementInput,dt:number,kernel?:ContactKernel):void {
+    const s=input.next;
+    input.external!.stats.velocityWorksets++;
+    if(kernel) {
+      this.velocityPairCount=kernel.exports.buildWorkset(this.pairCount,s.count,dt,EXTERNAL_PROFILE.velocityWorksetHalo);
+      return;
+    }
+    this.velocityAnchorX.set(s.vx);this.velocityAnchorY.set(s.vy);
+    this.velocityPairCount=0;
+    for(let pair=0;pair<this.pairCount;pair++) {
+      const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=this.pairDX[pair]!,dy=this.pairDY[pair]!;
+      const vx=s.vx[b]!-s.vx[a]!,vy=s.vy[b]!-s.vy[a]!,v2=vx*vx+vy*vy;
+      const t=v2>1e-12?Math.max(0,Math.min(dt,-(dx*vx+dy*vy)/v2)):0;
+      const x=dx+vx*t,y=dy+vy*t,r=this.pairRadius[pair]!+EXTERNAL_PROFILE.velocityWorksetHalo+1e-6;
+      if(x*x+y*y<=r*r)this.velocityPairs[this.velocityPairCount++]=pair;
+    }
+  }
+  private velocityWorksetValid(input:CrowdMovementInput,dt:number,kernel?:ContactKernel):boolean {
+    const s=input.next,limit=EXTERNAL_PROFILE.velocityWorksetHalo/(2*dt),squared=limit*limit;
+    if(kernel)return kernel.exports.validWorkset(s.count,squared)!==0;
+    for(let a=0;a<s.count;a++)if(s.active[a]) {
+      const dx=s.vx[a]!-this.velocityAnchorX[a]!,dy=s.vy[a]!-this.velocityAnchorY[a]!;
+      if(dx*dx+dy*dy>=squared)return false;
+    }
+    return true;
+  }
+  private uploadKernelPairs(kernel:ContactKernel,count:number):void {
+    kernel.ensure(count,this.pairA.length);
+    this.corrected=kernel.arrays.corrected;this.correctionLengths=kernel.arrays.lengths;
+    kernel.arrays.a.set(this.pairA.subarray(0,this.pairCount));kernel.arrays.b.set(this.pairB.subarray(0,this.pairCount));
+  }
+  private hasResidualCompression(input:CrowdMovementInput,tolerance:number):boolean {
+    const s=input.next;
+    for(let pair=0;pair<this.pairCount;pair++) {
+      const a=this.pairA[pair]!,b=this.pairB[pair]!;
+      const r=this.radius(input,a)+this.radius(input,b)-tolerance;
+      const dx=s.x[a]!-s.x[b]!,dy=s.y[a]!-s.y[b]!;
+      if(dx*dx+dy*dy<r*r)return true;
+    }
+    return false;
+  }
+  private prepareWarmContacts(input:CrowdMovementInput,dt:number):void {
+    const s=input.next;
+    this.velocityAnchorX.set(s.vx);this.velocityAnchorY.set(s.vy);this.warmCorrected.set(this.corrected);
+    this.warmAffected.set(input.external!.affected);
+    let before=0;
+    for(let a=0;a<s.count;a++)before+=s.vx[a]!*s.vx[a]!+s.vy[a]!*s.vy[a]!;
+    if(this.pairContacts.length<this.pairA.length)this.pairContacts=new Int32Array(this.pairA.length);
+    this.pairContacts.fill(-1,0,this.pairCount);
+    let touching=0;
+    for(let pair=0;pair<this.pairCount;pair++) {
+      const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
+      const radius=this.radius(input,a)+this.radius(input,b)+input.agentGap,d2=dx*dx+dy*dy;
+      if(d2>radius*radius+1e-6)continue;
+      if(!(this.freeSpace.contains(a,s.x[a]!,s.y[a]!)&&this.freeSpace.contains(a,s.x[b]!,s.y[b]!))
+        &&this.wallSeparates(input,s.x[a]!,s.y[a]!,s.x[b]!,s.y[b]!))continue;
+      this.pairContacts[pair]=-2;touching++;
+    }
+    this.contactCache.begin(touching);
+    for(let pair=0;pair<this.pairCount;pair++) {
+      if(this.pairContacts[pair]!==-2)continue;
+      const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
+      this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);
+      const key=a*s.count+b;
+      const base=this.contactCache.add(key,this.nx,this.ny,dt,input.contactFriction),values=this.contactCache.values;
+      this.pairContacts[pair]=base;
+      const normal=values[base]!,tangent=values[base+1]!;
+      if(normal===0&&tangent===0)continue;
+      this.corrected[a]=1;this.corrected[b]=1;
+      const ix=-normal*this.nx-tangent*this.ny,iy=-normal*this.ny+tangent*this.nx;
+      s.vx[a]=s.vx[a]!+ix;s.vy[a]=s.vy[a]!+iy;s.vx[b]=s.vx[b]!-ix;s.vy[b]=s.vy[b]!-iy;
+    }
+    // Warm guesses are not stored mechanical energy. In a frame without a
+    // prescribed moving body, shorten an energy-increasing trial to the minimum
+    // energy point on its segment after wall projection. A non-descent trial is
+    // discarded. This prevents an unforced contact chain from rebounding.
+    if(!input.external!.proxies.some(p=>p.x!==p.toX||p.y!==p.toY)) {
+      for(const p of input.external!.proxies)this.proxyContacts(input,input.external!,p,0,dt,false);
+      for(let k=0;k<this.staticCount;k++)this.constrainStaticVelocity(input,this.staticAgents[k]!,dt);
+      let after=0;
+      for(let a=0;a<s.count;a++)after+=s.vx[a]!*s.vx[a]!+s.vy[a]!*s.vy[a]!;
+      if(after>before+Math.max(1,before)*1e-12) {
+        let dot=0,squared=0;
+        for(let a=0;a<s.count;a++) {
+          const dx=s.vx[a]!-this.velocityAnchorX[a]!,dy=s.vy[a]!-this.velocityAnchorY[a]!;
+          dot+=this.velocityAnchorX[a]!*dx+this.velocityAnchorY[a]!*dy;squared+=dx*dx+dy*dy;
+        }
+        const scale=dot<0?Math.min(1,-dot/Math.max(1e-30,squared)):0;
+        if(scale===0)input.external!.stats.warmRejections++;else input.external!.stats.warmDamping++;
+        for(let a=0;a<s.count;a++) {
+          s.vx[a]=this.velocityAnchorX[a]!+(s.vx[a]!-this.velocityAnchorX[a]!)*scale;
+          s.vy[a]=this.velocityAnchorY[a]!+(s.vy[a]!-this.velocityAnchorY[a]!)*scale;
+        }
+        if(scale===0)this.corrected.set(this.warmCorrected);
+        input.external!.affected.set(this.warmAffected);
+        for(let pair=0;pair<this.pairCount;pair++) {
+          const base=this.pairContacts[pair]!;
+          if(base>=0){this.contactCache.values[base]=this.contactCache.values[base]!*scale;this.contactCache.values[base+1]=this.contactCache.values[base+1]!*scale;}
+        }
+        for(const p of input.external!.proxies)this.proxyContacts(input,input.external!,p,0,dt,false);
+        for(let k=0;k<this.staticCount;k++)this.constrainStaticVelocity(input,this.staticAgents[k]!,dt);
+      }
+    }
+  }
+  private buildPairs(input:CrowdMovementInput,external:ExternalInfluences,result:CrowdMovementResult,padding:number):void {
+    const next=input.next,count=next.count,stats=external.stats;
+    this.pairCount=0;
+    this.anchorX.set(next.x);this.anchorY.set(next.y);
+      for (let a=0;a<count;a++) {
+        if (!next.active[a]) continue;
+        const range = this.radius(input,a)+(input.maxAgentRadius ?? input.agentRadius)+input.agentGap+padding;
+        stats.contactCellUpperBound += this.queryCells(input,next.x[a]!,next.y[a]!,range);
+        let candidates=this.candidates;
+        let n = input.index.queryCandidates(next.x[a]!,next.y[a]!,range,candidates);
+        if(n===candidates.length) {
+          if(this.overflowCandidates.length<count)this.overflowCandidates=new Int32Array(count);
+          candidates=this.overflowCandidates;
+          n=input.index.queryCandidates(next.x[a]!,next.y[a]!,range,candidates);
+          stats.candidateFallbacks++;
+        }
+        result.candidateChecks += n;
+        let owned = 0;
+        for (let k=0;k<n;k++) {
+          const b = candidates[k]!;
+          if (b <= a) continue;
+          const r = this.radius(input,a)+this.radius(input,b)+input.agentGap+padding;
+          if ((next.x[b]!-next.x[a]!)**2+(next.y[b]!-next.y[a]!)**2 > r*r) continue;
+          if(this.pairCount===this.pairA.length) {
+            if(this.pairCount>=count*EXTERNAL_PROFILE.maximumPairFactor){stats.saturatedQueries++;throw new RangeError('External contact pair budget exceeded; overlapping/overpacked initial state.');}
+            const aBuffer=new Int32Array(Math.min(count*EXTERNAL_PROFILE.maximumPairFactor,Math.max(32,this.pairCount*2))),bBuffer=new Int32Array(aBuffer.length);
+            aBuffer.set(this.pairA);bBuffer.set(this.pairB);this.pairA=aBuffer;this.pairB=bBuffer;
+          }
+          this.pairA[this.pairCount] = a; this.pairB[this.pairCount++] = b; owned++;
+        }
+        result.totalNeighbors += owned; result.maxNeighbors = Math.max(result.maxNeighbors,owned);
+        result.maxContacts=Math.max(result.maxContacts,owned);
+      }
+      stats.pairs += this.pairCount; result.contactChecks += this.pairCount;
+  }
+  private maximumPairDisplacement(input:CrowdMovementInput):number {
+    let squared=0;
+    for(let a=0;a<input.next.count;a++) if(input.next.active[a]) {
+      squared=Math.max(squared,(input.next.x[a]!-this.anchorX[a]!)**2+(input.next.y[a]!-this.anchorY[a]!)**2);
+    }
+    return Math.sqrt(squared);
   }
   private radius(input: CrowdMovementInput,a: number): number { return input.agentRadii?.[a] ?? input.agentRadius; }
   private planSubsteps(input:CrowdMovementInput,external:ExternalInfluences,minimumRadius:number,maximumSpeed:number,ordinarySpeed:number,absoluteSteps:number): number {
@@ -216,6 +514,8 @@ export class ExternalContactSolver {
     for(let a=0;a<s.count;a++) {
       if(!s.active[a])continue;
       const x=s.x[a]!,y=s.y[a]!,reach=this.radius(input,a)+input.wallClearance-input.agentRadius+travel;
+      this.freeSpace.prepare(a,x,y,this.radius(input,a)+input.wallClearance-input.agentRadius);
+      if(this.freeSpace.coversMotion(a,x,y,travel))continue;
       let near=x<reach||y<reach||x>input.worldWidth-reach||y>input.worldHeight-reach;
       if(!near&&input.obstacles.length>0) for(const i of this.index.query(x-reach,y-reach,x+reach,y+reach)) {
         if(distanceSquaredToRect(x,y,input.obstacles[i]!)<=reach*reach){near=true;break;}
@@ -233,8 +533,7 @@ export class ExternalContactSolver {
     this.obstacles.length=0;
     for(const i of this.index.query(x-travel,y-travel,x+travel,y+travel)) {
       const rect=input.obstacles[i]!;
-      if(Math.max(x,endX)<rect.x-r||Math.min(x,endX)>rect.x+rect.width+r
-        ||Math.max(y,endY)<rect.y-r||Math.min(y,endY)>rect.y+rect.height+r)continue;
+      if(distanceSquaredToRect(x,y,rect)>travel*travel)continue;
       this.obstacles.push(rect);
     }
     if(!this.obstacles.length&&endX>=r&&endY>=r&&endX<=input.worldWidth-r&&endY<=input.worldHeight-r)return;
@@ -297,7 +596,9 @@ export class ExternalContactSolver {
   }
   private move(input:CrowdMovementInput,a:number,dx:number,dy:number,physical:boolean,dt:number): void {
     const s=input.next,x=s.x[a]!,y=s.y[a]!,r=this.radius(input,a)+input.wallClearance-input.agentRadius;
-    if (input.obstacles.length === 0 && x+dx >= r && y+dy >= r && x+dx <= input.worldWidth-r && y+dy <= input.worldHeight-r) {
+    // Preserve the sweep path's arithmetic even when its empty-space query is skipped.
+    if(physical){s.vx[a]=dx/dt;s.vy[a]=dy/dt;}
+    if ((this.freeSpace.contains(a,x,y)&&this.freeSpace.contains(a,x+dx,y+dy)) || (input.obstacles.length === 0 && x+dx >= r && y+dy >= r && x+dx <= input.worldWidth-r && y+dy <= input.worldHeight-r)) {
       s.x[a]=x+dx;s.y[a]=y+dy;
       if(!physical) {this.corrected[a]=1;this.correctionLengths[a]=this.correctionLengths[a]!+Math.sqrt(dx*dx+dy*dy);}
       return;
@@ -306,8 +607,9 @@ export class ExternalContactSolver {
     this.obstacles.length=0;
     for (const i of this.index.query(x-travel,y-travel,x+travel,y+travel)) {
       const rect=input.obstacles[i]!;
-      if(Math.max(x,x+dx)<rect.x-r||Math.min(x,x+dx)>rect.x+rect.width+r
-        ||Math.max(y,y+dy)<rect.y-r||Math.min(y,y+dy)>rect.y+rect.height+r)continue;
+      // Sliding cannot leave the total-travel disk. This filter includes turns,
+      // unlike the original start/end chord AABB, and removes BVH tile padding.
+      if(distanceSquaredToRect(x,y,rect)>travel*travel)continue;
       this.obstacles.push(rect);
     }
     if (this.obstacles.length === 0 && x+dx >= r && y+dy >= r && x+dx <= input.worldWidth-r && y+dy <= input.worldHeight-r) {

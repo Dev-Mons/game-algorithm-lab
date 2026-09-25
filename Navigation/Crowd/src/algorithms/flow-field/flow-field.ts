@@ -144,6 +144,8 @@ export class FlowField implements GlobalNavigator {
   private goalX = 0;
   private goalY = 0;
   private obstacles: readonly Rect[] = [];
+  private goalBlockers = new Int32Array(0);
+  private lastBlockingObstacle = -1;
   private readonly obstacleIndex = new StaticObstacleIndex();
   private readonly heap: IndexedMinHeap;
   private readonly averageVelocity = { x: 0, y: 0 };
@@ -195,6 +197,8 @@ export class FlowField implements GlobalNavigator {
   rebuildStatic(goal: Vec2, obstacles: readonly Rect[], clearance = 0): void {
     this.clearance = Math.max(0, clearance);
     this.obstacles = obstacles;
+    this.goalBlockers.fill(-1);
+    this.lastBlockingObstacle = -1;
     this.obstacleIndex.update(obstacles);
     this.goalX = goal.x;
     this.goalY = goal.y;
@@ -428,7 +432,22 @@ export class FlowField implements GlobalNavigator {
   }
 
   private hasLineOfSight(startX: number, startY: number, endX: number, endY: number): boolean {
-    return this.isSegmentSafe(startX, startY, endX, endY);
+    if (!this.obstacles.length) return this.isSegmentSafe(startX, startY, endX, endY);
+    if (this.goalBlockers.length === 0) this.goalBlockers = new Int32Array(this.columns * this.rows).fill(-1);
+    const cell = clamp(Math.floor(startY / this.cellSize), 0, this.rows - 1) * this.columns
+      + clamp(Math.floor(startX / this.cellSize), 0, this.columns - 1);
+    const blocker = this.obstacles[this.goalBlockers[cell]!];
+    // Cache an obstacle identity, never a cell's visibility. Recheck the exact
+    // current segment and clearance even when another agent populated this cell.
+    if (blocker) {
+      const distance = segmentDistanceSquaredToRect(startX, startY, endX, endY, blocker);
+      const clearanceSquared = this.clearance * this.clearance;
+      if (clearanceSquared <= 1e-12 ? distance <= 1e-12 : distance < clearanceSquared - 1e-10) return false;
+    }
+    this.lastBlockingObstacle = -1;
+    const clear = this.isSegmentSafe(startX, startY, endX, endY);
+    this.goalBlockers[cell] = this.lastBlockingObstacle;
+    return clear;
   }
 
   private isSegmentSafe(startX: number, startY: number, endX: number, endY: number): boolean {
@@ -443,6 +462,7 @@ export class FlowField implements GlobalNavigator {
       const obstacle = this.obstacles[index]!;
       const distanceSquared = segmentDistanceSquaredToRect(startX, startY, endX, endY, obstacle);
       if (clearanceSquared <= 1e-12 ? distanceSquared <= 1e-12 : distanceSquared < clearanceSquared - 1e-10) {
+        this.lastBlockingObstacle = index;
         return false;
       }
     }

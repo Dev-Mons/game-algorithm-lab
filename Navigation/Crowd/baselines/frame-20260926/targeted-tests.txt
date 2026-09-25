@@ -1,0 +1,16 @@
+
+> crowd-navigation-lab@1.0.0 typecheck
+> tsc -b --pretty false
+
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ✓ tests/unit/warm-contact-cache.test.ts (2 tests) 2ms
+ ✓ tests/unit/lab-results.test.ts (8 tests) 21ms
+ ✓ tests/simulation/external-influences.test.ts (34 tests) 1078ms
+   ✓ external physical movement > returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags  540ms
+
+ Test Files  3 passed (3)
+      Tests  44 passed (44)
+   Start at  02:43:48
+   Duration  1.58s (transform 214ms, setup 0ms, collect 512ms, tests 1.10s, environment 0ms, prepare 228ms)

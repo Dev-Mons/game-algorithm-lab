@@ -54,6 +54,10 @@ export class CrowdFlowSolver {
   private readonly weights = new Float64Array(4);
   private channel = 0;
   private channelFraction = 0;
+  private transferCells = new Int32Array(0);
+  private transferWeights = new Float64Array(0);
+  private transferChannels = new Uint8Array(0);
+  private transferFractions = new Float64Array(0);
 
   constructor(readonly field: CrowdField) {
     const size = field.cellCount * FLOW_CHANNELS;
@@ -102,6 +106,10 @@ export class CrowdFlowSolver {
 
   solve(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
+    if(this.transferChannels.length<state.count) {
+      this.transferCells=new Int32Array(state.count*4);this.transferWeights=new Float64Array(state.count*4);
+      this.transferChannels=new Uint8Array(state.count);this.transferFractions=new Float64Array(state.count);
+    }
     this.scatter(state, desiredX, desiredY, options.areaWeights, options.externallyDriven);
     this.buildVelocities(options);
     this.project(options);
@@ -119,6 +127,10 @@ export class CrowdFlowSolver {
       if (state.active[a] !== 1) continue;
       this.stencil(state.x[a]!, state.y[a]!);
       this.heading(state.intentX[a]!, state.intentY[a]!);
+      // Positions, intent and face connectivity stay fixed until gather. Reuse
+      // their exact transfer stencil instead of repeating geometry and atan2.
+      this.transferChannels[a]=this.channel;this.transferFractions[a]=this.channelFraction;
+      for(let k=0;k<4;k++){this.transferCells[a*4+k]=this.cells[k]!;this.transferWeights[a*4+k]=this.weights[k]!;}
       for (let side = 0; side < 2; side++) {
         const offset = ((this.channel + side) % FLOW_CHANNELS) * cells;
         const angularWeight = side === 0 ? 1 - this.channelFraction : this.channelFraction;
@@ -246,8 +258,7 @@ export class CrowdFlowSolver {
     const count = this.field.cellCount;
     for (let a = 0; a < state.count; a++) {
       if (state.active[a] !== 1) continue;
-      this.stencil(state.x[a]!, state.y[a]!);
-      this.heading(state.intentX[a]!, state.intentY[a]!);
+      const channel=this.transferChannels[a]!,fraction=this.transferFractions[a]!;
       let x = 0;
       let y = 0;
       let weightSum = 0;
@@ -255,12 +266,12 @@ export class CrowdFlowSolver {
       let baseY = 0;
       let density = 0;
       for (let corner = 0; corner < 4; corner++) {
-        const cell = this.cells[corner]!;
-        const weight = this.weights[corner]!;
+        const cell = this.transferCells[a*4+corner]!;
+        const weight = this.transferWeights[a*4+corner]!;
         density += this.field.density[cell]! * weight;
         for (let side = 0; side < 2; side++) {
-          const i = ((this.channel + side) % FLOW_CHANNELS) * count + cell;
-          const w = weight * (side === 0 ? 1 - this.channelFraction : this.channelFraction);
+          const i = ((channel + side) % FLOW_CHANNELS) * count + cell;
+          const w = weight * (side === 0 ? 1 - fraction : fraction);
           if (this.mass[i]! <= EPSILON) continue;
           x += this.velocityX[i]! * w;
           y += this.velocityY[i]! * w;

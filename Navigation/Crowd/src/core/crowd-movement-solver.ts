@@ -10,6 +10,7 @@ import {
 } from './obstacle-collision';
 import type { Rect } from './types';
 import { StaticObstacleIndex } from './static-obstacle-index';
+import { StaticFreeSpace } from './static-free-space';
 import type { ExternalInfluences } from './external-influences';
 import { ExternalContactSolver } from './external-contact-solver';
 
@@ -74,7 +75,8 @@ export interface CrowdMovementResult {
  */
 export class CrowdMovementSolver {
   private externalContact: ExternalContactSolver | null = null;
-  constructor(private readonly obstacleIndex = new StaticObstacleIndex()) {}
+  private readonly freeSpace: StaticFreeSpace;
+  constructor(private readonly obstacleIndex = new StaticObstacleIndex()) { this.freeSpace = new StaticFreeSpace(obstacleIndex); }
   private readonly sweepObstacles: Rect[] = [];
   private velocityX = new Float64Array(0);
   private velocityY = new Float64Array(0);
@@ -135,6 +137,7 @@ export class CrowdMovementSolver {
   solve(input: CrowdMovementInput): CrowdMovementResult {
     this.obstacleIndex.update(input.obstacles);
     const count = input.current.count;
+    this.freeSpace.begin(count,input.worldWidth,input.worldHeight);
     this.ensureCapacity(count);
     this.reset(input);
     const predictionStarted = performance.now();
@@ -147,9 +150,11 @@ export class CrowdMovementSolver {
       return this.result;
     }
 
+    this.externalContact?.reset();
     // The index is the contact-only grid owned by CrowdSimulation. It is
     // rebuilt from predicted positions, never from partially corrected ones.
     input.index.rebuild(this.predictedX, this.predictedY, input.current.active);
+    for(let a=0;a<count;a++) if(input.current.active[a])this.freeSpace.prepare(a,input.current.x[a]!,input.current.y[a]!,this.wallClearance(input,a));
     this.buildContactConstraints(input);
     this.solveContactConstraints(input);
     this.integratePredictions(input);
@@ -161,8 +166,11 @@ export class CrowdMovementSolver {
 
   /** Kept as a stable lifecycle hook; this solver has no cross-step recovery mode. */
   resetRecoveryState(): void {
+    this.externalContact?.reset();
     // XPBD lambdas deliberately live for one fixed step only.
   }
+
+  hashState(mix:(value:number)=>void):void { this.externalContact?.hashState(mix); }
 
   private reset(input: CrowdMovementInput): void {
     const count = input.current.count;
@@ -496,6 +504,7 @@ export class CrowdMovementSolver {
       if (input.current.active[agent] !== 1 || this.iterationCorrected[agent] !== 1) continue;
       const originalX = this.predictedX[agent]!;
       const originalY = this.predictedY[agent]!;
+      if(this.freeSpace.contains(agent,originalX,originalY))continue;
       const projected = this.projectOutsideStatics(
         input,
         originalX,
@@ -530,7 +539,8 @@ export class CrowdMovementSolver {
       const velocityX = (targetX - startX) * inverseDelta;
       const velocityY = (targetY - startY) * inverseDelta;
       const clearance = this.wallClearance(input, agent);
-      if (this.canIntegrateDirectly(input, startX, startY, targetX, targetY, clearance)) {
+      if ((this.freeSpace.contains(agent,startX,startY)&&this.freeSpace.contains(agent,targetX,targetY))
+        || this.canIntegrateDirectly(input, startX, startY, targetX, targetY, clearance)) {
         input.next.x[agent] = targetX;
         input.next.y[agent] = targetY;
         continue;
@@ -540,7 +550,8 @@ export class CrowdMovementSolver {
       const travel = Math.hypot(targetX - startX, targetY - startY) + clearance + 1e-6;
       this.sweepObstacles.length = 0;
       for (const index of this.obstacleIndex.query(startX - travel, startY - travel, startX + travel, startY + travel)) {
-        this.sweepObstacles.push(input.obstacles[index]!);
+        const obstacle=input.obstacles[index]!;
+        if(distanceSquaredToRect(startX,startY,obstacle)<=travel*travel)this.sweepObstacles.push(obstacle);
       }
       this.integrator.integrate(
         startX,

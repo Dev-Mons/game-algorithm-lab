@@ -1,0 +1,22 @@
+
+> crowd-navigation-lab@1.0.0 build
+> tsc -b && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 48 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.56 kB │ gzip:   0.33 kB
+dist/experiments/fluid-navigation/index.html        6.01 kB │ gzip:   2.83 kB
+dist/assets/crack-42-off-3ZMHlm2k.json          1,174.04 kB │ gzip: 184.66 kB
+dist/assets/crack-42-on-C-kEvahb.json           1,175.62 kB │ gzip: 334.74 kB
+dist/assets/hole-42-off-DgK0p282.json           1,178.98 kB │ gzip: 185.31 kB
+dist/assets/hole-42-on-BEbHzg0q.json            1,181.11 kB │ gzip: 313.87 kB
+dist/assets/uniform-42-off-Bv5zvD9H.json        1,222.84 kB │ gzip: 191.97 kB
+dist/assets/uniform-42-on-BLTb6nD9.json         1,223.40 kB │ gzip: 313.87 kB
+dist/assets/main-BOpu2_mQ.css                       8.23 kB │ gzip:   2.52 kB
+dist/assets/modulepreload-polyfill-B5Qt9EMX.js      0.71 kB │ gzip:   0.40 kB
+dist/assets/research-Cv9nfwLL.js                    5.23 kB │ gzip:   2.54 kB
+dist/assets/main-B28Oocyt.js                      198.96 kB │ gzip:  61.29 kB
+✓ built in 350ms

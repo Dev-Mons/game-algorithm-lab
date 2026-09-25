@@ -3,6 +3,7 @@ import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { EXTERNAL_PROFILE, type ExternalInput } from '../../src/core/external-influences';
 import type { Rect } from '../../src/core/types';
 import { getScenario } from '../../src/scenarios/scenarios';
+import { FixedClock } from '../../src/core/fixed-clock';
 
 function scene(count=1, obstacles: Rect[]=[], controlled=false, dt=1/60) {
   const s = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount:count, maxAcceleration:controlled ? 210 : 0, fixedDelta:dt, agentGap:0 },
@@ -21,7 +22,19 @@ function penetration(s:CrowdSimulation) {
     maximum=Math.max(maximum,s.agentRadii[a]!+s.agentRadii[b]!-Math.hypot(s.state.x[a]!-s.state.x[b]!,s.state.y[a]!-s.state.y[b]!));
   return maximum;
 }
-describe('external-v1 physical movement', () => {
+describe('external physical movement', () => {
+  it('integrates the same fixed-tick force and state at different render cadences',()=>{
+    const snapshots=[];
+    for(const hz of [30,60,120,144]) {
+      const s=scene();
+      s.enqueueExternal({kind:'acceleration',id:'wind',tick:30,generation:s.external.generation,target:{agent:0},ax:120,ay:0,endTick:90});
+      const clock=new FixedClock(1/60,.25,4,()=>0);clock.reset(0);
+      for(let frame=1;frame<=hz*2;frame++)clock.consume(frame/hz,1,()=>s.step());
+      expect(s.stepCount).toBe(120);expect(s.state.vx[0]).toBeCloseTo(120,9);
+      snapshots.push({x:[...s.state.x],y:[...s.state.y],vx:[...s.state.vx],vy:[...s.state.vy],hash:s.stateHash(),inputs:s.external.record()});
+    }
+    for(const snapshot of snapshots)expect(snapshot).toEqual(snapshots[0]);
+  });
   it('returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags', () => {
     const s=new CrowdSimulation({...DEFAULT_CONFIG,agentCount:1000},getScenario('open-field'));
     for(let tick=0;tick<30;tick++)s.step();
@@ -135,6 +148,18 @@ describe('external-v1 physical movement', () => {
     expect(s.state.x[0]).toBeLessThan(s.state.x[1]!);
     expect(penetration(s)).toBeLessThanOrEqual(.01);
   });
+  it.each([false,true])('does not add energy or rebound while an unforced chain coasts (stationary proxy: %s)',proxy=>{
+    const s=scene(16);kick(s,0,500);
+    if(proxy)s.enqueueExternal({kind:'proxy',id:'parked',body:'parked',tick:0,generation:s.external.generation,x:800,y:100,toX:800,toY:100,radius:18});
+    let energy=500**2;
+    for(let tick=0;tick<60;tick++) {
+      s.step();
+      const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
+      expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
+      expect(Math.min(...s.state.vx),`rebound at tick ${tick}`).toBeGreaterThanOrEqual(-1e-8);
+      energy=next;
+    }
+  });
   it('sweeps thin walls and keeps removed wall-normal velocity removed next tick', () => {
     const s=scene(1,[{x:210,y:100,width:1,height:500}]);kick(s,0,600);s.step();
     expect(s.state.x[0]).toBeLessThanOrEqual(210-3.55+1e-6);
@@ -167,10 +192,19 @@ describe('external-v1 physical movement', () => {
     }
     expect(crushed).toBeGreaterThan(0);
   });
-  it('reports query saturation and clamps combined inputs without nonfinite values', () => {
+  it('reports uncapped overflow fallback and clamps combined inputs without nonfinite values', () => {
     const s=scene(90);s.state.x.fill(200);s.state.y.fill(360);kick(s,0,600,0,'a');kick(s,0,600,0,'b');s.step();
-    expect(s.external.stats.speedClamps).toBeGreaterThan(0);expect(s.external.stats.saturatedQueries).toBeGreaterThan(0);
+    expect(s.external.stats.speedClamps).toBeGreaterThan(0);expect(s.external.stats.candidateFallbacks).toBeGreaterThan(0);
+    expect(s.external.stats.saturatedQueries).toBe(0);
     expect(s.external.stats.substeps).toBeLessThanOrEqual(16);expect([...s.state.x,...s.state.vx].every(Number.isFinite)).toBe(true);
+  });
+  it('stops explicitly before publishing a step that exceeds the global pair budget',()=>{
+    const s=scene(320);s.state.x.fill(200);s.state.y.fill(360);
+    const x=s.state.x.slice(),y=s.state.y.slice();kick(s,0,100);
+    expect(()=>s.step()).toThrow(/pair budget exceeded/);
+    expect(s.external.stats.saturatedQueries).toBe(1);
+    expect(s.state.x).toEqual(x);expect(s.state.y).toEqual(y);
+    expect(s.stepCount).toBe(0);
   });
   it('keeps the arrival sink inactive even when an input targets it', () => {
     const s=scene();s.state.x[0]=1100;kick(s,0,-500);s.step();expect(s.state.active[0]).toBe(0);expect(s.state.vx[0]).toBe(0);

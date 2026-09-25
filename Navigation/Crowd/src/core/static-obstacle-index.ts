@@ -12,6 +12,7 @@ const LOCAL_CELL = 64;
  * Query results must be consumed before the next query on this instance.
  */
 export class StaticObstacleIndex {
+  revision = 0;
   obstacles: readonly Rect[] = [];
   private coordinates: number[] = [];
   private nodes: Node[] = [];
@@ -31,6 +32,7 @@ export class StaticObstacleIndex {
       || r.width !== this.coordinates[i * 4 + 2] || r.height !== this.coordinates[i * 4 + 3]);
     this.obstacles = obstacles;
     if (!changed) return;
+    this.revision++;
     this.localCandidates.clear();
     this.coordinates = obstacles.flatMap(r => [r.x, r.y, r.width, r.height]);
     this.all.length = 0;

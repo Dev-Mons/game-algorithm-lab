@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { AgentBuffer } from '../../src/core/agent-state';
-import { auditGeometry, distribution } from '../../src/core/lab-results';
-import type { CrowdSimulation } from '../../src/core/simulation';
+import { auditGeometry, distribution, LabRecorder } from '../../src/core/lab-results';
+import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
+import { getScenario } from '../../src/scenarios/scenarios';
 
 function fixture(count: number, retained = false): CrowdSimulation {
   const state = new AgentBuffer(count);
@@ -21,6 +22,19 @@ function fixture(count: number, retained = false): CrowdSimulation {
 }
 
 describe('independent lab measurement', () => {
+  it('preserves a nonfinite audit failure in the exported recorder result',()=>{
+    const simulation=new CrowdSimulation({...DEFAULT_CONFIG,agentCount:2},getScenario('open-field'));
+    simulation.step();simulation.state.vx[0]=Infinity;
+    const recorder=new LabRecorder(simulation,1);recorder.record(1);
+    expect(recorder.result().quality.maximumNonfinite).toBe(1);
+  });
+  it('reports nonfinite bodies instead of silently losing them from spatial queries',()=>{
+    const simulation=fixture(3);
+    simulation.state.x[0]=NaN;simulation.state.vx[1]=Infinity;
+    const result=auditGeometry(simulation);
+    expect(result.nonfinite).toBe(2);
+    expect(Number.isFinite(result.maxPenetration)).toBe(true);
+  });
   it('audits all overlapping pairs beyond the local solver neighbor budget', () => {
     const simulation = fixture(32);
     const result = auditGeometry(simulation);

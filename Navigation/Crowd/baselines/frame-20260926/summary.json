@@ -1,0 +1,230 @@
+{
+  "status": "NOT_ACCEPTED",
+  "baselineCommit": "a04aa21c5ef09b8ad557eb62776d3dbeda877cf5",
+  "environment": {
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "platform": "win32",
+    "node": "v22.22.0",
+    "browser": "151.0.7922.34"
+  },
+  "noForce": [
+    {
+      "scenario": "open-field",
+      "agents": 1000,
+      "repeats": 3,
+      "baselineStepP95": 1.800000000745058,
+      "candidateStepP95": 1.5,
+      "changePercent": -16.666666701160093,
+      "regressionGate": true
+    },
+    {
+      "scenario": "open-field",
+      "agents": 10000,
+      "repeats": 3,
+      "baselineStepP95": 15.099999997764826,
+      "candidateStepP95": 12.900000002235174,
+      "changePercent": -14.569536396392756,
+      "regressionGate": true
+    },
+    {
+      "scenario": "open-field",
+      "agents": 20000,
+      "repeats": 3,
+      "baselineStepP95": 31.400000002235174,
+      "candidateStepP95": 28.200000002980232,
+      "changePercent": -10.191082799449536,
+      "regressionGate": true
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 1000,
+      "repeats": 3,
+      "baselineStepP95": 3.599999997764826,
+      "candidateStepP95": 2.699999999254942,
+      "changePercent": -24.999999974129928,
+      "regressionGate": true
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "repeats": 3,
+      "baselineStepP95": 28.800000000745058,
+      "candidateStepP95": 20.199999999254942,
+      "changePercent": -29.861111115512617,
+      "regressionGate": true
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 20000,
+      "repeats": 3,
+      "baselineStepP95": 58.099999997764826,
+      "candidateStepP95": 41,
+      "changePercent": -29.432013766648335,
+      "regressionGate": true
+    }
+  ],
+  "activeFrame": [
+    {
+      "scenario": "open-field",
+      "agents": 10000,
+      "mode": "blast",
+      "seed": 42,
+      "accepted": false,
+      "frameCpuP95": 17.399999998509884,
+      "rafP95": 33.30000000000018,
+      "rafP99": 33.400000000000546,
+      "stepP95": 16.199999999254942,
+      "simWall": 0.9013262371775613,
+      "minimumActive": 10000,
+      "over100ms": 0,
+      "over50msRatio": 0.0015873015873015873
+    },
+    {
+      "scenario": "open-field",
+      "agents": 10000,
+      "mode": "wind",
+      "seed": 42,
+      "accepted": false,
+      "frameCpuP95": 18.199999999254942,
+      "rafP95": 33.30000000000018,
+      "rafP99": 33.40000000000009,
+      "stepP95": 17,
+      "simWall": 0.897474251036369,
+      "minimumActive": 10000,
+      "over100ms": 0,
+      "over50msRatio": 0
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "blast",
+      "seed": 42,
+      "accepted": false,
+      "frameCpuP95": 89.60000000149012,
+      "rafP95": 100,
+      "rafP99": 116.70000000000073,
+      "stepP95": 88.19999999925494,
+      "simWall": 0.23018844760910934,
+      "minimumActive": 10000,
+      "over100ms": 14,
+      "over50msRatio": 0.8809523809523809
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "wind",
+      "seed": 42,
+      "accepted": false,
+      "frameCpuP95": 95.19999999925494,
+      "rafP95": 100,
+      "rafP99": 116.80000000000291,
+      "stepP95": 93.60000000149012,
+      "simWall": 0.2254113757607634,
+      "minimumActive": 10000,
+      "over100ms": 24,
+      "over50msRatio": 0.9253968253968254
+    }
+  ],
+  "quality": [
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "blast",
+      "seed": 42,
+      "ticks": 660,
+      "audits": 66,
+      "maxPenetration": 0.4499900000002244,
+      "maxSweptPenetration": 0.525606871035242,
+      "tunnelingPairs": 2,
+      "walls": 0,
+      "nonfinite": 0,
+      "saturatedQueries": 0,
+      "unresolvedCompression": 0,
+      "positionBudgetExhaustions": 0
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "wind",
+      "seed": 42,
+      "ticks": 660,
+      "audits": 66,
+      "maxPenetration": 0.4499944136897156,
+      "maxSweptPenetration": 0.6824527303797208,
+      "tunnelingPairs": 3,
+      "walls": 0,
+      "nonfinite": 0,
+      "saturatedQueries": 0,
+      "unresolvedCompression": 0,
+      "positionBudgetExhaustions": 0
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "blast",
+      "seed": 7,
+      "ticks": 660,
+      "audits": 66,
+      "maxPenetration": 0.44999000324956206,
+      "maxSweptPenetration": 0.6049898035558545,
+      "tunnelingPairs": 4,
+      "walls": 0,
+      "nonfinite": 0,
+      "saturatedQueries": 0,
+      "unresolvedCompression": 0,
+      "positionBudgetExhaustions": 0
+    },
+    {
+      "scenario": "rocky-pass",
+      "agents": 10000,
+      "mode": "wind",
+      "seed": 7,
+      "ticks": 660,
+      "audits": 66,
+      "maxPenetration": 0.4499980587472523,
+      "maxSweptPenetration": 0.9100251601308704,
+      "tunnelingPairs": 2,
+      "walls": 0,
+      "nonfinite": 0,
+      "saturatedQueries": 0,
+      "unresolvedCompression": 0,
+      "positionBudgetExhaustions": 0
+    }
+  ],
+  "limitations": [
+    "10K 60Hz and sim/wall gate fails.",
+    "Large-scene independent audit observes published positions/chords, not every intermediate curved path.",
+    "Final 3-repeat/two-seed simultaneous acceptance and complete #32 matrix remain incomplete.",
+    "Long-session allocation/GC and input-history stress remain unverified."
+  ],
+  "validation": {
+    "fullVerifyTestsBeforeRecorderExportFix": 205,
+    "affectedSuiteTestsAfterFinalFix": 44,
+    "browserTests": 32,
+    "finalTypecheck": "PASS",
+    "finalBuild": "PASS"
+  },
+  "files": {
+    ".gitattributes": "5ac3ec419a34eee559ece381575e5cef6fa67a2989595c9c4ee24285d0070694",
+    "active.json.gz": "16c05bd1402c7e3fd329076ac23bad881c335ee5b6ae0a0fc411f95a56462f4c",
+    "backend-source.zip": "374d25b202e32f60f94f90381939b16a899c2d7fce3b5d3c50074fdc17a87a08",
+    "baseline-none.json.gz": "066e61b05ea44642496f63bdb2c417dcc0833d3b0819050fdd19e6bde1f34658",
+    "browser-tests.txt": "dc3ca24820da3f1c26033d1ccf5ad94b5a3b6f30ba40b14fc0217de7f26c37d8",
+    "build.txt": "c95cd42764d4f3f77775223fdf8cc884fd86d6e093bcf3207b8a86b8f211c394",
+    "candidate-none.json.gz": "499e76f121db2683ff641e5b657bc66bb6379d07ce691ae9e4c132381e241a05",
+    "candidate-source.zip": "ad91e0d2ade133ce77c1d7a36a91c5c2a10b16752fb32996853ccbcff5d64908",
+    "clock.json.gz": "410fddad53d758c218ce49dcc834f43042b32545f75f77f6c32b6a7136649761",
+    "contact.cpuprofile.gz": "bb419e653dd7aec541ab80faf0088bcdf000afd9270c2b2153ff78c3a6e7eea9",
+    "final-profile.json.gz": "863cbf0df0d87fe8f262ecd2948a4e8a1c26b9540a65d5ace7909eefdf30ce4b",
+    "kernel-auto.json.gz": "3b97d34329ffa3f812f5df1ba0743e06c5bb1b50efa59c86d5f50aeb3297675d",
+    "kernel-js.json.gz": "40d51eecaede21f25fbbd8429248e6bc4426f25d79b06f805ea194bb899d3770",
+    "proxy-1000.json": "f91766239612431ec2315ca5592301a8220370f7925f2e60df70008dad9c0ab6",
+    "proxy-10000.json": "1494d8805a35f288ec3f8883a763d3de0901e77a34ee4abf09a72e66a7fb94e3",
+    "proxy-20000.json": "329fdcb965dafa99165a56b2be6c89b5f7a1e1d83acd1d099d2466030e53a827",
+    "rocky-ui-quality.json.gz": "cdf61f5f1354b70084bf89b4270d73fd9783bdb26bc67bbdceab7ad7120d2bb6",
+    "targeted-tests.txt": "bf41fb797106e693e7fe6cf1f64fad17f0c36c11e8a2e73ef07364de8d727c3c",
+    "trace-off.json.gz": "31399316a1c4e14772a7516cf7872a3503083f617120be4caa153260e8dffdc0",
+    "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be"
+  },
+  "logFormatting": "Console logs use LF line endings with trailing formatting whitespace removed; measured JSON and source archives are byte-preserved."
+}
