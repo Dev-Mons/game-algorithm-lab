@@ -79,3 +79,36 @@ it('matches exhaustive frontiers after dense groups cross spatial cells',()=>{
   expect(actual.projected).toBeGreaterThan(1);expect(actual.projected).toBe(expected.projected);
   expect(actual.state.x).toEqual(expected.state.x);expect(actual.state.y).toEqual(expected.state.y);
 });
+
+it('preserves every pair outside the residual list during certified collective movement',()=>{
+  const count=25,state=new AgentBuffer(count),radii=Float64Array.from({length:count},(_,i)=>[1.6,2,2.4][i%3]!);
+  state.active.fill(1);
+  for(let a=0;a<count;a++){state.x[a]=26+(a%5)*3.1;state.y[a]=25+Math.floor(a/5)*3.1;}
+  const obstacles=[{x:20,y:15,width:3,height:45}],index=new StaticObstacleIndex();index.update(obstacles);
+  const free=new StaticFreeSpace(index);free.begin(count,80,80);
+  for(let a=0;a<count;a++)free.prepare(a,state.x[a]!,state.y[a]!,radii[a]!);
+  const external=new ExternalInfluences(count,80,80);external.proxies.push({body:'stationary',x:45,y:30,toX:45,toY:30,radius:3});
+  const input={next:state,index:new SpatialHash(80,80,12,count),worldWidth:80,worldHeight:80,
+    agentRadius:2,maxAgentRadius:2.4,agentRadii:radii,wallClearance:2,obstacles,external} as unknown as CrowdMovementInput;
+  const pairs:number[][]=[],a:number[]=[],b:number[]=[],tolerance=.45;
+  for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){
+    const depth=radii[i]!+radii[j]!-Math.hypot(state.x[i]!-state.x[j]!,state.y[i]!-state.y[j]!);
+    pairs.push([i,j,depth]);
+    // Deliberately omit every initially safe pair: the swept frontier must
+    // protect these through its independent spatial query, not this list.
+    if(depth>tolerance){a.push(i);b.push(j);}
+  }
+  const projection=new ContactProjection();
+  const groups=projection.solve(input,index,free,new Int32Array(a),new Int32Array(b),a.length,tolerance,1.6,
+    (id,dx,dy)=>{state.x[id]=state.x[id]!+dx;state.y[id]=state.y[id]!+dy;});
+  expect(groups).toBeGreaterThan(0);
+  for(const [i,j,depth] of pairs){
+    const now=radii[i!]!+radii[j!]!-Math.hypot(state.x[i!]!-state.x[j!]!,state.y[i!]!-state.y[j!]!);
+    expect(now).toBeLessThanOrEqual(Math.max(tolerance,depth!)+1e-8);
+  }
+  for(let i=0;i<count;i++){
+    expect(distanceSquaredToRect(state.x[i]!,state.y[i]!,obstacles[0]!)).toBeGreaterThanOrEqual((radii[i]!-1e-8)**2);
+    expect(radii[i]!+3-Math.hypot(state.x[i]!-45,state.y[i]!-30)).toBeLessThanOrEqual(tolerance+1e-8);
+  }
+});
+

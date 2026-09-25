@@ -36,7 +36,11 @@ export class ContactProjection {
     let accepted=0,attempts=0;
     for(let pair=0;pair<pairs&&attempts<EXTERNAL_PROFILE.maximumProjectionAttempts;pair++) {
       const a=pairA[pair]!,b=pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
-      const d=Math.hypot(dx,dy),target=this.radius(input,a)+this.radius(input,b)-tolerance;
+      const target=this.radius(input,a)+this.radius(input,b)-tolerance;
+      // hypot cannot be smaller than either absolute component. Reject these
+      // provably distant pairs without changing any accepted pair arithmetic.
+      if(Math.abs(dx)>=target||Math.abs(dy)>=target)continue;
+      const d=Math.hypot(dx,dy);
       if(d>=target||d<1e-9)continue;
       attempts++;stats.projectionAttempts++;
       const amount=Math.min(target-d+1e-5,minimumRadius*.5),mx=dx/d*amount,my=dy/d*amount;

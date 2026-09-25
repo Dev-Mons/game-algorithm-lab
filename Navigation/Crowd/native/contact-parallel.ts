@@ -1,4 +1,4 @@
-import { address, resetVelocityCounters, velocityRange, positionRange, constraintCount, energyDampedContacts, buildPairsRange, pairCandidates, pairFallbacks, pairCells, pairMaximum, pairOwnershipSkips } from './contact-kernel';
+import { address, resetVelocityCounters, velocityRange, positionRange, constraintCount, energyDampedContacts, buildWorksetRange, buildPairsRange, pairCandidates, pairFallbacks, pairCells, pairMaximum, pairOwnershipSkips } from './contact-kernel';
 export * from './contact-kernel';
 
 @external('env','clockNow')
@@ -62,5 +62,13 @@ export function parallelBuildPairs(agents:i32,capacity:i32,columns:i32,rows:i32,
   const result=address(31)+(<usize>worker<<6);
   store<f64>(result,<f64>count);store<f64>(result+8,<f64>pairCandidates());store<f64>(result+16,<f64>pairFallbacks());
   store<f64>(result+24,<f64>pairCells());store<f64>(result+32,<f64>pairMaximum());store<f64>(result+40,<f64>pairOwnershipSkips());
+  return 1;
+}
+
+export function parallelBuildWorkset(pairs:i32,capacity:i32,dt:f64,halo:f64,worker:i32,participants:i32):i32 {
+  const size=(pairs+participants-1)/participants,begin=worker*size,end=pairs<begin+size?pairs:begin+size;
+  const output=address(34)+(<usize>worker*<usize>capacity<<2);
+  const count=buildWorksetRange(begin,end,dt,halo,output);
+  store<f64>(address(31)+(<usize>worker<<6),<f64>count);
   return 1;
 }

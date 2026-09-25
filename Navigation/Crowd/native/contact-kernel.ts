@@ -150,10 +150,13 @@ export function classifyVelocityWorkset(count:i32):void {
   }
 }
 export function buildWorkset(pairs:i32,agents:i32,dt:f64,halo:f64):i32 {
-  const vx=ptr(2),vy=ptr(3),a=ptr(11),b=ptr(12),dx=ptr(13),dy=ptr(14),radius=ptr(15),output=ptr(21);
-  memory.copy(ptr(22),vx,<usize>agents<<3);memory.copy(ptr(23),vy,<usize>agents<<3);
+  memory.copy(ptr(22),ptr(2),<usize>agents<<3);memory.copy(ptr(23),ptr(3),<usize>agents<<3);
+  return buildWorksetRange(0,pairs,dt,halo,ptr(21));
+}
+export function buildWorksetRange(begin:i32,end:i32,dt:f64,halo:f64,output:usize):i32 {
+  const vx=ptr(2),vy=ptr(3),a=ptr(11),b=ptr(12),dx=ptr(13),dy=ptr(14),radius=ptr(15);
   let count:i32=0;
-  for(let pair:i32=0;pair<pairs;pair++) {
+  for(let pair:i32=begin;pair<end;pair++) {
     const ia=load<i32>(a+(<usize>pair<<2)),ib=load<i32>(b+(<usize>pair<<2));
     const px=read(dx,pair),py=read(dy,pair),rx=read(vx,ib)-read(vx,ia),ry=read(vy,ib)-read(vy,ia);
     const v2=rx*rx+ry*ry,t=v2>1e-12?Math.max(0,Math.min(dt,-(px*rx+py*ry)/v2)):0;

@@ -106,7 +106,6 @@ export class ExternalContactSolver {
     // Zero-restitution projection retains the tangent and replaces the normal
     // component with proxy motion. The shared 1.5x reserve already covers sqrt(2).
     for (const p of external.proxies) maximumSpeed = Math.max(maximumSpeed,Math.min(speedLimit,Math.hypot(p.toX-p.x,p.toY-p.y)/input.fixedDelta));
-    const inputMaximumSpeed=maximumSpeed;
     // Leave room for normal pair energy redistribution; clamp only if a later
     // response exceeds this conservative travel bound or the profile ceiling.
     maximumSpeed=Math.min(speedLimit,maximumSpeed*1.5);
@@ -116,7 +115,7 @@ export class ExternalContactSolver {
     // approaching each other, not for a coherent crowd translating at high speed.
     const absoluteSteps = Math.min(EXTERNAL_PROFILE.maximumSubsteps,Math.max(1,Math.ceil(maximumSpeed*input.fixedDelta/(minimumRadius*.5))));
     this.prepareStatics(input,maximumSpeed*input.fixedDelta+minimumRadius);
-    const verifySingleStep=forcedSubsteps===undefined&&absoluteSteps===2&&inputMaximumSpeed*input.fixedDelta<=minimumRadius*.5;
+    const verifySingleStep=forcedSubsteps===undefined&&absoluteSteps===2;
     let substeps = forcedSubsteps??(verifySingleStep?1:this.planSubsteps(input,external,minimumRadius,maximumSpeed,maximumOrdinarySpeed,absoluteSteps));
     const unresolvedBefore=stats.unresolvedCompression,budgetBefore=stats.positionBudgetExhaustions,maxExhaustedBefore=stats.maxExhaustedPenetration;
     if(attempt===0) {
@@ -398,7 +397,8 @@ export class ExternalContactSolver {
     const s=input.next;
     input.external!.stats.velocityWorksets++;
     if(kernel) {
-      this.velocityPairCount=kernel.exports.buildWorkset(this.pairCount,s.count,dt,EXTERNAL_PROFILE.velocityWorksetHalo);
+      this.velocityPairCount=kernel.buildWorkset(this.pairCount,s.count,dt,EXTERNAL_PROFILE.velocityWorksetHalo);
+      if(kernel.lastParallel){input.external!.stats.parallelPasses++;input.external!.stats.parallelPhaseMs+=kernel.lastPhaseMs;}
       kernel.configureVelocityColors(this.velocityPairCount);
       return;
     }

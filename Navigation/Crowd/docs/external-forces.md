@@ -805,3 +805,50 @@ results are under `residual-rounds-*`; the earlier 16/128/512-attempt variants
 are retained as source-identified comparisons, not interchangeable results.
 The original complete #32 matrix predates this structural change and remains
 a historical comparison until the final matrix is rerun.
+
+
+### Eight participants and parallel velocity worksets
+
+The current pool uses main plus at most seven workers (also capped by half the
+reported hardware concurrency). The fixed control/results layout separates
+per-participant results from command parameters. Candidate scratch reserves
+one full-capacity segment per participant; eight-participant storage is included
+in kernel bytes. Velocity workset filtering reuses that scratch, computes
+independent contiguous pair ranges and concatenates selected IDs in the exact
+original order. Host geometry classification and all existing validity checks,
+full-set fallback and failed-attempt rollback remain in place.
+
+The two-participant trial was slower. With eight participants, 660-tick rocky
+10K wind/blast three-repeat CPU P95 medians were 27.03/27.555ms. Parallelizing
+workset filtering then measured 25.645ms in one wind run, sim/wall 0.65220.
+**These still fail the 16.67ms/real-time gate.** The measured source is
+`ddf76bfcc1cd3378904c5ef42d009b38e3d53cb550ef7f4626e7c06372d5c7dc`;
+`parallel-workset-performance-source.zip` reconstructs those exact runtime bytes
+and verifies the original hash. Subsequent equivalent participant-constant and
+arena-copy edits are captured separately in `parallel-workset-source.zip`, hash
+`4ffb33830d00832a76ebd0f6f89db90e768eb9280b572d32e11f1825c939fe10`.
+
+The strict half-minimum-radius post-contact travel certificate is now attempted
+for all predictions requiring two substeps; a high incoming speed alone does
+not rule out verification after contacts slow the bodies. The actual travel
+bound, finer-step fallback and contact-concentration regression are unchanged.
+An exact component-distance rejection avoids unnecessary collective `hypot`
+calls. Same-count native arena growth preserves the fixed body prefix without
+allocating transient snapshots; count changes retain the copying path.
+
+The current complete generated-source/type/test/build check passed 220 tests.
+Two worker browser tests passed. All 858 MB of state and 55,139,500 warm values
+matched the sequential JS reference through 660 wind ticks. A new workset-phase
+failure recovered exactly. A 20K proxy replay matched 468 MB through 180 ticks;
+sampled body/proxy penetration stayed below 0.449991/0.210531px, walls and
+nonfinite values were zero. The new two-step policy's separate wind seed42 and
+wind/blast seed7 quality runs stayed below 0.45px. Final current matrix, no-force,
+worker memory and simultaneous repeated acceptance remain outstanding.
+
+Further trial sources are retained for audit, not enabled at runtime. Velocity
+over-relaxation increased substep/iteration work. A broader free-motion temporal
+certificate was rarely used and was not accepted without a stronger neighboring
+wall proof. Reusing only a certified residual pair list did not establish a
+performance gain; its exploratory timing also overlapped a brief validation
+command. Its independent omitted-pair frontier regression remains useful and
+is retained. No physical threshold was weakened to pass a benchmark.

@@ -77,7 +77,7 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 `--quality=on`은 독립 품질 감사 실행입니다. 이 실행의 프레임 시간을 성능 결과로 사용하지 않습니다.
 
 외력 Contact는 f64 WebAssembly 커널을 사용합니다. 교차 출처 격리가 가능한 브라우저에서는
-충돌 쌍을 개체가 겹치지 않는 그룹으로 정렬해 main과 최대 3개 worker에서 계산합니다.
+충돌 쌍을 개체가 겹치지 않는 그룹으로 정렬해 main과 최대 7개 worker에서 계산합니다.
 Vite 개발·preview 서버는 필요한 COOP/COEP 헤더를 제공합니다. 다른 호스트에서는
 `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`가
 필요합니다. 지원하지 않는 환경은 단일 스레드 WebAssembly 또는 TypeScript로 실행합니다.

@@ -37,3 +37,15 @@ it('preserves full center-first pair order through mixed radii, inactive bodies 
     expect(kernel.arrays.x).toEqual(x);expect(kernel.arrays.y).toEqual(y);
   }
 });
+
+
+it('preserves body state and correction bookkeeping across arena capacity growth',()=>{
+  const kernel=ContactKernel.create(()=>0,()=>{},false)!;kernel.ensure(100,8,32);
+  const names=['x','y','vx','vy','radii','freeX','freeY','freeRadius','corrected','lengths','affected'] as const;
+  for(const [i,name] of names.entries())kernel.arrays[name].fill(i+1);
+  const before=names.map(name=>kernel.arrays[name].slice());
+  const bytes=kernel.memory.buffer.byteLength;kernel.ensure(100,4096,512);
+  expect(kernel.memory.buffer.byteLength).toBeGreaterThan(bytes);
+  for(const [i,name] of names.entries())expect(kernel.arrays[name]).toEqual(before[i]);
+  kernel.dispose();
+});

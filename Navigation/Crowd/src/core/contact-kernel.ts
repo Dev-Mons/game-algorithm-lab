@@ -1,7 +1,7 @@
 import { CONTACT_KERNEL_BASE64, CONTACT_SHARED_KERNEL_BASE64 } from './contact-kernel.generated';
 import { AgentBuffer } from './agent-state';
 import { ContactWorkerPool } from './contact-worker-pool';
-import { CONTACT_TABLE_OFFSET,CONTACT_ARENA_OFFSET,WORKER_CONTROL_OFFSET,WORKER_RESULTS_OFFSET,
+import { MAX_CONTACT_PARTICIPANTS,CONTACT_TABLE_OFFSET,CONTACT_ARENA_OFFSET,WORKER_CONTROL_OFFSET,WORKER_RESULTS_OFFSET,
   POSITION_COLORS_OFFSET,VELOCITY_COLORS_OFFSET,WORKER_CONTROL_LENGTH,WORKER_RESULTS_LENGTH,
   type ParallelContactExports } from './contact-worker-protocol';
 
@@ -81,9 +81,11 @@ export class ContactKernel {
 
   ensure(count:number,capacity:number,cells=this.cells):void {
     if(this.arrays&&count===this.count&&capacity<=this.capacity&&cells<=this.cells)return;
-    const saved=this.arrays?Object.fromEntries(Object.entries(this.arrays).slice(0,11).map(([k,v])=>[k,v.slice()])):null;
+    // Body-column offsets depend only on count. Memory growth preserves their
+    // bytes, so pair/cell capacity growth needs no transient body snapshots.
+    const saved=this.arrays&&count!==this.count?Object.fromEntries(Object.entries(this.arrays).slice(0,11).map(([k,v])=>[k,v.slice()])):null;
     this.count=count;this.capacity=Math.max(capacity,this.capacity);this.cells=Math.max(cells,this.cells);
-    const bytes=CONTACT_ARENA_OFFSET+count*128+this.capacity*(this.shared?136:104)+this.cells*4;
+    const bytes=CONTACT_ARENA_OFFSET+count*128+this.capacity*(104+(this.shared?MAX_CONTACT_PARTICIPANTS*8:0))+this.cells*4;
     const pages=Math.ceil(bytes/65536);
     if(this.memory.buffer.byteLength<pages*65536)this.memory.grow(pages-this.memory.buffer.byteLength/65536);
     let offset=CONTACT_ARENA_OFFSET;
@@ -100,7 +102,7 @@ export class ContactKernel {
       parallelResults:new Float64Array(this.memory.buffer,WORKER_RESULTS_OFFSET,WORKER_RESULTS_LENGTH),
       deferred:new Int8Array(u(m).buffer,offset-m,m),
       velocityStarts:new Int32Array(this.memory.buffer,VELOCITY_COLORS_OFFSET,65),
-      pairScratchA:i(this.shared?m*4:0),pairScratchB:i(this.shared?m*4:0)};
+      pairScratchA:i(this.shared?m*MAX_CONTACT_PARTICIPANTS:0),pairScratchB:i(this.shared?m*MAX_CONTACT_PARTICIPANTS:0)};
     const table=new Uint32Array(this.memory.buffer,CONTACT_TABLE_OFFSET,36);
     Object.values(this.arrays).forEach((a,j)=>{table[j]=a.byteOffset;});
     this.arrays.deferred.fill(0);
@@ -180,6 +182,24 @@ export class ContactKernel {
     const result=this.exports.buildPairs(agents,capacity,columns,rows,cellSize,maximumRadius,gap,padding);
     this.pairCandidates=this.exports.pairCandidates();this.pairFallbacks=this.exports.pairFallbacks();this.pairCells=this.exports.pairCells();
     this.pairMaximum=this.exports.pairMaximum();this.pairOwnershipSkips=this.exports.pairOwnershipSkips();return result;
+  }
+
+  buildWorkset(pairs:number,agents:number,dt:number,halo:number):number {
+    const pool=this.pool,data=this.arrays;
+    this.lastParallel=!!pool?.ready&&pairs>=8192;this.lastPhaseMs=0;
+    if(this.lastParallel&&pool) {
+      data.anchorVX.set(data.vx);data.anchorVY.set(data.vy);
+      const before=pool.phaseMs;
+      try {pool.run(4,pairs,this.capacity,dt,halo);}
+      finally {this.lastPhaseMs=pool.phaseMs-before;}
+      let offset=0;
+      for(let worker=0;worker<pool.participants;worker++) {
+        const count=data.parallelResults[worker*8]!,start=worker*this.capacity;
+        data.velocityPairs.set(data.pairScratchA.subarray(start,start+count),offset);offset+=count;
+      }
+      return offset;
+    }
+    return this.exports.buildWorkset(pairs,agents,dt,halo);
   }
 
   private bind(shadow:AgentBuffer):void {

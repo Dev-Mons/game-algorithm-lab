@@ -7,7 +7,7 @@ test('reset retires every contact worker and a new session resumes parallel comp
   expect(await page.evaluate(()=>crossOriginIsolated)).toBe(true);
   const hardware=await page.evaluate(()=>navigator.hardwareConcurrency);
   test.skip(hardware<4,'This host uses the synchronous native fallback.');
-  const expectedWorkers=Math.min(4,Math.floor(hardware/2))-1;
+  const expectedWorkers=Math.min(8,Math.floor(hardware/2))-1;
   for(let cycle=0;cycle<3;cycle++) {
     await page.locator('#run-toggle').click();
     await page.waitForFunction(()=>window.crowdDebug.simulation().stepCount>=6);

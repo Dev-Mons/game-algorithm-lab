@@ -67,6 +67,13 @@ describe('external physical movement', () => {
     for(let a=0;a<5;a++)expect(s.state.x[a]).toBeCloseTo(200+a*6.4+86/60,8);
     expect(s.metrics.wallOverlapCount).toBe(0);
   });
+  it('verifies the post-contact travel bound even when the incoming speed was larger',()=>{
+    const s=scene(2);s.config.contactFriction=0;
+    kick(s,0,110,0,'a');kick(s,1,-110,0,'b');s.step();
+    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
+    expect(s.state.vx[0]).toBeCloseTo(0,8);expect(s.state.vx[1]).toBeCloseTo(0,8);
+    expect(penetration(s)).toBeLessThan(.001);
+  });
   it('falls back before integration when contact concentrates speed beyond the one-step travel bound',()=>{
     const s=scene(2);s.config.contactFriction=0;
     kick(s,0,86,0,'a');kick(s,1,0,86,'b');s.step();
