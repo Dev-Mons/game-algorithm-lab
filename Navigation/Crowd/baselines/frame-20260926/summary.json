@@ -192,10 +192,11 @@
     }
   ],
   "limitations": [
-    "10K 60Hz and sim/wall gate fails.",
-    "Large-scene independent audit observes published positions/chords, not every intermediate curved path.",
-    "Final 3-repeat/two-seed simultaneous acceptance and complete #32 matrix remain incomplete.",
-    "Long-session allocation/GC and input-history stress remain unverified."
+    "Rocky 10K 60Hz and sim/wall gate still fails.",
+    "Large-scene independent audits observe published positions/chords, not every intermediate curved path; small crossing/wall fixtures are independent.",
+    "Final three-repeat/two-seed simultaneous frame acceptance remains incomplete.",
+    "Session memory evidence covers active1K for12000ticks plus reset cycles; it does not prove long-session dense10K throughput or per-frame GC causality.",
+    "20K rocky proxy retry has ~0.94s contact-phase outlier despite passing its P95 headless budget."
   ],
   "validation": {
     "fullVerifyTestsBeforeRecorderExportFix": 205,
@@ -230,6 +231,7 @@
     "clock.json.gz": "410fddad53d758c218ce49dcc834f43042b32545f75f77f6c32b6a7136649761",
     "contact.cpuprofile.gz": "bb419e653dd7aec541ab80faf0088bcdf000afd9270c2b2153ff78c3a6e7eea9",
     "final-profile.json.gz": "863cbf0df0d87fe8f262ecd2948a4e8a1c26b9540a65d5ace7909eefdf30ce4b",
+    "history-test.txt": "941b064ee08667c2e775e286a507e045ee72fbc689b39d09af732593e0ad6bb4",
     "kernel-auto.json.gz": "3b97d34329ffa3f812f5df1ba0743e06c5bb1b50efa59c86d5f50aeb3297675d",
     "kernel-js.json.gz": "40d51eecaede21f25fbbd8429248e6bc4426f25d79b06f805ea194bb899d3770",
     "matrix-50k-exploration.json": "93f31e7b13fec9c1b6deaa00d51df2aa8d0c6492a4aa041c60e4f1a4373daff3",
@@ -259,14 +261,25 @@
     "refined-profile.json.gz": "6026b231900599dc3508b0af421859df49894cc518fb19eb9ba7e381f0ad8740",
     "refined-proxy-20000.json": "02653ad869a75a304d3056565b488d30cc07161f1e55adfade2be14b42df427c",
     "refined-proxy-byte.json": "6132dbb74c5d7644445b7d23a02e6f89b5edff293e87373526d78481e1462524",
+    "refined-rocky-proxy-performance.json": "a3560f659d844826a595b60c1c9943f89e582b9bb2888493247c687fc5d183c7",
     "refined-source.zip": "67596ea37131aca3442e2213ccd83905cbb73b873acb08dc173310744493b4fb",
     "refined-verify.txt": "d68006e84e2a1deac09a0b13671f15e5a84713453d4514eec28da45b6796b9dd",
     "rejected-extrapolation-quality.json.gz": "1292dca8317074023fd542204303d068acc380a4e1d3dd1a747d172ad75e9405",
     "rejected-extrapolation-source.zip": "1c9e9dfe44da4c4d35ea03d9725a46a83f4ae8fcff1ea1bb435660e3b6c68ba2",
     "rejected-native-warm-source.zip": "d8033b33631bc92da368ee2d9e44bcb74613eb27b9f0a501c7cf70db95f5635c",
+    "rejected-position-byte-wind.json": "a838e259a0adcaede5473986395f86c22d25c03a17ffeba70336d8ba6932bdbd",
+    "rejected-position-performance.json.gz": "4793f04c1f3402bbe68a4683ca22fe3b96bd59a1b611242fb995598a65d7654a",
+    "rejected-position-proof-byte-wind.json": "558d6da3cba550f9cc179938ce43836da5822cae62c39c785c1842970f4b68ad",
+    "rejected-position-proof-performance.json.gz": "a873365fcce989539ba91c7622e65e1c2c2c2e881ef71a10649b2fcd0647111d",
+    "rejected-position-proof-source.zip": "55d7ec78fcb7b04d3ed67675dd0d7abd9ec5e72c57d445f0407245a3a5c6a131",
+    "rejected-position-workset-source.zip": "02efa8f0a1e269737a1022c65784f07f1b2ed5287507fc4fcbc09399506d91c8",
     "rejected-single-step-quality.json.gz": "32bc5bcf9e9459741b6514e6608d36b4c7ea220c0836791f908d897e197bb585",
     "relative-plan-probe.json": "39e2c6f1943c9b649c2a3cd21f39e3c75179ed1fbca14eba39587631a83984c6",
+    "replay-typecheck.txt": "5d2621db1ba917f0fd3e4b61d59d7346799c26ab7a867e1312f429f7a8c1bd50",
     "rocky-ui-quality.json.gz": "cdf61f5f1354b70084bf89b4270d73fd9783bdb26bc67bbdceab7ad7120d2bb6",
+    "session-memory.heapprofile.gz": "afc44a1eb906acaabe83257cc104810d8aca79727bfaeb1a8d5736380514188b",
+    "session-memory.json.gz": "90607b97065a3e2859c69b605038ba49f63ab9dfb42648b3c6fee6adb5fdaf59",
+    "session-source.zip": "180c47d442d0f38c130283a8fe29ef8126955d8b86396c9e3f7b776f7d9274ac",
     "targeted-tests.txt": "bf41fb797106e693e7fe6cf1f64fad17f0c36c11e8a2e73ef07364de8d727c3c",
     "trace-off.json.gz": "31399316a1c4e14772a7516cf7872a3503083f617120be4caa153260e8dffdc0",
     "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be"
@@ -303,5 +316,48 @@
     "flatInputMatrixPerformance": "All 1K/10K/20K modes below historical headless budgets; separate from frame gate",
     "rocky20KProxyDeepRetry": "16 accepted substeps; 19 attempted intervals; 3 discarded attempts; accepted unresolved compression 0",
     "profileCaveat": "Refined profile overlapped headless quality/replay CPU work; use hotspot identification only, never performance comparisons."
+  },
+  "sessionMemory": {
+    "sourceSha256": "2832ef01fd13a6118a123c7bc961fbd77bcd6035ddd6859d828be95a9f586dc4",
+    "sourceStable": true,
+    "ticks": 12000,
+    "commands": 4262,
+    "minimumActive": 1000,
+    "retainedTimingSamples": 10000,
+    "frameCapacity": 4096,
+    "resetRewarmCycles": 3,
+    "pageErrors": [],
+    "sampledAllocationEstimateBytes": 32593128816,
+    "caveat": "Actual HTTP main RAF/clock/renderer/recorder/UI. 12,000 ticks, 4,096 initial UI goal records plus periodic goals/wind, then three reset/rewarm cycles. Heap sampling includes collected objects; explicit GC only while paused. Memory/history diagnostic, not a 60Hz or constant-active-population quality acceptance run.",
+    "historyCapacityTest": "PASS; 4096 external records, atomic overflow rejection, idempotent old retransmission, reset and stale generation"
+  },
+  "rockyProxyFollowup": {
+    "ticks": 180,
+    "motion": "30-119",
+    "removed": 120,
+    "repeats": 3,
+    "medianStepP95Ms": {
+      "10000": 53.1943,
+      "20000": 107.643
+    },
+    "quality": "Corresponding refined-proxy-20000 audit; accepted unresolved compression 0",
+    "largeRetryContactMsRange": [
+      929.7145,
+      952.4169
+    ],
+    "frameAcceptance": false
+  },
+  "rejectedPositionOptimizations": {
+    "worksetWindBlastMedianFrameP95Ms": [
+      73.7,
+      68.9
+    ],
+    "travelBudgetSingleWindFrameP95Ms": 77.4,
+    "referenceWindBlastMedianFrameP95Ms": [
+      72.5,
+      67.5
+    ],
+    "byteComparisons": "Both wind660: 858000000 bytes and all warm values; zero differences",
+    "decision": "Rejected; filtering/bookkeeping failed to improve measured throughput."
   }
 }

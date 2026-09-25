@@ -1,0 +1,11 @@
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ✓ tests/simulation/external-influences.test.ts (38 tests | 37 skipped) 690ms
+   ✓ external physical movement > preserves a full session history, rejects overflow atomically, and releases it on reset  689ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 37 skipped (38)
+   Start at  04:54:29
+   Duration  1.18s (transform 149ms, setup 0ms, collect 228ms, tests 690ms, environment 0ms, prepare 70ms)
+

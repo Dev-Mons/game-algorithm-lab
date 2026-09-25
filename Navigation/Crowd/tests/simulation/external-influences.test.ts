@@ -248,6 +248,23 @@ describe('external physical movement', () => {
     s.enqueueExternal(e);expect(s.enqueueExternal({dvy:0,dvx:100,target:{agent:0},generation:1,tick:0,id:'copy',kind:'impulse'})).toBe(false);
     e.dvx=500;s.step();expect(s.state.vx[0]).toBe(100);
   });
+  it('preserves a full session history, rejects overflow atomically, and releases it on reset',()=>{
+    const s=scene(),generation=s.external.generation;
+    const first:ExternalInput={kind:'impulse',id:'history-0',tick:0,generation,target:{agent:0},dvx:0,dvy:0};
+    for(let tick=0;tick<EXTERNAL_PROFILE.maximumRecords;tick++) {
+      s.enqueueExternal({...first,id:`history-${tick}`,tick});s.step();
+    }
+    const records=s.external.record(),before=s.stateHash();
+    expect(records).toHaveLength(EXTERNAL_PROFILE.maximumRecords);
+    expect(s.enqueueExternal(first)).toBe(false);
+    expect(()=>s.enqueueExternal({...first,id:'overflow',tick:s.stepCount})).toThrow(/budget/);
+    expect(s.stateHash()).toBe(before);expect(s.external.record()).toEqual(records);
+    s.reset();
+    expect(s.external.record()).toEqual([]);expect(s.external.active).toBe(false);
+    expect(()=>s.enqueueExternal({...first,id:'stale'})).toThrow(/generation/);
+    expect(s.enqueueExternal({...first,generation:s.external.generation})).toBe(true);
+    s.step();expect(s.external.stats.inputs).toBe(1);
+  });
   it('rejects proxy discontinuities and excessive future body count atomically', () => {
     const s=scene();const e:ExternalInput={kind:'proxy',id:'p',body:'car',tick:0,generation:1,x:180,y:360,toX:181,toY:360,radius:10};
     s.enqueueExternal(e);

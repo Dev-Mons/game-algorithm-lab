@@ -584,7 +584,7 @@ in `refined-flat-performance.json.gz`, `refined-1k-blast.json.gz` and
 `refined-source.zip` in the existing evidence folder.
 
 The #32 flat matrix was run at the batched source: few-target impulses, blast,
-global acceleration, moving proxy and overlapping inputs at 1K/10K/20K. All 15
+global impulse, moving proxy and overlapping inputs at 1K/10K/20K. All 15
 independently sampled quality cases passed (120 ticks; audit every10 plus any
 retry/exhaustion). Agent penetration was 0, proxy penetration ≤0.000516px,
 walls/nonfinite/unresolved compression 0, and the proxy affected 41–55 bodies.
@@ -595,6 +595,26 @@ also passed sampled quality while retaining all 50,000 agents. `matrix-*` record
 carry source identities; their historical source hash uses `src/...` paths,
 whereas frame/diagnostic records use `/src/...` paths. Do not compare these hash
 strings without accounting for the stated format.
+
+An audit-OFF rocky proxy replay includes the difficult recovery tick161: 180
+ticks, motion30–119, removal120, three repeats at 10K and 20K. All requested bodies
+remained active. Median step P95 was 53.1943ms/107.6430ms, within the #32 historical
+120/240ms budgets, with accepted unresolved compression 0. The 20K three-retry
+tick cost 929.7–952.4ms in the contact phase alone. Its single outlier falls above
+P99 in this short run and must not be hidden by the percentile gate. The raw
+`refined-rocky-proxy-performance.json` preserves every peak counter and the cost
+of discarded trials. It is not a #33 frame acceptance result.
+
+Two subsequent exact position optimizations were rejected. A displacement-
+certified pair subset resumed the original ordered suffix immediately when a
+correction invalidated its frontier. A second experiment reused conservative
+empty-disk travel budgets inside the native position pass. Both matched every
+state byte and warm value through the 660-tick wind replay. Nevertheless the
+subset's three-repeat wind/blast CPU P95 medians were 73.7/68.9ms versus
+72.5/67.5ms before it; the travel-budget experiment's first wind run was 77.4ms.
+The added filtering/bookkeeping did not pay for itself. Neither remains in the
+runtime. Their executed source and raw results are retained under `rejected-
+position-*` in the same evidence folder.
 
 ### Verification and remaining gates
 
@@ -612,9 +632,72 @@ stationary-proxy rebound and scaled-wall roundoff.
 
 The refined candidate passed the complete type/test/build check with 214 tests.
 Three affected browser tests passed before general refinement; that later change
-does not alter UI handling. Remaining work is the rocky 10K whole-frame throughput
-gate, independent intermediate trajectory verification, final three-repeat/two-
-seed simultaneous acceptance, and long-session allocation/GC and input-history
-stress. The kernel/workset changes do not make those remaining gates optional.
+does not alter UI handling. The subsequent full-history capacity regression
+passed separately, as did typecheck and the session measurement script syntax
+check. Remaining work is the rocky 10K whole-frame throughput gate, final three-
+repeat/two-seed simultaneous acceptance, and review/integration. Keep the stated
+intermediate-path audit limits visible when assessing physical acceptance.
+The kernel/workset changes do not make those remaining gates optional.
 No population, input force, radius or fixed delta was reduced to manufacture a
 pass. Neither issue should be closed from the sampled quality improvements alone.
+
+The required physical scenarios map to the following regression evidence. These
+small-scene checks and the large sampled matrix have different coverage; a test
+count alone is not the physical acceptance argument.
+
+| Contract | Regression evidence |
+|---|---|
+| Impulse calibration, one-shot input, sustained integration | `external-influences.test.ts`: weak momentum without motor control; fixed-tick acceleration/end/cancel; deduplication |
+| Blast/wave direction, falloff and lifetime | deterministic center direction and linear falloff; a wave hits each target once |
+| Chains, mixed radii and energy | randomized approaching contacts, mixed-radius crossing, dense multidirectional wall-bounded energy test |
+| Thin walls and removed normal velocity | swept thin-wall test; no transmission through the wall; static sweep/index unit regressions |
+| Dynamic crossing | small all-pair penetration audit and mixed-radius no-side-swap crossing fixture |
+| Recovery and new goals | four-second 95% recovery; repeated hits/new goal without a position jump; displaced-navigation corner regressions |
+| Moving/stopped/removed proxies | continuous prescribed motion, stationary follow-up tick, removal, and the wall-authoritative crush fixture |
+| Overload and finite state | full candidate fallback, explicit global pair-budget rejection before publication, combined speed limit and nonfinite rejection |
+| Field feedback | `crowd-flow-solver.test.ts`: physical knockback versus voluntary alignment; mass/momentum conservation; thin-wall masks |
+| Replay, pause/reset, render cadence | exact sorted-input arrays/hash, fixed-clock cadence tests and browser external-input/clock tests |
+| History lifetime | 4,096 accepted records, idempotent old retransmission at capacity, atomic overflow rejection, stale-generation rejection and reset reuse |
+
+The cases above are in [external simulation tests](../tests/simulation/external-influences.test.ts),
+[field tests](../tests/unit/crowd-flow-solver.test.ts),
+[displaced navigation tests](../tests/simulation/displaced-navigation.test.ts) and
+[browser tests](../tests/browser/external-influences.spec.ts). Large-scene chord
+audits are a diagnostic approximation: grazing chords do not prove that a
+piecewise swept path crossed a body, and endpoint safety does not prove every
+intermediate path safe. Keep that coverage limit alongside the raw results.
+
+### Session memory and input history
+
+`scripts/measure-session.mjs` runs the real HTTP main loop with Chromium heap
+allocation sampling enabled, changing goals through the Canvas handler every
+tick for the first 4,096 ticks and then periodically, with periodic UI wind.
+The 12,000-tick session kept all 1,000 agents active and recorded 4,262 commands.
+The lifetime measured count remained 12,000 while timing/pass samples stopped at
+10,000 and the frame trace stopped at 4,096. Owned contact capacity peaked at
+2,579,948 bytes and stayed there from tick 1,000 through 12,000. CDP backing storage
+was 6,213,103 bytes at all four sampled running checkpoints. Post-GC used heap
+rose from 4,562,244 at tick 1,000 to 5,208,120 at tick 12,000, including the intentionally
+retained command log and bounded recorder rows.
+
+Three reset/1,000-tick rewarm cycles cleared external history, pending inputs and
+effects to 0 at each reset. Backing storage returned to about 4.19MB, then 6.21MB
+after rewarm. Rewarmed used heap was 4.588/4.604/4.611MB; the small drift is not a
+proof of zero allocations or zero leaks. No page errors occurred. The source and
+raw snapshots are `session-source.zip` and `session-memory.json.gz`; the full
+allocation profile is `session-memory.heapprofile.gz`.
+
+Sampling estimated 32.59GB of allocation over the combined long run and reset
+cycles, including objects collected by minor/major GC. Large allocation stacks
+included contact solving and FlowField potential/direction iteration during
+thousands of goal rebuilds. This is an allocation estimate under instrumentation,
+not an exact allocator count or a normal-user allocation rate. The sampler and
+explicit paused GC make this a memory/history diagnostic, not performance
+acceptance. It does not establish long-session dense 10K throughput or attribute
+an individual long frame to GC. The earlier dedicated CPU profile observed GC
+samples, but similarly does not establish per-frame GC causality.
+
+Reproduce with `node scripts/measure-session.mjs --url=http://127.0.0.1:4275`.
+The separate full-history test exercises all 4,096 external records (the UI goal
+log is a different store), rejects overflow without mutation, accepts an
+identical old retransmission, then verifies reset and stale-generation behavior.
