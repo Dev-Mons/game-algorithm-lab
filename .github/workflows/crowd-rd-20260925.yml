@@ -1,0 +1,45 @@
+name: Crowd R&D pinned source bundle (no product changes)
+on:
+  push:
+    branches: ['research/crowd-frame-rd-20260925']
+    paths: ['.github/workflows/crowd-rd-20260925.yml']
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 65701664aa9c4c4bb80320d58550e610511ea2b0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: Confirm unchanged product and baseline source
+        run: |
+          test "$(git rev-parse HEAD)" = 65701664aa9c4c4bb80320d58550e610511ea2b0
+          git diff --exit-code HEAD -- Navigation/Crowd
+          mkdir -p crowd-rd-output
+          printf '%s\n' "$GITHUB_SHA" > crowd-rd-output/research-commit.txt
+          git rev-parse HEAD > crowd-rd-output/product-commit.txt
+          (uname -a; lscpu; node --version; npm --version) > crowd-rd-output/environment.txt
+      - name: Install pinned dependency graph
+        working-directory: Navigation/Crowd
+        run: npm ci
+      - name: Required project verification (once)
+        working-directory: Navigation/Crowd
+        run: |
+          set -o pipefail
+          npm run verify 2>&1 | tee ../../crowd-rd-output/verify.log
+      - name: Package read-only source, dependencies, production bundle and logs
+        if: always()
+        run: tar -czf crowd-rd-bundle.tgz Navigation/Crowd crowd-rd-output
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crowd-rd-pinned-source-6570166
+          path: crowd-rd-bundle.tgz
+          retention-days: 7
+          if-no-files-found: error
