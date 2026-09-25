@@ -7,6 +7,10 @@ declare function correctPair(a:i32,b:i32,dx:f64,dy:f64,d:f64,correction:f64):voi
 let table:usize=0;
 let constraints:i32=0;
 let energyDamped:i32=0;
+let deferPositions:bool=false;
+export function setDeferredPositions(value:i32):void {deferPositions=value!=0;}
+export function address(column:i32):usize {return ptr(column);}
+export function resetVelocityCounters():void {constraints=0;energyDamped=0;}
 export function energyDampedContacts():i32 { return energyDamped; }
 let candidateVisits:i32=0,overflowQueries:i32=0,cellVisits:i32=0,maximumNeighbors:i32=0;
 let ownershipSkips:i32=0;
@@ -129,6 +133,19 @@ export function classifyGeometry(pairs:i32,gap:f64):i32 {
   }
   return touching;
 }
+// Only the current conservative swept workset can be visited by workers.
+// Resolve its still-lazy static tests on the host; frontier expansion calls
+// this again before newly admitted pairs can run on another thread.
+export function classifyVelocityWorkset(count:i32):void {
+  const x=ptr(0),y=ptr(1),fx=ptr(5),fy=ptr(6),fr=ptr(7),a=ptr(11),b=ptr(12),kind=ptr(20),work=ptr(21);
+  for(let slot:i32=0;slot<count;slot++) {
+    const pair=load<i32>(work+(<usize>slot<<2));if(load<i8>(kind+<usize>pair)!=0)continue;
+    const ia=load<i32>(a+(<usize>pair<<2)),ib=load<i32>(b+(<usize>pair<<2));
+    const ax=read(x,ia),ay=read(y,ia),bx=read(x,ib),by=read(y,ib);
+    const blocked=!(inside(fx,fy,fr,ia,ax,ay)&&inside(fx,fy,fr,ia,bx,by))&&separated(ia,ib)!=0;
+    store<i8>(kind+<usize>pair,blocked?-1:2);
+  }
+}
 export function buildWorkset(pairs:i32,agents:i32,dt:f64,halo:f64):i32 {
   const vx=ptr(2),vy=ptr(3),a=ptr(11),b=ptr(12),dx=ptr(13),dy=ptr(14),radius=ptr(15),output=ptr(21);
   memory.copy(ptr(22),vx,<usize>agents<<3);memory.copy(ptr(23),vy,<usize>agents<<3);
@@ -151,12 +168,13 @@ export function validWorkset(agents:i32,limitSquared:f64):i32 {
   return 1;
 }
 export function velocity(count:i32,dt:f64,friction:f64,motorSquared:f64):f64 {
+  resetVelocityCounters();return velocityRange(0,count,1,dt,friction,motorSquared);
+}
+export function velocityRange(start:i32,end:i32,stride:i32,dt:f64,friction:f64,motorSquared:f64):f64 {
   const p2=ptr(2);const p3=ptr(3);const p8=ptr(8);const p10=ptr(10);const p11=ptr(11);const p12=ptr(12);const p13=ptr(13);const p14=ptr(14);const p15=ptr(15);const p16=ptr(16);const p17=ptr(17);const p18=ptr(18);const p19=ptr(19);const p20=ptr(20);const p21=ptr(21);
 
-  constraints=0;
-  energyDamped=0;
   let maximum:f64=0;
-  for(let slot:i32=0;slot<count;slot++) {
+  for(let slot:i32=start;slot<end;slot+=stride) {
     const pair=load<i32>(p21+(<usize>slot<<2)),kind=load<i8>(p20+<usize>pair);
     if(kind<0)continue;
     const a=load<i32>(p11+(<usize>pair<<2)),b=load<i32>(p12+(<usize>pair<<2)),rvx=read(p2,b)-read(p2,a),rvy=read(p3,b)-read(p3,a);
@@ -204,17 +222,24 @@ export function velocity(count:i32,dt:f64,friction:f64,motorSquared:f64):f64 {
   return maximum;
 }
 export function position(count:i32,gap:f64,minimumRadius:f64):void {
+  positionRange(0,count,1,gap,minimumRadius);
+}
+@inline function correctPositionPair(pair:i32,a:i32,b:i32,dx:f64,dy:f64,d:f64,correction:f64):void {
+  if(deferPositions)store<i8>(ptr(32)+<usize>pair,1);
+  else correctPair(a,b,dx,dy,d,correction);
+}
+export function positionRange(start:i32,end:i32,stride:i32,gap:f64,minimumRadius:f64):void {
   const p0=ptr(0);const p1=ptr(1);const p4=ptr(4);const p5=ptr(5);const p6=ptr(6);const p7=ptr(7);const p8=ptr(8);const p9=ptr(9);const p11=ptr(11);const p12=ptr(12);
 
-  for(let pair:i32=0;pair<count;pair++) {
+  for(let pair:i32=start;pair<end;pair+=stride) {
     const a=load<i32>(p11+(<usize>pair<<2)),b=load<i32>(p12+(<usize>pair<<2)),ax=read(p0,a),ay=read(p1,a),bx=read(p0,b),by=read(p1,b);
     const dx=bx-ax,dy=by-ay,radius=read(p4,a)+read(p4,b)+gap,d2=dx*dx+dy*dy;
     if(d2>=(radius-.001)*(radius-.001))continue;
     const d=Math.sqrt(d2),correction=Math.min((radius-d)*.5,minimumRadius*.125);
-    if(d<=1e-9){correctPair(a,b,dx,dy,d,correction);continue;}
+    if(d<=1e-9){correctPositionPair(pair,a,b,dx,dy,d,correction);continue;}
     const nx=dx/d,ny=dy/d,mx=nx*correction,my=ny*correction;
     if(!inside(p5,p6,p7,a,ax,ay)||!inside(p5,p6,p7,a,bx,by)||!inside(p5,p6,p7,a,ax-mx,ay-my)||!inside(p5,p6,p7,b,bx,by)||!inside(p5,p6,p7,b,bx+mx,by+my)) {
-      correctPair(a,b,dx,dy,d,correction);continue;
+      correctPositionPair(pair,a,b,dx,dy,d,correction);continue;
     }
     write(p0,a,ax-mx);write(p1,a,ay-my);write(p0,b,bx+mx);write(p1,b,by+my);
     store<i8>(p8+<usize>a,<i8>(1));store<i8>(p8+<usize>b,<i8>(1));

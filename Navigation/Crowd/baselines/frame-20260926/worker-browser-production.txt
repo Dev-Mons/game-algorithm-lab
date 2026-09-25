@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:50172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\contact-workers.spec.ts:3:1 › reset retires every contact worker and a new session resumes parallel computation (2.2s)
+  ok 2 tests\browser\external-influences.spec.ts:3:1 › external tools work while paused, preserve goals and export replay inputs (702ms)
+  ok 3 tests\browser\external-influences.spec.ts:30:1 › external input overflow pauses visibly and reset recovers the UI (326ms)
+  ok 4 tests\browser\frame-clock.spec.ts:3:1 › records the real app loop and keeps paused commands on fixed ticks (2.4s)
+
+  4 passed (6.2s)

@@ -76,8 +76,13 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 이 도구는 tick 30에 실제 캔버스 입력을 보내며, 구간별 요약과 원시 기록을 함께 저장합니다.
 `--quality=on`은 독립 품질 감사 실행입니다. 이 실행의 프레임 시간을 성능 결과로 사용하지 않습니다.
 
-외력 Contact는 동일한 f64 계산 순서의 WebAssembly 커널을 사용하며, 미지원 환경에서는
-TypeScript 경로로 실행합니다. 커널 수정 후 `npm run build:contact`로 생성 파일을 갱신하세요.
+외력 Contact는 f64 WebAssembly 커널을 사용합니다. 교차 출처 격리가 가능한 브라우저에서는
+충돌 쌍을 개체가 겹치지 않는 그룹으로 정렬해 main과 최대 3개 worker에서 계산합니다.
+Vite 개발·preview 서버는 필요한 COOP/COEP 헤더를 제공합니다. 다른 호스트에서는
+`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`가
+필요합니다. 지원하지 않는 환경은 단일 스레드 WebAssembly 또는 TypeScript로 실행합니다.
+직접 생성한 `CrowdSimulation`을 폐기할 때는 `dispose()`로 worker를 종료하세요.
+worker 실패 시 부분 결과를 버리고 같은 tick을 CPU에서 다시 계산합니다. 커널 수정 후 `npm run build:contact`로 생성 파일을 갱신하세요.
 `npm run verify`는 생성 파일과 원본의 일치도 확인합니다. 이 변경 자체가 10K 60FPS 수락을 뜻하지는 않습니다.
 
 지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),

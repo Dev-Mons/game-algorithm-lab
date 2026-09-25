@@ -9,6 +9,8 @@ import { angleDelta } from './math';
 import { ContactKernel } from './contact-kernel';
 import { WarmContactCache } from './warm-contact-cache';
 import { ContactProjection } from './contact-projection';
+import { ContactColoring } from './contact-coloring';
+import { ContactWorkerFailure } from './contact-worker-pool';
 
 /** Velocity contact response + split position stabilization. Only CrowdMovementSolver invokes this pass. */
 export class ExternalContactSolver {
@@ -16,6 +18,7 @@ export class ExternalContactSolver {
   private kernelInput:CrowdMovementInput|null=null;
   private kernelDelta=0;
   private readonly projection=new ContactProjection();
+  private readonly coloring=new ContactColoring();
   private candidates = new Int32Array(EXTERNAL_PROFILE.candidates + 1);
   private readonly planningCandidates = new Int32Array(EXTERNAL_PROFILE.candidates * 2 + 1);
   private staticAgents = new Int32Array(0);
@@ -38,6 +41,8 @@ export class ExternalContactSolver {
   private readonly contactCache = new WarmContactCache();
   private pairContacts: Int32Array = new Int32Array(0);
   reset():void { this.contactCache.reset();this.kernelInput=null;this.kernel?.detach(); }
+  dispose():void {this.reset();this.kernel?.dispose();this.kernel=null;}
+  prewarm():void {if(ContactKernel.workersSupported&&this.kernel===undefined)this.initializeKernel(true);}
   hashState(mix:(value:number)=>void):void { this.contactCache.hashState(mix); }
   private overflowCandidates = new Int32Array(0);
   private anchorX = new Float64Array(0);
@@ -57,6 +62,7 @@ export class ExternalContactSolver {
     const retryInput=input;
     this.corrected=corrected;this.correctionLengths=correctionLengths;
     const current=input.current, output=input.next, count=current.count, stats=external.stats;
+    const attemptStarted=performance.now();
     stats.contactAttempts++;
     let next=output;
     const motorStep=external.settings.control>0?Math.max(0,input.maxAcceleration)*input.fixedDelta:0;
@@ -76,20 +82,7 @@ export class ExternalContactSolver {
       this.warmAffected=new Uint8Array(count);
       this.trialAffected=new Uint8Array(count);this.trialCorrected=new Uint8Array(count);this.trialLengths=new Float64Array(count);
     }
-    if(external.backend==='auto'&&this.kernel===undefined)this.kernel=ContactKernel.create(
-      (a,b)=>{
-        const i=this.kernelInput!,n=i.next;
-        return this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!)?0:
-          Number(this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!));
-      },
-      (a,b,dx,dy,d,correction)=>{
-        const i=this.kernelInput!,n=i.next;
-        if(!(this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!))
-          &&this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!))return;
-        this.normal(dx,dy,d,a,b);const nx=this.nx,ny=this.ny;
-        this.move(i,a,-nx*correction,-ny*correction,false,this.kernelDelta);
-        this.move(i,b,nx*correction,ny*correction,false,this.kernelDelta);
-      });
+    if(external.backend==='auto'&&this.kernel===undefined)this.initializeKernel(count>=5000);
     const kernel=external.backend==='auto'?this.kernel:null;
     if(kernel) {
       kernel.ensure(count,this.pairA.length,input.index.cellStart.length);
@@ -136,7 +129,8 @@ export class ExternalContactSolver {
     this.kernelInput=input;this.kernelDelta=dt;
     if(kernel)this.freeSpace.copyCertificates(kernel.arrays.freeX,kernel.arrays.freeY,kernel.arrays.freeRadius);
     result.constraintIterations = EXTERNAL_PROFILE.iterations * substeps;
-    for (let sub=0;sub<substeps;sub++) {
+    kernel?.beginFrame();
+    try {for (let sub=0;sub<substeps;sub++) {
       stats.attemptedSubsteps++;
       let start = performance.now();
       if(sub>0) {
@@ -174,10 +168,12 @@ export class ExternalContactSolver {
         let maximumImpulse=0;
         if(kernel) {
           kernel.arrays.affected.set(external.affected);
-          maximumImpulse=kernel.exports.velocity(this.velocityPairCount,dt,input.contactFriction,motorStep*motorStep);
+          stats.workerThreads=Math.max(stats.workerThreads,kernel.workerThreads);
+          maximumImpulse=kernel.solveVelocity(this.velocityPairCount,dt,input.contactFriction,motorStep*motorStep);
+          if(kernel.lastParallel){stats.parallelPasses++;stats.parallelPhaseMs+=kernel.lastPhaseMs;}
           external.affected.set(kernel.arrays.affected);
-          result.contactConstraints+=kernel.exports.constraintCount();
-          stats.energyDampedContacts+=kernel.exports.energyDampedContacts();
+          result.contactConstraints+=kernel.constraints;
+          stats.energyDampedContacts+=kernel.energyDamped;
         } else for (let slot=0;slot<this.velocityPairCount;slot++) {
           const pair=this.velocityPairs[slot]!;
           const a = this.pairA[pair]!, b = this.pairB[pair]!;
@@ -238,7 +234,7 @@ export class ExternalContactSolver {
             this.velocityPairCount=this.pairCount;
             for(let pair=0;pair<this.pairCount;pair++)this.velocityPairs[pair]=pair;
             stats.velocityFallbacks++;
-            if(kernel)kernel.arrays.velocityPairs.set(this.velocityPairs.subarray(0,this.velocityPairCount));
+            if(kernel){kernel.arrays.velocityPairs.set(this.velocityPairs.subarray(0,this.velocityPairCount));kernel.configureVelocityColors(this.velocityPairCount);}
           } else this.buildVelocityWorkset(input,dt,kernel??undefined);
           continue;
         }
@@ -268,7 +264,11 @@ export class ExternalContactSolver {
       // Split corrections never become stored momentum. Each correction is swept against statics.
       for (let iteration=0;iteration<EXTERNAL_PROFILE.positionIterations;iteration++) {
         stats.stabilizationPasses++;
-        if(kernel)kernel.exports.position(this.pairCount,input.agentGap,minimumRadius);
+        if(kernel) {
+          stats.workerThreads=Math.max(stats.workerThreads,kernel.workerThreads);
+          kernel.solvePosition(this.pairCount,input.agentGap,minimumRadius);
+          if(kernel.lastParallel){stats.parallelPasses++;stats.parallelPhaseMs+=kernel.lastPhaseMs;}
+        }
         else for (let pair=0;pair<this.pairCount;pair++) {
           const a = this.pairA[pair]!, b = this.pairB[pair]!;
           const dx = next.x[b]!-next.x[a]!, dy = next.y[b]!-next.y[a]!;
@@ -320,7 +320,20 @@ export class ExternalContactSolver {
       }
       stats.contactMs += performance.now()-start;
       if(stats.positionBudgetExhaustions>budgetBefore&&substeps<EXTERNAL_PROFILE.maximumSubsteps&&attempt+1<EXTERNAL_PROFILE.maximumContactAttempts)break;
-    }
+    }} catch(error) {
+      if(!(error instanceof ContactWorkerFailure))throw error;
+      stats.workerFailures++;stats.workerDiscardedMs+=performance.now()-attemptStarted;
+      stats.parallelPhaseMs+=kernel?.lastPhaseMs??0;
+      this.contactCache.restoreCurrent();external.affected.set(this.trialAffected);
+      corrected.set(this.trialCorrected);correctionLengths.set(this.trialLengths);
+      stats.unresolvedCompression=unresolvedBefore;stats.positionBudgetExhaustions=budgetBefore;stats.maxExhaustedPenetration=maxExhaustedBefore;
+      // Termination can be asynchronous. Abandon every view of that shared
+      // arena so a late worker write cannot reach the synchronous CPU retry.
+      kernel?.dispose();this.kernel=null;this.kernelInput=null;
+      this.pairA=new Int32Array(this.pairA.length);this.pairB=new Int32Array(this.pairB.length);
+      this.pairRadius=new Float64Array(0);this.pairDX=new Float64Array(0);this.pairDY=new Float64Array(0);
+      return this.solve(retryInput,external,vx,vy,headings,result,corrected,correctionLengths,forcedSubsteps,attempt);
+    } finally {kernel?.endFrame();}
     if(stats.positionBudgetExhaustions>budgetBefore&&substeps<EXTERNAL_PROFILE.maximumSubsteps&&attempt+1<EXTERNAL_PROFILE.maximumContactAttempts) {
       // Reject before publication, restore warm/activation state and subdivide.
       // Attempted intervals count as work, not additional simulated time or input.
@@ -368,7 +381,7 @@ export class ExternalContactSolver {
       +this.warmCorrected.byteLength
       +this.warmAffected.byteLength
       +this.trialAffected.byteLength+this.trialCorrected.byteLength+this.trialLengths.byteLength
-      +this.freeSpace.bytes+this.contactCache.bytes+this.projection.bytes+(this.kernel?.memory.buffer.byteLength??0);
+      +this.freeSpace.bytes+this.contactCache.bytes+this.projection.bytes+this.coloring.bytes+(this.kernel?.memory.buffer.byteLength??0);
   }
   /** Tight swept velocity workset. An excluded pair starts at least 1px from
    * contact throughout its relative segment. It remains excluded only while
@@ -379,6 +392,7 @@ export class ExternalContactSolver {
     input.external!.stats.velocityWorksets++;
     if(kernel) {
       this.velocityPairCount=kernel.exports.buildWorkset(this.pairCount,s.count,dt,EXTERNAL_PROFILE.velocityWorksetHalo);
+      kernel.configureVelocityColors(this.velocityPairCount);
       return;
     }
     this.velocityAnchorX.set(s.vx);this.velocityAnchorY.set(s.vy);
@@ -502,6 +516,7 @@ export class ExternalContactSolver {
           result.maxNeighbors=Math.max(result.maxNeighbors,kernel.exports.pairMaximum());
           result.maxContacts=Math.max(result.maxContacts,kernel.exports.pairMaximum());
           stats.pairs+=pairs;result.contactChecks+=pairs;
+          this.orderPairs(count,external,kernel);
           return;
         }
         if(data.a.length>=count*EXTERNAL_PROFILE.maximumPairFactor){stats.saturatedQueries++;throw new RangeError('External contact pair budget exceeded; overlapping/overpacked initial state.');}
@@ -539,6 +554,28 @@ export class ExternalContactSolver {
         result.maxContacts=Math.max(result.maxContacts,owned);
       }
       stats.pairs += this.pairCount; result.contactChecks += this.pairCount;
+      this.orderPairs(count,external);
+  }
+  private orderPairs(count:number,external:ExternalInfluences,kernel?:ContactKernel):void {
+    const start=performance.now(),groups=this.coloring.order(this.pairA,this.pairB,this.pairCount,count);
+    kernel?.configureColors(this.coloring.starts,groups);
+    external.stats.colorBuilds++;external.stats.colorBuildMs+=performance.now()-start;
+    external.stats.maximumColors=Math.max(external.stats.maximumColors,groups);
+    if(this.pairCount>0&&!groups)external.stats.colorFallbacks++;
+  }
+  private initializeKernel(parallel:boolean):void {
+    this.kernel=ContactKernel.create((a,b)=>{
+      const i=this.kernelInput!,n=i.next;
+      return this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!)?0:
+        Number(this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!));
+    },(a,b,dx,dy,d,correction)=>{
+      const i=this.kernelInput!,n=i.next;
+      if(!(this.freeSpace.contains(a,n.x[a]!,n.y[a]!)&&this.freeSpace.contains(a,n.x[b]!,n.y[b]!))
+        &&this.wallSeparates(i,n.x[a]!,n.y[a]!,n.x[b]!,n.y[b]!))return;
+      this.normal(dx,dy,d,a,b);const nx=this.nx,ny=this.ny;
+      this.move(i,a,-nx*correction,-ny*correction,false,this.kernelDelta);
+      this.move(i,b,nx*correction,ny*correction,false,this.kernelDelta);
+    },parallel);
   }
   private maximumPairDisplacement(input:CrowdMovementInput,kernel?:ContactKernel):number {
     if(kernel)return kernel.exports.maximumDisplacement(input.next.count);

@@ -1,0 +1,97 @@
+{
+  "schema": "crowd-worker-barrier-probe-v1",
+  "createdAt": "2026-09-25T20:27:04.199Z",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "browser": "151.0.7922.34",
+  "caveat": "Isolated component PoC only; no Crowd physics, candidate/color construction, static callbacks, copies or real RAF integration. Synchronization lower-bound evidence, not an application speedup or acceptance result.",
+  "rows": [
+    {
+      "workers": 1,
+      "syntheticPairsPerWorkerPerRound": 0,
+      "rounds": 512,
+      "startupMs": 8.505000002682209,
+      "timesMs": [
+        0.22500000149011612,
+        0.07999999821186066,
+        0.06499999761581421
+      ]
+    },
+    {
+      "workers": 1,
+      "syntheticPairsPerWorkerPerRound": 256,
+      "rounds": 512,
+      "startupMs": 2.619999997317791,
+      "timesMs": [
+        2.8549999967217445,
+        2.2049999982118607,
+        1.780000001192093
+      ]
+    },
+    {
+      "workers": 2,
+      "syntheticPairsPerWorkerPerRound": 0,
+      "rounds": 512,
+      "startupMs": 3.994999997317791,
+      "timesMs": [
+        0.06000000238418579,
+        0.13499999791383743,
+        0.054999999701976776
+      ]
+    },
+    {
+      "workers": 2,
+      "syntheticPairsPerWorkerPerRound": 256,
+      "rounds": 512,
+      "startupMs": 3.399999998509884,
+      "timesMs": [
+        3.144999995827675,
+        2.315000005066395,
+        1.7950000017881393
+      ]
+    },
+    {
+      "workers": 4,
+      "syntheticPairsPerWorkerPerRound": 0,
+      "rounds": 512,
+      "startupMs": 5.170000001788139,
+      "timesMs": [
+        0.11500000208616257,
+        0.5399999991059303,
+        0.17999999970197678
+      ]
+    },
+    {
+      "workers": 4,
+      "syntheticPairsPerWorkerPerRound": 256,
+      "rounds": 512,
+      "startupMs": 6.695000000298023,
+      "timesMs": [
+        2.5450000017881393,
+        5.034999996423721,
+        2.1150000020861626
+      ]
+    },
+    {
+      "workers": 8,
+      "syntheticPairsPerWorkerPerRound": 0,
+      "rounds": 512,
+      "startupMs": 6.96000000089407,
+      "timesMs": [
+        1.1049999967217445,
+        0.7749999985098839,
+        0.24000000208616257
+      ]
+    },
+    {
+      "workers": 8,
+      "syntheticPairsPerWorkerPerRound": 256,
+      "rounds": 512,
+      "startupMs": 7.129999995231628,
+      "timesMs": [
+        4.839999996125698,
+        5.219999998807907,
+        5.179999999701977
+      ]
+    }
+  ]
+}

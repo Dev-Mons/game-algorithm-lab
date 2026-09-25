@@ -206,7 +206,6 @@
     "finalBuild": "PASS"
   },
   "files": {
-    ".gitattributes": "5ac3ec419a34eee559ece381575e5cef6fa67a2989595c9c4ee24285d0070694",
     "active.json.gz": "16c05bd1402c7e3fd329076ac23bad881c335ee5b6ae0a0fc411f95a56462f4c",
     "adaptive-byte-wind.json": "59d57399dceea7f75cc37a49752607b13c1b9a561a4a45ad272a0493e542d3ff",
     "adaptive-performance.json.gz": "cb83b39e1e3cbbd4b3170332029d28ad5e59f280316942466d2644645cea369b",
@@ -229,6 +228,9 @@
     "candidate-none.json.gz": "499e76f121db2683ff641e5b657bc66bb6379d07ce691ae9e4c132381e241a05",
     "candidate-source.zip": "ad91e0d2ade133ce77c1d7a36a91c5c2a10b16752fb32996853ccbcff5d64908",
     "clock.json.gz": "410fddad53d758c218ce49dcc834f43042b32545f75f77f6c32b6a7136649761",
+    "color-probe-wind.json": "13b80202f59331db314f3e8de7442dde827d8eae8f39453dde2945096d80908c",
+    "colored-quality.json.gz": "0021b425b29cdffeb21776a866ef128c06f3f9ce5763a834a06292e9f6e4e3d0",
+    "colored-source.zip": "3b8cbff4f1c999828899ab7102b19825432576e94b6e69526d7b83de84fc88bb",
     "contact.cpuprofile.gz": "bb419e653dd7aec541ab80faf0088bcdf000afd9270c2b2153ff78c3a6e7eea9",
     "final-profile.json.gz": "863cbf0df0d87fe8f262ecd2948a4e8a1c26b9540a65d5ace7909eefdf30ce4b",
     "history-test.txt": "941b064ee08667c2e775e286a507e045ee72fbc689b39d09af732593e0ad6bb4",
@@ -274,15 +276,36 @@
     "rejected-position-proof-source.zip": "55d7ec78fcb7b04d3ed67675dd0d7abd9ec5e72c57d445f0407245a3a5c6a131",
     "rejected-position-workset-source.zip": "02efa8f0a1e269737a1022c65784f07f1b2ed5287507fc4fcbc09399506d91c8",
     "rejected-single-step-quality.json.gz": "32bc5bcf9e9459741b6514e6608d36b4c7ea220c0836791f908d897e197bb585",
+    "rejected-sor15-source.zip": "efaf0ae91df9411702a8886d5c3b7845acc5ef6b2063467735b1440e665518fa",
     "relative-plan-probe.json": "39e2c6f1943c9b649c2a3cd21f39e3c75179ed1fbca14eba39587631a83984c6",
     "replay-typecheck.txt": "5d2621db1ba917f0fd3e4b61d59d7346799c26ab7a867e1312f429f7a8c1bd50",
     "rocky-ui-quality.json.gz": "cdf61f5f1354b70084bf89b4270d73fd9783bdb26bc67bbdceab7ad7120d2bb6",
     "session-memory.heapprofile.gz": "afc44a1eb906acaabe83257cc104810d8aca79727bfaeb1a8d5736380514188b",
     "session-memory.json.gz": "90607b97065a3e2859c69b605038ba49f63ab9dfb42648b3c6fee6adb5fdaf59",
     "session-source.zip": "180c47d442d0f38c130283a8fe29ef8126955d8b86396c9e3f7b776f7d9274ac",
+    "simd-combined-byte-wind.json": "e5e7894a5906bb35bb3e6e631200b9fdc35cc0a5dda75a9e3e4c58a049e2d1c5",
+    "simd-combined-performance.json.gz": "f8a056809f477e355273b0b4f4c277b794560547f73f42fee64aeec842073903",
+    "simd-combined-source.zip": "e439f5f608d2350c1d1c12a5f4551f078ce9026f9389d53a9ab9a0d5fd8d6c9b",
+    "simd-position-byte-wind.json": "0041804cc464941e3850b47be7b7b97459d621d2cee6951b9e13084d36eb6355",
+    "simd-position-performance.json.gz": "7ae594be94ef7da64b5c561364f8999fa08adb9188043ff18dc86c1c3c400c19",
+    "simd-position-source.zip": "f78644e6c8c69314e670f89dc22a871b73f3634c253a648ff7bd97588c73086a",
+    "sor15-quality.json.gz": "c39c449822e5cbcdcb30173004f29d46b4a937bbac9a1bea419967a12bb6a126",
     "targeted-tests.txt": "bf41fb797106e693e7fe6cf1f64fad17f0c36c11e8a2e73ef07364de8d727c3c",
     "trace-off.json.gz": "31399316a1c4e14772a7516cf7872a3503083f617120be4caa153260e8dffdc0",
-    "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be"
+    "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be",
+    "worker-barrier-probe.json": "51951708796e9432cc14e90979d81e20baadd35c5aadb39d154cf70746dd9fd1",
+    "worker-browser-production.txt": "84cc1cfdbf3a5903944a0a7f20afc0be777a4e05e76c3df4e92210f5eec18de7",
+    "worker-byte-660.json": "3ffc6b8edea4dc35db5fcf262a9dc2d77452da133566538e249de26397b99098",
+    "worker-failure-byte.json": "daeff4b94609ba773a79415933c8182b13b314b4675a103ac92b9b5264475ae5",
+    "worker-four-performance.json.gz": "5b313109dc2c5afa59290517718784f9b5819626178331ed5960de1c1f1770e8",
+    "worker-four-source.zip": "34b18b9d9441e52affb0ff8043271be18801d1673eee3150018216e7a84a7fbe",
+    "worker-position-failure-byte.json": "59adbe9a86d2d8a4c1566a08c295e760d6edf47a3c75391452f1e429f565a3cc",
+    "worker-profile.json.gz": "3ffb56ba598b2ec8c0ecdb4e5373410d0fc72d4d687df9943b9f752212942b92",
+    "worker-profile.json.gz.rocky-pass-10000-42-wind-0.cpuprofile": "fb9003e317a4643132bf1ee6064a0de81c7b720d9b2490beda307587140e1aa1",
+    "worker-proxy20k-byte.json": "713092907103ba869c12ffad71350ce31885872a8fc101df9f20a8714f237c75",
+    "worker-verify.txt": "ad1fec62319445163ca055002b6be76d820c1eea9967a929c1286c883e2cec46",
+    "worker-workset-performance.json.gz": "cd14a4a189633ea1f218e25929760435d5b5324202e91f64487cb083e2bd299c",
+    "worker-workset-source.zip": "f906bba7cd981f97b6d846b5356488e03518144f7354ab3deac180306a2cf063"
   },
   "logFormatting": "Console logs use LF line endings with trailing formatting whitespace removed; measured JSON and source archives are byte-preserved.",
   "nativeFollowup": {
@@ -359,5 +382,25 @@
     ],
     "byteComparisons": "Both wind660: 858000000 bytes and all warm values; zero differences",
     "decision": "Rejected; filtering/bookkeeping failed to improve measured throughput."
+  },
+  "workerFollowup": {
+    "sourceSha256": "e3807926aaa92c63ad9bf6893ec4cacc6af3a662f98caf397c27ff74edc41294",
+    "parallelism": "Main plus three workers; stable body-disjoint colors; exact colored JS reference, not pre-color state equivalence.",
+    "frameP95MedianMs": {
+      "wind": 56.81,
+      "blast": 55.68
+    },
+    "selectiveClassificationWindP95Ms": 57.105,
+    "simWallApprox": 0.43,
+    "stateBytesCompared660": 858000000,
+    "warmValuesCompared660": 54776215,
+    "workerFailureRecovery": [
+      "before velocity",
+      "third position pass"
+    ],
+    "proxy20KBytesCompared180": 468000000,
+    "verifyTests": 217,
+    "productionBrowserTests": 4,
+    "status": "60 Hz FAIL; previous flat matrix and no-force comparisons predate coloring; current final matrix/repeated two-seed acceptance still required."
   }
 }

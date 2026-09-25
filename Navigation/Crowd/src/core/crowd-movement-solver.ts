@@ -135,6 +135,7 @@ export class CrowdMovementSolver {
   };
 
   solve(input: CrowdMovementInput): CrowdMovementResult {
+    this.prewarmExternal(input.current.count,input.external?.backend);
     this.obstacleIndex.update(input.obstacles);
     const count = input.current.count;
     this.freeSpace.begin(count,input.worldWidth,input.worldHeight);
@@ -168,6 +169,10 @@ export class CrowdMovementSolver {
   resetRecoveryState(): void {
     this.externalContact?.reset();
     // XPBD lambdas deliberately live for one fixed step only.
+  }
+  dispose():void {this.externalContact?.dispose();}
+  prewarmExternal(count:number,backend?:'auto'|'js'):void {
+    if(count>=5000&&backend==='auto') {this.externalContact??=new ExternalContactSolver();this.externalContact.prewarm();}
   }
 
   hashState(mix:(value:number)=>void):void { this.externalContact?.hashState(mix); }

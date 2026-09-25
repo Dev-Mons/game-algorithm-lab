@@ -346,6 +346,7 @@ function rebuildSimulation(scenario: ReturnType<typeof getScenario>): void {
   config.width = DEFAULT_CONFIG.width * worldScale;
   config.height = DEFAULT_CONFIG.height * worldScale;
   const started = performance.now();
+  simulation.dispose();
   simulation = new CrowdSimulation(config, scaleScenario(baseScenario, worldScale));
   commandLog = defaultCommands(baseScenario, worldScale);
   appliedLiveCommands = new Set();
@@ -518,6 +519,7 @@ async function compareRuns(all: boolean): Promise<void> {
       if (comparisonCancelled) break;
       Object.assign(config, structuredClone(runConfig), { preset: id, experiment: all ? undefined : runConfig.experiment });
       const start = performance.now();
+      simulation.dispose();
       simulation = new CrowdSimulation(config, scaleScenario(runScenario, worldScale));
       recorder = new LabRecorder(simulation, quality, 0, performance.now() - start);
       runtimeMetrics.reset(); commandLog = structuredClone(replay); appliedLiveCommands = new Set();

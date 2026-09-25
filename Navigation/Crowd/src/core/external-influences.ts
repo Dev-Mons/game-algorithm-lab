@@ -42,6 +42,8 @@ export class ExternalInfluences {
     planningMs: 0, planningCandidates: 0, planningFallbacks: 0, singleStepVerified: 0, singleStepFallbacks: 0,
     substepRetries: 0, rejectedTrialCompressions: 0, rejectedTrialBudgetExhaustions: 0, rejectedTrialPenetration: 0,
     contactAttempts: 0, attemptedSubsteps: 0,
+    colorBuilds: 0, colorBuildMs: 0, maximumColors: 0, colorFallbacks: 0,
+    workerThreads: 0,parallelPasses: 0,parallelPhaseMs: 0,workerFailures: 0,workerDiscardedMs: 0,
     pairOwnershipSkips: 0, pairCapacityRetries: 0,
     contactAffected: 0,
     contactCellUpperBound: 0, proxyCells: 0, proxyCandidates: 0, staticSweeps: 0, staticExhaustions: 0,

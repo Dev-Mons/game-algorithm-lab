@@ -701,3 +701,64 @@ Reproduce with `node scripts/measure-session.mjs --url=http://127.0.0.1:4275`.
 The separate full-history test exercises all 4,096 external records (the UI goal
 log is a different store), rejects overflow without mutation, accepts an
 identical old retransmission, then verifies reset and stale-generation behavior.
+
+
+### Colored shared-memory contact workers
+
+The worker candidate orders the complete contact list into stable greedy edge
+colors. Endpoints within one color are disjoint; colors run sequentially, and
+each color is split into contiguous ranges across the main thread and at most
+three workers. A 64-color overflow retains the complete original pair order and
+uses the scalar path. No contact is dropped. This changes the original solver
+order, so the new equivalence reference is the same colored TypeScript solver.
+
+Workers share f64 linear memory and scalar operation order. Static-wall queries
+remain authoritative on the main thread: swept velocity worksets are classified
+before parallel execution, and unsafe position corrections are deferred until
+the color barrier. The main thread drains those corrections before the next
+color. Memory growth preserves the fixed control prefix; one arena owns all
+shared state. Workers sleep between frames and use bounded one-second watchdogs
+inside synchronous phases. A failed phase stops the pool, discards its shared
+arena and partial state, restores the attempt checkpoint, and recomputes the
+same tick through the CPU path without applying the external input twice.
+
+Browser support requires cross-origin isolation, SharedArrayBuffer and workers.
+The Vite development and preview servers set COOP `same-origin` and COEP
+`require-corp`; other hosts must supply them. Unsupported environments retain
+scalar WASM/TypeScript. Simulation steps prewarm the pool before an external
+input. Replacing a simulation requires `dispose()`; the app does this on reset
+and comparison. A worker failure leaves that simulation on the CPU fallback;
+creating a new simulation permits workers again. `workerThreads` reports ready
+capacity, while `parallelPasses` proves actual execution. Failed-attempt time is
+reported separately and is already included in overall contact/frame time.
+
+The 660-tick rocky 10K wind replay compared 858,000,000 state bytes and
+54,776,215 warm values with the isolated colored JS reference: no mismatch,
+27,122 parallel passes, all 10,000 agents active. Separate injected failures
+before velocity and during the third position pass both recovered exactly.
+A rocky 20K moving-proxy replay compared 468,000,000 bytes through 180 ticks;
+independent sampled penetration was at most 0.449991px, with zero wall overlap,
+nonfinite values or mismatches. The four colored 660-tick wind/blast quality
+runs (seeds 42 and 7) also remained within 0.45px. These are quality/equivalence
+checks, not RAF performance measurements.
+
+Actual HTTP RAF runs at 10K, seed 42, 660 ticks and three repetitions reduced
+wind/blast CPU P95 medians from the previous 72.5/67.5ms to 56.81/55.68ms.
+Simulated/wall time remained about 0.43: **the 60Hz gate still fails**. Restricting
+geometry preclassification to the velocity workset gave 57.105ms in one wind
+run, with no demonstrated further gain. A main-thread CPU profile still finds
+pair construction and position solving dominant; worker CPU is outside that
+profile. The current source is `worker-workset-source.zip` and measurement
+source hash `e3807926aaa92c63ad9bf6893ec4cacc6af3a662f98caf397c27ff74edc41294`.
+
+The full generated-source/type/test/build verification passed 217 tests; four
+production-preview browser tests passed, including three reset/rewarm cycles
+with every old worker closed. The earlier full flat matrix, no-force comparison
+and long-session memory results predate the new coloring/worker path and must
+not be treated as final validation of it. Final matrix, memory/copy accounting
+and repeated two-seed simultaneous acceptance remain required.
+
+Scalar f64x2 SIMD experiments preserved exact state but did not improve the
+three-repeat frame measurements; a 1.5 position over-relaxation experiment
+increased convergence work. Both were removed. Their source and raw evidence
+are preserved with the worker evidence in `baselines/frame-20260926/`.
