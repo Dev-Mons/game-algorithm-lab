@@ -45,8 +45,12 @@ export function validateStallProof(stall:ParkingStall,baseMask:Set<string>,domai
   }
   return checks;
 }
-function planComponent(document:GenerationDocument,circulation:ParkingCirculationPlan,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,domain?:VehicleDomain):ParkingPlan {
+/** The same proofs rank trial layouts and allocate final stalls. Trial callers
+ * pass a cloned reservation book and charge the parent circulation pool; the
+ * separately protected final stall allocation is never consumed by ranking. */
+export function planParkingComponent(document:GenerationDocument,circulation:ParkingCirculationPlan,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,domain?:VehicleDomain,trialCharge?:()=>void):ParkingPlan {
   const startChecks=solid.checks,charge=new ParkingCharge(circulation.budget),stalls:ParkingStall[]=[],reservations:Reservation[]=[],traces:CandidateTrace[]=[],rejected:Record<string,number>={},rejectedCells:Record<string,string>={};
+  if(trialCharge){const protectedCharge=charge.stall;charge.stall=()=>{trialCharge();protectedCharge();};}
   let graphBuilds=0,bfsPasses=0,maxLocalStates=0,proofEdgeChecks=0;
   if(circulation.gates.length){
     const cells=[...new Map([...document.sceneInputs.roads,...circulation.aisleCells,...circulation.gates.flatMap(g=>[...g.openingCells,...g.connectorCells])].map(c=>[cellId(c),c])).values()].sort(compareCells),baseMask=new Set(cells.map(cellId));
@@ -59,7 +63,8 @@ function planComponent(document:GenerationDocument,circulation:ParkingCirculatio
       const index=graph.index.get(stateKey(state));if(index!==undefined&&!rootGates.has(index)){rootGates.set(index,gate.id);roots.push(index);}
     }
     const entry=vehicleBFS(graph,roots,false,charge.stall),exit=vehicleBFS(graph,roots,true,charge.stall);bfsPasses=2;
-    const search=new AccessSearch(spatial,document,book,solid),walk=new Set(circulation.walkCells.map(cellId)),eligible=new Set(circulation.eligibleCells.map(cellId)),used=new Set<string>();
+    const allParking=new Set(document.sceneInputs.parkingAreas.flatMap(a=>a.cells.map(cellId))),reservedWalk=new Set([...circulation.walkCells,...book.snapshot().filter(r=>r.kind==='walk'||r.kind==='entrance').flatMap(r=>r.cells)].map(cellId));
+    const search=new AccessSearch({...spatial,walkNodes:spatial.walkNodes.filter(n=>!allParking.has(n.id)||reservedWalk.has(n.id))},document,book,solid),walk=new Set(circulation.walkCells.map(cellId)),eligible=new Set(circulation.eligibleCells.map(cellId)),used=new Set<string>();
     if(circulation.bayStrips.length>Math.floor(eligible.size/2))throw new Error('INVALID_BAY_STRIP_PARTITION');
     const cross=circulation.axis==='X'?2:0,long=circulation.axis==='X'?0:2;
     const candidates=[...circulation.bayStrips].sort((a,b)=>a.cells[0][cross]-b.cells[0][cross]||a.cells[0][long]-b.cells[0][long]||a.exitHeading-b.exitHeading);
@@ -85,12 +90,24 @@ function planComponent(document:GenerationDocument,circulation:ParkingCirculatio
       stalls.push(stall);reservations.push(proposal);trace.accepted=true;trace.metrics.entryTransitions=stall.entryPath.length-1;trace.metrics.exitTransitions=stall.exitPath.length-1;
     }
   }
-  const {quality,unallocatedCells}=parkingQuality(circulation,stalls,book.snapshot(),rejected,charge.stallUsed,rejectedCells);
-  const rowEnds:ParkingPlan['rowEnds']=[];const groups=new Map<string,ParkingStall[]>(),cross=circulation.axis==='X'?2:0,long=circulation.axis==='X'?0:2;
-  for(const s of stalls){const key=`${s.rear[cross]}:${s.heading}`,list=groups.get(key)??[];list.push(s);groups.set(key,list);}
-  for(const [rowId,list] of groups){list.sort((a,b)=>a.rear[long]-b.rear[long]);let start=0;for(let end=1;end<=list.length;end++){if(end<list.length&&list[end].rear[long]===list[end-1].rear[long]+1)continue;for(const s of [list[start],list[end-1]])if(!rowEnds.some(e=>cellId(e.cell)===cellId(s.rear)&&e.heading===s.heading))rowEnds.push({cell:s.rear,heading:s.heading,rowId:`${circulation.areaId}:${rowId}`});start=end;}}
-  return {areaId:circulation.areaId,circulation,stalls,unallocatedCells,rowEnds,reservations,reasonCodes:stalls.length?[]:['NO_USABLE_STALLS'],traces:[{id:`stalls:${circulation.componentKey}`,ownerId:circulation.areaId,ruleId:'parking-stall-proofs',ruleVersion:'1.0.0',sourceRefs:[{kind:'parking',id:circulation.areaId}],selectedIds:stalls.map(s=>s.id),candidates:traces}],quality,counters:{potentialStalls:quality.potentialStalls,acceptedStalls:stalls.length,stateExpansions:charge.stallUsed,graphBuilds,bfsPasses,maxLocalStates,proofEdgeChecks,boundsChecks:solid.checks-startChecks}};
+  const rowEnds:ParkingPlan['rowEnds']=[];const groups=new Map<string,ParkingStall[]>();
+  for(const s of stalls){const cross=s.heading%2?0:2;const key=`${s.rear[cross]}:${s.heading}`,list=groups.get(key)??[];list.push(s);groups.set(key,list);}
+  for(const [rowId,list] of groups){const long=list[0].heading%2?2:0;list.sort((a,b)=>a.rear[long]-b.rear[long]);let start=0;for(let end=1;end<=list.length;end++){if(end<list.length&&list[end].rear[long]===list[end-1].rear[long]+1)continue;for(const s of [list[start],list[end-1]])if(!rowEnds.some(e=>cellId(e.cell)===cellId(s.rear)&&e.heading===s.heading))rowEnds.push({cell:s.rear,heading:s.heading,rowId:`${circulation.areaId}:${rowId}`});start=end;}}
+  const islands:ParkingPlan['islands']=[],eligible=new Set(circulation.eligibleCells.map(cellId)),claimed=new Set<string>();
+  // Raised row-end islands occupy only genuinely spare cells; they cannot take
+  // a proved vehicle sweep, a pedestrian strip, or an entrance reservation.
+  if(!trialCharge)for(const end of rowEnds)for(const direction of [-1,1]){
+    const tangent=end.heading%2?2:0,rear=[...end.cell] as Vec3;rear[tangent]+=direction;
+    const cells=[rear,add(rear,HEADING_VECTORS[end.heading])];
+    if(cells.some(c=>!eligible.has(cellId(c))||claimed.has(cellId(c))))continue;
+    const id=`island:${circulation.areaId}:${cellId(rear)}:${end.heading}`;
+    const reservation:Reservation={id,ownerId:circulation.areaId,sourceRefs:[{kind:'parking',id:circulation.areaId}],kind:'fixture',priority:500,cells,boxes16:cells.map(cellBox16)};
+    if(!book.tryReserveBatch([reservation]).accepted)continue;
+    cells.forEach(c=>claimed.add(cellId(c)));islands.push({id,cells});reservations.push(reservation);
+  }
+  const {quality,unallocatedCells}=parkingQuality(circulation,stalls,book.snapshot(),rejected,charge.stallUsed,rejectedCells,islands.flatMap(i=>i.cells));
+  return {areaId:circulation.areaId,circulation,stalls,unallocatedCells,islands,rowEnds,reservations,reasonCodes:stalls.length?[]:['NO_USABLE_STALLS'],traces:[{id:`stalls:${circulation.componentKey}`,ownerId:circulation.areaId,ruleId:'parking-stall-proofs',ruleVersion:'1.0.0',sourceRefs:[{kind:'parking',id:circulation.areaId}],selectedIds:stalls.map(s=>s.id),candidates:traces}],quality,counters:{potentialStalls:quality.potentialStalls,acceptedStalls:stalls.length,stateExpansions:charge.stallUsed,graphBuilds,bfsPasses,maxLocalStates,proofEdgeChecks,boundsChecks:solid.checks-startChecks}};
 }
 export function planParkingStalls(document:GenerationDocument,circulation:ParkingCirculationArea[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,domains?:Map<string,VehicleDomain>):ParkingAreaPlan[]{
-  return circulation.map(area=>{const plans=area.components.map(c=>planComponent(document,c,spatial,book,solid,domains?.get(`${area.areaId}:${c.componentKey}`)));return {areaId:area.areaId,plans,quality:areaParkingQuality(document.sceneInputs.parkingAreas.find(p=>p.id===area.areaId)!,area,plans)};});
+  return circulation.map(area=>{const plans=area.components.map(c=>planParkingComponent(document,c,spatial,book,solid,domains?.get(`${area.areaId}:${c.componentKey}`)));return {areaId:area.areaId,plans,quality:areaParkingQuality(document.sceneInputs.parkingAreas.find(p=>p.id===area.areaId)!,area,plans)};});
 }

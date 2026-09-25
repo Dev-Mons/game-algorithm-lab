@@ -1,0 +1,56 @@
+{
+  "browser": "153.0.8010.12",
+  "operation": "R12 parking mask: actual click at 5,0,5 and Q removes one cell; Ctrl+Z restores 18 stalls",
+  "after": {
+    "cells": 143,
+    "stalls": 0,
+    "quality": {
+      "areaId": "R12",
+      "componentKey": "all",
+      "inputCells": 143,
+      "eligibleCells": 143,
+      "excludedRoadCells": 0,
+      "excludedSolidCells": 0,
+      "vehicleCellsInArea": 0,
+      "walkOnlyCellsInArea": 12,
+      "crossingCells": 0,
+      "externalConnectorCells": 0,
+      "stallCells": 0,
+      "unallocatedCells": 131,
+      "potentialStalls": 0,
+      "acceptedStalls": 0,
+      "untestedStalls": 0,
+      "primaryRejectionCounts": {},
+      "unallocatedPrimaryReasonCounts": {
+        "NO_CIRCULATION": 131
+      },
+      "aisleRatio": 0,
+      "stallAreaRatio": 0,
+      "acceptanceRatio": null,
+      "gateCount": 0,
+      "circulationUsed": 7026,
+      "stallReserved": 4564,
+      "stallUsed": 0
+    },
+    "edit": {
+      "editId": 1,
+      "command": {
+        "kind": "parking-remove",
+        "cells": [
+          [
+            5,
+            0,
+            5
+          ]
+        ],
+        "targetId": "R12"
+      },
+      "beforeSignature": "1044684:5ddd0d7b",
+      "afterSignature": "1044676:ae317e25",
+      "outcome": "accepted",
+      "changed": true
+    },
+    "ms": 72
+  },
+  "errors": []
+}

@@ -37,13 +37,15 @@ it('allows a two-cell straight connector only within the configured reach and re
 it('only skips proofs when the geometric bay upper bound is strictly below a fully validated layout',()=>{
  const f=spatialFixture([],road(30),[],box(30,1,20)),area=planParkingCirculation(f.document,f.spatial,f.book,f.solidIndex).areas[0],p=area.components[0],skipped=p.traces[0].candidates.filter(c=>c.reasonCodes.includes('PROVEN_POTENTIAL_DOMINATED'));
  expect(skipped.length).toBeGreaterThan(0);for(const c of skipped){expect(c.metrics.potentialUpperBound).toBeLessThan(c.metrics.provenBestPotential as number);expect(c.metrics.provenBestPotential).toBeLessThanOrEqual(p.bayStrips.length);}
- expect(p.counters.layoutTrialsCompleted+p.counters.layoutTrialsAborted).toBe(p.counters.layoutCandidates);expect(p.counters.layoutCandidates+skipped.length).toBe(p.counters.rawLayoutDescriptors);
+ expect(p.counters.layoutTrialsCompleted+p.counters.layoutTrialsAborted).toBe(p.counters.layoutCandidates);expect(p.search.evaluated+skipped.length+p.search.untried).toBe(p.counters.rawLayoutDescriptors);
 });
 
 it('evaluates each second gate against the unchanged primary and never accumulates a third gate',()=>{
  const roads=[...road(30),...road(30).map(([x,y,z])=>[x,y,z+24] as Vec3)],f=spatialFixture([],roads,[],box(30,1,20));
  const result=planParkingCirculation(f.document,f.spatial,f.book,f.solidIndex).areas[0].components[0];
- expect(result.gates.length,JSON.stringify(result.traces[0])).toBe(2);expect(result.counters.layoutCandidates).toBeLessThanOrEqual(result.budget.layoutTickets);expect(result.counters.stateExpansions).toBeLessThanOrEqual(result.budget.circulationLimit);
+ expect(result.gates.length).toBeGreaterThanOrEqual(1);expect(result.gates.length).toBeLessThanOrEqual(2);expect(result.counters.layoutCandidates).toBeLessThanOrEqual(result.budget.layoutTickets);expect(result.counters.stateExpansions).toBeLessThanOrEqual(result.budget.circulationLimit);
  const secondary=result.traces[0].candidates.filter(c=>c.candidateId.startsWith('secondary:'));expect(secondary.length).toBeGreaterThan(0);for(const c of secondary.filter(c=>c.accepted))expect(c.metrics.exitImprovement).toBeGreaterThanOrEqual(4);
- expect(result.traces[0].selectedIds.filter(id=>id.startsWith('secondary:'))).toHaveLength(1);
+ expect(result.traces[0].selectedIds.filter(id=>id.startsWith('secondary:'))).toHaveLength(result.gates.length-1);
+ for(const c of secondary.filter(c=>c.accepted))expect(c.metrics.provenStalls).toBeGreaterThanOrEqual(c.metrics.primaryProvenStalls as number);
+ if(result.gates.length===1)expect(secondary.some(c=>c.reasonCodes.includes('SECOND_GATE_REDUCES_CAPACITY'))).toBe(true);
 });

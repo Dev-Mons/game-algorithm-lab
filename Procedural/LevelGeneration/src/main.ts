@@ -204,7 +204,7 @@ export function showResult(result: GenerationResult) {
   el("stats").innerHTML =
     `<div><strong>${result.cells.length}</strong><span>점유 셀</span></div><div><strong>${result.surfaces.length}</strong><span>외부 표면</span></div><div><strong>${result.placements.length + (result.counters.moduleCount ?? 0) + (result.scenePlacements?.filter(p => p.kind === "building").length ?? 0)}</strong><span>구조 모듈</span></div><div><strong>${result.counters.componentCount}</strong><span>독립 성분</span></div>`;
   if(document.querySelector<HTMLDetailsElement>('.inspect-details')!.open)refreshFaceOptions();
-  el('parking-summary').textContent=(result.environment?.parking??[]).map(p=>`${p.areaId}: 검증 ${p.quality.acceptedStalls}대 · 차로 ${p.quality.aisleRatio===null?'해당 없음':(p.quality.aisleRatio*100).toFixed(1)+'%'} · 미검증 ${p.quality.untestedStalls}개`).join('\n');
+  el('parking-summary').textContent=(result.environment?.parking??[]).map(p=>`${p.areaId}: ${p.quality.acceptedStalls?`검증 ${p.quality.acceptedStalls}대`:'사용 가능한 구획 없음'} · 차로 ${p.quality.aisleRatio===null?'해당 없음':(p.quality.aisleRatio*100).toFixed(1)+'%'}${p.plans.some(c=>!c.circulation.search.complete)?' · 탐색 한도 내 결과':''}`).join('\n');
   const regionSelect = el<HTMLSelectElement>("region");
   regionSelect.replaceChildren(
     ...(result.regions ?? []).map(

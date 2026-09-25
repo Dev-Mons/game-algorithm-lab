@@ -1,0 +1,624 @@
+{
+  "scope": "Diagnostic copies only; production files unchanged. Only the early gate candidate cap was changed. Original reservation/vehicle/stall validation remains active. Extra candidates may also allow more trials within the same production budgets.",
+  "comparisons": [
+    {
+      "id": "R12-minus-5-5",
+      "gateCandidateCap": 4,
+      "acceptedStalls": 0,
+      "potential": 0,
+      "ms": 19,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 0,
+          "reasons": [
+            "TURN_SWEEP_BLOCKED"
+          ],
+          "trials": 72,
+          "expansions": 7026,
+          "gates": []
+        }
+      ]
+    },
+    {
+      "id": "R12-minus-5-5",
+      "gateCandidateCap": 8,
+      "acceptedStalls": 6,
+      "potential": 8,
+      "ms": 21,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 2,
+          "reasons": [],
+          "trials": 48,
+          "expansions": 8931,
+          "gates": [
+            [
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ],
+              [
+                7,
+                0,
+                0
+              ],
+              [
+                8,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R12-minus-5-5",
+      "gateCandidateCap": 16,
+      "acceptedStalls": 6,
+      "potential": 8,
+      "ms": 18,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 2,
+          "reasons": [],
+          "trials": 54,
+          "expansions": 9447,
+          "gates": [
+            [
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ],
+              [
+                7,
+                0,
+                0
+              ],
+              [
+                8,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "R12-minus-5-5",
+      "gateCandidateCap": 64,
+      "acceptedStalls": 6,
+      "potential": 8,
+      "ms": 17,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 2,
+          "reasons": [],
+          "trials": 54,
+          "expansions": 9447,
+          "gates": [
+            [
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ],
+              [
+                7,
+                0,
+                0
+              ],
+              [
+                8,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "gateCandidateCap": 4,
+      "acceptedStalls": 7,
+      "potential": 9,
+      "ms": 50,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 0,
+          "reasons": [],
+          "trials": 36,
+          "expansions": 39065,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "gateCandidateCap": 8,
+      "acceptedStalls": 7,
+      "potential": 9,
+      "ms": 74,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 0,
+          "reasons": [],
+          "trials": 72,
+          "expansions": 93146,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "gateCandidateCap": 16,
+      "acceptedStalls": 7,
+      "potential": 9,
+      "ms": 103,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 0,
+          "reasons": [],
+          "trials": 117,
+          "expansions": 143090,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "gateCandidateCap": 64,
+      "acceptedStalls": 7,
+      "potential": 9,
+      "ms": 101,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 0,
+          "reasons": [],
+          "trials": 117,
+          "expansions": 143090,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neck-two-rooms",
+      "gateCandidateCap": 4,
+      "acceptedStalls": 18,
+      "potential": 20,
+      "ms": 19,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 0,
+          "reasons": [],
+          "trials": 24,
+          "expansions": 14349,
+          "gates": [
+            [
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neck-two-rooms",
+      "gateCandidateCap": 8,
+      "acceptedStalls": 18,
+      "potential": 20,
+      "ms": 25,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 0,
+          "reasons": [],
+          "trials": 48,
+          "expansions": 25995,
+          "gates": [
+            [
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neck-two-rooms",
+      "gateCandidateCap": 16,
+      "acceptedStalls": 18,
+      "potential": 20,
+      "ms": 36,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 0,
+          "reasons": [],
+          "trials": 84,
+          "expansions": 44101,
+          "gates": [
+            [
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neck-two-rooms",
+      "gateCandidateCap": 64,
+      "acceptedStalls": 18,
+      "potential": 20,
+      "ms": 36,
+      "components": [
+        {
+          "axis": "Z",
+          "offset": 0,
+          "reasons": [],
+          "trials": 84,
+          "expansions": 44101,
+          "gates": [
+            [
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rect-6x16",
+      "gateCandidateCap": 4,
+      "acceptedStalls": 4,
+      "potential": 4,
+      "ms": 11,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 5,
+          "reasons": [],
+          "trials": 27,
+          "expansions": 7473,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rect-6x16",
+      "gateCandidateCap": 8,
+      "acceptedStalls": 4,
+      "potential": 4,
+      "ms": 12,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 5,
+          "reasons": [],
+          "trials": 27,
+          "expansions": 7473,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rect-6x16",
+      "gateCandidateCap": 16,
+      "acceptedStalls": 4,
+      "potential": 4,
+      "ms": 11,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 5,
+          "reasons": [],
+          "trials": 27,
+          "expansions": 7473,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rect-6x16",
+      "gateCandidateCap": 64,
+      "acceptedStalls": 4,
+      "potential": 4,
+      "ms": 10,
+      "components": [
+        {
+          "axis": "X",
+          "offset": 5,
+          "reasons": [],
+          "trials": 27,
+          "expansions": 7473,
+          "gates": [
+            [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ]
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

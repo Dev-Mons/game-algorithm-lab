@@ -7,6 +7,9 @@ export interface ParkingGate {
 }
 export interface BayStrip {id:string;cells:Vec3[];exitHeading:Heading;rearWalkCells:Vec3[]}
 export interface ParkingCirculationPlan {
+  layoutId:string;
+  /** Completeness concerns this generated candidate set, never global optimality. */
+  search:{gateCandidates:number;layoutDescriptors:number;evaluated:number;pruned:number;untried:number;complete:boolean;provenStalls:number};
   areaId:string;componentKey:string;status:'ok'|'partial'|'unplannable';axis:'X'|'Z';offset:number;periodCells:number;
   eligibleCells:Vec3[];incompleteBayCells:Vec3[];gates:ParkingGate[];aisleCells:Vec3[];walkCells:Vec3[];crossings:{id:string;cells:Vec3[]}[];bayStrips:BayStrip[];
   reachableStates:VehicleState[];reservations:Reservation[];traces:DecisionTrace[];budget:ParkingBudgetAllocation;
@@ -24,12 +27,12 @@ export interface ParkingStall {
 }
 export interface ParkingQualityMetrics {
   areaId:string;componentKey:string;inputCells:number;eligibleCells:number;excludedRoadCells:number;excludedSolidCells:number;
-  vehicleCellsInArea:number;walkOnlyCellsInArea:number;crossingCells:number;externalConnectorCells:number;stallCells:number;unallocatedCells:number;
+  vehicleCellsInArea:number;walkOnlyCellsInArea:number;crossingCells:number;externalConnectorCells:number;islandCells:number;stallCells:number;unallocatedCells:number;
   potentialStalls:number;acceptedStalls:number;untestedStalls:number;primaryRejectionCounts:Record<string,number>;unallocatedPrimaryReasonCounts:Record<string,number>;
   aisleRatio:number|null;stallAreaRatio:number|null;acceptanceRatio:number|null;gateCount:number;circulationUsed:number;stallReserved:number;stallUsed:number;
 }
 export interface ParkingPlan {
-  areaId:string;circulation:ParkingCirculationPlan;stalls:ParkingStall[];unallocatedCells:Vec3[];
+  areaId:string;circulation:ParkingCirculationPlan;stalls:ParkingStall[];unallocatedCells:Vec3[];islands:{id:string;cells:Vec3[]}[];
   rowEnds:{cell:Vec3;heading:Heading;rowId:string}[];reservations:Reservation[];traces:DecisionTrace[];quality:ParkingQualityMetrics;
   counters:{potentialStalls:number;acceptedStalls:number;stateExpansions:number;graphBuilds:number;bfsPasses:number;maxLocalStates:number;proofEdgeChecks:number;boundsChecks:number};
   reasonCodes:string[];
