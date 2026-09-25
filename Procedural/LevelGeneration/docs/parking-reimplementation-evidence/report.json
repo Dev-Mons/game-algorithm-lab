@@ -1,0 +1,4979 @@
+{
+  "baseCommit": "abb1d0318226b4913c78679db8c8008289ddf0c2",
+  "algorithm": "parking-circulation-v2",
+  "scope": "Single uncached sample per scenario; core time, not browser latency. No optimality or real vehicle-physics claim.",
+  "rows": [
+    {
+      "id": "R12",
+      "elapsedMs": 326.3,
+      "stages": {
+        "analysis": 0.6046999999999798,
+        "vertical": 0.01269999999999527,
+        "preflight": 0.048499999999989996,
+        "spatial": 3.7620999999999185,
+        "parkingCirculation": 289.5336,
+        "entrances": 0.021900000000073305,
+        "parkingStalls": 1.5777000000000498,
+        "facade": 0.08810000000005402
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 144,
+        "eligibleCells": 144,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 60,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3055555555555556,
+        "stallAreaRatio": 0.25,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 267277,
+        "stallReserved": 4608,
+        "stallUsed": 938
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 125,
+            "pruned": 120,
+            "untried": 25,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:R12:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 267277,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 120
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    },
+    {
+      "id": "R30",
+      "elapsedMs": 1547.2,
+      "stages": {
+        "analysis": 0.05780000000004293,
+        "vertical": 0.001100000000064938,
+        "preflight": 0.0020999999999276042,
+        "spatial": 2.1987000000000307,
+        "parkingCirculation": 1507.4695000000002,
+        "entrances": 0.0025000000000545697,
+        "parkingStalls": 7.22440000000006,
+        "facade": 0.014699999999720603
+      },
+      "quality": {
+        "areaId": "R30",
+        "componentKey": "all",
+        "inputCells": 600,
+        "eligibleCells": 600,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 263,
+        "walkOnlyCellsInArea": 131,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 8,
+        "stallCells": 198,
+        "unallocatedCells": 0,
+        "potentialStalls": 103,
+        "acceptedStalls": 99,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 4
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.43833333333333335,
+        "stallAreaRatio": 0.33,
+        "acceptanceRatio": 0.9611650485436893,
+        "gateCount": 1,
+        "circulationUsed": 1353807,
+        "stallReserved": 18240,
+        "stallUsed": 4068
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "X",
+          "offset": 0,
+          "layout": "bands:X:0",
+          "search": {
+            "gateCandidates": 27,
+            "layoutDescriptors": 810,
+            "evaluated": 125,
+            "pruned": 209,
+            "untried": 476,
+            "complete": false,
+            "provenStalls": 99
+          },
+          "islands": [
+            {
+              "id": "island:R30:28,0,1:0",
+              "cells": [
+                [
+                  28,
+                  0,
+                  1
+                ],
+                [
+                  28,
+                  0,
+                  2
+                ]
+              ]
+            },
+            {
+              "id": "island:R30:28,0,8:2",
+              "cells": [
+                [
+                  28,
+                  0,
+                  8
+                ],
+                [
+                  28,
+                  0,
+                  7
+                ]
+              ]
+            },
+            {
+              "id": "island:R30:28,0,10:0",
+              "cells": [
+                [
+                  28,
+                  0,
+                  10
+                ],
+                [
+                  28,
+                  0,
+                  11
+                ]
+              ]
+            },
+            {
+              "id": "island:R30:28,0,17:2",
+              "cells": [
+                [
+                  28,
+                  0,
+                  17
+                ],
+                [
+                  28,
+                  0,
+                  16
+                ]
+              ]
+            }
+          ],
+          "stalls": 99,
+          "potential": 103,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 128,
+            "stateExpansions": 1353807,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 810,
+            "layoutTrialsCompleted": 128,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 103,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 4
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 209,
+            "SECOND_GATE_REDUCES_CAPACITY": 3
+          }
+        }
+      ],
+      "proofChecks": 5210,
+      "stallKeys": [
+        "4,0,1|0",
+        "5,0,1|0",
+        "6,0,1|0",
+        "7,0,1|0",
+        "8,0,1|0",
+        "9,0,1|0",
+        "10,0,1|0",
+        "11,0,1|0",
+        "12,0,1|0",
+        "13,0,1|0",
+        "14,0,1|0",
+        "15,0,1|0",
+        "16,0,1|0",
+        "17,0,1|0",
+        "18,0,1|0",
+        "19,0,1|0",
+        "20,0,1|0",
+        "21,0,1|0",
+        "22,0,1|0",
+        "23,0,1|0",
+        "24,0,1|0",
+        "25,0,1|0",
+        "26,0,1|0",
+        "27,0,1|0",
+        "4,0,8|2",
+        "5,0,8|2",
+        "6,0,8|2",
+        "7,0,8|2",
+        "8,0,8|2",
+        "9,0,8|2",
+        "10,0,8|2",
+        "11,0,8|2",
+        "12,0,8|2",
+        "13,0,8|2",
+        "14,0,8|2",
+        "15,0,8|2",
+        "16,0,8|2",
+        "17,0,8|2",
+        "18,0,8|2",
+        "19,0,8|2",
+        "20,0,8|2",
+        "21,0,8|2",
+        "22,0,8|2",
+        "23,0,8|2",
+        "24,0,8|2",
+        "25,0,8|2",
+        "26,0,8|2",
+        "27,0,8|2",
+        "4,0,10|0",
+        "5,0,10|0",
+        "6,0,10|0",
+        "7,0,10|0",
+        "8,0,10|0",
+        "9,0,10|0",
+        "10,0,10|0",
+        "11,0,10|0",
+        "12,0,10|0",
+        "13,0,10|0",
+        "14,0,10|0",
+        "15,0,10|0",
+        "16,0,10|0",
+        "17,0,10|0",
+        "18,0,10|0",
+        "19,0,10|0",
+        "20,0,10|0",
+        "21,0,10|0",
+        "22,0,10|0",
+        "23,0,10|0",
+        "24,0,10|0",
+        "25,0,10|0",
+        "26,0,10|0",
+        "27,0,10|0",
+        "1,0,17|2",
+        "2,0,17|2",
+        "3,0,17|2",
+        "4,0,17|2",
+        "5,0,17|2",
+        "6,0,17|2",
+        "7,0,17|2",
+        "8,0,17|2",
+        "9,0,17|2",
+        "10,0,17|2",
+        "11,0,17|2",
+        "12,0,17|2",
+        "13,0,17|2",
+        "14,0,17|2",
+        "15,0,17|2",
+        "16,0,17|2",
+        "17,0,17|2",
+        "18,0,17|2",
+        "19,0,17|2",
+        "20,0,17|2",
+        "21,0,17|2",
+        "22,0,17|2",
+        "23,0,17|2",
+        "24,0,17|2",
+        "25,0,17|2",
+        "26,0,17|2",
+        "27,0,17|2"
+      ]
+    },
+    {
+      "id": "L16",
+      "elapsedMs": 373.5,
+      "stages": {
+        "analysis": 0.0644999999999527,
+        "vertical": 0.001099999999951251,
+        "preflight": 0.0018000000000029104,
+        "spatial": 2.0275000000001455,
+        "parkingCirculation": 342.6848,
+        "entrances": 0.0018000000000029104,
+        "parkingStalls": 1.7566999999999098,
+        "facade": 0.009000000000014552
+      },
+      "quality": {
+        "areaId": "L16",
+        "componentKey": "all",
+        "inputCells": 192,
+        "eligibleCells": 192,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 97,
+        "walkOnlyCellsInArea": 36,
+        "crossingCells": 8,
+        "externalConnectorCells": 0,
+        "islandCells": 6,
+        "stallCells": 52,
+        "unallocatedCells": 1,
+        "potentialStalls": 29,
+        "acceptedStalls": 26,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 3
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 1
+        },
+        "aisleRatio": 0.5052083333333334,
+        "stallAreaRatio": 0.2708333333333333,
+        "acceptanceRatio": 0.896551724137931,
+        "gateCount": 1,
+        "circulationUsed": 402771,
+        "stallReserved": 6144,
+        "stallUsed": 1670
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "X",
+          "offset": 0,
+          "layout": "rows:X:4:9:14",
+          "search": {
+            "gateCandidates": 13,
+            "layoutDescriptors": 377,
+            "evaluated": 103,
+            "pruned": 274,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 26
+          },
+          "islands": [
+            {
+              "id": "island:L16:0,0,14:1",
+              "cells": [
+                [
+                  0,
+                  0,
+                  14
+                ],
+                [
+                  1,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:L16:7,0,14:3",
+              "cells": [
+                [
+                  7,
+                  0,
+                  14
+                ],
+                [
+                  6,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:L16:14,0,2:0",
+              "cells": [
+                [
+                  14,
+                  0,
+                  2
+                ],
+                [
+                  14,
+                  0,
+                  3
+                ]
+              ]
+            }
+          ],
+          "stalls": 26,
+          "potential": 29,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 106,
+            "stateExpansions": 402771,
+            "unservedCells": 1,
+            "rawLayoutDescriptors": 377,
+            "layoutTrialsCompleted": 106,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 29,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 3
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 274,
+            "SECOND_GATE_REDUCES_CAPACITY": 3
+          }
+        }
+      ],
+      "proofChecks": 684,
+      "stallKeys": [
+        "0,0,1|1",
+        "7,0,1|3",
+        "0,0,2|1",
+        "7,0,2|3",
+        "9,0,2|0",
+        "10,0,2|0",
+        "11,0,2|0",
+        "12,0,2|0",
+        "13,0,2|0",
+        "0,0,3|1",
+        "0,0,4|1",
+        "0,0,5|1",
+        "0,0,6|1",
+        "0,0,7|1",
+        "0,0,8|1",
+        "7,0,8|3",
+        "0,0,9|1",
+        "7,0,9|3",
+        "0,0,10|1",
+        "7,0,10|3",
+        "0,0,11|1",
+        "7,0,11|3",
+        "0,0,12|1",
+        "7,0,12|3",
+        "0,0,13|1",
+        "7,0,13|3"
+      ]
+    },
+    {
+      "id": "O30",
+      "elapsedMs": 1857.2,
+      "stages": {
+        "analysis": 1.4740999999999076,
+        "vertical": 0.005799999999908323,
+        "preflight": 4.0241000000000895,
+        "spatial": 2.8213000000000648,
+        "parkingCirculation": 1808.9483,
+        "entrances": 0.05769999999938591,
+        "parkingStalls": 8.899999999999636,
+        "facade": 4.213600000000042
+      },
+      "quality": {
+        "areaId": "O30",
+        "componentKey": "all",
+        "inputCells": 600,
+        "eligibleCells": 591,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 9,
+        "vehicleCellsInArea": 264,
+        "walkOnlyCellsInArea": 111,
+        "crossingCells": 12,
+        "externalConnectorCells": 0,
+        "islandCells": 8,
+        "stallCells": 186,
+        "unallocatedCells": 22,
+        "potentialStalls": 97,
+        "acceptedStalls": 93,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 4
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 22
+        },
+        "aisleRatio": 0.4467005076142132,
+        "stallAreaRatio": 0.3147208121827411,
+        "acceptanceRatio": 0.9587628865979382,
+        "gateCount": 1,
+        "circulationUsed": 1492665,
+        "stallReserved": 17972,
+        "stallUsed": 4116
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "X",
+          "offset": 0,
+          "layout": "rows:X:14:1:28",
+          "search": {
+            "gateCandidates": 27,
+            "layoutDescriptors": 810,
+            "evaluated": 125,
+            "pruned": 153,
+            "untried": 532,
+            "complete": false,
+            "provenStalls": 93
+          },
+          "islands": [
+            {
+              "id": "island:O30:28,0,1:0",
+              "cells": [
+                [
+                  28,
+                  0,
+                  1
+                ],
+                [
+                  28,
+                  0,
+                  2
+                ]
+              ]
+            },
+            {
+              "id": "island:O30:28,0,8:2",
+              "cells": [
+                [
+                  28,
+                  0,
+                  8
+                ],
+                [
+                  28,
+                  0,
+                  7
+                ]
+              ]
+            },
+            {
+              "id": "island:O30:28,0,12:0",
+              "cells": [
+                [
+                  28,
+                  0,
+                  12
+                ],
+                [
+                  28,
+                  0,
+                  13
+                ]
+              ]
+            },
+            {
+              "id": "island:O30:28,0,19:2",
+              "cells": [
+                [
+                  28,
+                  0,
+                  19
+                ],
+                [
+                  28,
+                  0,
+                  18
+                ]
+              ]
+            }
+          ],
+          "stalls": 93,
+          "potential": 97,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 128,
+            "stateExpansions": 1492665,
+            "unservedCells": 22,
+            "rawLayoutDescriptors": 810,
+            "layoutTrialsCompleted": 128,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 97,
+            "boxChecks": 9,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 4
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 153,
+            "SECOND_GATE_REDUCES_CAPACITY": 3
+          }
+        }
+      ],
+      "proofChecks": 5028,
+      "stallKeys": [
+        "5,0,1|0",
+        "6,0,1|0",
+        "7,0,1|0",
+        "8,0,1|0",
+        "9,0,1|0",
+        "10,0,1|0",
+        "11,0,1|0",
+        "12,0,1|0",
+        "13,0,1|0",
+        "14,0,1|0",
+        "15,0,1|0",
+        "16,0,1|0",
+        "17,0,1|0",
+        "18,0,1|0",
+        "19,0,1|0",
+        "20,0,1|0",
+        "21,0,1|0",
+        "22,0,1|0",
+        "23,0,1|0",
+        "24,0,1|0",
+        "25,0,1|0",
+        "26,0,1|0",
+        "27,0,1|0",
+        "5,0,8|2",
+        "6,0,8|2",
+        "7,0,8|2",
+        "8,0,8|2",
+        "9,0,8|2",
+        "10,0,8|2",
+        "11,0,8|2",
+        "12,0,8|2",
+        "16,0,8|2",
+        "17,0,8|2",
+        "18,0,8|2",
+        "19,0,8|2",
+        "20,0,8|2",
+        "21,0,8|2",
+        "22,0,8|2",
+        "23,0,8|2",
+        "24,0,8|2",
+        "25,0,8|2",
+        "26,0,8|2",
+        "27,0,8|2",
+        "5,0,12|0",
+        "6,0,12|0",
+        "7,0,12|0",
+        "8,0,12|0",
+        "9,0,12|0",
+        "10,0,12|0",
+        "11,0,12|0",
+        "12,0,12|0",
+        "13,0,12|0",
+        "14,0,12|0",
+        "15,0,12|0",
+        "16,0,12|0",
+        "17,0,12|0",
+        "18,0,12|0",
+        "19,0,12|0",
+        "20,0,12|0",
+        "21,0,12|0",
+        "22,0,12|0",
+        "23,0,12|0",
+        "24,0,12|0",
+        "25,0,12|0",
+        "26,0,12|0",
+        "27,0,12|0",
+        "1,0,19|2",
+        "2,0,19|2",
+        "3,0,19|2",
+        "4,0,19|2",
+        "5,0,19|2",
+        "6,0,19|2",
+        "7,0,19|2",
+        "8,0,19|2",
+        "9,0,19|2",
+        "10,0,19|2",
+        "11,0,19|2",
+        "12,0,19|2",
+        "13,0,19|2",
+        "14,0,19|2",
+        "15,0,19|2",
+        "16,0,19|2",
+        "17,0,19|2",
+        "18,0,19|2",
+        "19,0,19|2",
+        "20,0,19|2",
+        "21,0,19|2",
+        "22,0,19|2",
+        "23,0,19|2",
+        "24,0,19|2",
+        "25,0,19|2",
+        "26,0,19|2",
+        "27,0,19|2"
+      ]
+    },
+    {
+      "id": "D12",
+      "elapsedMs": 561.5,
+      "stages": {
+        "analysis": 0.08839999999963766,
+        "vertical": 0.0011999999996987754,
+        "preflight": 0.002599999999802094,
+        "spatial": 3.38169999999991,
+        "parkingCirculation": 521.5486999999994,
+        "entrances": 0.0033999999996012775,
+        "parkingStalls": 4.249300000000403,
+        "facade": 0.012400000000525324
+      },
+      "quality": {
+        "areaId": "D12",
+        "componentKey": "all",
+        "inputCells": 288,
+        "eligibleCells": 288,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 88,
+        "walkOnlyCellsInArea": 120,
+        "crossingCells": 8,
+        "externalConnectorCells": 0,
+        "islandCells": 8,
+        "stallCells": 72,
+        "unallocatedCells": 0,
+        "potentialStalls": 40,
+        "acceptedStalls": 36,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 4
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3055555555555556,
+        "stallAreaRatio": 0.25,
+        "acceptanceRatio": 0.9,
+        "gateCount": 2,
+        "circulationUsed": 422827,
+        "stallReserved": 10752,
+        "stallUsed": 3092
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 61,
+            "pruned": 60,
+            "untried": 149,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:D12:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:D12:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 61,
+            "stateExpansions": 211835,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 61,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 60
+          }
+        },
+        {
+          "key": "16,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:20:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 61,
+            "pruned": 60,
+            "untried": 149,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:D12:18,0,10:1",
+              "cells": [
+                [
+                  18,
+                  0,
+                  10
+                ],
+                [
+                  19,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:D12:25,0,10:3",
+              "cells": [
+                [
+                  25,
+                  0,
+                  10
+                ],
+                [
+                  24,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  20,
+                  0,
+                  0
+                ],
+                [
+                  21,
+                  0,
+                  0
+                ],
+                [
+                  22,
+                  0,
+                  0
+                ],
+                [
+                  23,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 61,
+            "stateExpansions": 210992,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 61,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 60
+          }
+        }
+      ],
+      "proofChecks": 720,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3",
+        "18,0,1|1",
+        "18,0,2|1",
+        "18,0,3|1",
+        "18,0,4|1",
+        "18,0,5|1",
+        "18,0,6|1",
+        "18,0,7|1",
+        "18,0,8|1",
+        "18,0,9|1",
+        "25,0,1|3",
+        "25,0,2|3",
+        "25,0,3|3",
+        "25,0,4|3",
+        "25,0,5|3",
+        "25,0,6|3",
+        "25,0,7|3",
+        "25,0,8|3",
+        "25,0,9|3"
+      ]
+    },
+    {
+      "id": "boundary",
+      "elapsedMs": 2073.8,
+      "stages": {
+        "analysis": 0.8909000000003289,
+        "vertical": 0.002500000000509317,
+        "preflight": 2.49829999999929,
+        "spatial": 6.095299999999952,
+        "parkingCirculation": 2010.4559,
+        "entrances": 0.005000000000109139,
+        "parkingStalls": 13.696100000000115,
+        "facade": 5.069800000000214
+      },
+      "quality": {
+        "areaId": "boundary",
+        "componentKey": "all",
+        "inputCells": 896,
+        "eligibleCells": 887,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 9,
+        "vehicleCellsInArea": 416,
+        "walkOnlyCellsInArea": 160,
+        "crossingCells": 16,
+        "externalConnectorCells": 0,
+        "islandCells": 18,
+        "stallCells": 268,
+        "unallocatedCells": 25,
+        "potentialStalls": 142,
+        "acceptedStalls": 134,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 8
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 25
+        },
+        "aisleRatio": 0.4689966178128523,
+        "stallAreaRatio": 0.30214205186020293,
+        "acceptanceRatio": 0.9436619718309859,
+        "gateCount": 1,
+        "circulationUsed": 1500000,
+        "stallReserved": 26356,
+        "stallUsed": 5876
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "X",
+          "offset": 0,
+          "layout": "bands:X:0",
+          "search": {
+            "gateCandidates": 29,
+            "layoutDescriptors": 870,
+            "evaluated": 88,
+            "pruned": 48,
+            "untried": 734,
+            "complete": false,
+            "provenStalls": 134
+          },
+          "islands": [
+            {
+              "id": "island:boundary:30,0,1:0",
+              "cells": [
+                [
+                  30,
+                  0,
+                  1
+                ],
+                [
+                  30,
+                  0,
+                  2
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:30,0,8:2",
+              "cells": [
+                [
+                  30,
+                  0,
+                  8
+                ],
+                [
+                  30,
+                  0,
+                  7
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:11,0,10:0",
+              "cells": [
+                [
+                  11,
+                  0,
+                  10
+                ],
+                [
+                  11,
+                  0,
+                  11
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:30,0,10:0",
+              "cells": [
+                [
+                  30,
+                  0,
+                  10
+                ],
+                [
+                  30,
+                  0,
+                  11
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:11,0,17:2",
+              "cells": [
+                [
+                  11,
+                  0,
+                  17
+                ],
+                [
+                  11,
+                  0,
+                  16
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:16,0,17:2",
+              "cells": [
+                [
+                  16,
+                  0,
+                  17
+                ],
+                [
+                  16,
+                  0,
+                  16
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:30,0,17:2",
+              "cells": [
+                [
+                  30,
+                  0,
+                  17
+                ],
+                [
+                  30,
+                  0,
+                  16
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:30,0,19:0",
+              "cells": [
+                [
+                  30,
+                  0,
+                  19
+                ],
+                [
+                  30,
+                  0,
+                  20
+                ]
+              ]
+            },
+            {
+              "id": "island:boundary:30,0,26:2",
+              "cells": [
+                [
+                  30,
+                  0,
+                  26
+                ],
+                [
+                  30,
+                  0,
+                  25
+                ]
+              ]
+            }
+          ],
+          "stalls": 134,
+          "potential": 142,
+          "reasonCodes": [
+            "CIRCULATION_BUDGET_EXCEEDED"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 88,
+            "stateExpansions": 1500000,
+            "unservedCells": 27,
+            "rawLayoutDescriptors": 870,
+            "layoutTrialsCompleted": 87,
+            "layoutTrialsAborted": 1,
+            "potentialStalls": 142,
+            "boxChecks": 9,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 8
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 48,
+            "CIRCULATION_BUDGET_EXCEEDED": 1
+          }
+        }
+      ],
+      "proofChecks": 8456,
+      "stallKeys": [
+        "6,0,1|0",
+        "7,0,1|0",
+        "8,0,1|0",
+        "9,0,1|0",
+        "10,0,1|0",
+        "11,0,1|0",
+        "12,0,1|0",
+        "13,0,1|0",
+        "14,0,1|0",
+        "15,0,1|0",
+        "16,0,1|0",
+        "17,0,1|0",
+        "18,0,1|0",
+        "19,0,1|0",
+        "20,0,1|0",
+        "21,0,1|0",
+        "22,0,1|0",
+        "23,0,1|0",
+        "24,0,1|0",
+        "25,0,1|0",
+        "26,0,1|0",
+        "27,0,1|0",
+        "28,0,1|0",
+        "29,0,1|0",
+        "5,0,8|2",
+        "6,0,8|2",
+        "7,0,8|2",
+        "8,0,8|2",
+        "9,0,8|2",
+        "10,0,8|2",
+        "11,0,8|2",
+        "12,0,8|2",
+        "13,0,8|2",
+        "14,0,8|2",
+        "15,0,8|2",
+        "20,0,8|2",
+        "21,0,8|2",
+        "22,0,8|2",
+        "23,0,8|2",
+        "24,0,8|2",
+        "25,0,8|2",
+        "26,0,8|2",
+        "27,0,8|2",
+        "28,0,8|2",
+        "29,0,8|2",
+        "5,0,10|0",
+        "6,0,10|0",
+        "7,0,10|0",
+        "8,0,10|0",
+        "9,0,10|0",
+        "10,0,10|0",
+        "20,0,10|0",
+        "21,0,10|0",
+        "22,0,10|0",
+        "23,0,10|0",
+        "24,0,10|0",
+        "25,0,10|0",
+        "26,0,10|0",
+        "27,0,10|0",
+        "28,0,10|0",
+        "29,0,10|0",
+        "5,0,17|2",
+        "6,0,17|2",
+        "7,0,17|2",
+        "8,0,17|2",
+        "9,0,17|2",
+        "10,0,17|2",
+        "17,0,17|2",
+        "18,0,17|2",
+        "19,0,17|2",
+        "20,0,17|2",
+        "21,0,17|2",
+        "22,0,17|2",
+        "23,0,17|2",
+        "24,0,17|2",
+        "25,0,17|2",
+        "26,0,17|2",
+        "27,0,17|2",
+        "28,0,17|2",
+        "29,0,17|2",
+        "5,0,19|0",
+        "6,0,19|0",
+        "7,0,19|0",
+        "8,0,19|0",
+        "9,0,19|0",
+        "10,0,19|0",
+        "11,0,19|0",
+        "12,0,19|0",
+        "13,0,19|0",
+        "14,0,19|0",
+        "15,0,19|0",
+        "16,0,19|0",
+        "17,0,19|0",
+        "18,0,19|0",
+        "19,0,19|0",
+        "20,0,19|0",
+        "21,0,19|0",
+        "22,0,19|0",
+        "23,0,19|0",
+        "24,0,19|0",
+        "25,0,19|0",
+        "26,0,19|0",
+        "27,0,19|0",
+        "28,0,19|0",
+        "29,0,19|0",
+        "1,0,26|2",
+        "2,0,26|2",
+        "3,0,26|2",
+        "4,0,26|2",
+        "5,0,26|2",
+        "6,0,26|2",
+        "7,0,26|2",
+        "8,0,26|2",
+        "9,0,26|2",
+        "10,0,26|2",
+        "11,0,26|2",
+        "12,0,26|2",
+        "13,0,26|2",
+        "14,0,26|2",
+        "15,0,26|2",
+        "16,0,26|2",
+        "17,0,26|2",
+        "18,0,26|2",
+        "19,0,26|2",
+        "20,0,26|2",
+        "21,0,26|2",
+        "22,0,26|2",
+        "23,0,26|2",
+        "24,0,26|2",
+        "25,0,26|2",
+        "26,0,26|2",
+        "27,0,26|2",
+        "28,0,26|2",
+        "29,0,26|2"
+      ]
+    },
+    {
+      "id": "square-6",
+      "elapsedMs": 41,
+      "stages": {
+        "analysis": 0.08060000000023138,
+        "vertical": 0.0014000000001033186,
+        "preflight": 0.07790000000022701,
+        "spatial": 0.5766999999996187,
+        "parkingCirculation": 10.717599999999948,
+        "entrances": 0.001299999999901047,
+        "parkingStalls": 0.9475999999995111,
+        "facade": 0.021000000000640284
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 36,
+        "eligibleCells": 36,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 16,
+        "walkOnlyCellsInArea": 12,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 0,
+        "stallCells": 8,
+        "unallocatedCells": 0,
+        "potentialStalls": 4,
+        "acceptedStalls": 4,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {},
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.4444444444444444,
+        "stallAreaRatio": 0.2222222222222222,
+        "acceptanceRatio": 1,
+        "gateCount": 1,
+        "circulationUsed": 6607,
+        "stallReserved": 1296,
+        "stallUsed": 356
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "X",
+          "offset": 0,
+          "layout": "rows:X:0:1:4",
+          "search": {
+            "gateCandidates": 3,
+            "layoutDescriptors": 63,
+            "evaluated": 9,
+            "pruned": 54,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 4
+          },
+          "islands": [],
+          "stalls": 4,
+          "potential": 4,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 9,
+            "stateExpansions": 6607,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 63,
+            "layoutTrialsCompleted": 9,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 4,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {},
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 54,
+            "TURN_SWEEP_BLOCKED": 1
+          }
+        }
+      ],
+      "proofChecks": 64,
+      "stallKeys": [
+        "1,0,5|2",
+        "2,0,5|2",
+        "3,0,5|2",
+        "4,0,5|2"
+      ]
+    },
+    {
+      "id": "square-8",
+      "elapsedMs": 44.9,
+      "stages": {
+        "analysis": 0.03960000000006403,
+        "vertical": 0.00120000000060827,
+        "preflight": 0.009599999999409192,
+        "spatial": 0.7134000000005472,
+        "parkingCirculation": 14.42909999999938,
+        "entrances": 0.002199999999902502,
+        "parkingStalls": 0.9106000000001586,
+        "facade": 0.017899999999826832
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 64,
+        "eligibleCells": 64,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 28,
+        "walkOnlyCellsInArea": 12,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 20,
+        "unallocatedCells": 0,
+        "potentialStalls": 12,
+        "acceptedStalls": 10,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.4375,
+        "stallAreaRatio": 0.3125,
+        "acceptanceRatio": 0.8333333333333334,
+        "gateCount": 1,
+        "circulationUsed": 6177,
+        "stallReserved": 2176,
+        "stallUsed": 586
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:2:1:6",
+          "search": {
+            "gateCandidates": 5,
+            "layoutDescriptors": 140,
+            "evaluated": 5,
+            "pruned": 135,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 10
+          },
+          "islands": [
+            {
+              "id": "island:lot:0,0,6:1",
+              "cells": [
+                [
+                  0,
+                  0,
+                  6
+                ],
+                [
+                  1,
+                  0,
+                  6
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:7,0,6:3",
+              "cells": [
+                [
+                  7,
+                  0,
+                  6
+                ],
+                [
+                  6,
+                  0,
+                  6
+                ]
+              ]
+            }
+          ],
+          "stalls": 10,
+          "potential": 12,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 5,
+            "stateExpansions": 6177,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 140,
+            "layoutTrialsCompleted": 5,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 12,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 135
+          }
+        }
+      ],
+      "proofChecks": 160,
+      "stallKeys": [
+        "0,0,1|1",
+        "0,0,2|1",
+        "0,0,3|1",
+        "0,0,4|1",
+        "0,0,5|1",
+        "7,0,1|3",
+        "7,0,2|3",
+        "7,0,3|3",
+        "7,0,4|3",
+        "7,0,5|3"
+      ]
+    },
+    {
+      "id": "square-10",
+      "elapsedMs": 122.6,
+      "stages": {
+        "analysis": 0.04029999999966094,
+        "vertical": 0.001900000000205182,
+        "preflight": 0.001900000000205182,
+        "spatial": 0.9819999999999709,
+        "parkingCirculation": 96.86899999999969,
+        "entrances": 0.0020000000004074536,
+        "parkingStalls": 0.7782999999999447,
+        "facade": 0.02639999999973952
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 100,
+        "eligibleCells": 100,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 36,
+        "walkOnlyCellsInArea": 32,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 28,
+        "unallocatedCells": 0,
+        "potentialStalls": 16,
+        "acceptedStalls": 14,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.36,
+        "stallAreaRatio": 0.28,
+        "acceptanceRatio": 0.875,
+        "gateCount": 1,
+        "circulationUsed": 83487,
+        "stallReserved": 3280,
+        "stallUsed": 762
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:3:1:8",
+          "search": {
+            "gateCandidates": 7,
+            "layoutDescriptors": 196,
+            "evaluated": 49,
+            "pruned": 147,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 14
+          },
+          "islands": [
+            {
+              "id": "island:lot:1,0,8:1",
+              "cells": [
+                [
+                  1,
+                  0,
+                  8
+                ],
+                [
+                  2,
+                  0,
+                  8
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:8,0,8:3",
+              "cells": [
+                [
+                  8,
+                  0,
+                  8
+                ],
+                [
+                  7,
+                  0,
+                  8
+                ]
+              ]
+            }
+          ],
+          "stalls": 14,
+          "potential": 16,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 49,
+            "stateExpansions": 83487,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 196,
+            "layoutTrialsCompleted": 49,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 16,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 147
+          }
+        }
+      ],
+      "proofChecks": 252,
+      "stallKeys": [
+        "1,0,1|1",
+        "1,0,2|1",
+        "1,0,3|1",
+        "1,0,4|1",
+        "1,0,5|1",
+        "1,0,6|1",
+        "1,0,7|1",
+        "8,0,1|3",
+        "8,0,2|3",
+        "8,0,3|3",
+        "8,0,4|3",
+        "8,0,5|3",
+        "8,0,6|3",
+        "8,0,7|3"
+      ]
+    },
+    {
+      "id": "square-14",
+      "elapsedMs": 417.2,
+      "stages": {
+        "analysis": 0.05889999999999418,
+        "vertical": 0.004300000000512227,
+        "preflight": 0.0016999999998006388,
+        "spatial": 1.5626000000002023,
+        "parkingCirculation": 389.7024000000001,
+        "entrances": 0.00680000000011205,
+        "parkingStalls": 1.3881000000001222,
+        "facade": 0.01700000000073487
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 196,
+        "eligibleCells": 196,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 52,
+        "walkOnlyCellsInArea": 72,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 44,
+        "unallocatedCells": 24,
+        "potentialStalls": 24,
+        "acceptedStalls": 22,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 24
+        },
+        "aisleRatio": 0.2653061224489796,
+        "stallAreaRatio": 0.22448979591836735,
+        "acceptanceRatio": 0.9166666666666666,
+        "gateCount": 1,
+        "circulationUsed": 334564,
+        "stallReserved": 6160,
+        "stallUsed": 1114
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:5:1:12",
+          "search": {
+            "gateCandidates": 11,
+            "layoutDescriptors": 330,
+            "evaluated": 125,
+            "pruned": 40,
+            "untried": 165,
+            "complete": false,
+            "provenStalls": 22
+          },
+          "islands": [
+            {
+              "id": "island:lot:3,0,12:1",
+              "cells": [
+                [
+                  3,
+                  0,
+                  12
+                ],
+                [
+                  4,
+                  0,
+                  12
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:10,0,12:3",
+              "cells": [
+                [
+                  10,
+                  0,
+                  12
+                ],
+                [
+                  9,
+                  0,
+                  12
+                ]
+              ]
+            }
+          ],
+          "stalls": 22,
+          "potential": 24,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 334564,
+            "unservedCells": 24,
+            "rawLayoutDescriptors": 330,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 24,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 40
+          }
+        }
+      ],
+      "proofChecks": 484,
+      "stallKeys": [
+        "3,0,1|1",
+        "3,0,2|1",
+        "3,0,3|1",
+        "3,0,4|1",
+        "3,0,5|1",
+        "3,0,6|1",
+        "3,0,7|1",
+        "3,0,8|1",
+        "3,0,9|1",
+        "3,0,10|1",
+        "3,0,11|1",
+        "10,0,1|3",
+        "10,0,2|3",
+        "10,0,3|3",
+        "10,0,4|3",
+        "10,0,5|3",
+        "10,0,6|3",
+        "10,0,7|3",
+        "10,0,8|3",
+        "10,0,9|3",
+        "10,0,10|3",
+        "10,0,11|3"
+      ]
+    },
+    {
+      "id": "square-16",
+      "elapsedMs": 403.3,
+      "stages": {
+        "analysis": 0.04409999999916181,
+        "vertical": 0.0010000000002037268,
+        "preflight": 0.0018999999992956873,
+        "spatial": 1.4948999999996886,
+        "parkingCirculation": 373.2473999999984,
+        "entrances": 0.0020000000004074536,
+        "parkingStalls": 2.307600000000093,
+        "facade": 0.008400000000619912
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 256,
+        "eligibleCells": 256,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 128,
+        "walkOnlyCellsInArea": 52,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 6,
+        "stallCells": 70,
+        "unallocatedCells": 0,
+        "potentialStalls": 38,
+        "acceptedStalls": 35,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 3
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.5,
+        "stallAreaRatio": 0.2734375,
+        "acceptanceRatio": 0.9210526315789473,
+        "gateCount": 1,
+        "circulationUsed": 359781,
+        "stallReserved": 7936,
+        "stallUsed": 1926
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:3:1:14",
+          "search": {
+            "gateCandidates": 13,
+            "layoutDescriptors": 390,
+            "evaluated": 78,
+            "pruned": 312,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 35
+          },
+          "islands": [
+            {
+              "id": "island:lot:1,0,14:1",
+              "cells": [
+                [
+                  1,
+                  0,
+                  14
+                ],
+                [
+                  2,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:8,0,14:3",
+              "cells": [
+                [
+                  8,
+                  0,
+                  14
+                ],
+                [
+                  7,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:15,0,14:3",
+              "cells": [
+                [
+                  15,
+                  0,
+                  14
+                ],
+                [
+                  14,
+                  0,
+                  14
+                ]
+              ]
+            }
+          ],
+          "stalls": 35,
+          "potential": 38,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ],
+                [
+                  9,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 78,
+            "stateExpansions": 359781,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 390,
+            "layoutTrialsCompleted": 78,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 38,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 3
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 312
+          }
+        }
+      ],
+      "proofChecks": 976,
+      "stallKeys": [
+        "1,0,1|1",
+        "1,0,2|1",
+        "1,0,3|1",
+        "1,0,4|1",
+        "1,0,5|1",
+        "1,0,6|1",
+        "1,0,7|1",
+        "1,0,8|1",
+        "1,0,9|1",
+        "1,0,10|1",
+        "1,0,11|1",
+        "1,0,12|1",
+        "1,0,13|1",
+        "8,0,5|3",
+        "8,0,6|3",
+        "8,0,7|3",
+        "8,0,8|3",
+        "8,0,9|3",
+        "8,0,10|3",
+        "8,0,11|3",
+        "8,0,12|3",
+        "8,0,13|3",
+        "15,0,1|3",
+        "15,0,2|3",
+        "15,0,3|3",
+        "15,0,4|3",
+        "15,0,5|3",
+        "15,0,6|3",
+        "15,0,7|3",
+        "15,0,8|3",
+        "15,0,9|3",
+        "15,0,10|3",
+        "15,0,11|3",
+        "15,0,12|3",
+        "15,0,13|3"
+      ]
+    },
+    {
+      "id": "rect-6x16",
+      "elapsedMs": 45.4,
+      "stages": {
+        "analysis": 0.03379999999924621,
+        "vertical": 0.0009000000009109499,
+        "preflight": 0.0014000000010128133,
+        "spatial": 0.5527000000001863,
+        "parkingCirculation": 20.32170000000042,
+        "entrances": 0.0017000000007101335,
+        "parkingStalls": 0.7054000000007363,
+        "facade": 0.005600000000413274
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 96,
+        "eligibleCells": 96,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 60,
+        "walkOnlyCellsInArea": 8,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 2,
+        "stallCells": 26,
+        "unallocatedCells": 0,
+        "potentialStalls": 14,
+        "acceptedStalls": 13,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 1
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.625,
+        "stallAreaRatio": 0.2708333333333333,
+        "acceptanceRatio": 0.9285714285714286,
+        "gateCount": 1,
+        "circulationUsed": 13556,
+        "stallReserved": 2976,
+        "stallUsed": 796
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:0:1:14",
+          "search": {
+            "gateCandidates": 3,
+            "layoutDescriptors": 78,
+            "evaluated": 8,
+            "pruned": 70,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 13
+          },
+          "islands": [
+            {
+              "id": "island:lot:5,0,14:3",
+              "cells": [
+                [
+                  5,
+                  0,
+                  14
+                ],
+                [
+                  4,
+                  0,
+                  14
+                ]
+              ]
+            }
+          ],
+          "stalls": 13,
+          "potential": 14,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 8,
+            "stateExpansions": 13556,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 78,
+            "layoutTrialsCompleted": 8,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 14,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 1
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 70
+          }
+        }
+      ],
+      "proofChecks": 312,
+      "stallKeys": [
+        "5,0,1|3",
+        "5,0,2|3",
+        "5,0,3|3",
+        "5,0,4|3",
+        "5,0,5|3",
+        "5,0,6|3",
+        "5,0,7|3",
+        "5,0,8|3",
+        "5,0,9|3",
+        "5,0,10|3",
+        "5,0,11|3",
+        "5,0,12|3",
+        "5,0,13|3"
+      ]
+    },
+    {
+      "id": "rect-8x16",
+      "elapsedMs": 45.9,
+      "stages": {
+        "analysis": 0.033400000000256114,
+        "vertical": 0.0009000000009109499,
+        "preflight": 0.0015000000003055902,
+        "spatial": 0.6352999999999156,
+        "parkingCirculation": 20.295500000000175,
+        "entrances": 0.0014000000010128133,
+        "parkingStalls": 1.1013000000002648,
+        "facade": 0.005600000000413274
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 128,
+        "eligibleCells": 128,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 60,
+        "walkOnlyCellsInArea": 12,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 52,
+        "unallocatedCells": 0,
+        "potentialStalls": 28,
+        "acceptedStalls": 26,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.46875,
+        "stallAreaRatio": 0.40625,
+        "acceptanceRatio": 0.9285714285714286,
+        "gateCount": 1,
+        "circulationUsed": 9601,
+        "stallReserved": 3968,
+        "stallUsed": 986
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:2:1:14",
+          "search": {
+            "gateCandidates": 5,
+            "layoutDescriptors": 145,
+            "evaluated": 5,
+            "pruned": 140,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 26
+          },
+          "islands": [
+            {
+              "id": "island:lot:0,0,14:1",
+              "cells": [
+                [
+                  0,
+                  0,
+                  14
+                ],
+                [
+                  1,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:7,0,14:3",
+              "cells": [
+                [
+                  7,
+                  0,
+                  14
+                ],
+                [
+                  6,
+                  0,
+                  14
+                ]
+              ]
+            }
+          ],
+          "stalls": 26,
+          "potential": 28,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 5,
+            "stateExpansions": 9601,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 145,
+            "layoutTrialsCompleted": 5,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 28,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 140
+          }
+        }
+      ],
+      "proofChecks": 624,
+      "stallKeys": [
+        "0,0,1|1",
+        "0,0,2|1",
+        "0,0,3|1",
+        "0,0,4|1",
+        "0,0,5|1",
+        "0,0,6|1",
+        "0,0,7|1",
+        "0,0,8|1",
+        "0,0,9|1",
+        "0,0,10|1",
+        "0,0,11|1",
+        "0,0,12|1",
+        "0,0,13|1",
+        "7,0,1|3",
+        "7,0,2|3",
+        "7,0,3|3",
+        "7,0,4|3",
+        "7,0,5|3",
+        "7,0,6|3",
+        "7,0,7|3",
+        "7,0,8|3",
+        "7,0,9|3",
+        "7,0,10|3",
+        "7,0,11|3",
+        "7,0,12|3",
+        "7,0,13|3"
+      ]
+    },
+    {
+      "id": "rect-10x16",
+      "elapsedMs": 121.5,
+      "stages": {
+        "analysis": 0.0488999999997759,
+        "vertical": 0.0007999999997991836,
+        "preflight": 0.0018000000000029104,
+        "spatial": 0.7772000000004482,
+        "parkingCirculation": 93.34290000000146,
+        "entrances": 0.0015999999995983671,
+        "parkingStalls": 1.5846999999994296,
+        "facade": 0.005600000000413274
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 160,
+        "eligibleCells": 160,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 60,
+        "walkOnlyCellsInArea": 44,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 52,
+        "unallocatedCells": 0,
+        "potentialStalls": 28,
+        "acceptedStalls": 26,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.375,
+        "stallAreaRatio": 0.325,
+        "acceptanceRatio": 0.9285714285714286,
+        "gateCount": 1,
+        "circulationUsed": 71770,
+        "stallReserved": 4960,
+        "stallUsed": 1062
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:3:1:14",
+          "search": {
+            "gateCandidates": 7,
+            "layoutDescriptors": 203,
+            "evaluated": 32,
+            "pruned": 171,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 26
+          },
+          "islands": [
+            {
+              "id": "island:lot:1,0,14:1",
+              "cells": [
+                [
+                  1,
+                  0,
+                  14
+                ],
+                [
+                  2,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:8,0,14:3",
+              "cells": [
+                [
+                  8,
+                  0,
+                  14
+                ],
+                [
+                  7,
+                  0,
+                  14
+                ]
+              ]
+            }
+          ],
+          "stalls": 26,
+          "potential": 28,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 32,
+            "stateExpansions": 71770,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 203,
+            "layoutTrialsCompleted": 32,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 28,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 171
+          }
+        }
+      ],
+      "proofChecks": 624,
+      "stallKeys": [
+        "1,0,1|1",
+        "1,0,2|1",
+        "1,0,3|1",
+        "1,0,4|1",
+        "1,0,5|1",
+        "1,0,6|1",
+        "1,0,7|1",
+        "1,0,8|1",
+        "1,0,9|1",
+        "1,0,10|1",
+        "1,0,11|1",
+        "1,0,12|1",
+        "1,0,13|1",
+        "8,0,1|3",
+        "8,0,2|3",
+        "8,0,3|3",
+        "8,0,4|3",
+        "8,0,5|3",
+        "8,0,6|3",
+        "8,0,7|3",
+        "8,0,8|3",
+        "8,0,9|3",
+        "8,0,10|3",
+        "8,0,11|3",
+        "8,0,12|3",
+        "8,0,13|3"
+      ]
+    },
+    {
+      "id": "rect-16x6",
+      "elapsedMs": 244.5,
+      "stages": {
+        "analysis": 0.03659999999945285,
+        "vertical": 0.0010999999994965037,
+        "preflight": 0.0015999999995983671,
+        "spatial": 1.7280999999984488,
+        "parkingCirculation": 217.9351999999999,
+        "entrances": 0.0015999999995983671,
+        "parkingStalls": 0.7966999999989639,
+        "facade": 0.006000000001222361
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 96,
+        "eligibleCells": 96,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 48,
+        "walkOnlyCellsInArea": 32,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 12,
+        "unallocatedCells": 0,
+        "potentialStalls": 8,
+        "acceptedStalls": 6,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.5,
+        "stallAreaRatio": 0.125,
+        "acceptanceRatio": 0.75,
+        "gateCount": 1,
+        "circulationUsed": 260690,
+        "stallReserved": 3456,
+        "stallUsed": 1032
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:3:1:4",
+          "search": {
+            "gateCandidates": 13,
+            "layoutDescriptors": 325,
+            "evaluated": 125,
+            "pruned": 63,
+            "untried": 137,
+            "complete": false,
+            "provenStalls": 6
+          },
+          "islands": [
+            {
+              "id": "island:lot:1,0,4:1",
+              "cells": [
+                [
+                  1,
+                  0,
+                  4
+                ],
+                [
+                  2,
+                  0,
+                  4
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:15,0,4:3",
+              "cells": [
+                [
+                  15,
+                  0,
+                  4
+                ],
+                [
+                  14,
+                  0,
+                  4
+                ]
+              ]
+            }
+          ],
+          "stalls": 6,
+          "potential": 8,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ],
+                [
+                  9,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 260690,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 325,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 8,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 63,
+            "TURN_SWEEP_BLOCKED": 6
+          }
+        }
+      ],
+      "proofChecks": 120,
+      "stallKeys": [
+        "1,0,1|1",
+        "1,0,2|1",
+        "1,0,3|1",
+        "15,0,1|3",
+        "15,0,2|3",
+        "15,0,3|3"
+      ]
+    },
+    {
+      "id": "rect-16x8",
+      "elapsedMs": 302.8,
+      "stages": {
+        "analysis": 0.0316000000002532,
+        "vertical": 0.0009000000009109499,
+        "preflight": 0.001399999999193824,
+        "spatial": 1.6367000000009284,
+        "parkingCirculation": 275.45630000000165,
+        "entrances": 0.0015999999995983671,
+        "parkingStalls": 1.2395999999989726,
+        "facade": 0.006000000001222361
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 128,
+        "eligibleCells": 128,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 64,
+        "walkOnlyCellsInArea": 36,
+        "crossingCells": 8,
+        "externalConnectorCells": 0,
+        "islandCells": 0,
+        "stallCells": 28,
+        "unallocatedCells": 0,
+        "potentialStalls": 14,
+        "acceptedStalls": 14,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {},
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.5,
+        "stallAreaRatio": 0.21875,
+        "acceptanceRatio": 1,
+        "gateCount": 2,
+        "circulationUsed": 314709,
+        "stallReserved": 4352,
+        "stallUsed": 1264
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "X",
+          "offset": 0,
+          "layout": "rows:X:1:1:14",
+          "search": {
+            "gateCandidates": 13,
+            "layoutDescriptors": 377,
+            "evaluated": 125,
+            "pruned": 198,
+            "untried": 54,
+            "complete": false,
+            "provenStalls": 14
+          },
+          "islands": [],
+          "stalls": 14,
+          "potential": 14,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  1,
+                  0,
+                  0
+                ],
+                [
+                  2,
+                  0,
+                  0
+                ],
+                [
+                  3,
+                  0,
+                  0
+                ],
+                [
+                  4,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            },
+            {
+              "opening": [
+                [
+                  11,
+                  0,
+                  0
+                ],
+                [
+                  12,
+                  0,
+                  0
+                ],
+                [
+                  13,
+                  0,
+                  0
+                ],
+                [
+                  14,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 128,
+            "stateExpansions": 314709,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 377,
+            "layoutTrialsCompleted": 128,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 14,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {},
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 198,
+            "TURN_SWEEP_BLOCKED": 18
+          }
+        }
+      ],
+      "proofChecks": 256,
+      "stallKeys": [
+        "1,0,6|2",
+        "2,0,6|2",
+        "3,0,6|2",
+        "4,0,6|2",
+        "5,0,6|2",
+        "6,0,6|2",
+        "7,0,6|2",
+        "8,0,6|2",
+        "9,0,6|2",
+        "10,0,6|2",
+        "11,0,6|2",
+        "12,0,6|2",
+        "13,0,6|2",
+        "14,0,6|2"
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "elapsedMs": 548,
+      "stages": {
+        "analysis": 0.03330000000096334,
+        "vertical": 0.0010000000002037268,
+        "preflight": 0.001399999999193824,
+        "spatial": 1.7929000000003725,
+        "parkingCirculation": 518.0160000000014,
+        "entrances": 0.002599999999802094,
+        "parkingStalls": 2.837100000000646,
+        "facade": 0.006499999999505235
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 216,
+        "eligibleCells": 216,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 132,
+        "walkOnlyCellsInArea": 26,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 54,
+        "unallocatedCells": 0,
+        "potentialStalls": 29,
+        "acceptedStalls": 27,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.6111111111111112,
+        "stallAreaRatio": 0.25,
+        "acceptanceRatio": 0.9310344827586207,
+        "gateCount": 1,
+        "circulationUsed": 553758,
+        "stallReserved": 6816,
+        "stallUsed": 1934
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:2:1:14",
+          "search": {
+            "gateCandidates": 13,
+            "layoutDescriptors": 377,
+            "evaluated": 119,
+            "pruned": 258,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 27
+          },
+          "islands": [
+            {
+              "id": "island:lot:0,0,14:1",
+              "cells": [
+                [
+                  0,
+                  0,
+                  14
+                ],
+                [
+                  1,
+                  0,
+                  14
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:15,0,14:3",
+              "cells": [
+                [
+                  15,
+                  0,
+                  14
+                ],
+                [
+                  14,
+                  0,
+                  14
+                ]
+              ]
+            }
+          ],
+          "stalls": 27,
+          "potential": 29,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ],
+                [
+                  9,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 119,
+            "stateExpansions": 553758,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 377,
+            "layoutTrialsCompleted": 119,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 29,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 258
+          }
+        }
+      ],
+      "proofChecks": 768,
+      "stallKeys": [
+        "0,0,1|1",
+        "0,0,2|1",
+        "0,0,3|1",
+        "0,0,4|1",
+        "0,0,5|1",
+        "0,0,6|1",
+        "0,0,7|1",
+        "0,0,8|1",
+        "0,0,9|1",
+        "0,0,10|1",
+        "0,0,11|1",
+        "0,0,12|1",
+        "0,0,13|1",
+        "7,0,5|3",
+        "15,0,1|3",
+        "15,0,2|3",
+        "15,0,3|3",
+        "15,0,4|3",
+        "15,0,5|3",
+        "15,0,6|3",
+        "15,0,7|3",
+        "15,0,8|3",
+        "15,0,9|3",
+        "15,0,10|3",
+        "15,0,11|3",
+        "15,0,12|3",
+        "15,0,13|3"
+      ]
+    },
+    {
+      "id": "neck-two-rooms",
+      "elapsedMs": 533.8,
+      "stages": {
+        "analysis": 0.043899999998757266,
+        "vertical": 0.00120000000060827,
+        "preflight": 0.0018999999992956873,
+        "spatial": 2.4174999999995634,
+        "parkingCirculation": 493.9186000000009,
+        "entrances": 0.0033000000003085006,
+        "parkingStalls": 2.530899999999747,
+        "facade": 0.006999999999607098
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 248,
+        "eligibleCells": 248,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 95,
+        "walkOnlyCellsInArea": 78,
+        "crossingCells": 8,
+        "externalConnectorCells": 0,
+        "islandCells": 8,
+        "stallCells": 64,
+        "unallocatedCells": 3,
+        "potentialStalls": 36,
+        "acceptedStalls": 32,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 4
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 3
+        },
+        "aisleRatio": 0.38306451612903225,
+        "stallAreaRatio": 0.25806451612903225,
+        "acceptanceRatio": 0.8888888888888888,
+        "gateCount": 2,
+        "circulationUsed": 447760,
+        "stallReserved": 8096,
+        "stallUsed": 1940
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:17:1:10",
+          "search": {
+            "gateCandidates": 14,
+            "layoutDescriptors": 406,
+            "evaluated": 125,
+            "pruned": 56,
+            "untried": 225,
+            "complete": false,
+            "provenStalls": 32
+          },
+          "islands": [
+            {
+              "id": "island:lot:0,0,10:1",
+              "cells": [
+                [
+                  0,
+                  0,
+                  10
+                ],
+                [
+                  1,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:7,0,10:3",
+              "cells": [
+                [
+                  7,
+                  0,
+                  10
+                ],
+                [
+                  6,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:15,0,10:1",
+              "cells": [
+                [
+                  15,
+                  0,
+                  10
+                ],
+                [
+                  16,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:22,0,10:3",
+              "cells": [
+                [
+                  22,
+                  0,
+                  10
+                ],
+                [
+                  21,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 32,
+          "potential": 36,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  17,
+                  0,
+                  0
+                ],
+                [
+                  18,
+                  0,
+                  0
+                ],
+                [
+                  19,
+                  0,
+                  0
+                ],
+                [
+                  20,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            },
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 128,
+            "stateExpansions": 447760,
+            "unservedCells": 3,
+            "rawLayoutDescriptors": 406,
+            "layoutTrialsCompleted": 128,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 36,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 4
+          },
+          "candidateReasons": {
+            "TURN_SWEEP_BLOCKED": 10,
+            "PROVEN_POTENTIAL_DOMINATED": 56
+          }
+        }
+      ],
+      "proofChecks": 670,
+      "stallKeys": [
+        "0,0,1|1",
+        "0,0,2|1",
+        "0,0,3|1",
+        "0,0,4|1",
+        "0,0,5|1",
+        "0,0,6|1",
+        "0,0,7|1",
+        "0,0,8|1",
+        "0,0,9|1",
+        "7,0,5|3",
+        "7,0,6|3",
+        "7,0,7|3",
+        "7,0,8|3",
+        "7,0,9|3",
+        "15,0,1|1",
+        "15,0,2|1",
+        "15,0,3|1",
+        "15,0,4|1",
+        "15,0,5|1",
+        "15,0,6|1",
+        "15,0,7|1",
+        "15,0,8|1",
+        "15,0,9|1",
+        "22,0,1|3",
+        "22,0,2|3",
+        "22,0,3|3",
+        "22,0,4|3",
+        "22,0,5|3",
+        "22,0,6|3",
+        "22,0,7|3",
+        "22,0,8|3",
+        "22,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-road-width1",
+      "elapsedMs": 35.8,
+      "stages": {
+        "analysis": 0.05010000000038417,
+        "vertical": 0.001299999999901047,
+        "preflight": 0.0020999999997002305,
+        "spatial": 0.7677000000003318,
+        "parkingCirculation": 11.128999999998996,
+        "entrances": 0.0017000000007101335,
+        "parkingStalls": 0.18519999999989523,
+        "facade": 0.004899999999906868
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 144,
+        "eligibleCells": 144,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 0,
+        "walkOnlyCellsInArea": 12,
+        "crossingCells": 0,
+        "externalConnectorCells": 0,
+        "islandCells": 0,
+        "stallCells": 0,
+        "unallocatedCells": 132,
+        "potentialStalls": 0,
+        "acceptedStalls": 0,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {},
+        "unallocatedPrimaryReasonCounts": {
+          "NO_CIRCULATION": 132
+        },
+        "aisleRatio": 0,
+        "stallAreaRatio": 0,
+        "acceptanceRatio": null,
+        "gateCount": 0,
+        "circulationUsed": 0,
+        "stallReserved": 4176,
+        "stallUsed": 0
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "unplannable",
+          "axis": "X",
+          "offset": 0,
+          "layout": "none",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 125,
+            "pruned": 0,
+            "untried": 145,
+            "complete": false,
+            "provenStalls": 0
+          },
+          "islands": [],
+          "stalls": 0,
+          "potential": 0,
+          "reasonCodes": [
+            "TURN_SWEEP_BLOCKED",
+            "NO_PROVEN_PARKING_LAYOUT",
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 0,
+            "unservedCells": 144,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 0,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {},
+          "candidateReasons": {
+            "TURN_SWEEP_BLOCKED": 125
+          }
+        }
+      ],
+      "proofChecks": 0,
+      "stallKeys": []
+    },
+    {
+      "id": "R12-road-width2",
+      "elapsedMs": 310.9,
+      "stages": {
+        "analysis": 0.037900000001172884,
+        "vertical": 0.0007999999997991836,
+        "preflight": 0.0020000000004074536,
+        "spatial": 1.3075000000008004,
+        "parkingCirculation": 281.8225999999995,
+        "entrances": 0.0015999999995983671,
+        "parkingStalls": 1.8809000000001106,
+        "facade": 0.005299999998896965
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 144,
+        "eligibleCells": 144,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 60,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3055555555555556,
+        "stallAreaRatio": 0.25,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 184121,
+        "stallReserved": 4320,
+        "stallUsed": 606
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 125,
+            "pruned": 120,
+            "untried": 25,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:lot:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 184121,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 120
+          }
+        }
+      ],
+      "proofChecks": 364,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-road-width3",
+      "elapsedMs": 329.7,
+      "stages": {
+        "analysis": 0.03319999999985157,
+        "vertical": 0.0010999999994965037,
+        "preflight": 0.0018999999992956873,
+        "spatial": 0.911099999999351,
+        "parkingCirculation": 300.3171999999995,
+        "entrances": 0.0020000000004074536,
+        "parkingStalls": 1.145700000000943,
+        "facade": 0.010600000001431908
+      },
+      "quality": {
+        "areaId": "lot",
+        "componentKey": "all",
+        "inputCells": 144,
+        "eligibleCells": 144,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 60,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3055555555555556,
+        "stallAreaRatio": 0.25,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 212181,
+        "stallReserved": 4464,
+        "stallUsed": 708
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 125,
+            "pruned": 120,
+            "untried": 25,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:lot:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:lot:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 212181,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 120
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-no-road",
+      "elapsedMs": 32.8,
+      "stages": {
+        "analysis": 0.06430000000000291,
+        "vertical": 0.0014000000010128133,
+        "preflight": 0.002599999999802094,
+        "spatial": 0.5153000000009342,
+        "parkingCirculation": 5.085100000000239,
+        "entrances": 0.0016000000014173565,
+        "parkingStalls": 0.15630000000055588,
+        "facade": 0.0046999999995023245
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 144,
+        "eligibleCells": 144,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 0,
+        "walkOnlyCellsInArea": 0,
+        "crossingCells": 0,
+        "externalConnectorCells": 0,
+        "islandCells": 0,
+        "stallCells": 0,
+        "unallocatedCells": 144,
+        "potentialStalls": 0,
+        "acceptedStalls": 0,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {},
+        "unallocatedPrimaryReasonCounts": {
+          "NO_CIRCULATION": 144
+        },
+        "aisleRatio": 0,
+        "stallAreaRatio": 0,
+        "acceptanceRatio": null,
+        "gateCount": 0,
+        "circulationUsed": 0,
+        "stallReserved": 0,
+        "stallUsed": 0
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "unplannable",
+          "axis": "X",
+          "offset": 0,
+          "layout": "none",
+          "search": {
+            "gateCandidates": 0,
+            "layoutDescriptors": 0,
+            "evaluated": 0,
+            "pruned": 0,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 0
+          },
+          "islands": [],
+          "stalls": 0,
+          "potential": 0,
+          "reasonCodes": [
+            "NO_ROAD_GATE"
+          ],
+          "gates": [],
+          "counters": {
+            "layoutCandidates": 0,
+            "stateExpansions": 0,
+            "unservedCells": 144,
+            "rawLayoutDescriptors": 0,
+            "layoutTrialsCompleted": 0,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 0,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {},
+          "candidateReasons": {}
+        }
+      ],
+      "proofChecks": 0,
+      "stallKeys": []
+    },
+    {
+      "id": "R12-minus-0-11",
+      "elapsedMs": 345.1,
+      "stages": {
+        "analysis": 0.04260000000067521,
+        "vertical": 0.0015999999995983671,
+        "preflight": 0.0018000000000029104,
+        "spatial": 0.813399999999092,
+        "parkingCirculation": 311.77700000000004,
+        "entrances": 0.0019000000011146767,
+        "parkingStalls": 1.0985000000000582,
+        "facade": 0.0068000000010215444
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 143,
+        "eligibleCells": 143,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 59,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3076923076923077,
+        "stallAreaRatio": 0.2517482517482518,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 268279,
+        "stallReserved": 4564,
+        "stallUsed": 938
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 261,
+            "evaluated": 125,
+            "pruned": 120,
+            "untried": 16,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:R12:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 268279,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 261,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 120
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-5-11",
+      "elapsedMs": 319.3,
+      "stages": {
+        "analysis": 0.03360000000066066,
+        "vertical": 0.0007999999997991836,
+        "preflight": 0.0015999999995983671,
+        "spatial": 0.819999999999709,
+        "parkingCirculation": 292.0480000000007,
+        "entrances": 0.0020000000004074536,
+        "parkingStalls": 1.5366000000012718,
+        "facade": 0.006600000000617001
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 143,
+        "eligibleCells": 143,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 39,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 20,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 20
+        },
+        "aisleRatio": 0.3076923076923077,
+        "stallAreaRatio": 0.2517482517482518,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 266677,
+        "stallReserved": 4564,
+        "stallUsed": 938
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:6:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 261,
+            "evaluated": 125,
+            "pruned": 117,
+            "untried": 19,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:R12:4,0,10:1",
+              "cells": [
+                [
+                  4,
+                  0,
+                  10
+                ],
+                [
+                  5,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:11,0,10:3",
+              "cells": [
+                [
+                  11,
+                  0,
+                  10
+                ],
+                [
+                  10,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ],
+                [
+                  9,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 266677,
+            "unservedCells": 20,
+            "rawLayoutDescriptors": 261,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 117
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "4,0,1|1",
+        "4,0,2|1",
+        "4,0,3|1",
+        "4,0,4|1",
+        "4,0,5|1",
+        "4,0,6|1",
+        "4,0,7|1",
+        "4,0,8|1",
+        "4,0,9|1",
+        "11,0,1|3",
+        "11,0,2|3",
+        "11,0,3|3",
+        "11,0,4|3",
+        "11,0,5|3",
+        "11,0,6|3",
+        "11,0,7|3",
+        "11,0,8|3",
+        "11,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-11-11",
+      "elapsedMs": 345,
+      "stages": {
+        "analysis": 0.03739999999925203,
+        "vertical": 0.0007000000005064066,
+        "preflight": 0.0018000000000029104,
+        "spatial": 0.8996000000006461,
+        "parkingCirculation": 311.52460000000065,
+        "entrances": 0.0020999999997002305,
+        "parkingStalls": 1.166799999999057,
+        "facade": 0.007599999999001739
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 143,
+        "eligibleCells": 143,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 59,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3076923076923077,
+        "stallAreaRatio": 0.2517482517482518,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 268279,
+        "stallReserved": 4564,
+        "stallUsed": 938
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 261,
+            "evaluated": 125,
+            "pruned": 120,
+            "untried": 16,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:R12:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 268279,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 261,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 120
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-5-5",
+      "elapsedMs": 218.4,
+      "stages": {
+        "analysis": 0.03260000000045693,
+        "vertical": 0.0007000000005064066,
+        "preflight": 0.0014000000010128133,
+        "spatial": 1.2705999999998312,
+        "parkingCirculation": 188.42489999999998,
+        "entrances": 0.0021999999989930075,
+        "parkingStalls": 1.5642000000007101,
+        "facade": 0.007099999998899875
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 143,
+        "eligibleCells": 143,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 39,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 34,
+        "unallocatedCells": 22,
+        "potentialStalls": 19,
+        "acceptedStalls": 17,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {
+          "LAYOUT_REMAINDER": 22
+        },
+        "aisleRatio": 0.3076923076923077,
+        "stallAreaRatio": 0.23776223776223776,
+        "acceptanceRatio": 0.8947368421052632,
+        "gateCount": 1,
+        "circulationUsed": 197768,
+        "stallReserved": 4564,
+        "stallUsed": 934
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "partial",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:6:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 270,
+            "evaluated": 78,
+            "pruned": 192,
+            "untried": 0,
+            "complete": true,
+            "provenStalls": 17
+          },
+          "islands": [
+            {
+              "id": "island:R12:4,0,10:1",
+              "cells": [
+                [
+                  4,
+                  0,
+                  10
+                ],
+                [
+                  5,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:11,0,10:3",
+              "cells": [
+                [
+                  11,
+                  0,
+                  10
+                ],
+                [
+                  10,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 17,
+          "potential": 19,
+          "reasonCodes": [],
+          "gates": [
+            {
+              "opening": [
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ],
+                [
+                  8,
+                  0,
+                  0
+                ],
+                [
+                  9,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 78,
+            "stateExpansions": 197768,
+            "unservedCells": 22,
+            "rawLayoutDescriptors": 270,
+            "layoutTrialsCompleted": 78,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 19,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 192
+          }
+        }
+      ],
+      "proofChecks": 340,
+      "stallKeys": [
+        "4,0,1|1",
+        "4,0,2|1",
+        "4,0,3|1",
+        "4,0,4|1",
+        "4,0,6|1",
+        "4,0,7|1",
+        "4,0,8|1",
+        "4,0,9|1",
+        "11,0,1|3",
+        "11,0,2|3",
+        "11,0,3|3",
+        "11,0,4|3",
+        "11,0,5|3",
+        "11,0,6|3",
+        "11,0,7|3",
+        "11,0,8|3",
+        "11,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-11-5",
+      "elapsedMs": 329.3,
+      "stages": {
+        "analysis": 0.033099999998739804,
+        "vertical": 0.0008999999990919605,
+        "preflight": 0.0017000000007101335,
+        "spatial": 0.9724000000005617,
+        "parkingCirculation": 302.42149999999856,
+        "entrances": 0.0018000000000029104,
+        "parkingStalls": 1.3154999999987922,
+        "facade": 0.005199999999604188
+      },
+      "quality": {
+        "areaId": "R12",
+        "componentKey": "all",
+        "inputCells": 143,
+        "eligibleCells": 143,
+        "excludedRoadCells": 0,
+        "excludedSolidCells": 0,
+        "vehicleCellsInArea": 44,
+        "walkOnlyCellsInArea": 59,
+        "crossingCells": 4,
+        "externalConnectorCells": 0,
+        "islandCells": 4,
+        "stallCells": 36,
+        "unallocatedCells": 0,
+        "potentialStalls": 20,
+        "acceptedStalls": 18,
+        "untestedStalls": 0,
+        "primaryRejectionCounts": {
+          "NO_VEHICLE_ENTRY": 2
+        },
+        "unallocatedPrimaryReasonCounts": {},
+        "aisleRatio": 0.3076923076923077,
+        "stallAreaRatio": 0.2517482517482518,
+        "acceptanceRatio": 0.9,
+        "gateCount": 1,
+        "circulationUsed": 264789,
+        "stallReserved": 4564,
+        "stallUsed": 938
+      },
+      "components": [
+        {
+          "key": "0,0,0",
+          "status": "ok",
+          "axis": "Z",
+          "offset": 0,
+          "layout": "rows:Z:4:1:10",
+          "search": {
+            "gateCandidates": 9,
+            "layoutDescriptors": 261,
+            "evaluated": 125,
+            "pruned": 118,
+            "untried": 18,
+            "complete": false,
+            "provenStalls": 18
+          },
+          "islands": [
+            {
+              "id": "island:R12:2,0,10:1",
+              "cells": [
+                [
+                  2,
+                  0,
+                  10
+                ],
+                [
+                  3,
+                  0,
+                  10
+                ]
+              ]
+            },
+            {
+              "id": "island:R12:9,0,10:3",
+              "cells": [
+                [
+                  9,
+                  0,
+                  10
+                ],
+                [
+                  8,
+                  0,
+                  10
+                ]
+              ]
+            }
+          ],
+          "stalls": 18,
+          "potential": 20,
+          "reasonCodes": [
+            "LAYOUT_SEARCH_LIMIT"
+          ],
+          "gates": [
+            {
+              "opening": [
+                [
+                  4,
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0,
+                  0
+                ],
+                [
+                  7,
+                  0,
+                  0
+                ]
+              ],
+              "heading": 0
+            }
+          ],
+          "counters": {
+            "layoutCandidates": 125,
+            "stateExpansions": 264789,
+            "unservedCells": 0,
+            "rawLayoutDescriptors": 261,
+            "layoutTrialsCompleted": 125,
+            "layoutTrialsAborted": 0,
+            "potentialStalls": 20,
+            "boxChecks": 0,
+            "proofEdgeChecks": 0
+          },
+          "rejections": {
+            "NO_VEHICLE_ENTRY": 2
+          },
+          "candidateReasons": {
+            "PROVEN_POTENTIAL_DOMINATED": 118
+          }
+        }
+      ],
+      "proofChecks": 360,
+      "stallKeys": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ]
+    }
+  ],
+  "editChanges": [
+    {
+      "id": "R12-minus-0-11",
+      "before": 18,
+      "after": 18,
+      "retained": 18,
+      "removed": [],
+      "added": []
+    },
+    {
+      "id": "R12-minus-5-11",
+      "before": 18,
+      "after": 18,
+      "retained": 0,
+      "removed": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ],
+      "added": [
+        "4,0,1|1",
+        "4,0,2|1",
+        "4,0,3|1",
+        "4,0,4|1",
+        "4,0,5|1",
+        "4,0,6|1",
+        "4,0,7|1",
+        "4,0,8|1",
+        "4,0,9|1",
+        "11,0,1|3",
+        "11,0,2|3",
+        "11,0,3|3",
+        "11,0,4|3",
+        "11,0,5|3",
+        "11,0,6|3",
+        "11,0,7|3",
+        "11,0,8|3",
+        "11,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-11-11",
+      "before": 18,
+      "after": 18,
+      "retained": 18,
+      "removed": [],
+      "added": []
+    },
+    {
+      "id": "R12-minus-5-5",
+      "before": 18,
+      "after": 17,
+      "retained": 0,
+      "removed": [
+        "2,0,1|1",
+        "2,0,2|1",
+        "2,0,3|1",
+        "2,0,4|1",
+        "2,0,5|1",
+        "2,0,6|1",
+        "2,0,7|1",
+        "2,0,8|1",
+        "2,0,9|1",
+        "9,0,1|3",
+        "9,0,2|3",
+        "9,0,3|3",
+        "9,0,4|3",
+        "9,0,5|3",
+        "9,0,6|3",
+        "9,0,7|3",
+        "9,0,8|3",
+        "9,0,9|3"
+      ],
+      "added": [
+        "4,0,1|1",
+        "4,0,2|1",
+        "4,0,3|1",
+        "4,0,4|1",
+        "4,0,6|1",
+        "4,0,7|1",
+        "4,0,8|1",
+        "4,0,9|1",
+        "11,0,1|3",
+        "11,0,2|3",
+        "11,0,3|3",
+        "11,0,4|3",
+        "11,0,5|3",
+        "11,0,6|3",
+        "11,0,7|3",
+        "11,0,8|3",
+        "11,0,9|3"
+      ]
+    },
+    {
+      "id": "R12-minus-11-5",
+      "before": 18,
+      "after": 18,
+      "retained": 18,
+      "removed": [],
+      "added": []
+    }
+  ],
+  "buildingSummary": {
+    "cells": 48,
+    "parkingAreas": 0,
+    "provenStalls": 0,
+    "assets": {
+      "parking-deck": 48,
+      "parking-column": 12,
+      "parking-bay": 48,
+      "parking-roof-deck": 16
+    }
+  }
+}

@@ -182,7 +182,8 @@ test.describe('performance protocol',()=>{
     else {expect(after.delta.roadCells.length).toBe(doc.sceneInputs.roads.length);expect(after.document.sceneInputs.parkingAreas).toEqual(doc.sceneInputs.parkingAreas);quality(s,name,operation==='road-add');if(operation==='road-add')expect(after.document.sceneInputs.roads).toEqual(doc.sceneInputs.roads);else {expect(after.document.sceneInputs.roads).toEqual([]);expect(await page.locator('canvas').getAttribute('data-parking-circulation')).toContain('NO_ROAD_GATE');}}
     const remaining=new Set(after.document.sceneInputs.parkingAreas.flatMap((a:any)=>a.cells.map((c:any)=>c.join(','))));
     for(const area of after.parking??[])for(const plan of area.plans){const base=new Set<string>([...after.document.sceneInputs.roads,...plan.circulation.aisleCells,...plan.circulation.gates.flatMap((g:any)=>[...g.openingCells,...g.connectorCells])].map((c:any)=>c.join(',')));expect(plan.stalls.every((stall:any)=>stall.cells.every((c:any)=>remaining.has(c.join(',')))&&validateStallProof(stall,base)>0)).toBe(true);}
-    expect((after.parkingPlacements??[]).filter((p:any)=>p.asset==='parking.paving'&&!remaining.has(`${Math.floor(p.center[0])},0,${Math.floor(p.center[2])}`))).toEqual([]);
+    const pavingSupport=new Set([...remaining,...(after.parking??[]).flatMap((a:any)=>a.plans.flatMap((p:any)=>[...p.circulation.walkCells,...p.circulation.gates.flatMap((g:any)=>g.connectorCells)].map((c:any)=>c.join(','))))]);
+    expect((after.parkingPlacements??[]).filter((p:any)=>p.asset==='parking.paving'&&!pavingSupport.has(`${Math.floor(p.center[0])},0,${Math.floor(p.center[2])}`))).toEqual([]);
     samples.push({...s,setup} as MeasurementSample);
    }finally{await context.close();}
   }

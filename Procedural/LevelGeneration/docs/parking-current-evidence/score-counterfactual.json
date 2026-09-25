@@ -1,0 +1,1458 @@
+{
+  "scope": "Audit all 72 combinations of the existing four gate candidates and 18 fixed strip patterns; score each with the unchanged production stall validator. This offline comparison does not claim the runtime aggregate budget or a globally optimal layout.",
+  "report": [
+    {
+      "id": "R12",
+      "current": {
+        "accepted": 18,
+        "potential": 20,
+        "axis": "Z",
+        "offset": 0
+      },
+      "bestAfterStallProof": {
+        "candidateId": "gate:R12:3,0,0:0:Z:0",
+        "axis": "Z",
+        "offset": 0,
+        "potential": 20,
+        "accepted": 18,
+        "aisle": 44,
+        "reasonsInOriginal": []
+      },
+      "rows": [
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 52,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 56,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 60,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 64,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 68,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:7",
+          "axis": "X",
+          "offset": 7,
+          "potential": 10,
+          "accepted": 9,
+          "aisle": 44,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 10,
+          "accepted": 9,
+          "aisle": 48,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 51,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 10,
+          "accepted": 9,
+          "aisle": 44,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:1,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 10,
+          "accepted": 9,
+          "aisle": 46,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 15,
+          "accepted": 12,
+          "aisle": 53,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 15,
+          "accepted": 12,
+          "aisle": 57,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 15,
+          "accepted": 12,
+          "aisle": 61,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 5,
+          "accepted": 4,
+          "aisle": 65,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 5,
+          "accepted": 4,
+          "aisle": 69,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 10,
+          "accepted": 8,
+          "aisle": 49,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 46,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 51,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 48,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:2,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 10,
+          "accepted": 9,
+          "aisle": 44,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 14,
+          "accepted": 11,
+          "aisle": 55,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 14,
+          "accepted": 11,
+          "aisle": 59,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 14,
+          "accepted": 11,
+          "aisle": 63,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 67,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 71,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 10,
+          "accepted": 8,
+          "aisle": 50,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 44,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 46,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:Z:2",
+          "axis": "Z",
+          "offset": 2,
+          "potential": 16,
+          "accepted": 14,
+          "aisle": 51,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 51,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:R12:3,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 48,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "U16-arms6",
+      "current": {
+        "accepted": 7,
+        "potential": 9,
+        "axis": "X",
+        "offset": 0
+      },
+      "bestAfterStallProof": {
+        "candidateId": "gate:lot:1,0,0:0:X:0",
+        "axis": "X",
+        "offset": 0,
+        "potential": 9,
+        "accepted": 7,
+        "aisle": 75,
+        "reasonsInOriginal": []
+      },
+      "rows": [
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 9,
+          "accepted": 7,
+          "aisle": 75,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 8,
+          "accepted": 7,
+          "aisle": 113,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 7,
+          "aisle": 121,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:7",
+          "axis": "X",
+          "offset": 7,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 132,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 140,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 27,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:5",
+          "axis": "Z",
+          "offset": 5,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 47,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 51,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 100,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 102,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 9,
+          "accepted": 6,
+          "aisle": 75,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 113,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 121,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 140,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 6,
+          "accepted": 4,
+          "aisle": 22,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 27,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 47,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 100,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 100,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 9,
+          "accepted": 6,
+          "aisle": 74,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 112,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 120,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 140,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 20,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 6,
+          "accepted": 4,
+          "aisle": 22,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:2",
+          "axis": "Z",
+          "offset": 2,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 27,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 100,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 0,
+          "accepted": 0,
+          "aisle": 100,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "L16",
+      "current": {
+        "accepted": 19,
+        "potential": 20,
+        "axis": "Z",
+        "offset": 0
+      },
+      "bestAfterStallProof": {
+        "candidateId": "gate:L16:3,0,0:0:Z:0",
+        "axis": "Z",
+        "offset": 0,
+        "potential": 20,
+        "accepted": 19,
+        "aisle": 60,
+        "reasonsInOriginal": []
+      },
+      "rows": [
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 16,
+          "accepted": 15,
+          "aisle": 68,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 9,
+          "accepted": 8,
+          "aisle": 44,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 44,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 48,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 52,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 56,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 60,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:7",
+          "axis": "X",
+          "offset": 7,
+          "potential": 12,
+          "accepted": 10,
+          "aisle": 104,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 5,
+          "accepted": 4,
+          "aisle": 108,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 16,
+          "accepted": 15,
+          "aisle": 67,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:Z:5",
+          "axis": "Z",
+          "offset": 5,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 55,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 59,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 10,
+          "accepted": 8,
+          "aisle": 106,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:1,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 4,
+          "accepted": 3,
+          "aisle": 107,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 15,
+          "accepted": 13,
+          "aisle": 69,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 45,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 7,
+          "accepted": 4,
+          "aisle": 45,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 7,
+          "accepted": 4,
+          "aisle": 49,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 7,
+          "accepted": 4,
+          "aisle": 53,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 7,
+          "accepted": 4,
+          "aisle": 57,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 7,
+          "accepted": 4,
+          "aisle": 61,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 5,
+          "accepted": 4,
+          "aisle": 109,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 18,
+          "accepted": 17,
+          "aisle": 62,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 9,
+          "accepted": 8,
+          "aisle": 39,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 55,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 10,
+          "accepted": 8,
+          "aisle": 106,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:2,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 3,
+          "accepted": 2,
+          "aisle": 106,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 14,
+          "accepted": 12,
+          "aisle": 71,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 7,
+          "accepted": 5,
+          "aisle": 47,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 47,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 51,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 55,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 59,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 6,
+          "accepted": 5,
+          "aisle": 63,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 5,
+          "accepted": 4,
+          "aisle": 110,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 20,
+          "accepted": 19,
+          "aisle": 60,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 11,
+          "accepted": 10,
+          "aisle": 34,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:Z:2",
+          "axis": "Z",
+          "offset": 2,
+          "potential": 8,
+          "accepted": 6,
+          "aisle": 35,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 12,
+          "accepted": 10,
+          "aisle": 104,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:L16:3,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 3,
+          "accepted": 2,
+          "aisle": 106,
+          "reasonsInOriginal": [
+            "PROVEN_POTENTIAL_DOMINATED"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "square-16",
+      "current": {
+        "accepted": 26,
+        "potential": 28,
+        "axis": "Z",
+        "offset": 0
+      },
+      "bestAfterStallProof": {
+        "candidateId": "gate:lot:3,0,0:0:Z:0",
+        "axis": "Z",
+        "offset": 0,
+        "potential": 28,
+        "accepted": 26,
+        "aisle": 60,
+        "reasonsInOriginal": []
+      },
+      "rows": [
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 68,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 72,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 76,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 80,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 84,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 88,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 92,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:7",
+          "axis": "X",
+          "offset": 7,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 136,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 140,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 67,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:5",
+          "axis": "Z",
+          "offset": 5,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 87,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 91,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 138,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:1,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 19,
+          "accepted": 17,
+          "aisle": 139,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 69,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 73,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 77,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 81,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 85,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 89,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 23,
+          "accepted": 20,
+          "aisle": 93,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 141,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 26,
+          "accepted": 24,
+          "aisle": 62,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 67,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:6",
+          "axis": "Z",
+          "offset": 6,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 87,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 138,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:2,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 138,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:0",
+          "axis": "X",
+          "offset": 0,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 71,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:1",
+          "axis": "X",
+          "offset": 1,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 75,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:2",
+          "axis": "X",
+          "offset": 2,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 79,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:3",
+          "axis": "X",
+          "offset": 3,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 83,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:4",
+          "axis": "X",
+          "offset": 4,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 87,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:5",
+          "axis": "X",
+          "offset": 5,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 91,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:6",
+          "axis": "X",
+          "offset": 6,
+          "potential": 22,
+          "accepted": 19,
+          "aisle": 95,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:X:8",
+          "axis": "X",
+          "offset": 8,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 142,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:0",
+          "axis": "Z",
+          "offset": 0,
+          "potential": 28,
+          "accepted": 26,
+          "aisle": 60,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:1",
+          "axis": "Z",
+          "offset": 1,
+          "potential": 26,
+          "accepted": 24,
+          "aisle": 62,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:2",
+          "axis": "Z",
+          "offset": 2,
+          "potential": 24,
+          "accepted": 22,
+          "aisle": 67,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:7",
+          "axis": "Z",
+          "offset": 7,
+          "potential": 20,
+          "accepted": 18,
+          "aisle": 136,
+          "reasonsInOriginal": []
+        },
+        {
+          "candidateId": "gate:lot:3,0,0:0:Z:8",
+          "axis": "Z",
+          "offset": 8,
+          "potential": 18,
+          "accepted": 16,
+          "aisle": 138,
+          "reasonsInOriginal": []
+        }
+      ]
+    }
+  ]
+}

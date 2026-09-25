@@ -18,7 +18,7 @@ it.each(Object.keys(PARKING_QUALITY_TARGETS) as (keyof typeof PARKING_QUALITY_TA
     for(const stall of plan.stalls)expect(validateStallProof(stall,baseMask)).toBeGreaterThan(0);
     expect(plan.counters.graphBuilds).toBe(1);expect(plan.counters.bfsPasses).toBe(2);expect(plan.counters.maxLocalStates).toBeLessThanOrEqual(16);
     expect(plan.quality.stallUsed).toBeLessThanOrEqual(plan.quality.stallReserved);
-    expect(plan.quality.eligibleCells).toBe(plan.quality.vehicleCellsInArea+plan.quality.walkOnlyCellsInArea+plan.quality.stallCells+plan.quality.unallocatedCells);
+    expect(plan.quality.eligibleCells).toBe(plan.quality.vehicleCellsInArea+plan.quality.walkOnlyCellsInArea+plan.quality.stallCells+plan.quality.islandCells+plan.quality.unallocatedCells);
     expect(plan.quality.potentialStalls).toBe(plan.quality.acceptedStalls+Object.values(plan.quality.primaryRejectionCounts).reduce((n,v)=>n+v,0));
   }
 },60000);

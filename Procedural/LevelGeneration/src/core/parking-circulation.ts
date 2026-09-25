@@ -9,8 +9,10 @@ import {BoundsIndex,ReservationBook,type CrossingCertificate} from './reservatio
 import {boxesOverlap,cellBox16} from './placement-bounds';
 import {analyzeRoads,isRoadJunction,type RoadModule} from './roads';
 import {allocateParkingBudget,ParkingCharge,ParkingBudgetExceeded,type BudgetComponent} from './parking-budget';
+import {localParkingLayouts,type ParkingLayout} from './parking-layout';
+import {planParkingComponent} from './parking-stalls';
 import {positiveMod} from './vertical-design';
-import {buildVehicleGraph,vehicleBFS,vehicleFootprint,vehicleTransitions,vehicleCorridor,corridorTransition,validState,stateKey,compareStates,StateHeap,type VehicleState} from './vehicle-motion';
+import {vehicleBFS,vehicleCorridor,validState,stateKey,compareStates,type VehicleState} from './vehicle-motion';
 import type {ParkingGate,BayStrip,ParkingCirculationPlan,ParkingCirculationArea} from './parking-contract';
 
 const sorted=(cells:Iterable<Vec3>)=>[...new Map([...cells].map(c=>[cellId(c),c])).values()].sort(compareCells);
@@ -22,9 +24,9 @@ function components(cells:Vec3[]):Vec3[][] {
   return parts;
 }
 interface GateCandidate {gate:ParkingGate;gap:number;frontageLength:number;prepared?:{allowed:Uint8Array;roots:VehicleState[]}}
-interface StripDescriptor {incompleteBayCells:Vec3[];axis:'X'|'Z';offset:number;aisle:Vec3[];walk:Vec3[];bays:BayStrip[];representatives:VehicleState[];potential:number}
+type StripDescriptor=ParkingLayout;
 class LayoutRejected extends Error {constructor(readonly reason:string,readonly conflictIds:string[]=[]){super(reason);}}
-interface Trial {plan:ParkingCirculationPlan;book:ReservationBook;potential:number;additionalAisle:number;maxExitDistance:number;stateIndex:Map<string,number>;exitDistances:Int32Array}
+interface Trial {plan:ParkingCirculationPlan;book:ReservationBook;potential:number;provenStalls:number;additionalAisle:number;maxExitDistance:number;stateIndex:Map<string,number>;exitDistances:Int32Array}
 function gateCandidates(area:ParkingAreaInput,cells:Vec3[],document:GenerationDocument,solid:BoundsIndex<string>,keepout:Vec3[]):GateCandidate[]{
   const own=mask(cells),roads=mask(document.sceneInputs.roads),other=mask(document.sceneInputs.parkingAreas.filter(p=>p.id!==area.id).flatMap(p=>p.cells)),settings=ENVIRONMENT.parking,W=settings.aisleWidthCells,candidates:GateCandidate[]=[];
   for(const run of boundaryRuns(cells,{kind:'parking',id:area.id}))for(let start=0;start+W<=run.cells.length;start++){
@@ -37,7 +39,14 @@ function gateCandidates(area:ParkingAreaInput,cells:Vec3[],document:GenerationDo
       candidates.push({gap,frontageLength:run.lengthCells,gate:{id:`gate:${area.id}:${cellId(opening[0])}:${inward}`,areaId:area.id,openingCells:opening,inwardHeading:inward,connectorCells:sorted(connector.filter(c=>!roads.has(cellId(c)))),roadStates:[],entryStates:[],exitStates:[],crossingIds:[]}});break;
     }
   }
-  return candidates.sort((a,b)=>a.gap-b.gap||b.frontageLength-a.frontageLength||compareCells(a.gate.openingCells[0],b.gate.openingCells[0])||a.gate.inwardHeading-b.gate.inwardHeading).slice(0,4);
+  const ordered=candidates.sort((a,b)=>a.gap-b.gap||b.frontageLength-a.frontageLength||compareCells(a.gate.openingCells[0],b.gate.openingCells[0])||a.gate.inwardHeading-b.gate.inwardHeading);
+  // Cover the whole frontage before testing neighboring openings.
+  const distributed:GateCandidate[]=[];
+  // One-cell inset avoids forcing a turn against the outer edge.
+  const inset=ordered.findIndex((c,i)=>i>0&&c.gap===ordered[0].gap&&c.gate.inwardHeading===ordered[0].gate.inwardHeading&&Math.abs(c.gate.openingCells[0][0]-ordered[0].gate.openingCells[0][0])+Math.abs(c.gate.openingCells[0][2]-ordered[0].gate.openingCells[0][2])===1);
+  if(inset>=0)distributed.push(ordered.splice(inset,1)[0]);
+  while(ordered.length){let index=0;if(distributed.length){let best=-1;for(let i=0;i<ordered.length;i++){const c=ordered[i],distance=Math.min(...distributed.map(d=>Math.abs(c.gate.openingCells[0][0]-d.gate.openingCells[0][0])+Math.abs(c.gate.openingCells[0][2]-d.gate.openingCells[0][2])))-c.gap*2;if(distance>best){best=distance;index=i;}}}distributed.push(ordered.splice(index,1)[0]);}
+  return distributed;
 }
 function stripDescriptor(area:ParkingAreaInput,cells:Vec3[],axis:'X'|'Z',offset:number,W:number):StripDescriptor {
   const own=mask(cells),cross=axis==='X'?2:0,long=axis==='X'?0:2,T=W+5,rim=mask(cells.filter(c=>HEADING_VECTORS.some(d=>!own.has(cellId(add(c,d)))))),aisle:Vec3[]=[],walk:Vec3[]=[];
@@ -61,7 +70,7 @@ function stripDescriptor(area:ParkingAreaInput,cells:Vec3[],axis:'X'|'Z',offset:
     bays.push({id:`bay:${area.id}:${cellId(c)}:${heading}`,cells:[c,front],exitHeading:heading,rearWalkCells:[rearWalk]});
   }
   const incompleteBayCells=cells.filter(c=>{const r=remainder(c);if(![1,2,T-2,T-1].includes(r))return false;const partner=[...c] as Vec3;partner[cross]+=(r===1||r===T-2)?1:-1;return !own.has(cellId(partner));});
-  return {incompleteBayCells,axis,offset,aisle:sorted(validAisle),walk:sorted(walk),bays,representatives:representatives.sort(compareStates),potential:bays.length};
+  return {id:`bands:${axis}:${offset}`,incompleteBayCells,axis,offset,aisle:sorted(validAisle),walk:sorted(walk),bays,representatives:representatives.sort(compareStates),potential:bays.length};
 }
 function crossingReservations(id:string,ownerId:string,kind:'walk'|'vehicle-aisle',priority:900|800,cells:Vec3[],boxes:{box:ReturnType<typeof cellBox16>;cells:Vec3[]}[],certificates:CrossingCertificate[]):Reservation[]{
   const groups=new Map<string,{boxes:ReturnType<typeof cellBox16>[];cells:Vec3[]}>();
@@ -73,23 +82,30 @@ function validateLayout(area:ParkingAreaInput,cells:Vec3[],descriptor:StripDescr
   const initialSearch=baseSearch.withBook(book);
   const publicWalk=baseSearch.publicWalkCells,allWalk=sorted([...descriptor.walk,...publicWalk]);
   const intersections=components(allWalk.filter(c=>vehicleMask.has(cellId(c))));
-  const certified:CrossingCertificate[]=[];
-  for(const intersection of intersections){
+  const certified:CrossingCertificate[]=[],removedWalk=new Set<string>(),requiredWalk=mask(publicWalk);
+  const certify=(intersection:Vec3[]):boolean=>{
     const minX=Math.min(...intersection.map(c=>c[0])),maxX=Math.max(...intersection.map(c=>c[0])),minZ=Math.min(...intersection.map(c=>c[2])),maxZ=Math.max(...intersection.map(c=>c[2]));
-    if(intersection.length!==(maxX-minX+1)*(maxZ-minZ+1))throw new LayoutRejected('CROSSING_MASK_NOT_RECTANGULAR');
+    if(intersection.length!==(maxX-minX+1)*(maxZ-minZ+1))return false;
     const walkAxis=maxX-minX>=maxZ-minZ?0:2,vehicleAxis=walkAxis===0?2:0;
     const mid=walkAxis===0?Math.floor((minZ+maxZ)/2):Math.floor((minX+maxX)/2),across=walkAxis===0?Math.floor((minX+maxX)/2):Math.floor((minZ+maxZ)/2);
     const walkA:Vec3=walkAxis===0?[minX-1,0,mid]:[mid,0,minZ-1],walkB:Vec3=walkAxis===0?[maxX+1,0,mid]:[mid,0,maxZ+1];
     const heading=(vehicleAxis===0?1:0) as Heading;
     const rearA:Vec3=vehicleAxis===0?[minX-2,0,across]:[across,0,minZ-2],rearB:Vec3=vehicleAxis===0?[maxX+1,0,across]:[across,0,maxZ+1];
     const cert=authorizeCrossing({id:`cross:${area.id}:${cellId(intersection[0])}`,cells:intersection,walkEndpoints:[walkA,walkB],vehicleEndpoints:[{rear:rearA,heading},{rear:rearB,heading}],vehicleCells,intersectionKeepout:keepout},initialSearch);
-    if(!cert)throw new LayoutRejected('CROSSING_NOT_AUTHORIZED');certified.push(cert);
+    if(!cert)return false;certified.push(cert);return true;
+  };
+  for(const intersection of intersections){
+    if(certify(intersection))continue;
+    // An optional rear walk strip may stop at a distributor. Never erase a
+    // public walk reservation or pretend an L-shaped overlap is a crossing.
+    intersection.filter(c=>!requiredWalk.has(cellId(c))).forEach(c=>removedWalk.add(cellId(c)));
+    for(const required of components(intersection.filter(c=>requiredWalk.has(cellId(c)))))if(!certify(required))throw new LayoutRejected('CROSSING_NOT_AUTHORIZED');
   }
   const vehicleReservation=crossingReservations(`aisle:${area.id}:${cellId(cells[0])}`,area.id,'vehicle-aisle',800,aisle,[...aisle,...gates.flatMap(g=>g.connectorCells)].map(c=>({box:cellBox16(c),cells:[c]})),certified);
   const vehicleReserved=book.tryReserveBatch(vehicleReservation);if(!vehicleReserved.accepted)throw new LayoutRejected('RESERVATION_CONFLICT',vehicleReserved.conflictIds);
-  const allowedWalk=new Set(descriptor.walk.map(cellId));
+  const allowedWalk=new Set(descriptor.walk.filter(c=>!removedWalk.has(cellId(c))).map(cellId));
   const walkGraph={...spatial,walkNodes:spatial.walkNodes.filter(n=>!own.has(n.id)||allowedWalk.has(n.id))};
-  const search=new AccessSearch(walkGraph,document,book,solid),walk=descriptor.walk.filter(c=>search.reachable(c,100000));
+  const search=new AccessSearch(walkGraph,document,book,solid),walk=descriptor.walk.filter(c=>!removedWalk.has(cellId(c))&&search.reachable(c,100000));
   if(!walk.length)throw new LayoutRejected('NO_CONNECTED_WALK_STRIP');
   const walking=mask(walk),walkBoxes=walk.map(c=>({box:bodyBox16(c,ENVIRONMENT.access),cells:[c]}));
   for(const c of walk)for(const d of HEADING_VECTORS){const next=add(c,d);if(walking.has(cellId(next))&&compareCells(c,next)<0)walkBoxes.push({box:walkSweep16(c,next,ENVIRONMENT.access),cells:[c,next]});}
@@ -110,13 +126,13 @@ function validateLayout(area:ParkingAreaInput,cells:Vec3[],descriptor:StripDescr
   const reservations=[...vehicleReservation,...walkReservations];
   const coverage=mask([...aisle,...walk,...bays.flatMap(b=>b.cells)]),unservedCells=cells.filter(c=>!coverage.has(cellId(c))).length;
   const maxExitDistance=Math.max(0,...exit.distance);
-  const plan:ParkingCirculationPlan={areaId:area.id,componentKey:cellId(cells[0]),status:unservedCells?'partial':'ok',axis:descriptor.axis,offset:descriptor.offset,periodCells:ENVIRONMENT.parking.aisleWidthCells+5,eligibleCells:cells,incompleteBayCells:descriptor.incompleteBayCells,gates,aisleCells:aisle,walkCells:walk,crossings:certified.map(c=>({id:c.id,cells:c.cells})),bayStrips:bays,reachableStates:reachable,reservations,traces:[],budget:charge.allocation,reasonCodes:[],counters:{layoutCandidates:charge.layoutTrials,stateExpansions:charge.circulationUsed,unservedCells,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:bays.length,boxChecks:solid.checks,proofEdgeChecks:0}};
-  return {plan,book,potential:bays.length,additionalAisle:aisle.length-descriptor.aisle.length,maxExitDistance,stateIndex:graph.index,exitDistances:exit.distance};
+  const plan:ParkingCirculationPlan={layoutId:descriptor.id,search:{gateCandidates:0,layoutDescriptors:0,evaluated:0,pruned:0,untried:0,complete:false,provenStalls:0},areaId:area.id,componentKey:cellId(cells[0]),status:unservedCells?'partial':'ok',axis:descriptor.axis,offset:descriptor.offset,periodCells:descriptor.id.startsWith('bands:')?ENVIRONMENT.parking.aisleWidthCells+5:0,eligibleCells:cells,incompleteBayCells:descriptor.incompleteBayCells,gates,aisleCells:aisle,walkCells:walk,crossings:certified.map(c=>({id:c.id,cells:c.cells})),bayStrips:bays,reachableStates:reachable,reservations,traces:[],budget:charge.allocation,reasonCodes:[],counters:{layoutCandidates:charge.layoutTrials,stateExpansions:charge.circulationUsed,unservedCells,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:bays.length,boxChecks:solid.checks,proofEdgeChecks:0}};
+  return {plan,book,potential:bays.length,provenStalls:0,additionalAisle:aisle.length-descriptor.aisle.length,maxExitDistance,stateIndex:graph.index,exitDistances:exit.distance};
 }
 function evaluate(area:ParkingAreaInput,cells:Vec3[],gateCandidate:GateCandidate,descriptor:StripDescriptor,document:GenerationDocument,spatial:SpatialAnalysis,base:ReservationBook,solid:BoundsIndex<string>,keepout:Vec3[],charge:ParkingCharge,domain:VehicleDomain,baseSearch:AccessSearch):Trial|undefined {
   const gate={...gateCandidate.gate},roads=mask(document.sceneInputs.roads);
   if(!gateCandidate.prepared){
-    const own=mask(cells),open=mask(gate.openingCells),interior=cells.filter(c=>open.has(cellId(c))||HEADING_VECTORS.every(d=>own.has(cellId(add(c,d))))),allowedCells=[...interior,...document.sceneInputs.roads,...gate.connectorCells],allowed=mask(allowedCells),direction=HEADING_VECTORS[gate.inwardHeading];
+    const open=mask(gate.openingCells),interior=cells.filter(c=>open.has(cellId(c))||HEADING_VECTORS.every(d=>!roads.has(cellId(add(c,d))))),allowedCells=[...interior,...document.sceneInputs.roads,...gate.connectorCells],allowed=mask(allowedCells),direction=HEADING_VECTORS[gate.inwardHeading];
     const roots=gate.openingCells.map(c=>({rear:add(c,direction.map(n=>-n*(gateCandidate.gap+2)) as Vec3),heading:gate.inwardHeading})).filter(s=>validState(s,roads)&&vehicleCorridor(s,ENVIRONMENT.parking.aisleWidthCells).every(c=>allowed.has(cellId(c))));
     gateCandidate.prepared={allowed:domain.mask(allowedCells),roots};
   }
@@ -124,13 +140,15 @@ function evaluate(area:ParkingAreaInput,cells:Vec3[],gateCandidate:GateCandidate
   if(!roots.length)throw new LayoutRejected('TURN_SWEEP_BLOCKED');
   if(!descriptor.representatives.length)throw new LayoutRejected('NO_COMPLETE_STRIP_LAYOUT');
   gate.roadStates=roots;
-  let aisle=sorted([...descriptor.aisle,...gate.openingCells,...gate.connectorCells]);
-  for(const representative of descriptor.representatives){const existing=domain.mask([...aisle,...document.sceneInputs.roads]),connection=domain.connect(roots,representative,allowed,existing,charge.circulation);if(!connection)throw new LayoutRejected('TURN_SWEEP_BLOCKED');aisle=sorted([...aisle,...connection.filter(c=>!roads.has(cellId(c)))]);}
-  return validateLayout(area,cells,descriptor,[gate],aisle,document,spatial,base,solid,keepout,charge,domain,baseSearch);
+  let aisle=sorted([...descriptor.aisle.filter(c=>{const i=domain.ids.get(cellId(c));return i!==undefined&&allowed[i];}),...gate.openingCells,...gate.connectorCells]);
+  const connected:VehicleState[]=[];
+  for(const representative of descriptor.representatives){const existing=domain.mask([...aisle,...document.sceneInputs.roads]),connection=domain.connect(roots,representative,allowed,existing,charge.circulation);if(!connection)continue;connected.push(representative);aisle=sorted([...aisle,...connection.filter(c=>!roads.has(cellId(c)))]);}
+  if(!connected.length)throw new LayoutRejected('TURN_SWEEP_BLOCKED');
+  return validateLayout(area,cells,{...descriptor,representatives:connected},[gate],aisle,document,spatial,base,solid,keepout,charge,domain,baseSearch);
 }
 const noAllocation=(key:string):ParkingBudgetAllocation=>({componentKey:key,layoutTickets:0,circulationLimit:0,stallLimit:0,stallStateUpperBound:0});
 function failed(area:ParkingAreaInput,cells:Vec3[],reason:string,allocation=noAllocation(cellId(cells[0]))):ParkingCirculationPlan {
-  return {areaId:area.id,componentKey:cellId(cells[0]),status:'unplannable',axis:'X',offset:0,periodCells:0,eligibleCells:cells,incompleteBayCells:[],gates:[],aisleCells:[],walkCells:[],crossings:[],bayStrips:[],reachableStates:[],reservations:[],traces:[],budget:allocation,reasonCodes:[reason],counters:{layoutCandidates:0,stateExpansions:0,unservedCells:cells.length,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:0,boxChecks:0,proofEdgeChecks:0}};
+  return {layoutId:'none',search:{gateCandidates:0,layoutDescriptors:0,evaluated:0,pruned:0,untried:0,complete:true,provenStalls:0},areaId:area.id,componentKey:cellId(cells[0]),status:'unplannable',axis:'X',offset:0,periodCells:0,eligibleCells:cells,incompleteBayCells:[],gates:[],aisleCells:[],walkCells:[],crossings:[],bayStrips:[],reachableStates:[],reservations:[],traces:[],budget:allocation,reasonCodes:[reason],counters:{layoutCandidates:0,stateExpansions:0,unservedCells:cells.length,rawLayoutDescriptors:0,layoutTrialsCompleted:0,layoutTrialsAborted:0,potentialStalls:0,boxChecks:0,proofEdgeChecks:0}};
 }
 export function planParkingCirculation(document:GenerationDocument,spatial:SpatialAnalysis,initialBook:ReservationBook,solid:BoundsIndex<string>,roadModules:readonly RoadModule[]=analyzeRoads(document.sceneInputs.roads)):{areas:ParkingCirculationArea[];book:ReservationBook;domains:Map<string,VehicleDomain>}{
   const startChecks=solid.checks,domains=new Map<string,VehicleDomain>();let book=initialBook;const areas:ParkingCirculationArea[]=[],road=mask(document.sceneInputs.roads),settings=ENVIRONMENT.parking;
@@ -138,43 +156,56 @@ export function planParkingCirculation(document:GenerationDocument,spatial:Spati
   for(const area of document.sceneInputs.parkingAreas){
     const excludedRoadCells=area.cells.filter(c=>road.has(cellId(c))),excludedSolidCells=area.cells.filter(c=>!road.has(cellId(c))&&solid.query(cellBox16(c)).length),excluded=mask([...excludedRoadCells,...excludedSolidCells]);
     const parts=components(area.cells.filter(c=>!excluded.has(cellId(c)))),prepared=parts.map(cells=>{
-      const gates=gateCandidates(area,cells,document,solid,keepout),descriptors=(['X','Z'] as const).flatMap(axis=>Array.from({length:settings.aisleWidthCells+5},(_,offset)=>stripDescriptor(area,cells,axis,offset,settings.aisleWidthCells)));
+      const otherParking=mask(document.sceneInputs.parkingAreas.filter(p=>p.id!==area.id).flatMap(p=>p.cells));
+      const walking=new Set(spatial.walkNodes.filter(n=>n.foot[1]===0&&!otherParking.has(n.id)).map(n=>n.id));
+      const gates=gateCandidates(area,cells,document,solid,keepout),bands=(['X','Z'] as const).flatMap(axis=>Array.from({length:settings.aisleWidthCells+5},(_,offset)=>stripDescriptor(area,cells,axis,offset,settings.aisleWidthCells)));
+      const descriptors=[...localParkingLayouts(area,cells,walking,settings.aisleWidthCells),...bands];
       const own=mask(cells),fullAisle=cells.some(c=>([0,2] as const).some(axis=>{const long=axis===0?2:0;for(let i=0;i<settings.aisleWidthCells;i++)for(let j=0;j<2;j++){const p=[...c] as Vec3;p[axis]+=i;p[long]+=j;if(!own.has(cellId(p)))return false;}return true;}));
       return {cells,gates,descriptors,fullAisle,key:cellId(cells[0])};
     });
-    const inputs:BudgetComponent[]=prepared.filter(p=>p.fullAisle&&p.gates.length&&p.descriptors.some(d=>d.representatives.length)).map(p=>({componentKey:p.key,minimum:p.cells[0],stateCellBound:sorted([...p.cells,...document.sceneInputs.roads,...p.gates.flatMap(g=>g.gate.connectorCells)]).length,eligibleCells:p.cells.length,trialCapacity:p.gates.length*2*(settings.aisleWidthCells+5)+Math.min(3,p.gates.length-1),gateCount:p.gates.length}));
+    const inputs:BudgetComponent[]=prepared.filter(p=>p.fullAisle&&p.gates.length&&p.descriptors.some(d=>d.representatives.length)).map(p=>({componentKey:p.key,minimum:p.cells[0],stateCellBound:sorted([...p.cells,...document.sceneInputs.roads,...p.gates.flatMap(g=>g.gate.connectorCells)]).length,eligibleCells:p.cells.length,trialCapacity:p.gates.length*p.descriptors.length+Math.min(3,p.gates.length-1),gateCount:p.gates.length}));
     const ledger=allocateParkingBudget(area.id,inputs),plans:ParkingCirculationPlan[]=[];
     for(const p of prepared){
       const allocation=ledger.allocations.find(a=>a.componentKey===p.key);
-      if(!allocation){plans.push(failed(area,p.cells,!p.gates.length?'NO_ROAD_GATE':!p.fullAisle?'INSUFFICIENT_AISLE_WIDTH':!p.descriptors.some(d=>d.representatives.length)?'NO_COMPLETE_STRIP_LAYOUT':ledger.unscheduled.find(u=>u.componentKey===p.key)!.reason));continue;}
+      if(!allocation){
+        const admission=ledger.unscheduled.find(u=>u.componentKey===p.key);
+        const plan=failed(area,p.cells,!p.gates.length?'NO_ROAD_GATE':!p.fullAisle?'INSUFFICIENT_AISLE_WIDTH':!p.descriptors.some(d=>d.representatives.length)?'NO_COMPLETE_STRIP_LAYOUT':admission!.reason);
+        const untried=admission?p.gates.length*p.descriptors.length:0;
+        plan.search={...plan.search,gateCandidates:p.gates.length,layoutDescriptors:untried,untried,complete:!admission};
+        plan.counters.rawLayoutDescriptors=untried;plans.push(plan);continue;
+      }
       const domain=new VehicleDomain(sorted([...p.cells,...document.sceneInputs.roads,...p.gates.flatMap(g=>g.gate.connectorCells)]),settings.aisleWidthCells);
       domains.set(`${area.id}:${p.key}`,domain);
       const baseSearch=new AccessSearch(spatial,document,book,solid);
       const charge=new ParkingCharge(allocation),secondarySlots=Math.min(3,p.gates.length-1,Math.max(0,allocation.layoutTickets-1)),basicTickets=allocation.layoutTickets-secondarySlots;
-      const tuples=p.gates.flatMap((gate,rank)=>p.descriptors.map(descriptor=>({gate,rank,descriptor}))).sort((a,b)=>b.descriptor.potential-a.descriptor.potential||a.descriptor.aisle.length-b.descriptor.aisle.length||a.rank-b.rank||(a.descriptor.axis<b.descriptor.axis?-1:a.descriptor.axis>b.descriptor.axis?1:0)||a.descriptor.offset-b.descriptor.offset);
+      const tuples=p.gates.flatMap((gate,rank)=>p.descriptors.map(descriptor=>({gate,rank,descriptor}))).sort((a,b)=>a.rank-b.rank||b.descriptor.potential-a.descriptor.potential||a.descriptor.aisle.length-b.descriptor.aisle.length||(a.descriptor.axis<b.descriptor.axis?-1:a.descriptor.axis>b.descriptor.axis?1:0)||a.descriptor.offset-b.descriptor.offset);
       let best:Trial|undefined,bestTuple:typeof tuples[number]|undefined,stop:string|undefined;
       const candidates:DecisionTrace['candidates']=[];
-      for(const tuple of tuples.slice(0,basicTickets)){
+      for(const tuple of tuples){
+        if(charge.layoutTrials>=basicTickets)break;
         // Connections and reservations only remove bays. A descriptor with a
         // strictly smaller geometric upper bound cannot beat a fully proven best.
         // Ties still run every proof; only an actually started graph trial costs a ticket.
-        if(best&&tuple.descriptor.potential<best.potential){candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.axis}:${tuple.descriptor.offset}`,accepted:false,reasonCodes:['PROVEN_POTENTIAL_DOMINATED'],metrics:{potentialUpperBound:tuple.descriptor.potential,provenBestPotential:best.potential},conflictIds:[]});continue;}
+        if(best&&tuple.descriptor.potential<best.provenStalls){candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.id}`,accepted:false,reasonCodes:['PROVEN_POTENTIAL_DOMINATED'],metrics:{potentialUpperBound:tuple.descriptor.potential,provenBestPotential:best.provenStalls},conflictIds:[]});continue;}
         if(!charge.trial())break;
         try{
-          const trial=evaluate(area,p.cells,tuple.gate,tuple.descriptor,document,spatial,book,solid,keepout,charge,domain,baseSearch);charge.layoutTrialsCompleted++;
-          candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.axis}:${tuple.descriptor.offset}`,accepted:!!trial,reasonCodes:trial?[]:['LAYOUT_PROOF_REJECTED'],metrics:{potential:trial?.potential??tuple.descriptor.potential},conflictIds:[]});
-          if(trial&&(!best||trial.potential>best.potential||trial.potential===best.potential&&(trial.plan.counters.unservedCells<best.plan.counters.unservedCells||trial.plan.counters.unservedCells===best.plan.counters.unservedCells&&trial.additionalAisle<best.additionalAisle))){best=trial;bestTuple=tuple;}
+          const trial=evaluate(area,p.cells,tuple.gate,tuple.descriptor,document,spatial,book,solid,keepout,charge,domain,baseSearch);
+          if(trial)trial.provenStalls=planParkingComponent(document,trial.plan,spatial,trial.book.clone(),solid,domain,charge.circulation).stalls.length;
+          charge.layoutTrialsCompleted++;
+          candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.id}`,accepted:!!trial,reasonCodes:trial?[]:['LAYOUT_PROOF_REJECTED'],metrics:{potential:trial?.potential??tuple.descriptor.potential,provenStalls:trial?.provenStalls??0},conflictIds:[]});
+          if(trial&&trial.provenStalls>0&&(!best||trial.provenStalls>best.provenStalls||trial.provenStalls===best.provenStalls&&(trial.plan.counters.unservedCells<best.plan.counters.unservedCells||trial.plan.counters.unservedCells===best.plan.counters.unservedCells&&trial.additionalAisle<best.additionalAisle))){best=trial;bestTuple=tuple;}
         }catch(error){
-          if(error instanceof LayoutRejected){charge.layoutTrialsCompleted++;candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.axis}:${tuple.descriptor.offset}`,accepted:false,reasonCodes:[error.reason],metrics:{potential:tuple.descriptor.potential},conflictIds:error.conflictIds});continue;}
-          if(!(error instanceof ParkingBudgetExceeded))throw error;charge.layoutTrialsAborted++;stop=error.message;candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.axis}:${tuple.descriptor.offset}`,accepted:false,reasonCodes:[error.message],metrics:{potential:tuple.descriptor.potential},conflictIds:[]});break;
+          if(error instanceof LayoutRejected){charge.layoutTrialsCompleted++;candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.id}`,accepted:false,reasonCodes:[error.reason],metrics:{potential:tuple.descriptor.potential},conflictIds:error.conflictIds});continue;}
+          if(!(error instanceof ParkingBudgetExceeded))throw error;charge.layoutTrialsAborted++;stop=error.message;candidates.push({candidateId:`${tuple.gate.gate.id}:${tuple.descriptor.id}`,accepted:false,reasonCodes:[error.message],metrics:{potential:tuple.descriptor.potential},conflictIds:[]});break;
         }
       }
       // Secondary-gate trials retain the chosen strip pattern and corridor. They
       // are charged to the same parent allocation, including aborted attempts.
-      if(best&&bestTuple&&settings.maxGateCount===2&&p.cells.length>=256){
+      if(best&&bestTuple&&settings.maxGateCount===2&&charge.circulationUsed<allocation.circulationLimit){
         const primary=best,descriptor=bestTuple.descriptor,first=primary.plan.gates[0];let tried=0,bestExit=Infinity,bestConnector=Infinity,secondOpening:Vec3|undefined;
-        for(const candidate of p.gates){if(tried>=secondarySlots)break;const g=candidate.gate;
-          if(g.id===first.id||g.inwardHeading===first.inwardHeading&&g.openingCells[0][g.inwardHeading%2?0:2]===first.openingCells[0][first.inwardHeading%2?0:2]||Math.abs(g.openingCells[0][0]-first.openingCells[0][0])+Math.abs(g.openingCells[0][2]-first.openingCells[0][2])<settings.minGateSeparationCells)continue;
+        const secondaryCandidates=[...p.gates].sort((a,b)=>{const tangent=first.inwardHeading%2?2:0;return Math.abs(a.gate.openingCells[0][tangent]-first.openingCells[0][tangent])-Math.abs(b.gate.openingCells[0][tangent]-first.openingCells[0][tangent]);});
+        for(const candidate of secondaryCandidates){if(tried>=secondarySlots)break;const g=candidate.gate;
+          if(g.id===first.id||Math.abs(g.openingCells[0][0]-first.openingCells[0][0])+Math.abs(g.openingCells[0][2]-first.openingCells[0][2])<settings.minGateSeparationCells)continue;
           if(!charge.trial()){stop='SECOND_GATE_BUDGET_SKIPPED';break;}tried++;
           const trace:DecisionTrace['candidates'][number]={candidateId:`secondary:${g.id}`,accepted:false,reasonCodes:[],metrics:{stage:'secondary-gate'},conflictIds:[]};candidates.push(trace);
           try{
@@ -182,20 +213,26 @@ export function planParkingCirculation(document:GenerationDocument,spatial:Spati
             if(second){
               const gates=[...primary.plan.gates,...second.plan.gates].map(g=>({...g}));
               const combined=validateLayout(area,p.cells,descriptor,gates,sorted([...primary.plan.aisleCells,...second.plan.aisleCells]),document,spatial,book,solid,keepout,charge,domain,baseSearch);
-              if(combined){let maximum=0;for(const state of primary.plan.reachableStates){const index=combined.stateIndex.get(stateKey(state));if(index===undefined||combined.exitDistances[index]<0)throw new LayoutRejected('PRIMARY_STATES_DISCONNECTED');maximum=Math.max(maximum,combined.exitDistances[index]);}
+              if(combined){combined.provenStalls=planParkingComponent(document,combined.plan,spatial,combined.book.clone(),solid,domain,charge.circulation).stalls.length;let maximum=0;for(const state of primary.plan.reachableStates){const index=combined.stateIndex.get(stateKey(state));if(index===undefined||combined.exitDistances[index]<0)throw new LayoutRejected('PRIMARY_STATES_DISCONNECTED');maximum=Math.max(maximum,combined.exitDistances[index]);}
                 const improvement=primary.maxExitDistance-maximum;trace.metrics.exitImprovement=improvement;trace.metrics.maximumExitTransitions=maximum;
-                if(improvement>=4){trace.accepted=true;const connector=g.connectorCells.length;if(maximum<bestExit||maximum===bestExit&&(connector<bestConnector||connector===bestConnector&&(!secondOpening||compareCells(g.openingCells[0],secondOpening)<0))){best=combined;bestExit=maximum;bestConnector=connector;secondOpening=g.openingCells[0];}}
-                else trace.reasonCodes=['INSUFFICIENT_EXIT_IMPROVEMENT'];
+                if(combined.provenStalls>primary.provenStalls||improvement>=4&&combined.provenStalls===primary.provenStalls){trace.accepted=true;const connector=g.connectorCells.length;if(combined.provenStalls>best.provenStalls||combined.provenStalls===best.provenStalls&&(maximum<bestExit||maximum===bestExit&&(connector<bestConnector||connector===bestConnector&&(!secondOpening||compareCells(g.openingCells[0],secondOpening)<0)))){best=combined;bestExit=maximum;bestConnector=connector;secondOpening=g.openingCells[0];}}
+                else trace.reasonCodes=[combined.provenStalls<primary.provenStalls?'SECOND_GATE_REDUCES_CAPACITY':'INSUFFICIENT_EXIT_IMPROVEMENT'];
+                trace.metrics.provenStalls=combined.provenStalls;trace.metrics.primaryProvenStalls=primary.provenStalls;
               }
             }
             if(!trace.accepted&&!trace.reasonCodes.length)trace.reasonCodes=['SECONDARY_LAYOUT_REJECTED'];charge.layoutTrialsCompleted++;
-          }catch(error){if(error instanceof LayoutRejected){charge.layoutTrialsCompleted++;trace.reasonCodes=[error.reason];trace.conflictIds=error.conflictIds;continue;}if(!(error instanceof ParkingBudgetExceeded))throw error;charge.layoutTrialsAborted++;stop='SECOND_GATE_BUDGET_SKIPPED';trace.reasonCodes=[stop];break;}
+          }catch(error){if(error instanceof LayoutRejected){charge.layoutTrialsCompleted++;trace.reasonCodes=[error.reason];trace.conflictIds=error.conflictIds;continue;}if(!(error instanceof ParkingBudgetExceeded))throw error;charge.layoutTrialsAborted++;stop??='SECOND_GATE_BUDGET_SKIPPED';trace.reasonCodes=['SECOND_GATE_BUDGET_SKIPPED'];break;}
         }
       }
       const plan=best?.plan??failed(area,p.cells,stop??candidates.find(c=>!c.accepted)?.reasonCodes[0]??'NO_VALID_CIRCULATION',allocation);
+      const primaryCandidates=candidates.filter(c=>!c.candidateId.startsWith('secondary:')),pruned=primaryCandidates.filter(c=>c.reasonCodes.includes('PROVEN_POTENTIAL_DOMINATED')).length;
+      const untried=tuples.length-primaryCandidates.length;
+      plan.search={gateCandidates:p.gates.length,layoutDescriptors:tuples.length,evaluated:primaryCandidates.length-pruned,pruned,untried,complete:untried===0&&!stop,provenStalls:best?.provenStalls??0};
+      if(untried&&!stop)stop='LAYOUT_SEARCH_LIMIT';
+      if(!best?.provenStalls){plan.status='unplannable';plan.reasonCodes.push('NO_PROVEN_PARKING_LAYOUT');}
       if(stop&&!plan.reasonCodes.includes(stop))plan.reasonCodes.push(stop);
       plan.counters={...plan.counters,layoutCandidates:charge.layoutTrials,stateExpansions:charge.circulationUsed,rawLayoutDescriptors:tuples.length,layoutTrialsCompleted:charge.layoutTrialsCompleted,layoutTrialsAborted:charge.layoutTrialsAborted,boxChecks:solid.checks-startChecks};
-      plan.traces=[{id:`circulation:${area.id}:${p.key}`,ownerId:area.id,ruleId:'parking-circulation',ruleVersion:'1.0.0',sourceRefs:[{kind:'parking',id:area.id}],selectedIds:best?[`${best.plan.gates[0].id}:${best.plan.axis}:${best.plan.offset}`,...best.plan.gates.slice(1).map(g=>`secondary:${g.id}`)]:[],candidates}];
+      plan.traces=[{id:`circulation:${area.id}:${p.key}`,ownerId:area.id,ruleId:'parking-circulation',ruleVersion:'2.0.0',sourceRefs:[{kind:'parking',id:area.id}],selectedIds:best?[`${best.plan.gates[0].id}:${bestTuple!.descriptor.id}`,...best.plan.gates.slice(1).map(g=>`secondary:${g.id}`)]:[],candidates}];
       plans.push(plan);if(best)book=best.book;
     }
     areas.push({areaId:area.id,components:plans,ledger,excludedRoadCells,excludedSolidCells});
