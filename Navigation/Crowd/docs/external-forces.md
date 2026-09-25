@@ -205,5 +205,21 @@ npx vite-node scripts/measure-external.ts --mode=blast --agents=1000,10000,20000
 ```
 
 Other measurement modes: `few`, `global`, `proxy`, `overlap`. Audit OFF timings
-and audit ON quality results must be reported separately. Results and final
-acceptance status are recorded in `external-forces-results.md`.
+and audit ON quality results must be reported separately. The initial acceptance snapshot is in `external-forces-results.md`; subsequent optimization evidence and limits follow below.
+
+## Performance evidence and limits
+
+The later CPU optimization uses approaching neighbors' relative speed for substeps, with conservative absolute-speed fallback near walls or saturated queries. Small contacts do not propagate external state when normal walking control can absorb the residual motion. This does not expire impulses by timer or reset momentum.
+
+Historical measurement: Ryzen 9 9950X3D / Node v22.22.0, open field, seed 42, radius 3.2, dt 1/60, equal-density scaling, 30 warmup + 90 measured ticks, median P95 across three repeats, audit OFF. For 10,000 agents and a contacting radius-18 proxy moving at 240 px/s, step P95 changed from 53.85ms to 22.02ms. Raw samples remain in `baselines/external-optimization-before.json` and `baselines/external-optimized-*.json`. The old before-run source hash was read at shutdown and includes early edits; it is not an exact snapshot of the executed code.
+
+In the separate headless Chromium observation, 10k proxy simulation P95 was 21.60ms, render CPU P95 1.00ms, and frame interval P50/P95 16.70/33.40ms. Rendering measures Canvas CPU submission, not GPU completion or native display FPS. Raw data is `baselines/external-optimized-browser.json`.
+
+**The rocky-pass 10k dense external-force case failed contact quality:** the audit-ON run had 6.209px maximum sampled penetration, six saturated candidate queries and step P95 128.06ms (wall overlaps zero). Open-field 20k also does not guarantee sustained 60FPS. These historical results are not current all-scenario acceptance.
+
+```sh
+npm run measure:external -- --mode=proxy --agents=10000 --output=baselines/my-external-performance.json
+npm run measure:external -- --mode=blast --agents=1000,10000,20000 --quality=on --repeats=1 --output=baselines/my-external-quality.json
+```
+
+For browser measurement, start `npm run dev -- --host 127.0.0.1 --port 4274 --strictPort`, then run `npx vite-node scripts/measure-external-browser.ts --modes=none,blast,proxy --output=baselines/my-external-browser.json` in a separate terminal. `window.crowdDebug.getFrameTimings()` exposes the recent 90-frame CPU/render interval observations.

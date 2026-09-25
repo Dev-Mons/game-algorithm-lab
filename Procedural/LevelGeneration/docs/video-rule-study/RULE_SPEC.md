@@ -1,6 +1,8 @@
 # 통합 규칙 명세 — 제안 설계
 
-[진입](../VIDEO_RULE_STUDY.md) · [관찰](OBSERVATIONS.md) · [가설](HYPOTHESES.md) · [코드 비교](CODE_GAP_PLAN.md)
+이 문서는 2026-09-25 분석 당시의 제안과 근거다. 현재 구현 계약은 [환경 계약](../PORTING_CONTRACT.md)과 [도로 규칙](../ROAD_RULES.md)을 따른다.
+
+[진입](../VIDEO_RULE_STUDY.md) · [관찰](OBSERVATIONS.md) · [가설](HYPOTHESES.md) · [환경 계약](../PORTING_CONTRACT.md)
 
 이 문서의 R01–R10은 **우리 프로젝트가 채택할 제안**이다. 영상은 필요한 공간 관계의 사례를 제공한다. 원본 Miniopolis의 데이터 구조·실행 순서·검사 수준을 확인한 것은 아니다. 좌표·우선순위·실패 정책의 구체적인 값은 영상에서 추출하지 않고 현재 프로젝트 계약을 보존한다.
 
@@ -181,3 +183,25 @@ flowchart TD
 ## 6. 정상 실패와 계약 오류
 
 정상 실패에는 공간 부족, 도로 없음, 시설 지지 상실, 미검증 서비스 접근, 선택 마감 탈락이 있다. 입력·원인·관련 소유자를 남기고 가능한 나머지 결과를 유지한다. 계약 오류에는 잘못된 문서/버전, envelope 이탈, 필수 면 소유 중복, 무권한 crossing, 미구현 필수 단계가 있다. 마지막 수락 문서/화면을 보존한다. 두 범주를 `ok` 하나로 합치지 않는다. 일부 시설 미배치를 전체 geometry 실패로 과장하지도 않는다.
+
+## 분석 당시 코드 대응표
+
+기준 커밋은 `65701664aa9c4c4bb80320d58550e610511ea2b0`이다. C01–C12는 관찰과 검증 시나리오의 출처 ID이며 현재의 미구현 목록이 아니다. 이후 공통 관계와 도로 규칙이 수정되었으므로 현재 계약과 구분한다.
+
+
+| ID | 이미 있는 기능과 파일 근거 | 일반화/확장 또는 새로 필요한 부분 | 판단 |
+|---|---|---|---|
+| C01 | [document.ts](../../src/core/document.ts)의 `createDocument` L92, schema6 L105, `loadDocument` L128; [scene-inputs.ts](../../src/core/scene-inputs.ts) L5–56: 입력 레이어, schema5 호환·폐기 설정 제거, object 직육면체·방향 검증 | 새 관계 자료는 파생 뷰로 추가. raw schema 변경은 실제 필요한 입력이 있을 때만 | 입력 체계 재작성 불필요. 영상에 맞춰 폐기 설정을 복원하지 않음 |
+| C02 | [analysis.ts](../../src/core/analysis.ts) `partitionNormalizedCells` L102, `analyze` L123: 6이웃, 외부 공기, 실제 외피, rooftop/비다양체; [buildings.ts](../../src/core/buildings.ts) `inheritBuildings` L37; [design-profile.ts](../../src/core/design-profile.ts) 독립 해시 | 새 관계 identity가 성분 최소 좌표 변경 때문에 외형 seed를 바꾸지 않도록 기존 anchor와 연결 | R01/R02/R09의 대부분 존재. 큰 좌표/음수 지원을 작은 예제 좌표로 축소하지 않음 |
+| C03 | [regions.ts](../../src/core/regions.ts) `analyzeVolume`, covered/annex 해석 L163 부근; [mass-relations.ts](../../src/core/mass-relations.ts) `analyzeMass` L255 및 층 DAG; [vertical-design.ts](../../src/core/vertical-design.ts) `planVertical` L50 | roof scope·관계·시설 지지를 함께 설명할 실행 인덱스. A/B/D 전체 높이와 C 지역 scope를 구분한 채 노출 | 매스 분석이 없는 것이 아님. DAG 라벨이 모든 층 배분을 통제하는 것도 아님 |
+| C04 | [facade-layout.ts](../../src/core/facade-layout.ts) L51 `fixedAssignments`, L141 `planPhysicalRun`, L178 `planFacadeLayout`; [facade-face-selection.ts](../../src/core/facade-face-selection.ts), [facade-trims.ts](../../src/core/facade-trims.ts), [building-output.ts](../../src/core/building-output.ts): 선점·실제 run·마감/완성형 키 | 면/경계 판정 이유가 다른 소비자와 일치하도록 공통 관계 참조. 새로운 외형은 기존 출력 보존과 분리 | 현재 외벽 규칙을 영상별 프리셋으로 바꾸지 않음 |
+| C05 | [roads.ts](../../src/core/roads.ts) L12 `analyzeRoads`: 큰 정사각형 분해, port·폭·L/T/십자, lane·crosswalk; [spatial-analysis.ts](../../src/core/spatial-analysis.ts) L19 `boundaryRuns`, L35 `analyzeSpatial` | road module과 frontage를 연결하는 교차부/경계 참조를 시설과 공유. 넓이 변화·노치에 대해 현재 분해 한계를 구분 실험 | 단순 도로 기능은 이미 있음. 신호등 문맥/교차부 소비 계약은 새 확장 후보. 기존 도로 버그라고 단정하지 않음 |
+| C06 | [access-graph.ts](../../src/core/access-graph.ts) L27 `buildAccessGraph`, L58 `AccessSearch`: 지상/노출 상면, 동일 높이 4방향 edge, 몸체/sweep; [entrance-plan.ts](../../src/core/entrance-plan.ts) L27 `planEntrances` | 관계 뷰에서 접근 결과의 증명 수준·sourceRefs를 재사용. 수직 이동은 별도 입력·실체가 없으면 추가 금지 | 거리 기반 시설 배치보다 이미 강한 계약. 영상의 자유 카메라는 수직 접근 확장 근거가 아님 |
+| C07 | [parking-rule.ts](../../src/core/parking-rule.ts) `PARKING_RULE`: open deck/column; [parking-circulation.ts](../../src/core/parking-circulation.ts), [parking-stalls.ts](../../src/core/parking-stalls.ts), [vehicle-motion.ts](../../src/core/vehicle-motion.ts), [parking-budget.ts](../../src/core/parking-budget.ts): 별도 지상 proof | 상층 주차의 실제 진입·경사로는 새 도메인. 현재 능력 표기·진단을 먼저 명확히 유지 | 외형 주차 구조와 차량 왕복 검증을 합쳐 “주차 완료”라 하지 않음 |
+| C08 | [fixture-plan.ts](../../src/core/fixture-plan.ts) L53 `planFixtures`, L81 부근 문맥 family, L95 부근 각 칸 슬롯; [fixture-catalog.ts](../../src/core/fixture-catalog.ts) 13종; [wall-facilities.ts](../../src/core/wall-facilities.ts) L14 높이 기반 자동 종류, L21 원자적 조립 | 공통 support/context trace, fragment가 갈려도 같은 절대 칸의 의미 유지. 원본의 신호등·안테나 형태는 별도 envelope/후보 정책이 필요 | 시설 알고리즘 재작성보다 문맥 입력의 일관성이 우선. 외벽 계단/엘리베이터는 장식이며 `MOVEMENT_NOT_IMPLEMENTED` |
+| C09 | [scene-inputs.ts](../../src/core/scene-inputs.ts) L65 식생 bottom/middle/top, L80 `vegetationPlacements`; [spatial-analysis.ts](../../src/core/spatial-analysis.ts) L53–54 유효 식생 전체 셀 solid; [environment-output.ts](../../src/core/environment-output.ts) L52 출력; [vegetation-geometry.ts](../../src/vegetation-geometry.ts) 전용 메시 | 식생 계획/지지 거절 설명을 동일 trace 방식으로 연결. 메시 수관 형태와 전셀 solid의 의미를 문서화 | **식생에 충돌 정보가 전혀 없다는 주장은 틀림.** 현재는 보수적 셀 solid이며 시설과 다른 출력 경로 |
+| C10 | [environment-generation.ts](../../src/core/environment-generation.ts) `executeEnvironment`: 수직→preflight→spatial→차량→입구→구획→facade→시설→마감; [environment-cache.ts](../../src/core/environment-cache.ts): 제한 FIFO·논리 비용과 telemetry 분리 | 실행 중 관계 인덱스와 읽기 의존성 기록. 실제 병목 근거가 있기 전 증분 scheduler는 보류 | 규칙은 전체 재평가. Viewer 객체 재사용을 부분 생성이라 부르지 않음 |
+| C11 | [surface-edit.ts](../../src/surface-edit.ts) `stepSurface`; [scene-editor.ts](../../src/scene-editor.ts) `objectFragments`, `editObjects`, `editRoads`; [environment-editor.ts](../../src/environment-editor.ts) `applyEnvironmentEdit`; [editor.ts](../../src/editor.ts) `DocumentHistory`; [main.ts](../../src/main.ts) L351 `regenerate`, L378 부근 `acceptDocument` | 새 관계 설명을 기존 Inspector에 표시. 편집 실패·no-op·상속을 기존 수락 경로에 연결 | 새 상세 편집 UI 불필요. 지지 상실은 보존된 의도와 진단이라는 현재 정책을 유지 |
+| C12 | [viewer.ts](../../src/viewer.ts) L346 `sync`, L351 이전 face Mesh, L424 재사용; [face-mesh.ts](../../src/face-mesh.ts), [display-transform.ts](../../src/display-transform.ts); [column-prototype.ts](../../src/core/column-prototype.ts) `planColumns` | geometry와 의미의 분리 유지. 물/부지 경계·날씨·실제 이동·하중 해석은 별도 명세가 필요한 새 도메인 | 기둥은 기존 점유 run의 표시 해석. 실제 지형 입력/하중 solver가 있다고 볼 근거 없음 |
+
+라인은 기준 커밋의 위치 안내이며 링크와 심볼명을 함께 사용한다. 오래된 설계 문서가 현재 코드와 다르면 현재 코드·최신 계약을 우선한다.

@@ -72,4 +72,4 @@ Production artifact SHA256: `c8df65a6c6c45c4c93b7f7b6afc04d0a8a588f4588ce10abee2
 
 `npm run measure:urban`은 Node 생성기의 27개 Style/Seed/매스 표본, 최대 32³ solid, 정책 임계값 비교와 한 칸 삭제 영향 범위를 `urban-generation.json`에 기록합니다. 입력마다 1회이며 Viewer를 제외한 관측값입니다.
 
-`npm run build` 후 `npx playwright test e2e/urban-measure.spec.ts --grep "@measure"`는 기존 업무형과 도시형 업무형의 동일 32³ 볼륨을 비교합니다. 각 스타일의 새 context 최초 20회, 준비 10회 후 반복 50회를 `urban-browser-performance.json`에 기록합니다. 기존 cold 500ms / warm 250ms 기준은 보고서 행의 `passed`에서 판정하며, 테스트 통과 자체는 성능 합격을 의미하지 않습니다. GPU 완료와 paint는 측정 범위 밖입니다. 세부 계약과 결과는 [구현 기록](../docs/URBAN_BUILDINGS_29.md)을 참조하세요.
+`npm run build` 후 `npx playwright test e2e/urban-measure.spec.ts --grep "@measure"`는 기존 업무형과 도시형 업무형의 동일 32³ 볼륨을 비교합니다. 각 스타일의 새 context 최초 20회, 준비 10회 후 반복 50회를 `urban-browser-performance.json`에 기록합니다. 기존 cold 500ms / warm 250ms 기준은 보고서 행의 `passed`에서 판정하며, 테스트 통과 자체는 성능 합격을 의미하지 않습니다. GPU 완료와 paint는 측정 범위 밖입니다. 이 측정은 과거 `office`/`urban-office` 정의의 비교이며 현재 A~D 메뉴의 실행 안내가 아닙니다. 당시 도시형 32³은 cold p95 529.4ms / warm p95 292.0ms로 두 기준 모두 미달했습니다. 기능 테스트 통과와 성능 미달을 구분하며, 이전 실패·미완료 표본도 보존합니다. 현재 생성 계약은 [건물 규칙](../docs/BUILDING_RULES_PORTING.md)을 참조하세요.

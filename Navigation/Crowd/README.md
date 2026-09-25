@@ -56,7 +56,7 @@ CLI에서 --presets를 생략하면 등록된 모든 알고리즘을 실행합�
 선택 UI, 순차 비교, CLI 측정은 같은 등록 목록을 사용합니다.
 Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이동 재현을 검증합니다.
 
-기존 측정 JSON, 소스 스냅샷, 연구·회귀 보고서는 과거 실험 기록입니다.
+기존 측정 JSON, 소스 스냅샷과 연구 보고서는 과거 실험 기록입니다.
 삭제된 알고리즘의 과거 기록은 현재 실행 가능한 프리셋을 의미하지 않습니다.
 브라우저에 저장된 과거 비교 결과도 조회·내보내기용으로 유지됩니다.
 
@@ -70,7 +70,7 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 
 지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),
 실제 수치와 한계는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
-외력 사용 시 프레임 저하의 원인과 후속 개선은 [성능 개선 보고서](docs/external-force-performance.md)에 기록합니다.
+외력 최적화 이후의 측정 조건과 남은 한계는 [외력 계약](docs/external-forces.md#performance-evidence-and-limits)에 정리되어 있습니다.
 
 기본 경로 안내는 **동일 목표·반경 클래스당 하나의 고정 Flow Field**를 공유합니다.
 혼잡도에 따른 우회 재계산은 꺼져 있으며, 목표 또는 맵이 바뀔 때만 경로를 갱신합니다.
@@ -94,10 +94,6 @@ Compact contact grid → at most 24 candidates / 8 pairs / 8 relaxed Jacobi pass
     ↓
 Exact swept circle / static integration
 ```
-
-선택 근거, 동일 머신 before/after, 한계와 UE5 Compute Shader 설계는
-[개선 보고서](docs/compact-crowd.md), 후보 비교는
-[설계 결정](docs/fluid-crowd-design.md)에 기록합니다.
 
 중앙의 긴 틈과 접촉 떨림을 줄인 현재 설정의 변경 근거, 전후 수치와 CPU 비용은
 [밀집 흐름 개선 기록](docs/compact-crowd.md)에서 확인할 수 있습니다.
@@ -125,7 +121,9 @@ UI에서는 객체 수를 10,000으로 설정하고 **1천 기준 동일 밀도�
 확장 모드에서는 맵 편집을 지원하지 않습니다.
 
 복잡한 지형의 경로·충돌 검사는 정적 장애물 공간 인덱스와 주변 후보 캐시를 사용합니다.
-바위 협곡 10k의 최적화 전후 측정과 검증 범위는 [성능 보고서](docs/rocky-pass-performance.md)를 참고하세요.
+바위 협곡의 정적 장애물 조회는 BVH와 작은 영역 후보 캐시를 사용하며, 최종 거리·충돌 판정과 장애물 순서를 유지합니다. 과거 headless Chromium 측정(seed 42, 반경 3.2, 동일 밀도 확장, 감사 OFF, 예열 30 + 측정 120스텝)에서 10k 스텝 평균은 92.56→31.01ms, P95는 102.20→37.20ms였습니다. [변경 전](docs/measurements/rocky-pass-before.json)과 [변경 후](docs/measurements/rocky-pass-after.json) 원시 자료를 보존합니다. 당시 150스텝 상태 해시가 일치했으나 60FPS·장시간 이동·GPU 성능을 보장하는 결과는 아닙니다.
+
+성능 재현은 `npm run dev` 실행 후 별도 터미널에서 `node scripts/profile-performance.mjs http://127.0.0.1:4273`을 사용합니다. 결과는 `test-results/performance-profile/`에 저장됩니다.
 
 깔때기는 기존 사각형 충돌 지형으로 계단식 경사를 구성합니다. 경로는 공통 FlowField가
 정적 지형과 목적지로 선택합니다. 혼잡해져도 경로 방향장을 다시 계산하지 않습니다.

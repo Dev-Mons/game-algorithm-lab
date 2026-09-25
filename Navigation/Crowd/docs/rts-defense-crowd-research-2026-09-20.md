@@ -457,7 +457,7 @@ Planetary Annihilation 자막의 29:19–30:53은 테스트 앱의 크기·속�
 
 ## 11. 현재 프로젝트와의 접점·최종 실행 결정
 
-현재 [Crowd README](E:/Project/game-algorithm-lab/Navigation/Crowd/README.md)와 [기존 설계 문서](E:/Project/game-algorithm-lab/Navigation/Crowd/docs/fluid-crowd-design.md)는 공유 navigation, 방향별 crowd field, 접촉 보정, static sweep을 분리한 실험을 설명한다. 이는 이번 권고와 접점이 있지만, 기존 문서의 10k 측정·결정론 주장을 이번 조사에서 재실행하여 확인한 것은 아니다. 기존 미커밋 작업·코드·테스트·문서를 수정하지 않았다.
+현재 [Crowd README](E:/Project/game-algorithm-lab/Navigation/Crowd/README.md)와 [알고리즘 계약](algorithm-design-map.md)는 공유 navigation, 방향별 crowd field, 접촉 보정, static sweep을 분리한 실험을 설명한다. 이는 이번 권고와 접점이 있지만, 기존 문서의 10k 측정·결정론 주장을 이번 조사에서 재실행하여 확인한 것은 아니다. 기존 미커밋 작업·코드·테스트·문서를 수정하지 않았다.
 
 후속 구현을 시작한다면 **기존 solver를 바로 교체하기보다 독립 실험 구성과 계측 계약부터 추가**하는 것이 적절하다. 첫 의사결정 실험은 다음 세 가지다.
 

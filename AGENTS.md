@@ -14,6 +14,13 @@ This repository is a collection of game algorithm experiments and R&D projects.
 - Check the target project's code and local documentation before making changes.
 - Keep changes focused on the requested project and task.
 
+## 문서 관리
+
+- 작업 계획·진행 상황·완료 보고·검증 로그는 기본적으로 대화에서 보고한다. 작업마다 `docs`에 새 문서를 만들지 않는다.
+- 사용법이나 유지보수 계약이 바뀌면 해당 README 또는 기존 주제 문서를 갱신한다. 같은 내용을 별도 계획서·구현 기록·검증 보고서로 중복하지 않는다.
+- 새 문서는 사용자가 요청했거나 기존 문서에 담기 어려운 독립적인 장기 참조 자료가 필요한 경우에만 추가한다.
+- 문서를 통합·삭제할 때는 유효한 계약·알려진 한계·재현 방법을 보존하고 참조 링크를 함께 갱신한다. 테스트 fixture·baseline·실행에 쓰는 연구 자료는 문서 정리 대상으로 취급하지 않는다.
+
 # 다른 언어·엔진으로 이식
 
 - 별도 지정이 없으면 이식은 대상 엔진의 기본 언어로 규칙·알고리즘을 재구현하는 작업이다. 각 프로젝트의 TypeScript 계산 코드는 동작 비교용 참조 구현이며 대상 프로그램의 실행 의존성이 아니다.

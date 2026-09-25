@@ -48,10 +48,6 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 시설물은 각 칸의 절대 좌표와 문맥으로 종류·방향을 결정합니다. 대표 슬롯 재선택이나 자동 간격 억제로 다른 칸을 비우지 않으며, 실제 본체 충돌과 보호 공간은 계속 검사합니다. 모든 본체를 배치한 뒤 접근 가능성을 검사하고, 도로 없는 식생 휴식 지점의 local-only와 접근 미확인의 service-unverified를 public 접근과 구분합니다. 유지보수 공간을 확보하지 못해도 모델을 임의로 이동하지 않습니다.
 
-## 도시형 건물 프로그램 (#29)
-
-건축 스타일의 도시형 상가/업무 프리셋은 전역 Seed와 보존된 배치 anchor로 수직 프로그램, 매스별 로컬 상층, 다층 프레임을 생성합니다. 외벽 시설 종류와 선택적 솔리드 변경, 세로 기둥 표시 해석도 같은 공간·면 소유 계약을 사용합니다. 기존 상가형/업무형은 유지합니다. 사용법·계약·단계별 검증·한계는 [구현 기록](docs/URBAN_BUILDINGS_29.md), 실제 측정은 [urban-generation.json](benchmarks/urban-generation.json)에 있습니다. `npm run measure:urban`으로 재현합니다.
-
 ## 코드와 검증 자료
 
 다른 언어·엔진으로 이식할 때는 [네이티브 이식 진입점](docs/NATIVE_PORTING.md)을 먼저 읽으세요.
@@ -61,28 +57,30 @@ npx playwright test e2e/environment.spec.ts --grep '@measure'
 
 A~D의 현재 디자인을 유지하는 최소 계산 순서와 엔진 어댑터 경계는 [건물 규칙 이식 문서](docs/BUILDING_RULES_PORTING.md)에 정리했습니다. [배치·geometry·실제 렌더 보존 증거](docs/BUILDING_REFACTOR_PRESERVATION.md)와 [큰 부피의 실제 편집 성능](docs/BUILDING_EDIT_PERFORMANCE.md)에서 변경 전후 결과, 재현 명령과 측정 한계를 확인할 수 있습니다.
 
-설계·개발 계획과 계약 문서는 [docs 폴더](docs/)에 모았습니다.
+현재 계약은 [환경 생성](docs/PORTING_CONTRACT.md), [건물 규칙](docs/BUILDING_RULES_PORTING.md), [완성형 면 에셋](docs/COMPLETE_FACE_ASSETS.md), [도로 규칙](docs/ROAD_RULES.md)에서 확인합니다. 측정 명령과 원시 결과는 [benchmarks 안내](benchmarks/README.md)에 있습니다. 영상 관찰과 미확정 가설은 [참조 연구](docs/VIDEO_RULE_STUDY.md)로 분리합니다.
 
 - `src/core/environment-generation.ts`: 단일 실행과 단계 상태
 - `src/core/environment-contract.ts`, `environment-settings.ts`, `rule-spatial-*`: 입력·사전 공간·공통 예약 계약
-- `spatial-analysis.ts`, `access-graph.ts`, `reservations.ts`: 실제 접근과 공간 공유
+- `spatial-analysis.ts`, `scene-relations.ts`, `access-graph.ts`, `reservations.ts`: 실제 지지·관계·접근과 공간 공유
 - `parking-*`, `vehicle-motion.ts`, `vehicle-domain.ts`: 동선·예산·구획 증명·유용성
 - `vertical-design.ts`, `facade-patterns.ts`, `banded-facade-assets.ts`, `facade-trims.ts`: 비례 구간과 실제 공유 형상
 - `fixture-plan.ts`, `fixture-catalog.ts`: 문맥 시설 계획
 - `environment-editor.ts`, `plan-inspector.ts`, `viewer.ts`: 편집·선택·현재 계획 표시
 - `environment-cache.ts`, `measurement.ts`: 제한 FIFO와 결정적 논리 비용/실제 계측 분리
 
-[스타일 계약](docs/BUILDING_STYLE_PLAN.md), [포팅 계약](docs/PORTING_CONTRACT.md), [이슈별 구현·검증 기록](docs/ENVIRONMENT_IMPLEMENTATION.md)을 함께 확인하세요. `benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 성능 실패도 보고서에 남으며 구현 완료와 성능 합격을 구분합니다.
+`benchmarks/parking-quality.json`은 양성·음성 주차 인수 결과이고, `benchmarks/environment-performance.json`은 최초/반복/실제 첫 편집 표본입니다. 측정 당시의 결과이므로 현재 코드의 성능 합격을 대신하지 않습니다.
 
-건물 4개 스타일의 신규 메쉬·재질과 사진 참고 자료는 [메쉬 업데이트](docs/FACADE_MESH_REFRESH.md)에 정리되어 있습니다.
+## 건물 컨셉과 예제
 
-A 스타일은 밝은 수평 띠와 연속 창 디자인입니다. 예제 선택에서 **A · 수평 띠 트윈 타워**를 고르면 참고 이미지의 중앙 테라스·출입구를 반영한 편집 가능한 건물을 불러옵니다. **입면** 카메라로 정면 비례를 확인할 수 있습니다.
+컨셉은 **A~D 4종**입니다. 컨셉 선택은 외벽 패턴을 바꾸며, 시작 형태의 예제 선택은 편집 가능한 부피와 도로·설비 입력을 불러옵니다. 컨셉이 사용자의 부피를 자동으로 깎거나 높이를 바꾸지는 않습니다.
 
-B 스타일은 브론즈 커튼월과 흰 수평 벨트, 어두운 평지붕 디자인입니다. **B · 브론즈 커튼월 오피스** 예제와 [구현 기록](docs/STYLE_B_REFERENCE.md)에서 확인할 수 있습니다.
+| 컨셉 | 외형 | 시작 형태 |
+|---|---|---|
+| A | 밝은 수평 띠와 어두운 연속 창 | A · 수평 띠 트윈 타워 |
+| B | 브론즈 커튼월, 흰 수평 벨트, 볼록 코너의 흰 기둥, 어두운 평지붕 | B · 브론즈 커튼월 오피스 |
+| C | 밝은 콘크리트 띠, 수평 연속창, 사선 외장 모서리, 1.5층 높이의 저층부 창 | C · 저층 수평 띠와 옥탑 / 고층 수평 띠와 옥탑 / 계단형 매스와 높은 개구부 |
+| D | 흰색 고정 외장과 반복 창·얇은 슬래브, 지상 첫 층의 독립 유리창 | D · 도시 컨셉 — Tower11 화이트 스텝 타워 |
 
-C 스타일은 밝은 콘크리트 띠와 짙은 수평 연속창, 사선 외장 모서리와 1.5층 높이의 저층부 창 디자인입니다. **C · 저층 수평 띠와 옥탑**, **C · 고층 수평 띠와 옥탑**, **C · 계단형 매스와 높은 개구부** 예제를 추가했습니다. 첨부 이미지 분석과 저층·고층 차이는 [구현 기록](docs/STYLE_C_REFERENCE.md)에 정리했습니다.
+**입면** 카메라로 정면 비례를 비교합니다. **A~D · 도시 컨셉** 예제에는 도로·옥탑·옥상 설비가 포함됩니다. D 예제는 Tower11을 참고해 10×10 → 8×8 → 6×6의 부피를 15층 + 7층 + 7층으로 배치한 격자 근사입니다. 예제 치수는 모든 건물에 강제하는 생성 규칙이 아닙니다.
 
-
-도시 건물 컨셉은 **A~D 4종**입니다. 시작 형태의 **A~D · 도시 컨셉**에서 도로·옥탑·옥상 설비를 함께 확인할 수 있습니다. 열린 Blender 도시의 외벽·옥상·도로 패턴 반영 범위는 [도시 컨셉 A~C](docs/CITY_CONCEPTS_ABC.md)에 정리했습니다.
-
-D는 Blender Tower11의 반복 창·수평 띠·두 번의 상부 후퇴를 반영한 흰색 고정 컨셉입니다. [Tower11 분석과 D 구현](docs/STYLE_D_TOWER11.md)을 참고하세요.
+C는 매스별 로컬 상층과 수직 프로그램을 사용합니다. 공통 다층 프레임 기능은 기존 사용자 스타일과 알고리즘 검증에 남아 있으며, 세부 Seed·수직 프로그램·재료·기둥 모드를 편집하는 UI는 제공하지 않습니다. 스타일별 정확한 치수와 계산 순서는 건물 규칙 이식 문서를 따릅니다.

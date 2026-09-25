@@ -1,6 +1,6 @@
 # 도로 폭·연결·표시 규칙
 
-2026-09-25. 사용자가 제공한 [T자](road-improvement-evidence/reference-T.png)·[ㄱ자](road-improvement-evidence/reference-L.png) 화면을 구조와 표시의 참고로 사용했다. 원본 프로그램의 내부 알고리즘이나 실제 교통 법규를 복원한 규칙은 아니다. [기존 오류 진단](ROAD_RULE_DIAGNOSIS.md)은 수정 전 기록으로 보존한다.
+2026-09-25. 사용자가 제공한 [T자](road-improvement-evidence/reference-T.png)·[ㄱ자](road-improvement-evidence/reference-L.png) 화면을 구조와 표시의 참고로 사용했다. 원본 프로그램의 내부 알고리즘이나 실제 교통 법규를 복원한 규칙은 아니다. 직선의 잔여 길이를 코너로 오분류하거나 부분 접속의 노출 경계를 지우던 문제를 해결한 규칙이다.
 
 ## 원본 입력과 형태
 

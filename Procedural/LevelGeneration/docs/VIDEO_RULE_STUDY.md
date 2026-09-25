@@ -14,11 +14,8 @@
 | [관찰·접근 기록](video-rule-study/OBSERVATIONS.md) | 15개 원본 링크, 전체 길이, 실제 시점, 조작 단서·전후 차이·유지 특징·한계 |
 | [프레임 갤러리](video-rule-study/evidence/gallery.html) | 시간별 캡처와 원본 재생 링크; 썸네일이 아니라 재생 영상 프레임 |
 | [통합 규칙 명세](video-rule-study/RULE_SPEC.md) | 공간 표현, 입력/출력, 단계, 충돌, 갱신·결정론·실패 계약 |
-| [코드 차이·보존·우선순위](video-rule-study/CODE_GAP_PLAN.md) | 실제 파일·심볼 근거, 이미 있는 것/확장/새 구조, 실행 단계 |
 | [가설·교차 검증·구분 실험](video-rule-study/HYPOTHESES.md) | 원본 내부 동작에 대한 확신도, 대안 설명, 반증 방법 |
 | [검증 시나리오](video-rule-study/ACCEPTANCE.md) | 다른 형태·경계·편집 순서, 음성 사례, 보존·검증 범위 |
-| [독립적인 후속 구현 요청](video-rule-study/IMPLEMENTATION_PROMPT.md) | 이 대화를 모르는 구현 작업에 그대로 전달할 한국어 프롬프트 |
-| [문서 검증 기록](video-rule-study/VALIDATION.md) | 링크·근거·범위·일관성 확인 결과 |
 
 ## 핵심 판단
 
@@ -35,7 +32,9 @@
 - `O01`–`O15`: 관찰표에 적은 화면 사실. 연결 영상은 `V01`–`V15`.
 - `H01`–`H10`: 내부 동작 가설. 교차 영상이 있어도 확정 사실이 아니다.
 - `R01`–`R10`: 제안 규칙. 근거가 없는 정책은 영상 유래라고 표시하지 않는다.
-- `C01`–`C12`: 현재 코드에서 직접 확인한 구현/한계.
+- `C01`–`C12`: [분석 당시 코드 대응표](video-rule-study/RULE_SPEC.md#분석-당시-코드-대응표)의 구현/한계. 현재의 미구현 목록이 아니다.
 - `T01`–`T16`: 후속 구현의 검증 시나리오. 이번에 실행한 테스트가 아니다.
 
-현재 문서 기준은 schema 6 / SceneInputs 2 / catalog 13이다. `ARCHITECTURE_PLAN.md`와 `ENVIRONMENT_IMPLEMENTATION.md`의 schema 5 표기는 과거 기록이며 최신 사실로 채택하지 않았다. 세부 호환성은 현재 코드와 [네이티브 이식](NATIVE_PORTING.md), [건물 규칙](BUILDING_RULES_PORTING.md), [환경 계약](PORTING_CONTRACT.md)을 기준으로 삼았다. 이번 작업은 엔진 이식이 아니다.
+분석 기준은 schema 6 / SceneInputs 2 / catalog 13이다. 이후 공통 관계와 도로 규칙이 구현·수정되었으므로 이 연구의 제안을 현재 구현 상태로 읽지 않는다. 세부 호환성은 현재 코드와 [네이티브 이식](NATIVE_PORTING.md), [건물 규칙](BUILDING_RULES_PORTING.md), [환경 계약](PORTING_CONTRACT.md)을 기준으로 삼았다. 이번 작업은 엔진 이식이 아니다.
+
+현재 관계·시설 계약은 [환경 계약](PORTING_CONTRACT.md), 현재 도로 분석은 [도로 규칙](ROAD_RULES.md)을 따른다. 프레임 표본의 시간·파일·해시는 [캡처 기록](video-rule-study/evidence/capture-log.json)에서 확인한다.

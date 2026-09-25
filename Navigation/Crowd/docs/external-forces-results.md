@@ -1,6 +1,6 @@
 # External forces acceptance results — issue #32
 
-This is the initial acceptance snapshot. Subsequent CPU optimization and external-state recovery fixes are recorded in [the performance follow-up](external-force-performance.md).
+This is the initial acceptance snapshot. Subsequent CPU optimization and external-state recovery fixes are recorded in [the contract’s performance evidence and limits](external-forces.md#performance-evidence-and-limits).
 
 Baseline: `db4608916a5199f20e76ee55c2b77cd9a396e90b`. Implementation: working tree source SHA-256 `4028e04954481e290b8cf95e1a1d1b8fee71006d5216be4f9ec6db06bf36b99d`.
 Measured on AMD Ryzen 9 9950X3D 16-Core Processor, Node v22.22.0. Headless CPU results exclude rendering.
