@@ -39,6 +39,9 @@ export type Layer =
   | "normals"
   | "regions";
 export class Viewer {
+  /** Measurement-only CPU render submission callback; GPU completion is excluded. */
+  onRendered?: (renderSubmissionMs:number)=>void;
+  lastSyncStages:Record<string,number>={};
   get geometryCacheEntries(){return this.crafted.size+this.fixtures.size+this.wallFacilities.size+this.vegetation.size+this.assets.size+this.sceneMaterials.size+this.environmentPreview.inputs.children.length+(this.parkingArrow?1:0);}
   projectCell(cell:Vec3){this.camera.updateMatrixWorld();const p=new THREE.Vector3(cell[0]+.5,cell[1],cell[2]+.5).add(this.displayOrigin).project(this.camera),r=this.renderer.domElement.getBoundingClientRect();return {x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};}
 
@@ -219,7 +222,9 @@ export class Viewer {
       this.interaction.updateHandle();
       const pose = JSON.stringify({position:this.camera.position.toArray(),target:this.controls.target.toArray(),quaternion:this.camera.quaternion.toArray()});
       if (canvas.dataset.cameraPose !== pose) canvas.dataset.cameraPose = pose;
+      const renderStart=this.onRendered?performance.now():0;
       this.renderer.render(this.scene, this.camera);
+      this.onRendered?.(performance.now()-renderStart);
     });
   }
   private moveCamera(delta: number) {
@@ -339,7 +344,12 @@ export class Viewer {
     this.reportFaceMeshes();
   }
   sync(result: GenerationResult, catalog: Tile[], document?: GenerationDocument) {
+    this.lastSyncStages={};
+    let mark=performance.now();
+    const stage=(name:string)=>{const now=performance.now();this.lastSyncStages[name]=now-mark;mark=now;};
+    const geometryStart=this.crafted.buildTimeMs;
     this.clear();
+    stage('clear');
     this.result = result;
     this.inputDocument=document;
     const bounds = new THREE.Box3();
@@ -369,7 +379,9 @@ export class Viewer {
       2,
       bounds.isEmpty() ? 2 : bounds.getSize(new THREE.Vector3()).length() / 2,
     );
+    stage('boundsAndInteraction');
     this.environmentPreview.sync(document,result,this.displayOrigin);
+    stage('environmentPreview');
     const sceneBatches=new Map<string,NonNullable<GenerationResult['scenePlacements']>>();
     for(const p of result.scenePlacements??[]){const key=`${p.asset}|${p.color}|${p.kind}`,batch=sceneBatches.get(key)??[];batch.push(p);sceneBatches.set(key,batch);}
     const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
@@ -389,6 +401,7 @@ export class Viewer {
     this.renderer.domElement.dataset.entrances = JSON.stringify(result.environment?.entrances??[]);
     this.renderer.domElement.dataset.parkingQuality=JSON.stringify(result.environment?.parking?.map(p=>p.quality)??[]);
     this.renderer.domElement.dataset.fixtures=JSON.stringify(result.environment?.fixtures?.placements??[]);
+    stage('sceneMeshesAndPublication');
     const count = result.surfaces.length;
     if (!count) return;
     const surfaces = new THREE.InstancedMesh(
@@ -416,6 +429,8 @@ export class Viewer {
       this.groups.placements.add(mesh);
     }
     this.reportFaceMeshes();
+    stage('faceMeshes');
+    this.lastSyncStages.geometryBuild=this.crafted.buildTimeMs-geometryStart;
     surfaces.userData.faceIds = result.surfaces.map((s) => s.faceId);
     for (let i = 0; i < count; i++) {
       // Build the analysis view from surfaces independently of placement transforms.
@@ -452,6 +467,7 @@ export class Viewer {
       this.groups.edges.add(this.lines(points, this.lineMaterials[kind]));
     }
     if(this.groups.normals.visible)this.buildNormals();
+    stage('analysisMeshes');
   }
   private reportFaceMeshes() {
     // Inspect actual render objects, excluding analysis/selection and scene objects.

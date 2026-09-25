@@ -1,0 +1,993 @@
+{
+  "measuredAt": "2026-09-22T16:25:33.653Z",
+  "browser": "153.0.8010.12",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "logicalCPUs": 32,
+  "platform": "win32",
+  "buildArtifacts": {
+    "index-D-Lvt-Uq.js": "94ab1eab636584179c4e129d4b8c169e2b9ea662bf71d410ccef4e8ed0c25671",
+    "index-o8zqimnd.css": "b52082e0cb4de47f8de60283fc369b7017dca85448280835af39086468a98a70"
+  },
+  "protocol": {
+    "viewport": {
+      "width": 1440,
+      "height": 960
+    },
+    "seed": 42,
+    "dimensions": [
+      28,
+      24,
+      28
+    ],
+    "selectedRoofCells": 784,
+    "coldCount": 1,
+    "warmupKeyEdits": 4,
+    "warmCount": 2,
+    "dragCycles": 1,
+    "input": "native Playwright E/Q and held pyramid pointer gesture",
+    "scope": "native event timestamp through accepted UI state and first following WebGL render submission; no GPU completion or physical paint measurement",
+    "coldMeaning": "first volume edit after fresh browser context and initial accepted scene; initial scene caches already exist",
+    "warmMeaning": "alternating E/Q returns to prior inputs; drag visits +1/+2/+3 and back",
+    "limitations": [
+      "first edit n=10: p95 is maximum; not a stable tail estimate",
+      "headless Chromium on this host; software/hardware renderer recorded per context",
+      "render submissions may combine consecutive drag edits; supersededBeforeRender marks intermediate accepted states"
+    ]
+  },
+  "rows": [
+    {
+      "profile": "shop",
+      "kind": "first-edit",
+      "summary": {
+        "inputToSync": {
+          "n": 1,
+          "p50": 1072.300000000745,
+          "p95": 1072.300000000745,
+          "max": 1072.300000000745
+        },
+        "inputToRender": {
+          "n": 1,
+          "p50": 1110.7000000029802,
+          "p95": 1110.7000000029802,
+          "max": 1110.7000000029802
+        },
+        "generation": {
+          "n": 1,
+          "p50": 405.5,
+          "p95": 405.5,
+          "max": 405.5
+        },
+        "viewerSync": {
+          "n": 1,
+          "p50": 52.600000001490116,
+          "p95": 52.600000001490116,
+          "max": 52.600000001490116
+        },
+        "renderSubmission": {
+          "n": 1,
+          "p50": 33.900000002235174,
+          "p95": 33.900000002235174,
+          "max": 33.900000002235174
+        },
+        "steps": {
+          "surfaceEdit": {
+            "n": 1,
+            "p50": 13.100000001490116,
+            "p95": 13.100000001490116,
+            "max": 13.100000001490116
+          },
+          "replaceGrid": {
+            "n": 1,
+            "p50": 148.39999999850988,
+            "p95": 148.39999999850988,
+            "max": 148.39999999850988
+          },
+          "acceptanceComparison": {
+            "n": 1,
+            "p50": 12.699999999254942,
+            "p95": 12.699999999254942,
+            "max": 12.699999999254942
+          },
+          "publication": {
+            "n": 1,
+            "p50": 6.5,
+            "p95": 6.5,
+            "max": 6.5
+          },
+          "history": {
+            "n": 1,
+            "p50": 3.7000000029802322,
+            "p95": 3.7000000029802322,
+            "max": 3.7000000029802322
+          }
+        },
+        "stages": {
+          "analysis": {
+            "n": 1,
+            "p50": 157.5,
+            "p95": 157.5,
+            "max": 157.5
+          },
+          "vertical": {
+            "n": 1,
+            "p50": 4.100000001490116,
+            "p95": 4.100000001490116,
+            "max": 4.100000001490116
+          },
+          "preflight": {
+            "n": 1,
+            "p50": 22.100000001490116,
+            "p95": 22.100000001490116,
+            "max": 22.100000001490116
+          },
+          "spatial": {
+            "n": 1,
+            "p50": 27.699999999254942,
+            "p95": 27.699999999254942,
+            "max": 27.699999999254942
+          },
+          "entrances": {
+            "n": 1,
+            "p50": 6.899999998509884,
+            "p95": 6.899999998509884,
+            "max": 6.899999998509884
+          },
+          "facade": {
+            "n": 1,
+            "p50": 40.80000000074506,
+            "p95": 40.80000000074506,
+            "max": 40.80000000074506
+          },
+          "attachments": {
+            "n": 1,
+            "p50": 22.300000000745058,
+            "p95": 22.300000000745058,
+            "max": 22.300000000745058
+          }
+        }
+      },
+      "samples": [
+        {
+          "id": 1,
+          "input": "key",
+          "mode": "add",
+          "selectionCells": 784,
+          "inputStartedAt": 20422.29999999702,
+          "handlerStartedAt": 20851.599999997765,
+          "editStartedAt": 20851.89999999851,
+          "inputQueueMs": 429.30000000074506,
+          "inputHandlingMs": 0.30000000074505806,
+          "synchronousMs": 1072.300000000745,
+          "cellsBefore": 18816,
+          "cellsAfter": 19600,
+          "initializationState": {
+            "plannerCacheEntries": 3,
+            "geometryCacheEntries": 61,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 13.100000001490116,
+            "replaceGrid": 148.39999999850988,
+            "acceptanceComparison": 12.699999999254942,
+            "publication": 6.5,
+            "history": 3.7000000029802322
+          },
+          "generation": {
+            "analysis": 157.5,
+            "selection": 248,
+            "rendererSync": 52.600000001490116,
+            "total": 458.1000000014901,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 157.5,
+              "vertical": 4.100000001490116,
+              "preflight": 22.100000001490116,
+              "spatial": 27.699999999254942,
+              "entrances": 6.899999998509884,
+              "facade": 40.80000000074506,
+              "attachments": 22.300000000745058
+            },
+            "rendererStages": {
+              "clear": 7.900000002235174,
+              "boundsAndInteraction": 3.199999999254942,
+              "environmentPreview": 21,
+              "sceneMeshesAndPublication": 0.3999999985098839,
+              "faceMeshes": 12.600000001490116,
+              "geometryBuild": 0.9000000022351742,
+              "analysisMeshes": 7.5
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 6,
+                "writes": 6,
+                "evictions": 2,
+                "entries": 4,
+                "bytes": 14659790
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 1110.7000000029802,
+          "renderSubmissionMs": 33.900000002235174,
+          "supersededBeforeRender": false
+        }
+      ]
+    },
+    {
+      "profile": "shop",
+      "kind": "warm-keys",
+      "summary": {
+        "inputToSync": {
+          "n": 2,
+          "p50": 800.5999999977648,
+          "p95": 898,
+          "max": 898
+        },
+        "inputToRender": {
+          "n": 2,
+          "p50": 832,
+          "p95": 931.8999999985099,
+          "max": 931.8999999985099
+        },
+        "generation": {
+          "n": 2,
+          "p50": 271.5,
+          "p95": 320.19999999925494,
+          "max": 320.19999999925494
+        },
+        "viewerSync": {
+          "n": 2,
+          "p50": 34,
+          "p95": 75.59999999776483,
+          "max": 75.59999999776483
+        },
+        "renderSubmission": {
+          "n": 2,
+          "p50": 29.200000002980232,
+          "p95": 31.300000000745058,
+          "max": 31.300000000745058
+        },
+        "steps": {
+          "surfaceEdit": {
+            "n": 2,
+            "p50": 10.199999999254942,
+            "p95": 12.5,
+            "max": 12.5
+          },
+          "replaceGrid": {
+            "n": 2,
+            "p50": 90.80000000074506,
+            "p95": 100,
+            "max": 100
+          },
+          "acceptanceComparison": {
+            "n": 2,
+            "p50": 7.300000000745058,
+            "p95": 10.099999997764826,
+            "max": 10.099999997764826
+          },
+          "publication": {
+            "n": 2,
+            "p50": 5.600000001490116,
+            "p95": 47.20000000298023,
+            "max": 47.20000000298023
+          },
+          "history": {
+            "n": 2,
+            "p50": 3.100000001490116,
+            "p95": 4.300000000745058,
+            "max": 4.300000000745058
+          }
+        },
+        "stages": {
+          "analysis": {
+            "n": 2,
+            "p50": 109.30000000074506,
+            "p95": 124.19999999925494,
+            "max": 124.19999999925494
+          },
+          "vertical": {
+            "n": 2,
+            "p50": 2.599999997764826,
+            "p95": 3.199999999254942,
+            "max": 3.199999999254942
+          },
+          "preflight": {
+            "n": 2,
+            "p50": 16.200000002980232,
+            "p95": 22,
+            "max": 22
+          },
+          "spatial": {
+            "n": 2,
+            "p50": 16.199999999254942,
+            "p95": 16.800000000745058,
+            "max": 16.800000000745058
+          },
+          "entrances": {
+            "n": 2,
+            "p50": 3.400000002235174,
+            "p95": 3.600000001490116,
+            "max": 3.600000001490116
+          },
+          "facade": {
+            "n": 2,
+            "p50": 24.800000000745058,
+            "p95": 53.19999999925494,
+            "max": 53.19999999925494
+          },
+          "attachments": {
+            "n": 2,
+            "p50": 14.5,
+            "p95": 15.800000000745058,
+            "max": 15.800000000745058
+          }
+        }
+      },
+      "samples": [
+        {
+          "id": 5,
+          "input": "key",
+          "mode": "add",
+          "selectionCells": 784,
+          "inputStartedAt": 27839.400000002235,
+          "handlerStartedAt": 28181.5,
+          "editStartedAt": 28181.60000000149,
+          "inputQueueMs": 342.0999999977648,
+          "inputHandlingMs": 0.10000000149011612,
+          "synchronousMs": 898,
+          "cellsBefore": 18816,
+          "cellsAfter": 19600,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 10.199999999254942,
+            "replaceGrid": 90.80000000074506,
+            "acceptanceComparison": 7.300000000745058,
+            "publication": 47.20000000298023,
+            "history": 4.300000000745058
+          },
+          "generation": {
+            "analysis": 124.19999999925494,
+            "selection": 196,
+            "rendererSync": 75.59999999776483,
+            "total": 395.79999999701977,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 124.19999999925494,
+              "vertical": 3.199999999254942,
+              "preflight": 22,
+              "spatial": 16.800000000745058,
+              "entrances": 3.400000002235174,
+              "facade": 53.19999999925494,
+              "attachments": 15.800000000745058
+            },
+            "rendererStages": {
+              "clear": 30.699999999254942,
+              "boundsAndInteraction": 19.199999999254942,
+              "environmentPreview": 10.600000001490116,
+              "sceneMeshesAndPublication": 0.09999999776482582,
+              "faceMeshes": 10.200000002980232,
+              "geometryBuild": 0,
+              "analysisMeshes": 4.799999997019768
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 18,
+                "writes": 18,
+                "evictions": 14,
+                "entries": 4,
+                "bytes": 14659790
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 931.8999999985099,
+          "renderSubmissionMs": 31.300000000745058,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 6,
+          "input": "key",
+          "mode": "remove",
+          "selectionCells": 784,
+          "inputStartedAt": 30533.400000002235,
+          "handlerStartedAt": 30897.10000000149,
+          "editStartedAt": 30897.10000000149,
+          "inputQueueMs": 363.69999999925494,
+          "inputHandlingMs": 0,
+          "synchronousMs": 800.5999999977648,
+          "cellsBefore": 19600,
+          "cellsAfter": 18816,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 12.5,
+            "replaceGrid": 100,
+            "acceptanceComparison": 10.099999997764826,
+            "publication": 5.600000001490116,
+            "history": 3.100000001490116
+          },
+          "generation": {
+            "analysis": 109.30000000074506,
+            "selection": 162.19999999925494,
+            "rendererSync": 34,
+            "total": 305.5,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 109.30000000074506,
+              "vertical": 2.599999997764826,
+              "preflight": 16.200000002980232,
+              "spatial": 16.199999999254942,
+              "entrances": 3.600000001490116,
+              "facade": 24.800000000745058,
+              "attachments": 14.5
+            },
+            "rendererStages": {
+              "clear": 6.400000002235174,
+              "boundsAndInteraction": 2,
+              "environmentPreview": 11.399999998509884,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 10.399999998509884,
+              "geometryBuild": 0,
+              "analysisMeshes": 3.699999999254942
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 21,
+                "writes": 21,
+                "evictions": 17,
+                "entries": 4,
+                "bytes": 14469598
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 832,
+          "renderSubmissionMs": 29.200000002980232,
+          "supersededBeforeRender": false
+        }
+      ]
+    },
+    {
+      "profile": "shop",
+      "kind": "continuous-drag",
+      "summary": {
+        "inputToSync": {
+          "n": 6,
+          "p50": 786.6000000014901,
+          "p95": 832.7999999970198,
+          "max": 832.7999999970198
+        },
+        "inputToRender": {
+          "n": 6,
+          "p50": 820.8000000007451,
+          "p95": 866.2999999970198,
+          "max": 866.2999999970198
+        },
+        "generation": {
+          "n": 6,
+          "p50": 248.19999999925494,
+          "p95": 310.3999999985099,
+          "max": 310.3999999985099
+        },
+        "viewerSync": {
+          "n": 6,
+          "p50": 34.30000000074506,
+          "p95": 37.600000001490116,
+          "max": 37.600000001490116
+        },
+        "renderSubmission": {
+          "n": 6,
+          "p50": 31.199999999254942,
+          "p95": 32.099999997764826,
+          "max": 32.099999997764826
+        },
+        "steps": {
+          "surfaceEdit": {
+            "n": 6,
+            "p50": 8.800000000745058,
+            "p95": 11.199999999254942,
+            "max": 11.199999999254942
+          },
+          "replaceGrid": {
+            "n": 6,
+            "p50": 92.40000000223517,
+            "p95": 100.70000000298023,
+            "max": 100.70000000298023
+          },
+          "acceptanceComparison": {
+            "n": 6,
+            "p50": 8.099999997764826,
+            "p95": 9.699999999254942,
+            "max": 9.699999999254942
+          },
+          "publication": {
+            "n": 6,
+            "p50": 6.199999999254942,
+            "p95": 8,
+            "max": 8
+          },
+          "history": {
+            "n": 6,
+            "p50": 3.300000000745058,
+            "p95": 4.799999997019768,
+            "max": 4.799999997019768
+          }
+        },
+        "stages": {
+          "analysis": {
+            "n": 6,
+            "p50": 99,
+            "p95": 110,
+            "max": 110
+          },
+          "vertical": {
+            "n": 6,
+            "p50": 2,
+            "p95": 4.399999998509884,
+            "max": 4.399999998509884
+          },
+          "preflight": {
+            "n": 6,
+            "p50": 15.199999999254942,
+            "p95": 16.699999999254942,
+            "max": 16.699999999254942
+          },
+          "spatial": {
+            "n": 6,
+            "p50": 14.300000000745058,
+            "p95": 19.300000000745058,
+            "max": 19.300000000745058
+          },
+          "entrances": {
+            "n": 6,
+            "p50": 2.900000002235174,
+            "p95": 3.399999998509884,
+            "max": 3.399999998509884
+          },
+          "facade": {
+            "n": 6,
+            "p50": 24.599999997764826,
+            "p95": 28.199999999254942,
+            "max": 28.199999999254942
+          },
+          "attachments": {
+            "n": 6,
+            "p50": 14.899999998509884,
+            "p95": 16.199999999254942,
+            "max": 16.199999999254942
+          }
+        }
+      },
+      "samples": [
+        {
+          "id": 11,
+          "input": "drag",
+          "mode": "add",
+          "selectionCells": 784,
+          "inputStartedAt": 51974.300000000745,
+          "handlerStartedAt": 52319.199999999255,
+          "editStartedAt": 52319.199999999255,
+          "inputQueueMs": 344.8999999985099,
+          "inputHandlingMs": 0,
+          "synchronousMs": 809.8999999985099,
+          "cellsBefore": 18816,
+          "cellsAfter": 19600,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 8.300000000745058,
+            "replaceGrid": 94.39999999850988,
+            "acceptanceComparison": 8.300000000745058,
+            "publication": 5.800000000745058,
+            "history": 3.100000001490116
+          },
+          "generation": {
+            "analysis": 110,
+            "selection": 200.39999999850988,
+            "rendererSync": 34.5,
+            "total": 344.8999999985099,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 110,
+              "vertical": 4.399999998509884,
+              "preflight": 14.100000001490116,
+              "spatial": 19.300000000745058,
+              "entrances": 3,
+              "facade": 28.199999999254942,
+              "attachments": 15.100000001490116
+            },
+            "rendererStages": {
+              "clear": 5.300000000745058,
+              "boundsAndInteraction": 3.100000001490116,
+              "environmentPreview": 12.300000000745058,
+              "sceneMeshesAndPublication": 0.19999999925494194,
+              "faceMeshes": 8.800000000745058,
+              "geometryBuild": 0,
+              "analysisMeshes": 4.799999997019768
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 36,
+                "writes": 36,
+                "evictions": 32,
+                "entries": 4,
+                "bytes": 14659790
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 844.1999999992549,
+          "renderSubmissionMs": 30.899999998509884,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 12,
+          "input": "drag",
+          "mode": "add",
+          "selectionCells": 784,
+          "inputStartedAt": 56716.900000002235,
+          "handlerStartedAt": 57087.900000002235,
+          "editStartedAt": 57087.900000002235,
+          "inputQueueMs": 371,
+          "inputHandlingMs": 0,
+          "synchronousMs": 832.7999999970198,
+          "cellsBefore": 19600,
+          "cellsAfter": 20384,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 9.5,
+            "replaceGrid": 98.19999999925494,
+            "acceptanceComparison": 8.099999997764826,
+            "publication": 6.199999999254942,
+            "history": 3.399999998509884
+          },
+          "generation": {
+            "analysis": 108.69999999925494,
+            "selection": 190.10000000149012,
+            "rendererSync": 37.600000001490116,
+            "total": 336.4000000022352,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 108.69999999925494,
+              "vertical": 2.699999999254942,
+              "preflight": 16.699999999254942,
+              "spatial": 17.5,
+              "entrances": 3.399999998509884,
+              "facade": 27.899999998509884,
+              "attachments": 16.199999999254942
+            },
+            "rendererStages": {
+              "clear": 6.900000002235174,
+              "boundsAndInteraction": 2.599999997764826,
+              "environmentPreview": 12.900000002235174,
+              "sceneMeshesAndPublication": 0.19999999925494194,
+              "faceMeshes": 10.399999998509884,
+              "geometryBuild": 0,
+              "analysisMeshes": 4.600000001490116
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 39,
+                "writes": 39,
+                "evictions": 35,
+                "entries": 4,
+                "bytes": 14849980
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 866.2999999970198,
+          "renderSubmissionMs": 31.199999999254942,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 13,
+          "input": "drag",
+          "mode": "add",
+          "selectionCells": 784,
+          "inputStartedAt": 61687.300000000745,
+          "handlerStartedAt": 62053.400000002235,
+          "editStartedAt": 62053.400000002235,
+          "inputQueueMs": 366.1000000014901,
+          "inputHandlingMs": 0,
+          "synchronousMs": 786.6000000014901,
+          "cellsBefore": 20384,
+          "cellsAfter": 21168,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 8.699999999254942,
+            "replaceGrid": 100.70000000298023,
+            "acceptanceComparison": 9.699999999254942,
+            "publication": 7.199999999254942,
+            "history": 3.300000000745058
+          },
+          "generation": {
+            "analysis": 99.09999999776483,
+            "selection": 157.30000000074506,
+            "rendererSync": 34.30000000074506,
+            "total": 290.69999999925494,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 99.09999999776483,
+              "vertical": 2,
+              "preflight": 13.600000001490116,
+              "spatial": 14.600000001490116,
+              "entrances": 2.899999998509884,
+              "facade": 24.899999998509884,
+              "attachments": 14.899999998509884
+            },
+            "rendererStages": {
+              "clear": 5.900000002235174,
+              "boundsAndInteraction": 2.099999997764826,
+              "environmentPreview": 12.600000001490116,
+              "sceneMeshesAndPublication": 0.09999999776482582,
+              "faceMeshes": 9.600000001490116,
+              "geometryBuild": 0,
+              "analysisMeshes": 4
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 42,
+                "writes": 42,
+                "evictions": 38,
+                "entries": 4,
+                "bytes": 15040168
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 820.8000000007451,
+          "renderSubmissionMs": 31.699999999254942,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 14,
+          "input": "drag",
+          "mode": "remove",
+          "selectionCells": 784,
+          "inputStartedAt": 66802.19999999925,
+          "handlerStartedAt": 67210.90000000224,
+          "editStartedAt": 67211,
+          "inputQueueMs": 408.70000000298023,
+          "inputHandlingMs": 0.09999999776482582,
+          "synchronousMs": 809.2000000029802,
+          "cellsBefore": 21168,
+          "cellsAfter": 20384,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 10.5,
+            "replaceGrid": 91.5,
+            "acceptanceComparison": 8.100000001490116,
+            "publication": 6.699999999254942,
+            "history": 3.2000000029802322
+          },
+          "generation": {
+            "analysis": 86.5,
+            "selection": 159.80000000074506,
+            "rendererSync": 34.099999997764826,
+            "total": 280.3999999985099,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 86.5,
+              "vertical": 1.9000000022351742,
+              "preflight": 15.800000000745058,
+              "spatial": 13.699999999254942,
+              "entrances": 2.900000002235174,
+              "facade": 24.599999997764826,
+              "attachments": 14.699999999254942
+            },
+            "rendererStages": {
+              "clear": 6.5,
+              "boundsAndInteraction": 2.099999997764826,
+              "environmentPreview": 11.800000000745058,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 8.5,
+              "geometryBuild": 0,
+              "analysisMeshes": 5.099999997764826
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 45,
+                "writes": 45,
+                "evictions": 41,
+                "entries": 4,
+                "bytes": 14849976
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 843.5,
+          "renderSubmissionMs": 32.099999997764826,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 15,
+          "input": "drag",
+          "mode": "remove",
+          "selectionCells": 784,
+          "inputStartedAt": 71745.10000000149,
+          "handlerStartedAt": 72100.5,
+          "editStartedAt": 72100.5,
+          "inputQueueMs": 355.3999999985099,
+          "inputHandlingMs": 0,
+          "synchronousMs": 754.5999999977648,
+          "cellsBefore": 20384,
+          "cellsAfter": 19600,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 11.199999999254942,
+            "replaceGrid": 87.30000000074506,
+            "acceptanceComparison": 7.5,
+            "publication": 5.700000002980232,
+            "history": 4.799999997019768
+          },
+          "generation": {
+            "analysis": 99,
+            "selection": 149.19999999925494,
+            "rendererSync": 34.5,
+            "total": 282.69999999925494,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 99,
+              "vertical": 1.800000000745058,
+              "preflight": 15.199999999254942,
+              "spatial": 14.300000000745058,
+              "entrances": 2.199999999254942,
+              "facade": 24.5,
+              "attachments": 15
+            },
+            "rendererStages": {
+              "clear": 8.700000002980232,
+              "boundsAndInteraction": 2.2999999970197678,
+              "environmentPreview": 11.5,
+              "sceneMeshesAndPublication": 0.20000000298023224,
+              "faceMeshes": 8.199999999254942,
+              "geometryBuild": 0,
+              "analysisMeshes": 3.599999997764826
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 48,
+                "writes": 48,
+                "evictions": 44,
+                "entries": 4,
+                "bytes": 14659788
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 786.3000000007451,
+          "renderSubmissionMs": 29.400000002235174,
+          "supersededBeforeRender": false
+        },
+        {
+          "id": 16,
+          "input": "drag",
+          "mode": "remove",
+          "selectionCells": 784,
+          "inputStartedAt": 76473.10000000149,
+          "handlerStartedAt": 76829.19999999925,
+          "editStartedAt": 76829.19999999925,
+          "inputQueueMs": 356.0999999977648,
+          "inputHandlingMs": 0,
+          "synchronousMs": 735.5999999977648,
+          "cellsBefore": 19600,
+          "cellsAfter": 18816,
+          "initializationState": {
+            "plannerCacheEntries": 4,
+            "geometryCacheEntries": 65,
+            "startupGenerationCount": 0
+          },
+          "steps": {
+            "surfaceEdit": 8.800000000745058,
+            "replaceGrid": 92.40000000223517,
+            "acceptanceComparison": 7.599999997764826,
+            "publication": 8,
+            "history": 3.5
+          },
+          "generation": {
+            "analysis": 78.80000000074506,
+            "selection": 148.69999999925494,
+            "rendererSync": 31.699999999254942,
+            "total": 259.19999999925494,
+            "generationCalls": 1,
+            "viewerSyncCalls": 1,
+            "stages": {
+              "analysis": 78.80000000074506,
+              "vertical": 2,
+              "preflight": 15.300000000745058,
+              "spatial": 13.599999997764826,
+              "entrances": 3,
+              "facade": 23.199999999254942,
+              "attachments": 14.099999997764826
+            },
+            "rendererStages": {
+              "clear": 5.5,
+              "boundsAndInteraction": 2.100000001490116,
+              "environmentPreview": 12.099999997764826,
+              "sceneMeshesAndPublication": 0.10000000149011612,
+              "faceMeshes": 8.300000000745058,
+              "geometryBuild": 0,
+              "analysisMeshes": 3.599999997764826
+            },
+            "telemetry": {
+              "cacheStats": {
+                "hits": 1,
+                "misses": 51,
+                "writes": 51,
+                "evictions": 47,
+                "entries": 4,
+                "bytes": 14469598
+              },
+              "actualExpansions": 0,
+              "logicalExpansions": 0,
+              "layoutTrials": 0
+            }
+          },
+          "inputToRenderMs": 770.0999999977648,
+          "renderSubmissionMs": 32,
+          "supersededBeforeRender": false
+        }
+      ]
+    }
+  ]
+}

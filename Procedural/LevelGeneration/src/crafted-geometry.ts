@@ -200,9 +200,14 @@ export function buildCraftedGeometry(assetKey: string): THREE.BufferGeometry {
 }
 export class CraftedGeometryLibrary {
   private cache = new Map<string, THREE.BufferGeometry>();
+  buildTimeMs = 0;
   get size(){return this.cache.size;}
   get(key: string) {
-    if (!this.cache.has(key)) this.cache.set(key, buildCraftedGeometry(key));
+    if (!this.cache.has(key)) {
+      const start=performance.now();
+      this.cache.set(key, buildCraftedGeometry(key));
+      this.buildTimeMs+=performance.now()-start;
+    }
     return this.cache.get(key)!;
   }
   dispose() {

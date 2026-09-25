@@ -31,6 +31,7 @@ import { stepSurface, type SurfaceSelection } from "./surface-edit";
 import { generateCity } from "./core/city";
 import {
   measuredGeneration,
+  BuildingEditMeasurement,
   benchmark,
   type BenchmarkReport,
 } from "./measurement";
@@ -111,6 +112,9 @@ export let lastEditTotalMs=0;
 export let lastMeasurement:MeasurementSample|undefined;
 export let startupGenerationCount=0;
 const measureMode=new URLSearchParams(location.search).get('measure')==='1';
+const buildingEditMeasurement=measureMode?new BuildingEditMeasurement():undefined;
+if(buildingEditMeasurement)viewer.onRendered=ms=>buildingEditMeasurement.rendered(ms);
+const timeBuildingStep=<T>(stage:string,run:()=>T):T=>buildingEditMeasurement?buildingEditMeasurement.time(stage,run):run();
 function initialization(){return {plannerCacheEntries:environmentCache.stats().entries,geometryCacheEntries:viewer.geometryCacheEntries,startupGenerationCount};}
 function finishMeasurement(start:number,initializationState:MeasurementSample['initializationState'],before:string,counts:number[],runKind:MeasurementSample['runKind'],operation:MeasurementSample['operation'],editId?:number){
  const inputAfterSignature=inputSignature(history.serializedCurrent),outputSignature=inputSignature(canonicalJSON({placements:currentResult.placements,modules:currentResult.modules,scenePlacements:currentResult.scenePlacements,parking:currentResult.environment?.parking?.map(a=>({quality:a.quality,stalls:a.plans.flatMap(p=>p.stalls)}))}));
@@ -347,6 +351,7 @@ export function selectFace(id: string, attachmentId?: string) {
 export function regenerate(fit = false) {
   try {
     const { result, timings, execution } = measuredGeneration(currentDocument, viewer);
+    const publicationStarted=buildingEditMeasurement?.active?performance.now():undefined;
     immutableJSON(currentDocument);
     acceptedState = {document:currentDocument,execution};
     lastTimings=timings;generationCount+=timings.generationCalls;viewerSyncCount+=timings.viewerSyncCalls;
@@ -363,6 +368,7 @@ export function regenerate(fit = false) {
           b.classList.toggle("active", b.dataset.camera === "iso"),
         );
     }
+    if(publicationStarted!==undefined&&buildingEditMeasurement?.active)buildingEditMeasurement.active.steps.publication=performance.now()-publicationStarted;
     return true;
   } catch (error) {
     showError(error);
@@ -376,14 +382,14 @@ function acceptDocument(
 ) {
   if (busy) return false;
   if (!keepSelection) viewer.clearEditSelection();
-  if (acceptedState&&canonicalJSON(next)===canonicalJSON(currentDocument)) return true;
+  if (acceptedState&&timeBuildingStep('acceptanceComparison',()=>canonicalJSON(next)===canonicalJSON(currentDocument))) return true;
   const previous = currentDocument;
   currentDocument = next;
   if (!regenerate(fit)) {
     currentDocument = previous;
     return false;
   }
-  if(history.commitAccepted(next))historyCommitCount++;
+  if(timeBuildingStep('history',()=>history.commitAccepted(next)))historyCommitCount++;
   el<HTMLInputElement>("seed").value = String(next.seed);
   el<HTMLSelectElement>("profile").value = next.catalog.id;
   return true;
@@ -533,7 +539,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
       }
       return undefined;
     }
-    const next = stepSurface(currentDocument.grid, selection, mode);
+    buildingEditMeasurement?.begin(mode,selection.cells.length,currentDocument.grid.length,initialization());
+    const next = timeBuildingStep('surfaceEdit',()=>stepSurface(currentDocument.grid, selection, mode));
     if (!next.changed) {
       el("edit-note").textContent =
         mode === "add"
@@ -541,7 +548,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
           : "제거할 층이 비어 있습니다. 영역을 유지합니다.";
       return undefined;
     }
-    if (!acceptDocument(replaceGrid(currentDocument, next.grid), false, true))
+    const nextDocument=timeBuildingStep('replaceGrid',()=>replaceGrid(currentDocument, next.grid));
+    if (!acceptDocument(nextDocument, false, true))
       return undefined;
     fixture.selectedIndex = -1;
     el("scene-name").textContent = "Custom volume";
@@ -553,6 +561,8 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
     el("edit-note").textContent =
       error instanceof Error ? error.message : String(error);
     return undefined;
+  } finally {
+    buildingEditMeasurement?.finish(currentDocument.grid.length,lastTimings);
   }
 }
 el("new").addEventListener("click", () => applyGrid([], true, true));
@@ -702,6 +712,7 @@ for(const [id,group] of [['environment-inputs',viewer.environmentPreview.inputs]
 el('source-select').addEventListener('change',()=>selectSource(el<HTMLSelectElement>('source-select').value?JSON.parse(el<HTMLSelectElement>('source-select').value):undefined));
 document.querySelector<HTMLDetailsElement>('.inspect-details')!.addEventListener('toggle',event=>{if((event.currentTarget as HTMLDetailsElement).open&&currentResult){refreshFaceOptions();selectFace(faceSelect.value||currentResult.surfaces[0]?.faceId);}});
 if(!measureMode){startupGenerationCount++;regenerate(true);}else {
- Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),point:(cell:Vec3)=>viewer.projectCell(cell),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
+ Object.assign(window,{environmentMeasure:{accept:measureAcceptance,repeat:()=>measureAcceptance(),timings:()=>lastTimings,point:(cell:Vec3)=>viewer.projectCell(cell),buildingEdits:()=>buildingEditMeasurement!.samples,resetBuildingEdits:()=>buildingEditMeasurement!.reset(),snapshot:()=>({document:currentDocument,parking:currentResult?.environment?.parking,parkingPlacements:currentResult?.scenePlacements?.filter(p=>p.kind==='parking'),sample:lastMeasurement,edit:lastEditRecord,delta:lastInputDelta,generationCount,viewerSyncCount,historyCommitCount,initialization:initialization()})}});
 }
 if (import.meta.hot) import.meta.hot.dispose(() => viewer.dispose());
+
