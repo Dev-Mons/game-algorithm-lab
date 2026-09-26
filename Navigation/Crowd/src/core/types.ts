@@ -10,25 +10,28 @@ export interface Rect {
   height: number;
 }
 
-export interface SimulationConfig {
-  /** Omitted selects the legacy directional-fluid solver. */
+export interface SimulationConfig extends CrowdConfig {
+  /** Lab-only preset and placement settings. */
   preset?: string;
-  experiment?: Partial<import('../algorithms/lab/registry').ExperimentOptions>;
+  experiment?: Partial<{ destination: 'exit' | 'slots'; [key: string]: string | number | boolean }>;
+  agentCount: number;
+  seed: number;
+  largeAgentPercent: number;
+  largeAgentScale: number;
+  neighborRadius: number;
+}
+
+export interface CrowdConfig {
   width: number;
   height: number;
   navCellSize: number;
   crowdFieldCellSize: number;
   contactCellSize: number;
-  agentCount: number;
-  seed: number;
   maxSpeed: number;
   maxAcceleration: number;
   /** Maximum commanded movement heading change in degrees per simulation second. */
   turnSpeed: number;
   agentRadius: number;
-  largeAgentPercent: number;
-  largeAgentScale: number;
-  neighborRadius: number;
   agentGap: number;
   wallMargin: number;
   crowdPressureRelaxationTime: number;

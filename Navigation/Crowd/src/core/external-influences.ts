@@ -35,7 +35,7 @@ export class ExternalInfluences {
   private pending: ExternalInput[] = [];
   private effects: Effect[] = [];
   private grid: SpatialHash | null = null;
-  constructor(private readonly capacity: number, private readonly width: number, private readonly height: number) {
+  constructor(private readonly capacity: number, private readonly width: number, private readonly height: number, private readonly now: () => number = () => 0) {
     this.direct = new Uint8Array(capacity);
   }
   /** Input lifetime only. Never selects a movement/physics execution path. */
@@ -118,7 +118,7 @@ export class ExternalInfluences {
     this.pending.sort((a,b) => a.tick-b.tick || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     return true;
   }
-  record(): ExternalInput[] { return structuredClone([...this.records.values()].sort((a,b) => a.tick-b.tick || (a.id < b.id ? -1 : 1))); }
+  record(): ExternalInput[] { return canonical([...this.records.values()].sort((a,b) => a.tick-b.tick || (a.id < b.id ? -1 : 1))) as ExternalInput[]; }
   /** Input replay state only; all persistent motion lives in AgentBuffer. */
   fingerprint(): string {
     if (!this.records.size && !this.active) return '';
@@ -127,7 +127,7 @@ export class ExternalInfluences {
   begin(state: AgentBuffer, flows: Uint16Array, tick: number, dt: number, radii?: Float64Array): void {
     for (const key of Object.keys(this.stats) as (keyof typeof this.stats)[]) this.stats[key] = 0;
     this.direct.fill(0);
-    const started = performance.now();
+    const started = this.now();
     // A proxy stays at its last endpoint unless this tick supplies new prescribed motion.
     for (const p of this.proxies) { p.x = p.toX; p.y = p.toY; }
     while (this.pending.length && this.pending[0]!.tick <= tick) {
@@ -179,7 +179,7 @@ export class ExternalInfluences {
         state.vx[a]=state.vx[a]!*scale;state.vy[a]=state.vy[a]!*scale;this.stats.speedClamps++;
       }
     }
-    this.stats.queryMs = performance.now()-started;
+    this.stats.queryMs = this.now()-started;
   }
   private kick(state: AgentBuffer, a: number, x: number, y: number): void {
     if (state.active[a] !== 1 || (x === 0 && y === 0)) return;

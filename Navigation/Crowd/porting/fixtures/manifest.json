@@ -1,0 +1,16 @@
+{
+  "schema": "crowd-port-manifest-v1",
+  "sourceRevision": "bed7131788c0b2485884dd78d0e8a7bec39bf0f2",
+  "source": "Pre-extraction TypeScript reference; frozen before the kernel refactor. Never regenerate to accept a changed solver.",
+  "simulationSha256": "c18ab2e20d9366cafea24c3523e80ccd4162100a80fd37f13a536f502f5b0256",
+  "files": {
+    "open-goal.json": "6a3604242d94eb8d09c114ffd14b421fafbfcfdf0aa28af86bafefcafd88d74a",
+    "corners.json": "6ae0696c69065463578d3e154d1cb81f04d18e41a314e6bfec125f4a05a10a0c",
+    "mixed-sizes.json": "1b3a72fc545a6fa7ee33b43a07d5624bd83043c98d425c02cfacfe7d5508fc38",
+    "multi-flow.json": "4c8d9fb240b915df483db77536b534d5efc83473a3fdbb2f2164a75e4c22c8b0",
+    "terrain.json": "691768d8a8959b8455fdcbff608ff5e031edbaa10e3819afe78b3772cee46d40",
+    "external.json": "23ef164d8e76c860653b1353b1b33ea5fe0eef6e285bb8fd6d838c6b5cbacf62",
+    "dynamic-routing.json": "27513c1fdff250f2fbfaed2906ccf76d3a0edf24fc5554fd9b5e54a2898929eb",
+    "arrival.json": "27647bf6ced72f1a880d60533b00d7690392379a11b01524fb5f12ad99ab6b8a"
+  }
+}

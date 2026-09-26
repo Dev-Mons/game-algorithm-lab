@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.core.json",
+  "compilerOptions": { "types": ["node"] },
+  "files": [],
+  "include": ["scripts/port-*.ts"]
+}

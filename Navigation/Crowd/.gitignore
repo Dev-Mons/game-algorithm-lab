@@ -3,4 +3,5 @@ dist/
 test-results/
 playwright-report/
 *.tsbuildinfo
+__pycache__/
 docs/research/fluid-navigation/particle-dev/

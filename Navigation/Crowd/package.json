@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "typecheck": "tsc -b --pretty false",
+    "typecheck": "tsc -b --pretty false && tsc -p tsconfig.core.json --pretty false && tsc -p tsconfig.porting.json --pretty false",
     "test": "vitest",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
@@ -17,6 +17,8 @@
     "measure:fluid": "vite-node scripts/measure-fluid.ts",
     "measure:lab": "vite-node scripts/measure-lab.ts",
     "measure:external": "vite-node scripts/measure-external.ts",
+    "port:export": "vite-node scripts/port-export.ts",
+    "port:verify": "vite-node scripts/port-verify.ts",
     "research:external": "vite-node scripts/compare-external-models.ts",
     "research:freeze": "vite-node scripts/measure-repair.ts --freeze --seeds=42,7,19,73",
     "research:repair": "vite-node scripts/measure-repair.ts",

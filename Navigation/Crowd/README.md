@@ -52,6 +52,24 @@ CLI에서 --presets를 생략하면 등록된 모든 알고리즘을 실행합�
 
 ## 알고리즘 확장 구조
 
+게임 엔진으로의 네이티브 이식은 [계산 코어와 이식 계약](docs/algorithm-design-map.md#계산-코어와-네이티브-이식)을 먼저 확인하세요.
+`src/core/index.ts`가 엔진 독립 계산 진입점이며, 시드 기반 배치·프리셋·성능 측정은
+`src/lab/simulation.ts`가 담당합니다. 기존 `src/core/simulation.ts` 경로는 호환용 재내보내기입니다.
+코어는 명시적인 초기 유닛·목표·지형 데이터를 받고 DOM·Node·실시간 시계 없이 실행합니다.
+
+```powershell
+npm run port:verify
+npm run port:export -- --output=test-results/crowd-port
+python porting/check.py verify test-results/crowd-port
+python porting/check.py compare-all test-results/crowd-port/fixtures path/to/engine-output
+```
+
+내보내기는 기존 기준 자료를 읽고 검증한 뒤 **새 폴더**에만 저장합니다.
+이식 대상은 초기 상태와 tick 명령을 읽어 같은 checkpoint의 상태 JSON을 출력합니다.
+동봉된 Python 검사기는 표준 라이브러리만 사용하며 차이를 JSON 경로로 보고합니다.
+기준값은 코어 분리 전 구현에서 보존했으며, 결과가 달라졌다는 이유로 갱신하지 않습니다.
+TS/Node는 개발용 참조이며 대상 게임의 실행 의존성으로 연결하지 않습니다.
+
 [등록 및 실행 계약](docs/algorithm-design-map.md)을 따라 새 구현을 추가하고
 `src/algorithms/lab/registry.ts`의 PRESETS에 등록합니다.
 선택 UI, 순차 비교, CLI 측정은 같은 등록 목록을 사용합니다.
@@ -288,17 +306,21 @@ Void 지표는 작은 내부 구멍을 위한 local proxy이며 임의 크기/�
 ## 주요 파일
 
 ```text
-src/core/simulation.ts                  공통 navigation과 pass orchestration
+src/core/index.ts                       엔진 독립 계산·데이터 계약 진입점
+src/core/crowd-kernel.ts                 navigation과 pass orchestration
+src/core/port-contract.ts               초기 입력·tick 명령·상태 JSON 재생
+src/lab/simulation.ts                   배치·알고리즘 등록·측정 어댑터
+src/core/simulation.ts                  기존 실험실 import 경로 호환
 src/core/crowd-field.ts                 shared density / momentum / overload
 src/core/crowd-flow-solver.ts           directional grid velocity / capacity pressure
 src/core/crowd-movement-solver.ts       bounded residual XPBD / static safety
-src/core/contact-pairs.ts              owned contact pairs from frozen CSR
-src/core/contact-velocity.ts           explicit array velocity projection
-src/core/external-contact-solver.ts    physical substeps / static and split stabilization
+src/core/external-influences.ts         tick 외력 입력과 수명 관리
 src/algorithms/spatial-hash/spatial-hash.ts  count / prefix sum / contiguous indices
 src/core/crowd-continuity-metrics.ts    spacing / interior density / void / velocity RMS
 src/core/crowd-quality-metrics.ts       기존+새 품질 진단
 scripts/measure-fluid.ts                동일 조건 비교와 pass profiling / ablation
+scripts/port-export.ts                  고정 fixture와 계산 참조 소스 내보내기
+porting/check.py                        자료 무결성·네이티브 출력 수치 비교
 ```
 
 브라우저에서 `window.crowdDebug.getSnapshot()`과 `.simulation()`을 사용할 수 있습니다.

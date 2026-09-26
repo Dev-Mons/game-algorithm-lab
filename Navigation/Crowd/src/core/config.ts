@@ -1,0 +1,41 @@
+import type { CrowdConfig } from './types';
+
+export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
+  width: 1200,
+  height: 720,
+  navCellSize: 24,
+  crowdFieldCellSize: 24,
+  contactCellSize: 24,
+  maxSpeed: 86,
+  maxAcceleration: 210,
+  turnSpeed: 360,
+  agentRadius: 3.2,
+  agentGap: 0.4,
+  wallMargin: 0.35,
+  crowdPressureRelaxationTime: 0.25,
+  goalRadius: 58,
+  fixedDelta: 1 / 60,
+  arrivalSlowRadius: 90,
+  stallSeconds: 2.5,
+  crowdPressureIterations: 8,
+  // Permit a compact footprint; early capacity pressure used to open lanes
+  // through otherwise coherent streams at corners.
+  pressureThreshold: 12,
+  crowdVelocityBlend: 0.68,
+  contactCompliance: 0.00001,
+  contactFriction: 0.08,
+  maximumContactCorrection: 1.25,
+  dynamicRouting: false,
+  dynamicFlowRebuildInterval: 8,
+  // Keep moderate density cheap, with a steep cost only once a route is crowded.
+  dynamicFlowTargetDensity: 0.75,
+  dynamicFlowDensityWeight: 72,
+  dynamicFlowOverloadWeight: 0.35,
+  dynamicFlowCounterFlowWeight: 2.5,
+  dynamicFlowWallWeight: 0.15,
+  dynamicFlowCostSmoothing: 0.35,
+  dynamicFlowDirectionHysteresis: 0.2,
+  directGoalLowDensity: 0.15,
+  directGoalCounterFlow: 0.1,
+  directGoalMinimumClearance: 36,
+};

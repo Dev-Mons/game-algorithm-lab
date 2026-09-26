@@ -70,6 +70,12 @@ large browser geometry audits are sampled and report observed residuals honestly
 
 ### Verification and port boundary
 
+The engine-independent entry point is now `src/core/index.ts`; the lab adapter
+owns wall-clock measurement. Native input/output contracts and frozen pre-extraction
+fixtures are described in [the porting guide](algorithm-design-map.md#계산-코어와-네이티브-이식).
+`ExternalInfluences` accepts an optional measurement clock (default: disabled);
+neither the clock nor browser APIs are required by the calculation core.
+
 Run `npm run verify` and `npm run test:e2e`. `scripts/measure-frame.mjs` exercises
 actual HTTP RAF/clock/UI/renderer/recorder paths with none, blast and blast-repeat
 inputs. Quality ON is separate from performance OFF; it audits every 10 ticks.

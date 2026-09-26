@@ -1,0 +1,44 @@
+{
+  "schema": "crowd-port-contract-v1",
+  "fixtureSchema": "crowd-port-fixture-v1",
+  "outputSchema": "crowd-port-output-v1",
+  "referenceEntry": "src/core/index.ts",
+  "implementation": "Native engine-language reimplementation. TypeScript and Node are development reference tools only.",
+  "model": {
+    "space": "Bounded 2D plane; x right, y down; circles and axis-aligned rectangles; no height, slopes or floors.",
+    "units": "Reference pixels, seconds, radians for heading; degrees/second for turnSpeed. Convert coordinates and rendering at the engine boundary; keep reference units inside the first port.",
+    "precision": "IEEE-754 binary64. JavaScript signed/unsigned 32-bit wrapping and Math.imul must be preserved for hashing and coincident-pair normals. Engine float32 equivalence is not claimed.",
+    "movementAuthority": "CrowdKernel owns position and velocity integration. Engine physics must not independently integrate or resolve these same bodies.",
+    "order": "Preserve agent array order, descending IDs within spatial cells, center-first bounded queries, obstacle order, heading channels and sequential swept-pair projection. Parallel endpoint writes require a separately validated algorithm.",
+    "contacts": { "candidates": 24, "pairsPerAgent": 8, "iterations": 8 },
+    "limitations": "Bounded crowd approximation; overcompression may persist. A moving circular proxy is a push brush, not a rigid collider. No global penetration guarantee."
+  },
+  "initialization": {
+    "inputs": "Explicit complete config, flows [{id,goal}], obstacle rectangles, maxAgentRadius and ordered agents. Fixture initial states include every motion field; target does not need a seed or spawn generator.",
+    "agentFields": ["id", "flow", "radius", "x", "y", "vx", "vy", "active", "stalledFor", "intentX", "intentY", "heading"],
+    "defaults": "For direct kernel callers only: vx/vy/stalledFor default to 0, active to 1, intent and heading to sampled navigation. Fixtures carry explicit values.",
+    "identity": "IDs are unique strings for host mapping. Array indices are stable solver identities and external-input agent indices. No reorder, insertion or removal within a session.",
+    "radii": "Bodies at or below config.agentRadius use its clearance; larger bodies share maxAgentRadius clearance. All radii must be positive and no greater than maxAgentRadius.",
+    "lifecycle": "Create capacity, initialize once at tick 0 (external generation 1), then step. Reinitialize clears input history and increments generation. A replay is one generation; checkpoints are observations, not mid-run restore states."
+  },
+  "commands": {
+    "ordering": "Sorted by nondecreasing tick; equal-tick commands execute in array order before step tick -> tick+1. No implicit frame clock. Individual command errors abort a replay; whole-tick transactions are not provided.",
+    "goal": "{tick,kind:goal,x,y}: common goal, preserves momentum and heading, reactivates arrived bodies. Initial flows may have different goals; per-agent goal changes are unsupported.",
+    "obstacles": "{tick,kind:obstacles,obstacles}: replaces the obstacle list and rebuilds navigation; rejected if intersecting active body clearance.",
+    "external": "{tick,kind:external,input}: input.tick must equal command.tick and generation must be 1 in a replay. Input kinds: impulse, acceleration, blast, proxy, remove-proxy, cancel. Effects are ordered by tick then ordinal string ID internally.",
+    "externalLimits": "dt <= 1/30 second, impulse and driven speed <=600 px/s, acceleration <=1200 px/s^2, proxy speed <=300 px/s, at most 8 proxies, 32 pending/ongoing inputs, 4096 records per generation. See reference external-influences.ts for validation and cancellation semantics.",
+    "arrival": "Before and after movement, distance <=goalRadius deactivates a body (active=0) and zeros velocity, intent and stalledFor. Inactive bodies no longer occupy the contact grid."
+  },
+  "outputs": {
+    "envelope": "{schema:crowd-port-output-v1,id:<fixture id>,frames:[{tick,goals,agents}]}",
+    "checkpoints": "Include tick 0 and every checkpoint in fixture order. Frame tick n is after n steps and before commands stamped n. Emit all agents, including inactive bodies, in initial order with all agentFields.",
+    "excluded": "Wall-clock timings, lab statistics and renderer state. Hashes are optional reference diagnostics and are not part of target outputs.",
+    "ownership": "Snapshots copy values; kernel state buffers swap after each step. Do not retain a buffer reference as the current state."
+  },
+  "comparison": {
+    "exact": ["schema", "id", "tick", "flow", "active", "object keys", "array lengths", "array order"],
+    "continuous": "abs(actual-expected) <= atol + rtol*abs(expected); nonfinite values always fail. Defaults: atol=1e-8, rtol=1e-10. Tolerances are reported, never widened automatically.",
+    "referenceVerification": "The TypeScript reference must match frozen expected values exactly. Eight fixtures were captured before extraction at the sourceRevision in fixtures/manifest.json.",
+    "acceptance": "Finite regression evidence only. Passing does not establish float32, GPU, engine performance, save/load, arbitrary collider or live spawn/despawn support."
+  }
+}
