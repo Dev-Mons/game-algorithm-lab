@@ -94,3 +94,60 @@ describe('directional grid transport', () => {
 });
 
 function sum(values: Float64Array): number { return values.reduce((s,v)=>s+v,0); }
+
+
+describe('exact pressure frontier',()=>{
+  it('covers each Jacobi propagation layer and rebuilds its closure after wall edits',()=>{
+    const field=new CrowdField(128,16,16),solver=new CrowdFlowSolver(field),state=new AgentBuffer(0);
+    field.density.fill(1);field.density[0]=2;
+    const solve=(iterations:number)=>solver.solve(state,new Float64Array(0),new Float64Array(0),{...options,targetDensity:1,pressureIterations:iterations});
+    solve(3);expect([...solver.pressure].map(p=>p>0)).toEqual([true,true,true,false,false,false,false,false]);
+    const walls=[{x:47,y:0,width:2,height:16}];field.setObstacles(walls,1);solver.setObstacles(walls,1);
+    solve(8);expect([...solver.pressure].map(p=>p>0)).toEqual([true,true,true,false,false,false,false,false]);
+    field.setObstacles([],1);solver.setObstacles([],1);solve(8);
+    expect([...solver.pressure].every(p=>p>0)).toBe(true);
+  });
+  it('matches the exhaustive Jacobi path, including nonfinite fallback, without changing grid bytes',()=>{
+    const field=new CrowdField(96,64,16),actual=new CrowdFlowSolver(field),expected=new CrowdFlowSolver(field);
+    Object.defineProperty(expected,'pressureWorkset',{value:()=>-1});
+    const state=new AgentBuffer(40);state.active.fill(1);
+    for(let a=0;a<40;a++){state.x[a]=8+(a*17%80);state.y[a]=8+(a*13%48);state.intentX[a]=a%2?1:-1;state.vx[a]=a%2?40:-40;}
+    for(const iterations of [0,1,2,8,9]) {
+      field.update(state,1,1/60);
+      const x=state.vx.slice(),xx=x.slice(),y=new Float64Array(40),yy=y.slice();
+      actual.solve(state,x,y,{...options,targetDensity:1,pressureIterations:iterations});expected.solve(state,xx,yy,{...options,targetDensity:1,pressureIterations:iterations});
+      expect(x).toEqual(xx);expect(y).toEqual(yy);
+      for(const name of ['mass','momentumX','momentumY','desiredX','desiredY','velocityX','velocityY','pressure','divergence','correctedDivergence'] as const)expect(actual[name]).toEqual(expected[name]);
+    }
+    field.density[5]=Infinity;
+    actual.solve(state,state.vx.slice(),state.vy.slice(),options);expected.solve(state,state.vx.slice(),state.vy.slice(),options);
+    expect(actual.pressureWorksetFallback).toBe(true);expect(actual.pressure).toEqual(expected.pressure);
+  });
+});
+
+
+it('matches native and JS transfers through walls, signed headings, partial weights and buffer growth',()=>{
+  const field=new CrowdField(96,64,16),actual=new CrowdFlowSolver(field),expected=new CrowdFlowSolver(field);
+  expected.backend='js';
+  for(const [phase,count] of [0,1,65,4097,10,5000].entries()) {
+    const walls=phase%2?[{x:31,y:0,width:2,height:64}]:[];
+    field.setObstacles(walls,1);actual.setObstacles(walls,1);expected.setObstacles(walls,1);
+    for(let i=0;i<field.cellCount;i++)field.density[i]=(i*13+phase)%17/2;
+    const state=new AgentBuffer(count),area=new Float64Array(Math.max(0,count-2)),external=new Uint8Array(Math.max(0,count-3));
+    const x=new Float64Array(count+7),y=new Float64Array(count+7);
+    for(let a=0;a<count;a++) {
+      state.active[a]=a%11?1:0;state.x[a]=(a*13.7+phase)%120-12;state.y[a]=(a*17.9+phase)%88-12;
+      const angle=(a%17-8)*Math.PI/8;
+      state.intentX[a]=a%7?Math.cos(angle):-0;state.intentY[a]=a%7?Math.sin(angle):0;
+      state.vx[a]=(a%13-6)*9;state.vy[a]=(a%11-5)*7;x[a]=state.intentX[a]!*86;y[a]=state.intentY[a]!*86;
+      if(a<area.length)area[a]=a%3?1:4;if(a<external.length)external[a]=a%7===0?1:0;
+    }
+    x.fill(123,count);y.fill(-456,count);const xx=x.slice(),yy=y.slice();
+    const settings={...options,targetDensity:1,pressureIterations:phase+1,maximumSpeed:phase===4?0:86,areaWeights:area,externallyDriven:external};
+    actual.solve(state,x,y,settings);expected.solve(state,xx,yy,settings);
+    expect(actual.kernelBytes).toBeGreaterThan(0);
+    const same=(a:Float64Array,b:Float64Array)=>expect(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).toEqual(new Uint8Array(b.buffer,b.byteOffset,b.byteLength));
+    same(x,xx);same(y,yy);
+    for(const name of ['mass','momentumX','momentumY','desiredX','desiredY','velocityX','velocityY','pressure','divergence','correctedDivergence'] as const)same(actual[name],expected[name]);
+  }
+});

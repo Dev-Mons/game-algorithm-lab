@@ -68,9 +68,35 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 입력은 고정 tick으로 기록되어 기존 재실행·결과 내보내기에 포함됩니다.
 외부 프로그램은 `CrowdSimulation.enqueueExternal()`을 사용합니다.
 
+실행 통계에는 시뮬레이션/실시간 비율, 누적 지연과 시간 손실이 표시됩니다.
+가벼운 프레임은 남은 CPU 예산으로 고정 tick을 따라잡고, 과부하의 시간 버림과
+긴 프레임 제한은 별도로 기록합니다. 상태 해시는 일시정지 및 명시적 결과 조회에서 계산합니다.
+`window.crowdDebug.getFrameTrace()`는 최근 4,096개 실제 앱 프레임의 원시 기록을 내보냅니다.
+실제 HTTP 앱 루프 측정은 `node scripts/measure-frame.mjs --url=http://127.0.0.1:4273`을 사용합니다.
+이 도구는 tick 30에 실제 캔버스 입력을 보내며, 구간별 요약과 원시 기록을 함께 저장합니다.
+`--quality=on`은 독립 품질 감사 실행입니다. 이 실행의 프레임 시간을 성능 결과로 사용하지 않습니다.
+
+외력 Contact는 f64 WebAssembly 커널을 사용합니다. 교차 출처 격리가 가능한 브라우저에서는
+충돌 쌍을 개체가 겹치지 않는 그룹으로 정렬해 main과 최대 7개 worker에서 계산합니다.
+Vite 개발·preview 서버는 필요한 COOP/COEP 헤더를 제공합니다. 다른 호스트에서는
+`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`가
+필요합니다. 지원하지 않는 환경은 단일 스레드 WebAssembly 또는 TypeScript로 실행합니다.
+직접 생성한 `CrowdSimulation`을 폐기할 때는 `dispose()`로 worker를 종료하세요.
+worker 실패 시 부분 결과를 버리고 같은 tick을 CPU에서 다시 계산합니다.
+접촉 커널은 `npm run build:contact`, 군중 흐름의 입자↔격자 전송 커널은
+`npm run build:transfer`로 생성 파일을 갱신합니다. 전송도 동일한 f64 연산 순서를 유지하며
+지원하지 않는 환경에서는 TypeScript 경로로 실행됩니다.
+`npm run verify`는 생성 파일과 원본의 일치도 확인합니다. 이 변경 자체가 10K 60FPS 수락을 뜻하지는 않습니다.
+
 지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),
 실제 수치와 한계는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
 외력 최적화 이후의 측정 조건과 남은 한계는 [외력 계약](docs/external-forces.md#performance-evidence-and-limits)에 정리되어 있습니다.
+#32·#33은 개선 확인을 완료 기준으로 삼은 사용자 지시에 따라 마무리했습니다.
+실제 10K의 660tick × 3회 측정에서 프레임 CPU P95 중앙값은 평지 밀림/폭발
+12.81/12.98ms, 협곡 25.40/24.24ms입니다. 협곡의 60FPS·실시간 목표는 여전히 미달입니다.
+같은 장비·동일 초기 입력 구간의 기존 코드 대비 P95는 밀림 약 52%, 폭발 약 50% 줄었습니다.
+원시 결과·실행 소스·현재 한계는 `baselines/frame-20260926/summary.json`의 `completion`과
+[완료 검증](docs/external-forces.md#completion-under-amended-scope--2026-09-26)에 보존합니다.
 
 기본 경로 안내는 **동일 목표·반경 클래스당 하나의 고정 Flow Field**를 공유합니다.
 혼잡도에 따른 우회 재계산은 꺼져 있으며, 목표 또는 맵이 바뀔 때만 경로를 갱신합니다.

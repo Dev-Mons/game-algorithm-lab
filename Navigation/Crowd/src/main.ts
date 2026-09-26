@@ -1,5 +1,6 @@
 import './ui/styles.css';
 import { FixedClock } from './core/fixed-clock';
+import { FrameTrace } from './core/frame-trace';
 import { RuntimeMetrics } from './core/metrics';
 import { CrowdSimulation, DEFAULT_CONFIG } from './core/simulation';
 import type { ScenarioDefinition, SimulationConfig, StepMetrics } from './core/types';
@@ -26,6 +27,8 @@ declare global {
       };
       simulation: () => CrowdSimulation;
       getFrameTimings: () => ReturnType<LabRecorder['frameTimings']>;
+      getFrameTrace: () => ReturnType<FrameTrace['export']>;
+      setFrameTracing: (enabled: boolean) => void;
       ready: boolean;
     };
   }
@@ -69,6 +72,9 @@ const initStarted = performance.now();
 let simulation = new CrowdSimulation(config, scaleScenario(baseScenario, worldScale));
 let commandLog = defaultCommands(baseScenario, worldScale);
 let appliedLiveCommands = new Set<LabCommand>();
+let indexedCommandLog = commandLog;
+let indexedCommands = 0;
+const pendingCommands = new Map<number, LabCommand[]>();
 let recorder = new LabRecorder(simulation, 0, 0, performance.now() - initStarted);
 let comparisonRunning = false;
 let comparisonCancelled = false;
@@ -78,6 +84,8 @@ let running = !requestedPaused;
 let fastForwarding = targetStep > 0;
 let timeScale = 1;
 const clock = new FixedClock(config.fixedDelta);
+const frameTrace = new FrameTrace();
+let frameSimulationMs = 0, frameRecorderMs = 0, frameOtherMs = 2;
 const runtimeMetrics = new RuntimeMetrics();
 const canvas = element<HTMLCanvasElement>('crowd-canvas');
 const renderer = new CanvasRenderer(canvas, () => simulation, DEFAULT_DEBUG_OPTIONS);
@@ -117,6 +125,8 @@ window.crowdDebug = {
   }),
   simulation: () => simulation,
   getFrameTimings: () => recorder.frameTimings(),
+  getFrameTrace: () => frameTrace.export(),
+  setFrameTracing: enabled => { frameTrace.enabled = enabled; },
   ready: !fastForwarding,
 };
 
@@ -124,6 +134,9 @@ requestAnimationFrame(frame);
 let lastFrameAt = 0;
 
 function frame(now: number): void {
+  const frameStarted = performance.now(), tickBefore = simulation.stepCount;
+  frameSimulationMs = 0; frameRecorderMs = 0;
+  const droppedBefore = clock.timing.dropped, clampedBefore = clock.timing.clamped;
   const seconds = now / 1000;
   runtimeMetrics.frame(now);
   let alpha = 0;
@@ -139,37 +152,66 @@ function frame(now: number): void {
       updateRunState();
     }
   } else if (running && !comparisonRunning) {
-    alpha = clock.consume(seconds, timeScale, timedStep);
+    alpha = clock.consume(seconds, timeScale, () => running ? timedStep() : false,
+      Math.max(0, 1000 / 60 - frameOtherMs - 1));
   } else {
-    clock.reset(seconds);
+    clock.suspend(seconds);
     alpha = 1;
   }
   const renderStarted = performance.now();
   if (!editor.active) renderer.render(alpha);
-  recorder.frame(lastFrameAt ? now - lastFrameAt : 0, performance.now() - renderStarted);
+  const renderMs = performance.now() - renderStarted;
+  const intervalMs = lastFrameAt ? now - lastFrameAt : 0;
+  recorder.frame(intervalMs, renderMs);
   lastFrameAt = now;
+  const uiStarted = performance.now();
   if (now - lastMetricsUpdate > 120) {
     updateMetrics();
     lastMetricsUpdate = now;
   }
+  const uiMs = performance.now() - uiStarted;
+  frameOtherMs = Math.max(renderMs + uiMs, frameOtherMs * .9);
+  if (frameTrace.enabled) {
+    let externalState = 0;
+    for (const value of simulation.external.affected) externalState += value;
+    frameTrace.record([now, tickBefore, simulation.stepCount, intervalMs, performance.now() - frameStarted,
+      frameSimulationMs, frameRecorderMs, renderMs, uiMs, clock.timing.debt,
+      Math.max(0,clock.timing.dropped-droppedBefore), Math.max(0,clock.timing.clamped-clampedBefore),
+      simulation.stepCount-tickBefore, simulation.metrics.activeCount, simulation.external.stats.affected,
+      simulation.external.stats.contactAffected, externalState]);
+  }
   requestAnimationFrame(frame);
 }
 
-function timedStep(): void {
+function timedStep(): boolean {
   const startedAt = performance.now();
   try {
-    applyCommands(simulation, commandLog.filter(command => !appliedLiveCommands.has(command)));
+    if(indexedCommandLog!==commandLog) {
+      pendingCommands.clear();indexedCommands=0;indexedCommandLog=commandLog;
+    }
+    while(indexedCommands<commandLog.length) {
+      const command=commandLog[indexedCommands++]!;
+      if(command.step<simulation.stepCount||appliedLiveCommands.has(command))continue;
+      const at=pendingCommands.get(command.step)??[];
+      at.push(command);pendingCommands.set(command.step,at);
+    }
+    const due=pendingCommands.get(simulation.stepCount);
+    if(due) { applyCommands(simulation,due);pendingCommands.delete(simulation.stepCount); }
     simulation.step();
   } catch (error) {
     running = false; fastForwarding = false;
     element('external-status').textContent = `입력 처리 중지: ${String(error)} · 초기화 후 다시 실행하세요.`;
     updateRunState();
     if (comparisonRunning) throw error;
-    return;
+    return false;
   }
   const elapsed = performance.now() - startedAt;
+  frameSimulationMs += elapsed;
   runtimeMetrics.recordStep(elapsed);
+  const recordStarted = performance.now();
   recorder.record(elapsed);
+  frameRecorderMs += performance.now() - recordStarted;
+  return true;
 }
 
 function initializeControls(): void {
@@ -304,11 +346,15 @@ function rebuildSimulation(scenario: ReturnType<typeof getScenario>): void {
   config.width = DEFAULT_CONFIG.width * worldScale;
   config.height = DEFAULT_CONFIG.height * worldScale;
   const started = performance.now();
+  simulation.dispose();
   simulation = new CrowdSimulation(config, scaleScenario(baseScenario, worldScale));
   commandLog = defaultCommands(baseScenario, worldScale);
   appliedLiveCommands = new Set();
+  pendingCommands.clear();indexedCommands=0;indexedCommandLog=commandLog;
   recorder = new LabRecorder(simulation, Number(element<HTMLSelectElement>('quality-mode').value), 0, performance.now() - started);
   runtimeMetrics.reset();
+  clock.reset(performance.now() / 1000);
+  frameTrace.clear();
   fastForwarding = false;
   window.crowdDebug.ready = true;
   element<HTMLSelectElement>('scenario-select').value = scenario.id;
@@ -339,7 +385,8 @@ function updateScenarioText(): void {
 function updateMetrics(): void {
   const metrics = simulation.metrics;
   element<HTMLElement>('step-label').textContent = `Step ${simulation.stepCount.toLocaleString()}`;
-  element<HTMLElement>('hash-badge').textContent = `Hash ${simulation.stateHash()}`;
+  element<HTMLElement>('hash-badge').textContent = !running && !fastForwarding
+    ? `Hash ${simulation.stateHash()}` : 'Hash · 일시정지 시 계산';
   element<HTMLElement>('agent-size-summary').textContent =
     `생성 ${simulation.state.count.toLocaleString()}명 · 큰 객체 ${simulation.largeAgentCount.toLocaleString()}명`
     + ` · 반지름 ${config.agentRadius.toFixed(1)} → ${(config.agentRadius * config.largeAgentScale).toFixed(1)}`
@@ -371,11 +418,15 @@ function updateMetrics(): void {
   document.body.dataset.preset = simulation.resolvedExperiment.preset.id;
   const stats = simulation.experimentStats;
   element('lab-live').textContent = `생성 ${simulation.state.count.toLocaleString()} · 활성 ${metrics.activeCount.toLocaleString()} · 이동 ${stats.movingCount.toLocaleString()} · 대기 ${stats.waitingCount.toLocaleString()} · 도착 ${metrics.arrivedCount.toLocaleString()} · 접촉 활성 ${stats.contactActiveCount.toLocaleString()} · 벽시계 Hz ${recorder.achievedHz.toFixed(1)}`;
+  const timing = clock.timing;
+  element('lab-live').textContent += ` · 시뮬/실시간 ${timing.wallElapsed > 0 ? (timing.simulated / timing.wallElapsed).toFixed(3) : '—'}`
+    + ` · 지연 ${(timing.debt*1000).toFixed(1)}ms · 시간 손실 ${((timing.dropped+timing.clamped)*1000).toFixed(1)}ms`;
   if (simulation.external.active || simulation.external.stats.affected) {
     const e = simulation.external.stats;
-    element('external-status').textContent = `직접 영향 ${e.affected} · 접촉 영향 ${e.contactAffected} · substep ${e.substeps} · 후보 포화 ${e.saturatedQueries} · 속도 제한 ${e.speedClamps} · 끼임 ${e.crushed}`;
+    element('external-status').textContent = `직접 영향 ${e.affected} · 접촉 영향 ${e.contactAffected} · substep ${e.substeps} · 후보 포화 ${e.saturatedQueries} · 잔여 침투 ${e.unresolvedCompression} · 속도 제한 ${e.speedClamps} · 끼임 ${e.crushed}`;
   }
-  element('lab-passes').textContent = Object.entries(stats.passMs).map(([key, value]) => `${key} ${value.toFixed(2)}ms`).join(' · ')
+  const passLabels: Record<string, string> = { navigation: '경로 재구축', desired: 'Navigation/LOS', avoidance: 'CrowdFlow', density: 'CrowdField', contact: '이동/Contact' };
+  element('lab-passes').textContent = Object.entries(stats.passMs).map(([key, value]) => `${passLabels[key] ?? key} ${value.toFixed(2)}ms`).join(' · ')
     + ` | 경로 요청 ${stats.pathRequests} · 공유 재사용 ${stats.cacheHits} · field 생성 ${stats.fieldBuilds} · 지형 v${stats.terrainVersion}`;
 }
 
@@ -468,6 +519,7 @@ async function compareRuns(all: boolean): Promise<void> {
       if (comparisonCancelled) break;
       Object.assign(config, structuredClone(runConfig), { preset: id, experiment: all ? undefined : runConfig.experiment });
       const start = performance.now();
+      simulation.dispose();
       simulation = new CrowdSimulation(config, scaleScenario(runScenario, worldScale));
       recorder = new LabRecorder(simulation, quality, 0, performance.now() - start);
       runtimeMetrics.reset(); commandLog = structuredClone(replay); appliedLiveCommands = new Set();

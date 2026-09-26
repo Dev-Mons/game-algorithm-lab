@@ -66,6 +66,29 @@ describe('circle and rectangle obstacle collision', () => {
   describe('continuous swept-circle integration', () => {
     const integrator = new SweptCircleStaticIntegrator();
 
+    it('retains a wall contact when accepted start roundoff is divided by tiny inward travel', () => {
+      const rect={x:493.3153149862672,y:1935.3139280230482,width:645.1046426743494,height:37.94733192202055};
+      const output=createSweepOutput();
+      const x=rect.x-3.55+1.25e-11,y=1942.678783913002;
+      expect(circleOverlapsRect(x,y,3.55,rect)).toBe(false);
+      integrator.integrate(x,y,.02,-80,1/120,3.55,3794.733,2276.84,[rect],4,output);
+      expect(output.startedOverlapping).toBe(false);
+      expect(output.contactCount).toBeGreaterThan(0);
+      expect(output.x).toBeLessThanOrEqual(rect.x-3.55+1e-9);
+      expect(output.velocityX).toBe(0);
+      expect(output.velocityY).toBe(-80);
+    });
+
+    it('does not freeze tangential motion after a sub-tolerance surface roundoff',()=>{
+      const output=createSweepOutput(),rect={x:683.051974596369,y:1200,width:100,height:300};
+      const x=rect.x-3.55+2e-11;
+      integrator.integrate(x,1348,0,20,1/120,3.55,3794.733,2276.84,[rect],4,output);
+      expect(output.startedOverlapping).toBe(false);
+      expect(output.y).toBeCloseTo(1348+20/120,9);
+      expect(output.velocityY).toBe(20);
+      expect(circleOverlapsRect(output.x,output.y,3.55,rect)).toBe(false);
+    });
+
     it('preserves position integration and velocity when there is no contact', () => {
       const output = createSweepOutput();
 

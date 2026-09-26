@@ -1,0 +1,20 @@
+
+> crowd-navigation-lab@1.0.0 test:e2e
+> playwright test tests/browser/external-influences.spec.ts tests/browser/frame-clock.spec.ts --workers=2 --output=test-results/native-e2e
+
+[WebServer] (node:52396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:36212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 2 workers
+
+(node:43816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\external-influences.spec.ts:3:1 › external tools work while paused, preserve goals and export replay inputs (812ms)
+  ok 3 tests\browser\external-influences.spec.ts:30:1 › external input overflow pauses visibly and reset recovers the UI (336ms)
+  ok 2 tests\browser\frame-clock.spec.ts:3:1 › records the real app loop and keeps paused commands on fixed ticks (2.5s)
+
+  3 passed (4.1s)

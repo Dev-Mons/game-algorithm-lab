@@ -28,6 +28,14 @@ export interface SweptCircleSlideOutput {
 
 const SWEEP_EPSILON = 1e-10;
 const SWEEP_FEATURE_EPSILON = 1e-9;
+const SWEEP_POSITION_EPSILON = 1e-8;
+
+/** Start validity uses distance tolerance. Dividing that tolerated roundoff by a
+ * tiny normal displacement must not turn a surface contact into a rejected past TOI. */
+function planeHitTime(separation: number, displacement: number): number {
+  const time = separation / displacement;
+  return time < 0 && Math.abs(separation) <= SWEEP_POSITION_EPSILON ? 0 : time;
+}
 
 /**
  * Allocation-free continuous circle integration against world bounds and AABBs.
@@ -70,6 +78,22 @@ export class SweptCircleStaticIntegrator {
     let vy = velocityY;
     let remainingTime = Math.max(0, deltaTime);
     const passLimit = Math.max(0, Math.floor(maxSlidePasses));
+
+    // Contact arithmetic at scaled coordinates can leave a few ulps inside a
+    // surface. Repair only that sub-tolerance roundoff, never a real overlap.
+    if(x<radius&&x>=radius-SWEEP_POSITION_EPSILON)x=radius;
+    if(y<radius&&y>=radius-SWEEP_POSITION_EPSILON)y=radius;
+    if(x>worldWidth-radius&&x<=worldWidth-radius+SWEEP_POSITION_EPSILON)x=worldWidth-radius;
+    if(y>worldHeight-radius&&y<=worldHeight-radius+SWEEP_POSITION_EPSILON)y=worldHeight-radius;
+    for(const rect of obstacles) {
+      const dx=x-clamp(x,rect.x,rect.x+rect.width),dy=y-clamp(y,rect.y,rect.y+rect.height);
+      const d2=dx*dx+dy*dy;
+      if(d2>=radius*radius||d2<=0)continue;
+      const distance=Math.sqrt(d2);
+      if(radius-distance>SWEEP_POSITION_EPSILON)continue;
+      const correction=(radius+SWEEP_EPSILON-distance)/distance;
+      x+=dx*correction;y+=dy*correction;
+    }
 
     out.x = x;
     out.y = y;
@@ -169,10 +193,10 @@ export class SweptCircleStaticIntegrator {
       || !Number.isFinite(worldHeight)
       || worldWidth < radius * 2
       || worldHeight < radius * 2
-      || x < radius - SWEEP_EPSILON
-      || y < radius - SWEEP_EPSILON
-      || x > worldWidth - radius + SWEEP_EPSILON
-      || y > worldHeight - radius + SWEEP_EPSILON
+      || x < radius - SWEEP_POSITION_EPSILON
+      || y < radius - SWEEP_POSITION_EPSILON
+      || x > worldWidth - radius + SWEEP_POSITION_EPSILON
+      || y > worldHeight - radius + SWEEP_POSITION_EPSILON
     ) return false;
     for (let obstacleIndex = 0; obstacleIndex < obstacles.length; obstacleIndex += 1) {
       const obstacle = obstacles[obstacleIndex]!;
@@ -183,7 +207,7 @@ export class SweptCircleStaticIntegrator {
           && y > obstacle.y + SWEEP_EPSILON
           && y < obstacle.y + obstacle.height - SWEEP_EPSILON
         ) return false;
-      } else if (circleOverlapsRect(x, y, radius, obstacle)) {
+      } else if (distanceSquaredToRect(x,y,obstacle)<Math.max(0,radius-SWEEP_POSITION_EPSILON)**2) {
         return false;
       }
     }
@@ -208,11 +232,11 @@ export class SweptCircleStaticIntegrator {
     // and feature order. Equal-time contacts therefore have a stable first hit;
     // another simultaneous normal is consumed as a zero-time hit next pass.
     if (displacementX < -SWEEP_EPSILON) {
-      this.considerHit((radius - startX) / displacementX, 1, 0, displacementX, displacementY);
+      this.considerHit(planeHitTime(radius - startX, displacementX), 1, 0, displacementX, displacementY);
     }
     if (displacementX > SWEEP_EPSILON) {
       this.considerHit(
-        (worldWidth - radius - startX) / displacementX,
+        planeHitTime(worldWidth - radius - startX, displacementX),
         -1,
         0,
         displacementX,
@@ -220,11 +244,11 @@ export class SweptCircleStaticIntegrator {
       );
     }
     if (displacementY < -SWEEP_EPSILON) {
-      this.considerHit((radius - startY) / displacementY, 0, 1, displacementX, displacementY);
+      this.considerHit(planeHitTime(radius - startY, displacementY), 0, 1, displacementX, displacementY);
     }
     if (displacementY > SWEEP_EPSILON) {
       this.considerHit(
-        (worldHeight - radius - startY) / displacementY,
+        planeHitTime(worldHeight - radius - startY, displacementY),
         0,
         -1,
         displacementX,
@@ -240,28 +264,28 @@ export class SweptCircleStaticIntegrator {
       const bottom = obstacle.y + obstacle.height;
 
       if (displacementX > SWEEP_EPSILON) {
-        const time = (left - radius - startX) / displacementX;
+        const time = planeHitTime(left - radius - startX, displacementX);
         const contactY = startY + displacementY * time;
         if (contactY >= top - SWEEP_FEATURE_EPSILON && contactY <= bottom + SWEEP_FEATURE_EPSILON) {
           this.considerHit(time, -1, 0, displacementX, displacementY);
         }
       }
       if (displacementX < -SWEEP_EPSILON) {
-        const time = (right + radius - startX) / displacementX;
+        const time = planeHitTime(right + radius - startX, displacementX);
         const contactY = startY + displacementY * time;
         if (contactY >= top - SWEEP_FEATURE_EPSILON && contactY <= bottom + SWEEP_FEATURE_EPSILON) {
           this.considerHit(time, 1, 0, displacementX, displacementY);
         }
       }
       if (displacementY > SWEEP_EPSILON) {
-        const time = (top - radius - startY) / displacementY;
+        const time = planeHitTime(top - radius - startY, displacementY);
         const contactX = startX + displacementX * time;
         if (contactX >= left - SWEEP_FEATURE_EPSILON && contactX <= right + SWEEP_FEATURE_EPSILON) {
           this.considerHit(time, 0, -1, displacementX, displacementY);
         }
       }
       if (displacementY < -SWEEP_EPSILON) {
-        const time = (bottom + radius - startY) / displacementY;
+        const time = planeHitTime(bottom + radius - startY, displacementY);
         const contactX = startX + displacementX * time;
         if (contactX >= left - SWEEP_FEATURE_EPSILON && contactX <= right + SWEEP_FEATURE_EPSILON) {
           this.considerHit(time, 0, 1, displacementX, displacementY);
@@ -305,7 +329,8 @@ export class SweptCircleStaticIntegrator {
     const distanceTerm = offsetX * offsetX + offsetY * offsetY - radius * radius;
     const discriminant = approach * approach - squaredSpeed * distanceTerm;
     if (discriminant < -SWEEP_EPSILON) return;
-    const time = (-approach - Math.sqrt(Math.max(0, discriminant))) / squaredSpeed;
+    const time = distanceTerm <= 0 && distanceTerm >= -2*radius*SWEEP_POSITION_EPSILON
+      ? 0 : (-approach - Math.sqrt(Math.max(0, discriminant))) / squaredSpeed;
     if (time < -SWEEP_EPSILON || time > 1 + SWEEP_EPSILON) return;
     const contactX = startX + displacementX * time;
     const contactY = startY + displacementY * time;

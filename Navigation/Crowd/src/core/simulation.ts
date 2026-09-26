@@ -171,6 +171,8 @@ export class CrowdSimulation {
     this.reset();
   }
 
+  dispose():void {this.movement.dispose();}
+
   reset(): void {
     this.external.reset();
     this.pipeline = null;
@@ -311,6 +313,7 @@ export class CrowdSimulation {
   }
 
   step(): void {
+    this.movement.prewarmExternal(this.state.count,this.external.backend);
     if (this.pipeline) { this.stepExperiment(); return; }
     const frameStarted = performance.now();
     const pass = this.legacyExperimentStats.passMs;
@@ -474,6 +477,7 @@ export class CrowdSimulation {
     }
     const external = this.external.fingerprint();
     for (let i = 0; i < external.length; i++) mix(external.charCodeAt(i));
+    this.movement.hashState(mix);
     return (hash >>> 0).toString(16).padStart(8, '0');
   }
 

@@ -1,3 +1,4 @@
+import { CrowdTransferKernel } from './crowd-transfer-kernel';
 import type { AgentBuffer } from './agent-state';
 import type { CrowdField } from './crowd-field';
 import { clamp } from './math';
@@ -27,6 +28,9 @@ export interface CrowdFlowOptions {
  * Buffers, four-cell transfers and pressure stencils have fixed sizes.
  */
 export class CrowdFlowSolver {
+  backend:'auto'|'js'='auto';
+  private transferKernel:CrowdTransferKernel|null|undefined;
+  get kernelBytes():number {return this.transferKernel?.memory.buffer.byteLength??0;}
   readonly mass: Float64Array;
   readonly momentumX: Float64Array;
   readonly momentumY: Float64Array;
@@ -42,6 +46,11 @@ export class CrowdFlowSolver {
   readonly openRight: Uint8Array;
   readonly openDown: Uint8Array;
   private readonly pressureNext: Float64Array;
+  private readonly pressureCells: Int32Array;
+  private readonly pressureMarked: Uint8Array;
+  pressureWorksetSize=0;
+  pressureGradientCells=0;
+  pressureWorksetFallback=false;
   private readonly rhs: Float64Array;
   private readonly bulkX: Float64Array;
   private readonly bulkY: Float64Array;
@@ -54,6 +63,10 @@ export class CrowdFlowSolver {
   private readonly weights = new Float64Array(4);
   private channel = 0;
   private channelFraction = 0;
+  private transferCells = new Int32Array(0);
+  private transferWeights = new Float64Array(0);
+  private transferChannels = new Uint8Array(0);
+  private transferFractions = new Float64Array(0);
 
   constructor(readonly field: CrowdField) {
     const size = field.cellCount * FLOW_CHANNELS;
@@ -68,6 +81,7 @@ export class CrowdFlowSolver {
     this.unprojectedY = new Float64Array(size);
     this.pressure = new Float64Array(field.cellCount);
     this.pressureNext = new Float64Array(field.cellCount);
+    this.pressureCells=new Int32Array(field.cellCount);this.pressureMarked=new Uint8Array(field.cellCount);
     this.rhs = new Float64Array(field.cellCount);
     this.divergence = new Float64Array(field.cellCount);
     this.correctedDivergence = new Float64Array(field.cellCount);
@@ -102,10 +116,20 @@ export class CrowdFlowSolver {
 
   solve(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
-    this.scatter(state, desiredX, desiredY, options.areaWeights, options.externallyDriven);
+    if(this.backend==='auto'&&this.transferKernel===undefined)this.transferKernel=CrowdTransferKernel.create();
+    const kernel=this.backend==='auto'?this.transferKernel:null;
+    if(!kernel&&this.transferChannels.length<state.count) {
+      this.transferCells=new Int32Array(state.count*4);this.transferWeights=new Float64Array(state.count*4);
+      this.transferChannels=new Uint8Array(state.count);this.transferFractions=new Float64Array(state.count);
+    }
+    if(kernel) {
+      kernel.scatter(state,desiredX,desiredY,this.field,this.openRight,this.openDown,options.areaWeights,options.externallyDriven);
+      for(const name of ['mass','momentumX','momentumY','desiredX','desiredY'] as const)this[name].set(kernel.arrays[name]);
+    } else this.scatter(state, desiredX, desiredY, options.areaWeights, options.externallyDriven);
     this.buildVelocities(options);
     this.project(options);
-    this.gather(state, desiredX, desiredY, options);
+    if(kernel)kernel.gather(state.count,desiredX,desiredY,this.velocityX,this.velocityY,this.unprojectedX,this.unprojectedY,options.targetDensity,options.maximumSpeed);
+    else this.gather(state, desiredX, desiredY, options);
   }
 
   private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array, external?: Uint8Array): void {
@@ -119,6 +143,10 @@ export class CrowdFlowSolver {
       if (state.active[a] !== 1) continue;
       this.stencil(state.x[a]!, state.y[a]!);
       this.heading(state.intentX[a]!, state.intentY[a]!);
+      // Positions, intent and face connectivity stay fixed until gather. Reuse
+      // their exact transfer stencil instead of repeating geometry and atan2.
+      this.transferChannels[a]=this.channel;this.transferFractions[a]=this.channelFraction;
+      for(let k=0;k<4;k++){this.transferCells[a*4+k]=this.cells[k]!;this.transferWeights[a*4+k]=this.weights[k]!;}
       for (let side = 0; side < 2; side++) {
         const offset = ((this.channel + side) % FLOW_CHANNELS) * cells;
         const angularWeight = side === 0 ? 1 - this.channelFraction : this.channelFraction;
@@ -198,8 +226,12 @@ export class CrowdFlowSolver {
     }
     // Projected Jacobi for A p >= b, p >= 0. Under-filled cells are allowed
     // to compress; no negative pressure, cohesion, or tensile gap force.
+    const workset=this.pressureWorkset(options.pressureIterations);
+    this.pressureWorksetFallback=workset<0;
+    this.pressureWorksetSize=workset<0?cellCount:workset;
     for (let iteration = 0; iteration < options.pressureIterations; iteration++) {
-      for (let i = 0; i < cellCount; i++) {
+      for (let slot = 0; slot < this.pressureWorksetSize; slot++) {
+        const i=workset<0?slot:this.pressureCells[slot]!;
         const left = i % columns > 0 ? i - 1 : i;
         const up = i >= columns ? i - columns : i;
         const wl = left !== i ? this.faceDensityX[left]! : 0;
@@ -216,6 +248,7 @@ export class CrowdFlowSolver {
       this.pressure.set(this.pressureNext);
     }
     const limit = options.maximumAcceleration * horizon;
+    this.pressureGradientCells=0;
     for (let i = 0; i < cellCount; i++) {
       const left = i % columns > 0 ? i - 1 : i;
       const up = i >= columns ? i - columns : i;
@@ -223,6 +256,14 @@ export class CrowdFlowSolver {
       const gyDown = this.openDown[i] ? (this.pressure[i+columns]! - this.pressure[i]!) / cellSize : 0;
       const gxLeft = left !== i && this.openRight[left] ? (this.pressure[i]! - this.pressure[left]!) / cellSize : 0;
       const gyUp = up !== i && this.openDown[up] ? (this.pressure[i]! - this.pressure[up]!) / cellSize : 0;
+      // Require positive zero explicitly: subnormal gradients can underflow
+      // to negative zero. Positive gradients of zero give -0 corrections. Adding -0 preserves every finite
+      // velocity (including signed zero), and the flux correction is +0.
+      if(!this.pressureWorksetFallback&&limit>0&&Object.is(gxRight,0)&&Object.is(gyDown,0)&&Object.is(gxLeft,0)&&Object.is(gyUp,0)) {
+        this.correctedDivergence[i]=this.divergence[i]!;
+        continue;
+      }
+      this.pressureGradientCells++;
       let x = -(gxLeft + gxRight) * .5;
       let y = -(gyUp + gyDown) * .5;
       const scale = Math.min(1, limit / Math.max(EPSILON, Math.hypot(x,y)));
@@ -241,13 +282,42 @@ export class CrowdFlowSolver {
     }
   }
 
+  /** Starting from zero, positive Jacobi pressure can travel at most one
+   * positive-weight edge per iteration. Cells outside this bounded closure
+   * remain exactly zero. All retained cell arithmetic stays unchanged. */
+  private pressureWorkset(iterations:number):number {
+    const {cellCount,columns,cellSize}=this.field,marked=this.pressureMarked,cells=this.pressureCells;
+    marked.fill(0);let count=0,maximumRhs=0,maximumWeight=0;
+    for(let i=0;i<cellCount;i++) {
+      const rhs=this.rhs[i]!,x=this.faceDensityX[i]!,y=this.faceDensityY[i]!;
+      if(!Number.isFinite(rhs)||!Number.isFinite(x)||!Number.isFinite(y)||x<0||y<0)return -1;
+      maximumRhs=Math.max(maximumRhs,rhs);maximumWeight=Math.max(maximumWeight,x,y);
+      if(rhs>0){marked[i]=1;cells[count++]=i;}
+    }
+    // Preserve the exhaustive path for data that might overflow intermediate
+    // products: zero * Infinity must not be silently turned into a skipped 0.
+    const pressureBound=maximumRhs*cellSize*cellSize*Math.max(1,iterations)/EPSILON;
+    if(!Number.isFinite(pressureBound)||!Number.isFinite(pressureBound*Math.max(1,maximumWeight)*8))return -1;
+    let begin=0,end=count;
+    for(let depth=1;depth<iterations&&begin<end;depth++) {
+      for(let slot=begin;slot<end;slot++) {
+        const i=cells[slot]!,left=i%columns>0?i-1:i,up=i>=columns?i-columns:i;
+        if(left!==i&&this.faceDensityX[left]!>0&&!marked[left]){marked[left]=1;cells[count++]=left;}
+        if(up!==i&&this.faceDensityY[up]!>0&&!marked[up]){marked[up]=1;cells[count++]=up;}
+        if(this.faceDensityX[i]!>0&&!marked[i+1]){marked[i+1]=1;cells[count++]=i+1;}
+        if(this.faceDensityY[i]!>0&&!marked[i+columns]){marked[i+columns]=1;cells[count++]=i+columns;}
+      }
+      begin=end;end=count;
+    }
+    return count;
+  }
+
   private gather(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
     const count = this.field.cellCount;
     for (let a = 0; a < state.count; a++) {
       if (state.active[a] !== 1) continue;
-      this.stencil(state.x[a]!, state.y[a]!);
-      this.heading(state.intentX[a]!, state.intentY[a]!);
+      const channel=this.transferChannels[a]!,fraction=this.transferFractions[a]!;
       let x = 0;
       let y = 0;
       let weightSum = 0;
@@ -255,12 +325,12 @@ export class CrowdFlowSolver {
       let baseY = 0;
       let density = 0;
       for (let corner = 0; corner < 4; corner++) {
-        const cell = this.cells[corner]!;
-        const weight = this.weights[corner]!;
+        const cell = this.transferCells[a*4+corner]!;
+        const weight = this.transferWeights[a*4+corner]!;
         density += this.field.density[cell]! * weight;
         for (let side = 0; side < 2; side++) {
-          const i = ((this.channel + side) % FLOW_CHANNELS) * count + cell;
-          const w = weight * (side === 0 ? 1 - this.channelFraction : this.channelFraction);
+          const i = ((channel + side) % FLOW_CHANNELS) * count + cell;
+          const w = weight * (side === 0 ? 1 - fraction : fraction);
           if (this.mass[i]! <= EPSILON) continue;
           x += this.velocityX[i]! * w;
           y += this.velocityY[i]! * w;

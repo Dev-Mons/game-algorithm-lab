@@ -1,0 +1,1158 @@
+{
+  "commit": "159ead92eca836f699771d72c79e88d09a45b2db",
+  "workingSourceSha256": "7d4c7b73fc0209001125c73e8f69e34a1541a944b85763946bc028700f3279c8",
+  "sourceStable": true,
+  "sourceHashFormat": "SHA-256 of localeCompare-sorted src/... paths without leading slash, followed by raw file bytes",
+  "runtime": "v22.22.0",
+  "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+  "support": {
+    "name": "external-v2",
+    "maximumSpeed": 600,
+    "maximumDeltaVelocity": 600,
+    "maximumAcceleration": 1200,
+    "maximumProxySpeed": 300,
+    "maximumProxies": 8,
+    "maximumInputs": 32,
+    "maximumRecords": 4096,
+    "maximumSubsteps": 16,
+    "candidates": 64,
+    "iterations": 4,
+    "drag": 1.5,
+    "control": 0.25,
+    "maximumContactAttempts": 5,
+    "maximumProjectionAttempts": 512,
+    "maximumProjectionRounds": 4,
+    "velocityIterations": 16,
+    "positionIterations": 128,
+    "maximumPairFactor": 128,
+    "positionTolerance": 0.45,
+    "velocityWorksetHalo": 1,
+    "recoverySeconds": 4,
+    "compressionTolerance": 0.5
+  },
+  "profile": "open-field; same density; seed 42; dt 1/60; radius 3.2; warmup 30; measured 150; proxy stops/removes at 180; quality independent all-neighbor/chord audit every 10 ticks and every exhausted/retried tick; timings are diagnostic only; no rendering; allocation samples include Vite/Node/GC and are not allocator counts",
+  "rows": [
+    {
+      "count": 1000,
+      "repeat": 0,
+      "mode": "blast",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "ticks": 180,
+      "proxyEnd": 180,
+      "spawned": 1000,
+      "minActive": 1000,
+      "stepMs": {
+        "p50": 1.662200000000098,
+        "p95": 4.183999999999969,
+        "p99": 5.999900000000025
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 447,
+        "queryCells": 121,
+        "candidates": 673,
+        "substeps": 2,
+        "planningMs": 1.669399999999996,
+        "planningCandidates": 13447,
+        "planningFallbacks": 0,
+        "singleStepVerified": 1,
+        "singleStepFallbacks": 1,
+        "substepRetries": 0,
+        "rejectedTrialCompressions": 0,
+        "rejectedTrialBudgetExhaustions": 0,
+        "rejectedTrialPenetration": 0,
+        "contactAttempts": 1,
+        "attemptedSubsteps": 2,
+        "colorBuilds": 2,
+        "colorBuildMs": 0.31579999999985375,
+        "maximumColors": 19,
+        "colorFallbacks": 0,
+        "workerThreads": 0,
+        "parallelPasses": 0,
+        "parallelPhaseMs": 0,
+        "workerFailures": 0,
+        "workerDiscardedMs": 0,
+        "pairOwnershipSkips": 17593,
+        "pairCapacityRetries": 0,
+        "contactAffected": 833,
+        "contactCellUpperBound": 37634,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 3,
+        "pairs": 7147,
+        "saturatedQueries": 0,
+        "candidateFallbacks": 0,
+        "velocityPasses": 32,
+        "stabilizationPasses": 8,
+        "unresolvedCompression": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "velocityPairVisits": 30936,
+        "velocityWorksets": 4,
+        "velocityFallbacks": 0,
+        "positionBudgetExhaustions": 0,
+        "maxExhaustedPenetration": 0,
+        "projectionPasses": 0,
+        "projectionAttempts": 0,
+        "projectionGroups": 0,
+        "projectedBodies": 0,
+        "projectionCandidates": 0,
+        "warmRejections": 0,
+        "warmDamping": 2,
+        "energyDampedContacts": 3006,
+        "wasm": 1,
+        "kernelBytes": 1245184,
+        "retainedBytes": 1710224,
+        "queryMs": 0.40620000000001255,
+        "predictionMs": 0.5144000000000233,
+        "contactMs": 3.247200000000248,
+        "staticMs": 0.5374000000000478
+      },
+      "directHits": 447,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "maxProxyPenetration": 0,
+      "maxNonfinite": 0,
+      "maxSweptPenetration": 0,
+      "maxTunnelingPairs": 0,
+      "sampledQualityGate": true,
+      "audits": [
+        {
+          "step": 31,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 6416,
+          "nonfinite": 0
+        },
+        {
+          "step": 41,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 5357,
+          "nonfinite": 0
+        },
+        {
+          "step": 51,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 5067,
+          "nonfinite": 0
+        },
+        {
+          "step": 61,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 4272,
+          "nonfinite": 0
+        },
+        {
+          "step": 71,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3198,
+          "nonfinite": 0
+        },
+        {
+          "step": 81,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3321,
+          "nonfinite": 0
+        },
+        {
+          "step": 91,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3350,
+          "nonfinite": 0
+        },
+        {
+          "step": 101,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3333,
+          "nonfinite": 0
+        },
+        {
+          "step": 111,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3304,
+          "nonfinite": 0
+        },
+        {
+          "step": 121,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3251,
+          "nonfinite": 0
+        },
+        {
+          "step": 131,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3326,
+          "nonfinite": 0
+        },
+        {
+          "step": 141,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3409,
+          "nonfinite": 0
+        },
+        {
+          "step": 151,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3457,
+          "nonfinite": 0
+        },
+        {
+          "step": 161,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3491,
+          "nonfinite": 0
+        },
+        {
+          "step": 171,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 3485,
+          "nonfinite": 0
+        }
+      ],
+      "passes": {
+        "navigation": {
+          "p50": 0.0001999999999497959,
+          "p95": 0.001100000000064938,
+          "p99": 0.00659999999993488
+        },
+        "desired": {
+          "p50": 0.10329999999999018,
+          "p95": 0.12329999999997199,
+          "p99": 0.14990000000000236
+        },
+        "avoidance": {
+          "p50": 0.22339999999996962,
+          "p95": 0.2724000000000615,
+          "p99": 0.4895000000000209
+        },
+        "contact": {
+          "p50": 1.154100000000085,
+          "p95": 3.2930000000000064,
+          "p99": 5.510899999999992
+        },
+        "density": {
+          "p50": 0.08570000000008804,
+          "p95": 0.10099999999999909,
+          "p99": 0.12049999999999272
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 1.661899999999946,
+          "p95": 4.183099999999968,
+          "p99": 5.999399999999923
+        },
+        "external.planningMs": {
+          "p50": 0.03170000000000073,
+          "p95": 0.38789999999994507,
+          "p99": 1.3823000000001002
+        },
+        "external.colorBuildMs": {
+          "p50": 0.014200000000073487,
+          "p95": 0.030799999999885586,
+          "p99": 0.08659999999986212
+        },
+        "external.parallelPhaseMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.workerDiscardedMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.queryMs": {
+          "p50": 0.002000000000066393,
+          "p95": 0.005400000000008731,
+          "p99": 0.007699999999886131
+        },
+        "external.predictionMs": {
+          "p50": 0.09940000000005966,
+          "p95": 0.14410000000009404,
+          "p99": 0.421100000000024
+        },
+        "external.contactMs": {
+          "p50": 0.5323999999999387,
+          "p95": 1.446700000000078,
+          "p99": 1.8607000000000653
+        },
+        "external.staticMs": {
+          "p50": 0.05910000000005766,
+          "p95": 0.28120000000001255,
+          "p99": 0.4642000000000053
+        }
+      },
+      "memoryBefore": {
+        "rss": 131899392,
+        "heapTotal": 63856640,
+        "heapUsed": 36257904,
+        "external": 7503214,
+        "arrayBuffers": 2486086
+      },
+      "memoryAfter": {
+        "rss": 136978432,
+        "heapTotal": 66478080,
+        "heapUsed": 41734808,
+        "external": 10312964,
+        "arrayBuffers": 3423158
+      },
+      "hash": "30e51c61"
+    },
+    {
+      "count": 10000,
+      "repeat": 0,
+      "mode": "blast",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "ticks": 180,
+      "proxyEnd": 180,
+      "spawned": 10000,
+      "minActive": 10000,
+      "stepMs": {
+        "p50": 12.334100000000035,
+        "p95": 18.79079999999999,
+        "p99": 25.808099999999968
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 4512,
+        "queryCells": 1089,
+        "candidates": 6165,
+        "substeps": 2,
+        "planningMs": 8.319899999999961,
+        "planningCandidates": 134925,
+        "planningFallbacks": 0,
+        "singleStepVerified": 1,
+        "singleStepFallbacks": 1,
+        "substepRetries": 0,
+        "rejectedTrialCompressions": 0,
+        "rejectedTrialBudgetExhaustions": 0,
+        "rejectedTrialPenetration": 0,
+        "contactAttempts": 1,
+        "attemptedSubsteps": 2,
+        "colorBuilds": 2,
+        "colorBuildMs": 0.31569999999987886,
+        "maximumColors": 19,
+        "colorFallbacks": 0,
+        "workerThreads": 0,
+        "parallelPasses": 0,
+        "parallelPhaseMs": 0,
+        "workerFailures": 0,
+        "workerDiscardedMs": 0,
+        "pairOwnershipSkips": 170966,
+        "pairCapacityRetries": 0,
+        "contactAffected": 7342,
+        "contactCellUpperBound": 376189,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 3,
+        "pairs": 69663,
+        "saturatedQueries": 0,
+        "candidateFallbacks": 0,
+        "velocityPasses": 27,
+        "stabilizationPasses": 8,
+        "unresolvedCompression": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "velocityPairVisits": 179413,
+        "velocityWorksets": 4,
+        "velocityFallbacks": 0,
+        "positionBudgetExhaustions": 0,
+        "maxExhaustedPenetration": 0,
+        "projectionPasses": 0,
+        "projectionAttempts": 0,
+        "projectionGroups": 0,
+        "projectedBodies": 0,
+        "projectionCandidates": 0,
+        "warmRejections": 1,
+        "warmDamping": 2,
+        "energyDampedContacts": 28933,
+        "wasm": 1,
+        "kernelBytes": 11862016,
+        "retainedBytes": 15433488,
+        "queryMs": 1.4773000000000138,
+        "predictionMs": 1.71120000000019,
+        "contactMs": 15.52310000000034,
+        "staticMs": 2.172900000000027
+      },
+      "directHits": 4512,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "maxProxyPenetration": 0,
+      "maxNonfinite": 0,
+      "maxSweptPenetration": 0,
+      "maxTunnelingPairs": 0,
+      "sampledQualityGate": true,
+      "audits": [
+        {
+          "step": 31,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 68207,
+          "nonfinite": 0
+        },
+        {
+          "step": 41,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 51172,
+          "nonfinite": 0
+        },
+        {
+          "step": 51,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39086,
+          "nonfinite": 0
+        },
+        {
+          "step": 61,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 31380,
+          "nonfinite": 0
+        },
+        {
+          "step": 71,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 25857,
+          "nonfinite": 0
+        },
+        {
+          "step": 81,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 21901,
+          "nonfinite": 0
+        },
+        {
+          "step": 91,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 21241,
+          "nonfinite": 0
+        },
+        {
+          "step": 101,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 21466,
+          "nonfinite": 0
+        },
+        {
+          "step": 111,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 22225,
+          "nonfinite": 0
+        },
+        {
+          "step": 121,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 22890,
+          "nonfinite": 0
+        },
+        {
+          "step": 131,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 23548,
+          "nonfinite": 0
+        },
+        {
+          "step": 141,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 23387,
+          "nonfinite": 0
+        },
+        {
+          "step": 151,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 23710,
+          "nonfinite": 0
+        },
+        {
+          "step": 161,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 23734,
+          "nonfinite": 0
+        },
+        {
+          "step": 171,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 24159,
+          "nonfinite": 0
+        }
+      ],
+      "passes": {
+        "navigation": {
+          "p50": 0.0007000000000516593,
+          "p95": 0.0011000000004059984,
+          "p99": 0.0018000000000029104
+        },
+        "desired": {
+          "p50": 1.052599999999984,
+          "p95": 1.2787000000000717,
+          "p99": 1.6561000000001513
+        },
+        "avoidance": {
+          "p50": 2.5549000000000888,
+          "p95": 3.0403000000001157,
+          "p99": 4.778800000000047
+        },
+        "contact": {
+          "p50": 6.96770000000015,
+          "p95": 13.527399999999943,
+          "p99": 19.997100000000046
+        },
+        "density": {
+          "p50": 0.8487999999997555,
+          "p95": 1.0914999999999964,
+          "p99": 1.4373999999997977
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 12.331100000000333,
+          "p95": 18.78749999999991,
+          "p99": 25.804599999999937
+        },
+        "external.planningMs": {
+          "p50": 0.39629999999988286,
+          "p95": 3.1341999999999643,
+          "p99": 3.561200000000099
+        },
+        "external.colorBuildMs": {
+          "p50": 0.10019999999985885,
+          "p95": 0.23090000000001965,
+          "p99": 0.27430000000026666
+        },
+        "external.parallelPhaseMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.workerDiscardedMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.queryMs": {
+          "p50": 0.004699999999957072,
+          "p95": 0.006899999999859574,
+          "p99": 0.009600000000318687
+        },
+        "external.predictionMs": {
+          "p50": 1.0043000000000575,
+          "p95": 1.2687999999998283,
+          "p99": 1.5851999999999862
+        },
+        "external.contactMs": {
+          "p50": 4.404300000000603,
+          "p95": 7.653700000000072,
+          "p99": 11.17269999999985
+        },
+        "external.staticMs": {
+          "p50": 0.16370000000006257,
+          "p95": 0.40279999999984284,
+          "p99": 1.442600000000084
+        }
+      },
+      "memoryBefore": {
+        "rss": 165568512,
+        "heapTotal": 71872512,
+        "heapUsed": 36763824,
+        "external": 31627897,
+        "arrayBuffers": 24998023
+      },
+      "memoryAfter": {
+        "rss": 188203008,
+        "heapTotal": 68050944,
+        "heapUsed": 27507448,
+        "external": 56889175,
+        "arrayBuffers": 30205285
+      },
+      "hash": "5accb7b5"
+    },
+    {
+      "count": 20000,
+      "repeat": 0,
+      "mode": "blast",
+      "scenario": "open-field",
+      "quality": true,
+      "fixedSpace": false,
+      "ticks": 180,
+      "proxyEnd": 180,
+      "spawned": 20000,
+      "minActive": 20000,
+      "stepMs": {
+        "p50": 23.425600000000486,
+        "p95": 38.04330000000027,
+        "p99": 45.21569999999974
+      },
+      "peaks": {
+        "inputs": 1,
+        "affected": 9085,
+        "queryCells": 2116,
+        "candidates": 12098,
+        "substeps": 2,
+        "planningMs": 8.701700000000528,
+        "planningCandidates": 272953,
+        "planningFallbacks": 0,
+        "singleStepVerified": 1,
+        "singleStepFallbacks": 1,
+        "substepRetries": 0,
+        "rejectedTrialCompressions": 0,
+        "rejectedTrialBudgetExhaustions": 0,
+        "rejectedTrialPenetration": 0,
+        "contactAttempts": 1,
+        "attemptedSubsteps": 2,
+        "colorBuilds": 2,
+        "colorBuildMs": 0.6792000000004919,
+        "maximumColors": 19,
+        "colorFallbacks": 0,
+        "workerThreads": 0,
+        "parallelPasses": 0,
+        "parallelPhaseMs": 0,
+        "workerFailures": 0,
+        "workerDiscardedMs": 0,
+        "pairOwnershipSkips": 339826,
+        "pairCapacityRetries": 0,
+        "contactAffected": 13892,
+        "contactCellUpperBound": 752213,
+        "proxyCells": 0,
+        "proxyCandidates": 0,
+        "staticSweeps": 0,
+        "staticExhaustions": 0,
+        "rebuilds": 3,
+        "pairs": 138220,
+        "saturatedQueries": 0,
+        "candidateFallbacks": 0,
+        "velocityPasses": 32,
+        "stabilizationPasses": 8,
+        "unresolvedCompression": 0,
+        "speedClamps": 0,
+        "crushed": 0,
+        "velocityPairVisits": 418206,
+        "velocityWorksets": 3,
+        "velocityFallbacks": 0,
+        "positionBudgetExhaustions": 0,
+        "maxExhaustedPenetration": 0,
+        "projectionPasses": 0,
+        "projectionAttempts": 0,
+        "projectionGroups": 0,
+        "projectedBodies": 0,
+        "projectionCandidates": 0,
+        "warmRejections": 0,
+        "warmDamping": 2,
+        "energyDampedContacts": 121326,
+        "wasm": 1,
+        "kernelBytes": 23658496,
+        "retainedBytes": 30799888,
+        "queryMs": 1.9616000000005442,
+        "predictionMs": 3.0529999999998836,
+        "contactMs": 30.931899999998677,
+        "staticMs": 4.3442000000004555
+      },
+      "directHits": 9085,
+      "proxyDrivenPeak": 0,
+      "maxPenetration": 0,
+      "maxWalls": 0,
+      "maxProxyPenetration": 0,
+      "maxNonfinite": 0,
+      "maxSweptPenetration": 0,
+      "maxTunnelingPairs": 0,
+      "sampledQualityGate": true,
+      "audits": [
+        {
+          "step": 31,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 135408,
+          "nonfinite": 0
+        },
+        {
+          "step": 41,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 100760,
+          "nonfinite": 0
+        },
+        {
+          "step": 51,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 75932,
+          "nonfinite": 0
+        },
+        {
+          "step": 61,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 60154,
+          "nonfinite": 0
+        },
+        {
+          "step": 71,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 48113,
+          "nonfinite": 0
+        },
+        {
+          "step": 81,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39868,
+          "nonfinite": 0
+        },
+        {
+          "step": 91,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 37682,
+          "nonfinite": 0
+        },
+        {
+          "step": 101,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 38737,
+          "nonfinite": 0
+        },
+        {
+          "step": 111,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39349,
+          "nonfinite": 0
+        },
+        {
+          "step": 121,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39692,
+          "nonfinite": 0
+        },
+        {
+          "step": 131,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39897,
+          "nonfinite": 0
+        },
+        {
+          "step": 141,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 40694,
+          "nonfinite": 0
+        },
+        {
+          "step": 151,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 40204,
+          "nonfinite": 0
+        },
+        {
+          "step": 161,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39716,
+          "nonfinite": 0
+        },
+        {
+          "step": 171,
+          "pairs": 0,
+          "maxPenetration": 0,
+          "maxPair": null,
+          "maxProxyPenetration": 0,
+          "maxSweptPenetration": 0,
+          "tunnelingPairs": 0,
+          "walls": 0,
+          "checks": 39986,
+          "nonfinite": 0
+        }
+      ],
+      "passes": {
+        "navigation": {
+          "p50": 0.0009999999992942321,
+          "p95": 0.0018999999992956873,
+          "p99": 0.002300000000104774
+        },
+        "desired": {
+          "p50": 2.150499999999738,
+          "p95": 2.4143999999996595,
+          "p99": 2.578700000000026
+        },
+        "avoidance": {
+          "p50": 5.266200000000026,
+          "p95": 5.8443999999999505,
+          "p99": 7.137700000000223
+        },
+        "contact": {
+          "p50": 12.578099999999722,
+          "p95": 27.03690000000006,
+          "p99": 33.60499999999956
+        },
+        "density": {
+          "p50": 1.73279999999977,
+          "p95": 2.0212000000001353,
+          "p99": 2.153700000000754
+        },
+        "queue": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "spatial": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "integration": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "total": {
+          "p50": 23.421400000000176,
+          "p95": 38.035799999999654,
+          "p99": 45.21010000000024
+        },
+        "external.planningMs": {
+          "p50": 0.7990000000008877,
+          "p95": 6.669100000000071,
+          "p99": 7.346800000000258
+        },
+        "external.colorBuildMs": {
+          "p50": 0.15669999999954598,
+          "p95": 0.4453000000003158,
+          "p99": 0.5028000000002066
+        },
+        "external.parallelPhaseMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.workerDiscardedMs": {
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "external.queryMs": {
+          "p50": 0.006099999999605643,
+          "p95": 0.009699999999611464,
+          "p99": 0.010299999999915599
+        },
+        "external.predictionMs": {
+          "p50": 2.023599999999533,
+          "p95": 2.28479999999945,
+          "p99": 2.8958000000002357
+        },
+        "external.contactMs": {
+          "p50": 7.666900000000169,
+          "p95": 15.543000000000575,
+          "p99": 18.990099999999984
+        },
+        "external.staticMs": {
+          "p50": 0.32330000000001746,
+          "p95": 0.8565000000007785,
+          "p99": 1.5279999999993379
+        }
+      },
+      "memoryBefore": {
+        "rss": 211423232,
+        "heapTotal": 73793536,
+        "heapUsed": 42444072,
+        "external": 97057991,
+        "arrayBuffers": 70374101
+      },
+      "memoryAfter": {
+        "rss": 231510016,
+        "heapTotal": 63856640,
+        "heapUsed": 33756856,
+        "external": 108203746,
+        "arrayBuffers": 59237616
+      },
+      "hash": "a09b9e72"
+    }
+  ]
+}

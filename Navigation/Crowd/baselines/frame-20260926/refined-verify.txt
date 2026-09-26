@@ -1,0 +1,115 @@
+
+> crowd-navigation-lab@1.0.0 verify
+> node scripts/build-contact-kernel.mjs --check && npm run typecheck && npm run test:run && npm run build
+
+
+> crowd-navigation-lab@1.0.0 typecheck
+> tsc -b --pretty false
+
+
+> crowd-navigation-lab@1.0.0 test:run
+> vitest run
+
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ✓ tests/unit/math.test.ts (3 tests) 2ms
+ ✓ tests/unit/obstacle-collision.test.ts (12 tests) 6ms
+ ✓ tests/unit/warm-contact-cache.test.ts (3 tests) 3ms
+ ✓ tests/unit/fixed-clock.test.ts (11 tests) 4ms
+ ✓ tests/unit/spatial-hash.test.ts (3 tests) 2ms
+ ✓ tests/unit/crowd-field.test.ts (4 tests) 4ms
+ ✓ tests/unit/static-free-space.test.ts (1 test) 13ms
+ ✓ tests/unit/flow-field.test.ts (10 tests) 26ms
+ ✓ tests/unit/static-obstacle-index.test.ts (2 tests) 55ms
+ ✓ tests/unit/contact-kernel.test.ts (1 test) 39ms
+ ✓ tests/unit/crowd-flow-solver.test.ts (5 tests) 6ms
+ ✓ tests/unit/contact-projection.test.ts (5 tests) 32ms
+ ✓ tests/unit/flow-witness.test.ts (1 test) 180ms
+ ✓ tests/unit/frame-trace.test.ts (1 test) 3ms
+ ✓ tests/simulation/lab-registry.test.ts (2 tests) 23ms
+ ✓ tests/unit/lab-results.test.ts (8 tests) 44ms
+ ✓ tests/unit/particle-repair.test.ts (10 tests) 171ms
+ ✓ tests/unit/agent-state.test.ts (5 tests) 79ms
+ ✓ tests/unit/crowd-continuity-metrics.test.ts (2 tests) 85ms
+ ✓ tests/unit/canvas-renderer.test.ts (2 tests) 119ms
+ ✓ tests/simulation/turning.test.ts (2 tests) 153ms
+ ✓ tests/simulation/legacy-baseline.test.ts (3 tests) 523ms
+ ✓ tests/unit/map-document.test.ts (16 tests) 590ms
+   ✓ custom map documents > runs a reimported custom map through the same deterministic bounded solver  479ms
+ ✓ tests/simulation/exact-cache-equivalence.test.ts (1 test) 705ms
+   ✓ matches JS state bytes with WASM/caches through mixed radii, forces and geometry/goal edits  704ms
+ ✓ tests/simulation/external-influences.test.ts (37 tests) 1391ms
+   ✓ external physical movement > returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags  628ms
+ ✓ tests/simulation/mixed-sizes.test.ts (9 tests) 1904ms
+   ✓ mixed body sizes > uses the common FlowField policy and moves both sizes safely in open-field  511ms
+   ✓ mixed body sizes > uses the common FlowField policy and moves both sizes safely in obstacle-field  604ms
+   ✓ mixed body sizes > uses the common FlowField policy and moves both sizes safely in four-way-merge  554ms
+ ✓ tests/behavior/multi-flow.test.ts (7 tests) 7397ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > keeps both streams moving in merge-500-500  811ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > keeps both streams moving in crossing-500-500  628ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > replays independent flow goals with the same state hash  387ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > increases alternate-gate use after the initially favored equal gate becomes congested  3293ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > uses both declared routes without wall penetration in different-capacity-gates  704ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > uses both declared routes without wall penetration in merge-then-split  779ms
+   ✓ opt-in legacy dynamic multi-flow scenarios > uses both declared routes without wall penetration in opposing-occupied-corridor  793ms
+ ✓ tests/simulation/crowd-field-steering.test.ts (11 tests) 7914ms
+   ✓ CrowdField steering and quality instrumentation > moves a dense merge crowd into the shared gate without curling behind its spawn  554ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in open-field  843ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in dense-spawn  1080ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in obstacle-field  898ms
+   ✓ CrowdField steering and quality instrumentation > combines field pressure with bounded XPBD work in a completely overlapping crowd  2261ms
+   ✓ CrowdField steering and quality instrumentation > does not increase Dense Spawn density or penetration with fixed routing  1413ms
+   ✓ CrowdField steering and quality instrumentation > does not average opposing flows into a global stop  548ms
+ ✓ tests/simulation/static-index-equivalence.test.ts (4 tests) 7976ms
+   ✓ indexed static queries preserve exhaustive movement > rocky-pass scale=1 large=0 matches every sampled state and metrics  2083ms
+   ✓ indexed static queries preserve exhaustive movement > rocky-pass scale=3.1622776601683795 large=25 matches every sampled state and metrics  4935ms
+   ✓ indexed static queries preserve exhaustive movement > funnel-bypass scale=1 large=25 matches every sampled state and metrics  572ms
+   ✓ indexed static queries preserve exhaustive movement > winding-corners scale=1 large=0 matches every sampled state and metrics  384ms
+ ✓ tests/behavior/concept-scenarios.test.ts (8 tests) 12139ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > spawns the full default population on reachable cells and replays winding-corners  819ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > spawns the full default population on reachable cells and replays funnel-bypass  495ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > spawns the full default population on reachable cells and replays four-way-merge  534ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > spawns the full default population on reachable cells and replays rocky-pass  609ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > takes all three alternating corners and reaches the far exit  3859ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > can opt into legacy congestion routing for the wider-bypass comparison  4087ms
+   ✓ sketch concept scenarios through the shared navigation pipeline > merges four equally sized inlets toward one goal without starving an inlet  1727ms
+ ✓ tests/simulation/movement-v2.test.ts (14 tests) 13103ms
+   ✓ single crowd movement pipeline > keeps a 1000-agent hot path finite and spatially bounded  566ms
+   ✓ single crowd movement pipeline > keeps a completely overlapping 10000-agent crowd moving under fixed work  2499ms
+   ✓ single crowd movement pipeline > moves 10000 XPBD-contact agents through obstacle gates with bounded work  7573ms
+   ✓ single crowd movement pipeline > keeps the 4990/5000/5010 boundary on one continuous contact model  539ms
+   ✓ single crowd movement pipeline > maintains useful obstacle-gate throughput with congestion routing and bounded compression  1205ms
+ ✓ tests/simulation/displaced-navigation.test.ts (11 tests) 26087ms
+   ✓ navigation after contact displacement > clears all winding walls at speed 68 with a saturated spawn  7484ms
+   ✓ navigation after contact displacement > clears all winding walls at speed 86 with a saturated spawn  5766ms
+   ✓ navigation after contact displacement > clears 깔때기V2 with 10% large bodies without leaving a body at a corner  6155ms
+   ✓ navigation after contact displacement > clears 깔때기V2 with 20% large bodies without leaving a body at a corner  6427ms
+
+ Test Files  32 passed (32)
+      Tests  214 passed (214)
+   Start at  04:34:43
+   Duration  26.83s (transform 2.25s, setup 0ms, collect 8.98s, tests 80.78s, environment 5ms, prepare 3.90s)
+
+
+> crowd-navigation-lab@1.0.0 build
+> tsc -b && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 48 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.56 kB │ gzip:   0.33 kB
+dist/experiments/fluid-navigation/index.html        6.01 kB │ gzip:   2.83 kB
+dist/assets/crack-42-off-3ZMHlm2k.json          1,174.04 kB │ gzip: 184.66 kB
+dist/assets/crack-42-on-C-kEvahb.json           1,175.62 kB │ gzip: 334.74 kB
+dist/assets/hole-42-off-DgK0p282.json           1,178.98 kB │ gzip: 185.31 kB
+dist/assets/hole-42-on-BEbHzg0q.json            1,181.11 kB │ gzip: 313.87 kB
+dist/assets/uniform-42-off-Bv5zvD9H.json        1,222.84 kB │ gzip: 191.97 kB
+dist/assets/uniform-42-on-BLTb6nD9.json         1,223.40 kB │ gzip: 313.87 kB
+dist/assets/main-BOpu2_mQ.css                       8.23 kB │ gzip:   2.52 kB
+dist/assets/modulepreload-polyfill-B5Qt9EMX.js      0.71 kB │ gzip:   0.40 kB
+dist/assets/research-Cv9nfwLL.js                    5.23 kB │ gzip:   2.54 kB
+dist/assets/main-MEhis8CG.js                      207.27 kB │ gzip:  64.49 kB
+✓ built in 319ms

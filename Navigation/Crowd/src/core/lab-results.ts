@@ -2,6 +2,7 @@ import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import type { LabCommand } from '../scenarios/lab-scenarios';
 import { distanceSquaredToRect } from './obstacle-collision';
 import type { CrowdSimulation } from './simulation';
+import { NumericRing } from './frame-trace';
 
 export function distribution(values: readonly number[]) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -10,18 +11,33 @@ export function distribution(values: readonly number[]) {
 }
 
 /** Independent audit: no solver candidate list or neighbor cap is reused. */
-export function auditGeometry(simulation: CrowdSimulation) {
+export interface GeometryAudit {
+  pairs:number; maxPenetration:number; maxProxyPenetration:number; maxSweptPenetration:number;
+  maxPair:{a:number;b:number;ax:number;ay:number;bx:number;by:number}|null;
+  tunnelingPairs:number; walls:number; checks:number; nonfinite:number;
+}
+
+export function auditGeometry(simulation: CrowdSimulation):GeometryAudit {
   const { state, previousState: previous, config, agentRadii: radii } = simulation;
   const retain = simulation.resolvedExperiment.options.destination === 'slots';
   const present = Uint8Array.from(state.active, (active, i) => retain || active === 1 || previous.active[i] === 1 ? 1 : 0);
+  let nonfinite=0;
+  for(let i=0;i<state.count;i++)if(present[i]) {
+    if(![state.x[i],state.y[i],state.vx[i],state.vy[i],state.heading[i],state.intentX[i],state.intentY[i],state.stalledFor[i],previous.x[i],previous.y[i]].every(Number.isFinite)) {
+      nonfinite++;present[i]=0;
+    }
+  }
   const index = new SpatialHash(config.width, config.height, Math.max(4, simulation.maxAgentRadius * 2), state.count);
   index.rebuild(previous.x, previous.y, present);
   let maxTravel = 0;
-  for (let i = 0; i < state.count; i++) maxTravel = Math.max(maxTravel, Math.hypot(state.x[i]! - previous.x[i]!, state.y[i]! - previous.y[i]!));
+  for (let i = 0; i < state.count; i++) if(present[i])maxTravel = Math.max(maxTravel, Math.hypot(state.x[i]! - previous.x[i]!, state.y[i]! - previous.y[i]!));
   let pairs = 0, maxPenetration = 0, maxSweptPenetration = 0, tunnelingPairs = 0, walls = 0, checks = 0;
+  let maxPair: {a:number;b:number;ax:number;ay:number;bx:number;by:number}|null=null;
+  let maxProxyPenetration=0;
   for (let i = 0; i < state.count; i++) {
     if (!present[i]) continue;
     const ri = radii[i]!;
+    for(const p of simulation.external?.proxies??[])maxProxyPenetration=Math.max(maxProxyPenetration,ri+p.radius-Math.hypot(state.x[i]!-p.toX,state.y[i]!-p.toY));
     const wallR = ri + config.wallMargin;
     if (state.x[i]! < wallR - 1e-6 || state.y[i]! < wallR - 1e-6
       || state.x[i]! > config.width - wallR + 1e-6 || state.y[i]! > config.height - wallR + 1e-6
@@ -37,19 +53,20 @@ export function auditGeometry(simulation: CrowdSimulation) {
       const penetration = Math.max(0, radius - Math.hypot(endX, endY));
       const swept = Math.max(0, radius - Math.hypot(dx + t * ux, dy + t * uy));
       if (penetration > .01) pairs++;
-      maxPenetration = Math.max(maxPenetration, penetration);
+      if(penetration>maxPenetration){maxPenetration=penetration;maxPair={a:i,b:j,ax:state.x[i]!,ay:state.y[i]!,bx:state.x[j]!,by:state.y[j]!};}
       maxSweptPenetration = Math.max(maxSweptPenetration, swept);
       if (swept > .01 && penetration <= .01 && Math.hypot(dx, dy) >= radius - .01 && t > 0 && t < 1) tunnelingPairs++;
     });
   }
-  return { pairs, maxPenetration, maxSweptPenetration, tunnelingPairs, walls, checks };
+  return { pairs, maxPenetration, maxPair, maxProxyPenetration, maxSweptPenetration, tunnelingPairs, walls, checks, nonfinite };
 }
 
 export class LabRecorder {
-  private readonly times: number[] = [];
-  private readonly passTimes: Record<string, number[]> = {};
-  private readonly frames: number[] = [];
-  private readonly renderTimes: number[] = [];
+  private readonly times = new NumericRing();
+  private readonly passTimes: Record<string, NumericRing> = {};
+  private readonly frames = new NumericRing();
+  private readonly renderTimes = new NumericRing();
+  private measuredSteps = 0;
   private readonly ticks: Array<Record<string, number>> = [];
   private readonly gateSeen = new Set<string>();
   private readonly gateCounts: Record<string, number> = {};
@@ -61,6 +78,8 @@ export class LabRecorder {
   private maximumPenetration = 0;
   private maximumSweptPenetration = 0;
   private maximumWallCount = 0;
+  private maximumNonfinite = 0;
+  private maximumProxyPenetration = 0;
   private tunnelingPairs = 0;
   private stalledMax = 0;
   private activeMinimum = Infinity;
@@ -76,14 +95,12 @@ export class LabRecorder {
   }
 
   get achievedHz(): number {
-    return this.firstMeasuredAt === null ? 0 : this.times.length * 1000 / Math.max(.001, this.lastMeasuredAt - this.firstMeasuredAt);
+    return this.firstMeasuredAt === null ? 0 : this.measuredSteps * 1000 / Math.max(.001, this.lastMeasuredAt - this.firstMeasuredAt);
   }
 
   frame(intervalMs: number, renderMs: number): void {
     if (intervalMs > 0) this.frames.push(intervalMs);
     this.renderTimes.push(renderMs);
-    if (this.frames.length > 10000) this.frames.shift();
-    if (this.renderTimes.length > 10000) this.renderTimes.shift();
   }
 
   frameTimings(samples = 90) {
@@ -96,7 +113,8 @@ export class LabRecorder {
     this.firstMeasuredAt ??= performance.now() - stepMs;
     const stats = s.experimentStats;
     this.times.push(stepMs);
-    for (const [key, value] of Object.entries(stats.passMs)) (this.passTimes[key] ??= []).push(value);
+    this.measuredSteps++;
+    for (const [key, value] of Object.entries(stats.passMs)) (this.passTimes[key] ??= new NumericRing()).push(value);
     this.activeAtFirstSample ??= s.metrics.activeCount;
     this.activeMinimum = Math.min(this.activeMinimum, s.metrics.activeCount);
     this.activeMaximum = Math.max(this.activeMaximum, s.metrics.activeCount);
@@ -139,18 +157,21 @@ export class LabRecorder {
       this.maximumPenetration = Math.max(this.maximumPenetration, audit.maxPenetration);
       this.maximumSweptPenetration = Math.max(this.maximumSweptPenetration, audit.maxSweptPenetration);
       this.maximumWallCount = Math.max(this.maximumWallCount, audit.walls);
+      this.maximumNonfinite = Math.max(this.maximumNonfinite, audit.nonfinite);
+      this.maximumProxyPenetration = Math.max(this.maximumProxyPenetration, audit.maxProxyPenetration);
       this.tunnelingPairs += audit.tunnelingPairs;
     }
     if (s.stepCount % 10 === 0 || this.times.length === 1) this.ticks.push({ step: s.stepCount, requested: s.config.agentCount,
       spawned: s.state.count, active: s.metrics.activeCount, moving: stats.movingCount, waiting: stats.waitingCount,
       arrived: s.metrics.arrivedCount, contactActive: stats.contactActiveCount, stepMs });
+    if(this.ticks.length>10000)this.ticks.shift();
     this.lastMeasuredAt = performance.now();
   }
 
   result(commands: readonly LabCommand[] = []) {
     const s = this.simulation;
-    const seconds = this.times.length * s.config.fixedDelta;
-    const step = distribution(this.times);
+    const seconds = this.measuredSteps * s.config.fixedDelta;
+    const step = distribution(this.times.slice());
     const memory = (globalThis.performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
     return {
       schema: 'crowd-lab-result-v1', createdAt: new Date().toISOString(), preset: s.resolvedExperiment.preset.id,
@@ -160,13 +181,14 @@ export class LabRecorder {
       activeMinimum: Number.isFinite(this.activeMinimum) ? this.activeMinimum : s.metrics.activeCount, activeMaximum: this.activeMaximum,
       moving: s.experimentStats.movingCount, waiting: s.experimentStats.waitingCount, arrived: s.metrics.arrivedCount,
       contactActive: s.experimentStats.contactActiveCount, arrivalRate: s.metrics.arrivalRate,
-      timing: { initMs: this.initMs, warmupSteps: this.warmupSteps, measuredSteps: this.times.length, stepMs: step,
+      timing: { initMs: this.initMs, warmupSteps: this.warmupSteps, measuredSteps: this.measuredSteps, retainedTimingSamples: this.times.length, timingCapacity: this.times.capacity, stepMs: step,
         simulationCapacityHz: step.mean > 0 ? 1000 / step.mean : 0, achievedHzIncludingAudit: this.achievedHz,
-        frameIntervalMs: distribution(this.frames), renderMs: distribution(this.renderTimes), passes: Object.fromEntries(Object.entries(this.passTimes).map(([key, values]) => [key, distribution(values)])) },
+        frameIntervalMs: distribution(this.frames.slice()), renderMs: distribution(this.renderTimes.slice()), passes: Object.fromEntries(Object.entries(this.passTimes).map(([key, values]) => [key, distribution(values.slice())])) },
       memory: memory ? { kind: 'browser-reported JS heap; includes app, not per solver', usedBytes: memory.usedJSHeapSize, totalBytes: memory.totalJSHeapSize } : null,
       quality: { auditEverySteps: this.qualityEvery, auditedSteps: this.audits, auditMs: this.auditMs,
         coverage: this.qualityEvery === 1 ? 'Every measured tick, all spatial candidates; swept test is the chord between published states (substep paths not exposed).' : this.qualityEvery > 1 ? 'Sampled ticks, all spatial candidates; intermediate ticks and curved substep paths not audited.' : 'Quality audit disabled; runtime overlap diagnostics are solver-dependent.',
         maximumOverlapPairs: this.audits ? this.maximumOverlapPairs : null, maximumPenetration: this.audits ? this.maximumPenetration : null,
+        maximumNonfinite: this.audits ? this.maximumNonfinite : null, maximumProxyPenetration: this.audits ? this.maximumProxyPenetration : null,
         maximumSweptPenetration: this.audits ? this.maximumSweptPenetration : null, tunnelingPairs: this.audits ? this.tunnelingPairs : null,
         maximumWallCount: this.maximumWallCount, stalledMax: this.stalledMax, stalledLabel: 'Low-speed duration proxy; includes legitimate queues, not certified deadlock.',
         lateralSignFlips: this.observedFlips, lateralFlipsPerAgentSecond: this.observedFlips / Math.max(1, s.state.count * seconds),

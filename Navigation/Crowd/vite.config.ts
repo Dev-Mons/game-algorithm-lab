@@ -2,7 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   base: './',
-  server: { host: '127.0.0.1', port: 4273 },
+  server: { host: '127.0.0.1', port: 4273,headers:{'Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp'} },
+  preview:{headers:{'Cross-Origin-Opener-Policy':'same-origin','Cross-Origin-Embedder-Policy':'require-corp'}},
   plugins: [{
     name: 'crowd-source-identity',
     apply: 'serve',

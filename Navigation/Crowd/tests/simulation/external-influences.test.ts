@@ -3,6 +3,7 @@ import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { EXTERNAL_PROFILE, type ExternalInput } from '../../src/core/external-influences';
 import type { Rect } from '../../src/core/types';
 import { getScenario } from '../../src/scenarios/scenarios';
+import { FixedClock } from '../../src/core/fixed-clock';
 
 function scene(count=1, obstacles: Rect[]=[], controlled=false, dt=1/60) {
   const s = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount:count, maxAcceleration:controlled ? 210 : 0, fixedDelta:dt, agentGap:0 },
@@ -21,7 +22,19 @@ function penetration(s:CrowdSimulation) {
     maximum=Math.max(maximum,s.agentRadii[a]!+s.agentRadii[b]!-Math.hypot(s.state.x[a]!-s.state.x[b]!,s.state.y[a]!-s.state.y[b]!));
   return maximum;
 }
-describe('external-v1 physical movement', () => {
+describe('external physical movement', () => {
+  it('integrates the same fixed-tick force and state at different render cadences',()=>{
+    const snapshots=[];
+    for(const hz of [30,60,120,144]) {
+      const s=scene();
+      s.enqueueExternal({kind:'acceleration',id:'wind',tick:30,generation:s.external.generation,target:{agent:0},ax:120,ay:0,endTick:90});
+      const clock=new FixedClock(1/60,.25,4,()=>0);clock.reset(0);
+      for(let frame=1;frame<=hz*2;frame++)clock.consume(frame/hz,1,()=>s.step());
+      expect(s.stepCount).toBe(120);expect(s.state.vx[0]).toBeCloseTo(120,9);
+      snapshots.push({x:[...s.state.x],y:[...s.state.y],vx:[...s.state.vx],vy:[...s.state.vy],hash:s.stateHash(),inputs:s.external.record()});
+    }
+    for(const snapshot of snapshots)expect(snapshot).toEqual(snapshots[0]);
+  });
   it('returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags', () => {
     const s=new CrowdSimulation({...DEFAULT_CONFIG,agentCount:1000},getScenario('open-field'));
     for(let tick=0;tick<30;tick++)s.step();
@@ -45,6 +58,29 @@ describe('external-v1 physical movement', () => {
     expect(s.external.stats.substeps).toBe(1);
     for(let a=0;a<16;a++){expect(s.state.x[a]).toBeCloseTo(200+a*6.4+500/60,7);expect(s.state.vx[a]).toBeCloseTo(500,7);}
     expect(penetration(s)).toBeLessThan(.001);
+  });
+  it('verifies actual slow motion instead of splitting solely for the response reserve near a wall',()=>{
+    const s=scene(5,[{x:234,y:100,width:1,height:500}]);
+    s.enqueueExternal({kind:'impulse',id:'coherent',tick:0,generation:1,target:{x:220,y:360,radius:100},dvx:86,dvy:0});
+    s.step();
+    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
+    for(let a=0;a<5;a++)expect(s.state.x[a]).toBeCloseTo(200+a*6.4+86/60,8);
+    expect(s.metrics.wallOverlapCount).toBe(0);
+  });
+  it('verifies the post-contact travel bound even when the incoming speed was larger',()=>{
+    const s=scene(2);s.config.contactFriction=0;
+    kick(s,0,110,0,'a');kick(s,1,-110,0,'b');s.step();
+    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
+    expect(s.state.vx[0]).toBeCloseTo(0,8);expect(s.state.vx[1]).toBeCloseTo(0,8);
+    expect(penetration(s)).toBeLessThan(.001);
+  });
+  it('falls back before integration when contact concentrates speed beyond the one-step travel bound',()=>{
+    const s=scene(2);s.config.contactFriction=0;
+    kick(s,0,86,0,'a');kick(s,1,0,86,'b');s.step();
+    expect(s.external.stats.singleStepFallbacks).toBe(1);expect(s.external.stats.substeps).toBe(2);
+    expect(penetration(s)).toBeLessThanOrEqual(.5);
+    expect(s.state.vx[0]!+s.state.vx[1]!).toBeCloseTo(86,8);
+    expect(s.state.vy[0]!+s.state.vy[1]!).toBeCloseTo(86,8);
   });
   it('keeps absolute-speed resolution when a coherent stream reaches a wall', () => {
     const s=scene(5,[{x:219,y:100,width:1,height:500}]);
@@ -135,6 +171,31 @@ describe('external-v1 physical movement', () => {
     expect(s.state.x[0]).toBeLessThan(s.state.x[1]!);
     expect(penetration(s)).toBeLessThanOrEqual(.01);
   });
+  it.each([false,true])('does not add energy or rebound while an unforced chain coasts (stationary proxy: %s)',proxy=>{
+    const s=scene(16);kick(s,0,500);
+    if(proxy)s.enqueueExternal({kind:'proxy',id:'parked',body:'parked',tick:0,generation:s.external.generation,x:800,y:100,toX:800,toY:100,radius:18});
+    let energy=500**2;
+    for(let tick=0;tick<60;tick++) {
+      s.step();
+      const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
+      expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
+      expect(Math.min(...s.state.vx),`rebound at tick ${tick}`).toBeGreaterThanOrEqual(-1e-8);
+      energy=next;
+    }
+  });
+  it('does not amplify multidirectional impulses in a dense wall-bounded contact group',()=>{
+    const s=scene(64,[{x:250,y:200,width:1,height:250}]);
+    for(let a=0;a<64;a++){s.state.x[a]=200+(a%8)*6.4;s.state.y[a]=260+Math.floor(a/8)*6.4;}
+    kick(s,0,500,0,'left');kick(s,7,0,500,'top');kick(s,63,-200,0,'right');
+    let energy=500**2+500**2+200**2;
+    for(let tick=0;tick<90;tick++) {
+      s.step();
+      const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
+      expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
+      expect(penetration(s),`penetration at tick ${tick}`).toBeLessThanOrEqual(.5);
+      expect(s.metrics.wallOverlapCount).toBe(0);energy=next;
+    }
+  });
   it('sweeps thin walls and keeps removed wall-normal velocity removed next tick', () => {
     const s=scene(1,[{x:210,y:100,width:1,height:500}]);kick(s,0,600);s.step();
     expect(s.state.x[0]).toBeLessThanOrEqual(210-3.55+1e-6);
@@ -167,10 +228,19 @@ describe('external-v1 physical movement', () => {
     }
     expect(crushed).toBeGreaterThan(0);
   });
-  it('reports query saturation and clamps combined inputs without nonfinite values', () => {
+  it('reports uncapped overflow fallback and clamps combined inputs without nonfinite values', () => {
     const s=scene(90);s.state.x.fill(200);s.state.y.fill(360);kick(s,0,600,0,'a');kick(s,0,600,0,'b');s.step();
-    expect(s.external.stats.speedClamps).toBeGreaterThan(0);expect(s.external.stats.saturatedQueries).toBeGreaterThan(0);
+    expect(s.external.stats.speedClamps).toBeGreaterThan(0);expect(s.external.stats.candidateFallbacks).toBeGreaterThan(0);
+    expect(s.external.stats.saturatedQueries).toBe(0);
     expect(s.external.stats.substeps).toBeLessThanOrEqual(16);expect([...s.state.x,...s.state.vx].every(Number.isFinite)).toBe(true);
+  });
+  it('stops explicitly before publishing a step that exceeds the global pair budget',()=>{
+    const s=scene(320);s.state.x.fill(200);s.state.y.fill(360);
+    const x=s.state.x.slice(),y=s.state.y.slice();kick(s,0,100);
+    expect(()=>s.step()).toThrow(/pair budget exceeded/);
+    expect(s.external.stats.saturatedQueries).toBe(1);
+    expect(s.state.x).toEqual(x);expect(s.state.y).toEqual(y);
+    expect(s.stepCount).toBe(0);
   });
   it('keeps the arrival sink inactive even when an input targets it', () => {
     const s=scene();s.state.x[0]=1100;kick(s,0,-500);s.step();expect(s.state.active[0]).toBe(0);expect(s.state.vx[0]).toBe(0);
@@ -184,6 +254,23 @@ describe('external-v1 physical movement', () => {
     const s=scene();const e:ExternalInput={kind:'impulse',id:'copy',tick:0,generation:1,target:{agent:0},dvx:100,dvy:0};
     s.enqueueExternal(e);expect(s.enqueueExternal({dvy:0,dvx:100,target:{agent:0},generation:1,tick:0,id:'copy',kind:'impulse'})).toBe(false);
     e.dvx=500;s.step();expect(s.state.vx[0]).toBe(100);
+  });
+  it('preserves a full session history, rejects overflow atomically, and releases it on reset',()=>{
+    const s=scene(),generation=s.external.generation;
+    const first:ExternalInput={kind:'impulse',id:'history-0',tick:0,generation,target:{agent:0},dvx:0,dvy:0};
+    for(let tick=0;tick<EXTERNAL_PROFILE.maximumRecords;tick++) {
+      s.enqueueExternal({...first,id:`history-${tick}`,tick});s.step();
+    }
+    const records=s.external.record(),before=s.stateHash();
+    expect(records).toHaveLength(EXTERNAL_PROFILE.maximumRecords);
+    expect(s.enqueueExternal(first)).toBe(false);
+    expect(()=>s.enqueueExternal({...first,id:'overflow',tick:s.stepCount})).toThrow(/budget/);
+    expect(s.stateHash()).toBe(before);expect(s.external.record()).toEqual(records);
+    s.reset();
+    expect(s.external.record()).toEqual([]);expect(s.external.active).toBe(false);
+    expect(()=>s.enqueueExternal({...first,id:'stale'})).toThrow(/generation/);
+    expect(s.enqueueExternal({...first,generation:s.external.generation})).toBe(true);
+    s.step();expect(s.external.stats.inputs).toBe(1);
   });
   it('rejects proxy discontinuities and excessive future body count atomically', () => {
     const s=scene();const e:ExternalInput={kind:'proxy',id:'p',body:'car',tick:0,generation:1,x:180,y:360,toX:181,toY:360,radius:10};

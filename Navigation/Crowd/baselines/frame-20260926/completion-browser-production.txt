@@ -1,0 +1,10 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 tests\browser\contact-workers.spec.ts:3:1 › reset retires every contact worker and a new session resumes parallel computation (2.3s)
+  -  2 tests\browser\contact-workers.spec.ts:33:1 › parallel pair construction preserves a skewed complete query and reports global overflow
+  ok 3 tests\browser\external-influences.spec.ts:3:1 › external tools work while paused, preserve goals and export replay inputs (792ms)
+  ok 4 tests\browser\external-influences.spec.ts:30:1 › external input overflow pauses visibly and reset recovers the UI (343ms)
+
+  1 skipped
+  3 passed (4.1s)

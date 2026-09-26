@@ -1,0 +1,5392 @@
+[
+  {
+    "tick": 30,
+    "before": {
+      "count": 0,
+      "maximum": 0.12781193795619306
+    },
+    "afterFour": {
+      "count": 1,
+      "maximum": 0.5913441082117741
+    }
+  },
+  {
+    "tick": 31,
+    "before": {
+      "count": 0,
+      "maximum": 0.4068876919007911
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.33255473200133423
+    }
+  },
+  {
+    "tick": 32,
+    "before": {
+      "count": 0,
+      "maximum": 0.3678704553426382
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.3259880686572094
+    }
+  },
+  {
+    "tick": 33,
+    "before": {
+      "count": 0,
+      "maximum": 0.27101847214299735
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.2588615161890484
+    }
+  },
+  {
+    "tick": 34,
+    "before": {
+      "count": 0,
+      "maximum": 0.2598901310102031
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.21210891788480257
+    }
+  },
+  {
+    "tick": 35,
+    "before": {
+      "count": 0,
+      "maximum": 0.24161917588457005
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.15999251792933666
+    }
+  },
+  {
+    "tick": 36,
+    "before": {
+      "count": 0,
+      "maximum": 0.1851626403406197
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.2170830795182379
+    }
+  },
+  {
+    "tick": 37,
+    "before": {
+      "count": 0,
+      "maximum": 0.26962498033014537
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.23363886905704412
+    }
+  },
+  {
+    "tick": 38,
+    "before": {
+      "count": 0,
+      "maximum": 0.2279571141960064
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.2562695592027566
+    }
+  },
+  {
+    "tick": 39,
+    "before": {
+      "count": 0,
+      "maximum": 0.3380469212904842
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.2665521607664445
+    }
+  },
+  {
+    "tick": 40,
+    "before": {
+      "count": 0,
+      "maximum": 0.4018332628470178
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.3530048747507539
+    }
+  },
+  {
+    "tick": 41,
+    "before": {
+      "count": 0,
+      "maximum": 0.294582132712927
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.28183803827339915
+    }
+  },
+  {
+    "tick": 42,
+    "before": {
+      "count": 0,
+      "maximum": 0.36265417373243114
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.3509258958958483
+    }
+  },
+  {
+    "tick": 43,
+    "before": {
+      "count": 0,
+      "maximum": 0.2985832269664517
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.33903577775144367
+    }
+  },
+  {
+    "tick": 44,
+    "before": {
+      "count": 1,
+      "maximum": 0.46180758970286906
+    },
+    "afterFour": {
+      "count": 1,
+      "maximum": 0.4710284981177404
+    }
+  },
+  {
+    "tick": 45,
+    "before": {
+      "count": 1,
+      "maximum": 0.4846921076470272
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.42921587905851233
+    }
+  },
+  {
+    "tick": 46,
+    "before": {
+      "count": 0,
+      "maximum": 0.44734334424080924
+    },
+    "afterFour": {
+      "count": 0,
+      "maximum": 0.35625822531271734
+    }
+  },
+  {
+    "tick": 47,
+    "before": {
+      "count": 1,
+      "maximum": 0.4718256975160635
+    },
+    "afterFour": {
+      "count": 2,
+      "maximum": 0.49074774764685003
+    }
+  },
+  {
+    "tick": 48,
+    "before": {
+      "count": 1,
+      "maximum": 0.46209967497807547
+    },
+    "afterFour": {
+      "count": 1,
+      "maximum": 0.6057892810462704
+    }
+  },
+  {
+    "tick": 49,
+    "before": {
+      "count": 2,
+      "maximum": 0.4761071164160988
+    },
+    "afterFour": {
+      "count": 1,
+      "maximum": 0.6027550289460182
+    }
+  },
+  {
+    "tick": 50,
+    "before": {
+      "count": 1,
+      "maximum": 0.46089057234480535
+    },
+    "afterFour": {
+      "count": 2,
+      "maximum": 0.5581347902701808
+    }
+  },
+  {
+    "tick": 51,
+    "before": {
+      "count": 4,
+      "maximum": 0.4936428954296499
+    },
+    "afterFour": {
+      "count": 2,
+      "maximum": 0.603297503176333
+    }
+  },
+  {
+    "tick": 52,
+    "before": {
+      "count": 3,
+      "maximum": 0.5059771725146582
+    },
+    "afterFour": {
+      "count": 3,
+      "maximum": 0.7349614221961076
+    }
+  },
+  {
+    "tick": 53,
+    "before": {
+      "count": 3,
+      "maximum": 0.4880355788182733
+    },
+    "afterFour": {
+      "count": 3,
+      "maximum": 0.884094054797484
+    }
+  },
+  {
+    "tick": 54,
+    "before": {
+      "count": 7,
+      "maximum": 0.5019792202963895
+    },
+    "afterFour": {
+      "count": 5,
+      "maximum": 0.7737783497742008
+    }
+  },
+  {
+    "tick": 55,
+    "before": {
+      "count": 8,
+      "maximum": 0.530267235156705
+    },
+    "afterFour": {
+      "count": 8,
+      "maximum": 0.7938983009054343
+    }
+  },
+  {
+    "tick": 56,
+    "before": {
+      "count": 8,
+      "maximum": 0.5188846869709121
+    },
+    "afterFour": {
+      "count": 8,
+      "maximum": 1.164805182273862
+    }
+  },
+  {
+    "tick": 57,
+    "before": {
+      "count": 15,
+      "maximum": 0.4980028905631757
+    },
+    "afterFour": {
+      "count": 13,
+      "maximum": 1.139126059093985
+    }
+  },
+  {
+    "tick": 58,
+    "before": {
+      "count": 12,
+      "maximum": 0.49125480195982885
+    },
+    "afterFour": {
+      "count": 14,
+      "maximum": 1.6361157183731772
+    }
+  },
+  {
+    "tick": 59,
+    "before": {
+      "count": 17,
+      "maximum": 0.5025343954946386
+    },
+    "afterFour": {
+      "count": 21,
+      "maximum": 1.1060713955282555
+    }
+  },
+  {
+    "tick": 60,
+    "before": {
+      "count": 21,
+      "maximum": 0.5081820908622365
+    },
+    "afterFour": {
+      "count": 24,
+      "maximum": 1.4123633072207564
+    }
+  },
+  {
+    "tick": 61,
+    "before": {
+      "count": 30,
+      "maximum": 0.5095734182727867
+    },
+    "afterFour": {
+      "count": 28,
+      "maximum": 1.199885114430459
+    }
+  },
+  {
+    "tick": 62,
+    "before": {
+      "count": 24,
+      "maximum": 0.5003679676200905
+    },
+    "afterFour": {
+      "count": 28,
+      "maximum": 1.3291532887477446
+    }
+  },
+  {
+    "tick": 63,
+    "before": {
+      "count": 21,
+      "maximum": 0.5018212128389621
+    },
+    "afterFour": {
+      "count": 27,
+      "maximum": 1.7850200380569552
+    }
+  },
+  {
+    "tick": 64,
+    "before": {
+      "count": 31,
+      "maximum": 0.5235733934418025
+    },
+    "afterFour": {
+      "count": 34,
+      "maximum": 1.0804857507010963
+    }
+  },
+  {
+    "tick": 65,
+    "before": {
+      "count": 44,
+      "maximum": 0.5215218282924834
+    },
+    "afterFour": {
+      "count": 40,
+      "maximum": 1.264064111833532
+    }
+  },
+  {
+    "tick": 66,
+    "before": {
+      "count": 43,
+      "maximum": 0.5030572276303342
+    },
+    "afterFour": {
+      "count": 51,
+      "maximum": 1.3870610421885736
+    }
+  },
+  {
+    "tick": 67,
+    "before": {
+      "count": 48,
+      "maximum": 0.5133635530157381
+    },
+    "afterFour": {
+      "count": 54,
+      "maximum": 1.3403121751550735
+    }
+  },
+  {
+    "tick": 68,
+    "before": {
+      "count": 48,
+      "maximum": 0.5064310214118812
+    },
+    "afterFour": {
+      "count": 59,
+      "maximum": 1.2707210363883785
+    }
+  },
+  {
+    "tick": 69,
+    "before": {
+      "count": 48,
+      "maximum": 0.50981346303299
+    },
+    "afterFour": {
+      "count": 62,
+      "maximum": 1.5526361396147719
+    }
+  },
+  {
+    "tick": 70,
+    "before": {
+      "count": 47,
+      "maximum": 0.5108521357539733
+    },
+    "afterFour": {
+      "count": 67,
+      "maximum": 1.510425449049416
+    }
+  },
+  {
+    "tick": 71,
+    "before": {
+      "count": 57,
+      "maximum": 0.5137760326154108
+    },
+    "afterFour": {
+      "count": 63,
+      "maximum": 1.5080061006518868
+    }
+  },
+  {
+    "tick": 72,
+    "before": {
+      "count": 54,
+      "maximum": 0.5128376989362122
+    },
+    "afterFour": {
+      "count": 70,
+      "maximum": 1.4150598105164134
+    }
+  },
+  {
+    "tick": 73,
+    "before": {
+      "count": 54,
+      "maximum": 0.5097186462231083
+    },
+    "afterFour": {
+      "count": 68,
+      "maximum": 1.704076908166301
+    }
+  },
+  {
+    "tick": 74,
+    "before": {
+      "count": 63,
+      "maximum": 0.5032511001361764
+    },
+    "afterFour": {
+      "count": 76,
+      "maximum": 1.6816227125011727
+    }
+  },
+  {
+    "tick": 75,
+    "before": {
+      "count": 54,
+      "maximum": 0.5227134284284265
+    },
+    "afterFour": {
+      "count": 69,
+      "maximum": 1.6504921856464092
+    }
+  },
+  {
+    "tick": 76,
+    "before": {
+      "count": 63,
+      "maximum": 0.5103088121744719
+    },
+    "afterFour": {
+      "count": 66,
+      "maximum": 1.3962851030096228
+    }
+  },
+  {
+    "tick": 77,
+    "before": {
+      "count": 59,
+      "maximum": 0.5024624326066576
+    },
+    "afterFour": {
+      "count": 61,
+      "maximum": 1.222674261975981
+    }
+  },
+  {
+    "tick": 78,
+    "before": {
+      "count": 49,
+      "maximum": 0.5021284100379351
+    },
+    "afterFour": {
+      "count": 61,
+      "maximum": 1.4942312682920091
+    }
+  },
+  {
+    "tick": 79,
+    "before": {
+      "count": 57,
+      "maximum": 0.4969364466798849
+    },
+    "afterFour": {
+      "count": 70,
+      "maximum": 1.2834417464278873
+    }
+  },
+  {
+    "tick": 80,
+    "before": {
+      "count": 51,
+      "maximum": 0.5015064316149056
+    },
+    "afterFour": {
+      "count": 74,
+      "maximum": 1.3056028890674645
+    }
+  },
+  {
+    "tick": 81,
+    "before": {
+      "count": 65,
+      "maximum": 0.5157753416966759
+    },
+    "afterFour": {
+      "count": 63,
+      "maximum": 1.860205765314988
+    }
+  },
+  {
+    "tick": 82,
+    "before": {
+      "count": 55,
+      "maximum": 0.5183251689335648
+    },
+    "afterFour": {
+      "count": 58,
+      "maximum": 1.6538253414366064
+    }
+  },
+  {
+    "tick": 83,
+    "before": {
+      "count": 56,
+      "maximum": 0.5161727849660318
+    },
+    "afterFour": {
+      "count": 64,
+      "maximum": 1.435272700426439
+    }
+  },
+  {
+    "tick": 84,
+    "before": {
+      "count": 58,
+      "maximum": 0.5120801332573617
+    },
+    "afterFour": {
+      "count": 67,
+      "maximum": 1.4845695840827888
+    }
+  },
+  {
+    "tick": 85,
+    "before": {
+      "count": 57,
+      "maximum": 0.5116375519789695
+    },
+    "afterFour": {
+      "count": 62,
+      "maximum": 1.681522853446742
+    }
+  },
+  {
+    "tick": 86,
+    "before": {
+      "count": 52,
+      "maximum": 0.5123539605334635
+    },
+    "afterFour": {
+      "count": 78,
+      "maximum": 1.4328984648116156
+    }
+  },
+  {
+    "tick": 87,
+    "before": {
+      "count": 77,
+      "maximum": 0.5015646600980981
+    },
+    "afterFour": {
+      "count": 82,
+      "maximum": 1.3254456688759575
+    }
+  },
+  {
+    "tick": 88,
+    "before": {
+      "count": 69,
+      "maximum": 0.5068820094952287
+    },
+    "afterFour": {
+      "count": 90,
+      "maximum": 1.453021128673404
+    }
+  },
+  {
+    "tick": 89,
+    "before": {
+      "count": 72,
+      "maximum": 0.5047120623827679
+    },
+    "afterFour": {
+      "count": 89,
+      "maximum": 1.6995896860214454
+    }
+  },
+  {
+    "tick": 90,
+    "before": {
+      "count": 76,
+      "maximum": 0.5059467269635967
+    },
+    "afterFour": {
+      "count": 88,
+      "maximum": 1.4981869523594566
+    }
+  },
+  {
+    "tick": 91,
+    "before": {
+      "count": 71,
+      "maximum": 0.4872905460493442
+    },
+    "afterFour": {
+      "count": 82,
+      "maximum": 1.6238710128270704
+    }
+  },
+  {
+    "tick": 92,
+    "before": {
+      "count": 77,
+      "maximum": 0.49266620393400196
+    },
+    "afterFour": {
+      "count": 80,
+      "maximum": 1.7652467451568539
+    }
+  },
+  {
+    "tick": 93,
+    "before": {
+      "count": 79,
+      "maximum": 0.4950698786330534
+    },
+    "afterFour": {
+      "count": 85,
+      "maximum": 1.452558553656397
+    }
+  },
+  {
+    "tick": 94,
+    "before": {
+      "count": 80,
+      "maximum": 0.4969291861998322
+    },
+    "afterFour": {
+      "count": 93,
+      "maximum": 1.9322172339525983
+    }
+  },
+  {
+    "tick": 95,
+    "before": {
+      "count": 81,
+      "maximum": 0.48648020398432124
+    },
+    "afterFour": {
+      "count": 93,
+      "maximum": 1.3743327436210722
+    }
+  },
+  {
+    "tick": 96,
+    "before": {
+      "count": 82,
+      "maximum": 0.49143933266920925
+    },
+    "afterFour": {
+      "count": 90,
+      "maximum": 1.4970599897420724
+    }
+  },
+  {
+    "tick": 97,
+    "before": {
+      "count": 76,
+      "maximum": 0.48927125798760773
+    },
+    "afterFour": {
+      "count": 97,
+      "maximum": 1.7028502275111341
+    }
+  },
+  {
+    "tick": 98,
+    "before": {
+      "count": 65,
+      "maximum": 0.48956509275200233
+    },
+    "afterFour": {
+      "count": 82,
+      "maximum": 1.7092131006337752
+    }
+  },
+  {
+    "tick": 99,
+    "before": {
+      "count": 72,
+      "maximum": 0.4803006885407992
+    },
+    "afterFour": {
+      "count": 77,
+      "maximum": 1.5122932560013327
+    }
+  },
+  {
+    "tick": 100,
+    "before": {
+      "count": 73,
+      "maximum": 0.48324200490202696
+    },
+    "afterFour": {
+      "count": 79,
+      "maximum": 1.4720947518571847
+    }
+  },
+  {
+    "tick": 101,
+    "before": {
+      "count": 79,
+      "maximum": 0.4821037402762549
+    },
+    "afterFour": {
+      "count": 82,
+      "maximum": 1.5995509437288353
+    }
+  },
+  {
+    "tick": 102,
+    "before": {
+      "count": 73,
+      "maximum": 0.49124164475711307
+    },
+    "afterFour": {
+      "count": 81,
+      "maximum": 1.3033140916140926
+    }
+  },
+  {
+    "tick": 103,
+    "before": {
+      "count": 78,
+      "maximum": 0.4930549946401763
+    },
+    "afterFour": {
+      "count": 85,
+      "maximum": 1.369229624014019
+    }
+  },
+  {
+    "tick": 104,
+    "before": {
+      "count": 80,
+      "maximum": 0.48563903288152677
+    },
+    "afterFour": {
+      "count": 93,
+      "maximum": 1.6183537105594885
+    }
+  },
+  {
+    "tick": 105,
+    "before": {
+      "count": 81,
+      "maximum": 0.48800771953332056
+    },
+    "afterFour": {
+      "count": 81,
+      "maximum": 1.7037726026682067
+    }
+  },
+  {
+    "tick": 106,
+    "before": {
+      "count": 77,
+      "maximum": 0.5300068932582542
+    },
+    "afterFour": {
+      "count": 90,
+      "maximum": 1.5570260483965193
+    }
+  },
+  {
+    "tick": 107,
+    "before": {
+      "count": 85,
+      "maximum": 0.532965536148704
+    },
+    "afterFour": {
+      "count": 92,
+      "maximum": 2.172950825899056
+    }
+  },
+  {
+    "tick": 108,
+    "before": {
+      "count": 83,
+      "maximum": 0.5312239406863499
+    },
+    "afterFour": {
+      "count": 84,
+      "maximum": 1.6898853433608574
+    }
+  },
+  {
+    "tick": 109,
+    "before": {
+      "count": 73,
+      "maximum": 0.5244443123589022
+    },
+    "afterFour": {
+      "count": 86,
+      "maximum": 1.9584910402223725
+    }
+  },
+  {
+    "tick": 110,
+    "before": {
+      "count": 70,
+      "maximum": 0.5405991332270652
+    },
+    "afterFour": {
+      "count": 91,
+      "maximum": 1.4758501692824737
+    }
+  },
+  {
+    "tick": 111,
+    "before": {
+      "count": 80,
+      "maximum": 0.5216287123672174
+    },
+    "afterFour": {
+      "count": 81,
+      "maximum": 1.6122552349163932
+    }
+  },
+  {
+    "tick": 112,
+    "before": {
+      "count": 81,
+      "maximum": 0.5323592344785704
+    },
+    "afterFour": {
+      "count": 91,
+      "maximum": 1.4319852726990634
+    }
+  },
+  {
+    "tick": 113,
+    "before": {
+      "count": 85,
+      "maximum": 0.5321651428725538
+    },
+    "afterFour": {
+      "count": 100,
+      "maximum": 1.7286081782732117
+    }
+  },
+  {
+    "tick": 114,
+    "before": {
+      "count": 99,
+      "maximum": 0.5362650867362646
+    },
+    "afterFour": {
+      "count": 108,
+      "maximum": 1.4761604374622932
+    }
+  },
+  {
+    "tick": 115,
+    "before": {
+      "count": 110,
+      "maximum": 0.5435012911630448
+    },
+    "afterFour": {
+      "count": 135,
+      "maximum": 1.4906409568097043
+    }
+  },
+  {
+    "tick": 116,
+    "before": {
+      "count": 125,
+      "maximum": 0.5385736349843411
+    },
+    "afterFour": {
+      "count": 154,
+      "maximum": 1.4936861321809172
+    }
+  },
+  {
+    "tick": 117,
+    "before": {
+      "count": 128,
+      "maximum": 0.5292036694518707
+    },
+    "afterFour": {
+      "count": 149,
+      "maximum": 1.368913525365282
+    }
+  },
+  {
+    "tick": 118,
+    "before": {
+      "count": 147,
+      "maximum": 0.5324529949281365
+    },
+    "afterFour": {
+      "count": 160,
+      "maximum": 1.9924551546786056
+    }
+  },
+  {
+    "tick": 119,
+    "before": {
+      "count": 147,
+      "maximum": 0.5303185916581574
+    },
+    "afterFour": {
+      "count": 149,
+      "maximum": 1.5962807032774755
+    }
+  },
+  {
+    "tick": 120,
+    "before": {
+      "count": 147,
+      "maximum": 0.5282179809889032
+    },
+    "afterFour": {
+      "count": 150,
+      "maximum": 1.5421725553840995
+    }
+  },
+  {
+    "tick": 121,
+    "before": {
+      "count": 150,
+      "maximum": 0.5439142051605454
+    },
+    "afterFour": {
+      "count": 163,
+      "maximum": 1.5018631552442603
+    }
+  },
+  {
+    "tick": 122,
+    "before": {
+      "count": 136,
+      "maximum": 0.4979194179984052
+    },
+    "afterFour": {
+      "count": 153,
+      "maximum": 1.3719958166317507
+    }
+  },
+  {
+    "tick": 123,
+    "before": {
+      "count": 153,
+      "maximum": 0.549854542841687
+    },
+    "afterFour": {
+      "count": 171,
+      "maximum": 1.6381791000505803
+    }
+  },
+  {
+    "tick": 124,
+    "before": {
+      "count": 148,
+      "maximum": 0.502243036794944
+    },
+    "afterFour": {
+      "count": 161,
+      "maximum": 1.558154837678921
+    }
+  },
+  {
+    "tick": 125,
+    "before": {
+      "count": 150,
+      "maximum": 0.4906414425601415
+    },
+    "afterFour": {
+      "count": 167,
+      "maximum": 1.7530350019500975
+    }
+  },
+  {
+    "tick": 126,
+    "before": {
+      "count": 132,
+      "maximum": 0.4954873755936591
+    },
+    "afterFour": {
+      "count": 158,
+      "maximum": 1.5662275936649577
+    }
+  },
+  {
+    "tick": 127,
+    "before": {
+      "count": 133,
+      "maximum": 0.49981483243394553
+    },
+    "afterFour": {
+      "count": 164,
+      "maximum": 1.4726203791334083
+    }
+  },
+  {
+    "tick": 128,
+    "before": {
+      "count": 131,
+      "maximum": 0.4948538018833295
+    },
+    "afterFour": {
+      "count": 140,
+      "maximum": 1.6004270072672444
+    }
+  },
+  {
+    "tick": 129,
+    "before": {
+      "count": 168,
+      "maximum": 0.563250396045091
+    },
+    "afterFour": {
+      "count": 174,
+      "maximum": 1.5461759684490861
+    }
+  },
+  {
+    "tick": 130,
+    "before": {
+      "count": 150,
+      "maximum": 0.5033496376466857
+    },
+    "afterFour": {
+      "count": 169,
+      "maximum": 1.6982578028291213
+    }
+  },
+  {
+    "tick": 131,
+    "before": {
+      "count": 135,
+      "maximum": 0.48982519709982153
+    },
+    "afterFour": {
+      "count": 136,
+      "maximum": 1.4768086836111323
+    }
+  },
+  {
+    "tick": 132,
+    "before": {
+      "count": 131,
+      "maximum": 0.5052863795741249
+    },
+    "afterFour": {
+      "count": 137,
+      "maximum": 1.6293103369670154
+    }
+  },
+  {
+    "tick": 133,
+    "before": {
+      "count": 134,
+      "maximum": 0.5059384145790089
+    },
+    "afterFour": {
+      "count": 133,
+      "maximum": 1.3708935792266619
+    }
+  },
+  {
+    "tick": 134,
+    "before": {
+      "count": 127,
+      "maximum": 0.4907025843556454
+    },
+    "afterFour": {
+      "count": 150,
+      "maximum": 1.3684283507048436
+    }
+  },
+  {
+    "tick": 135,
+    "before": {
+      "count": 125,
+      "maximum": 0.49100302819194486
+    },
+    "afterFour": {
+      "count": 130,
+      "maximum": 1.3806826803197696
+    }
+  },
+  {
+    "tick": 136,
+    "before": {
+      "count": 119,
+      "maximum": 0.49344250352010377
+    },
+    "afterFour": {
+      "count": 143,
+      "maximum": 1.4269926868194274
+    }
+  },
+  {
+    "tick": 137,
+    "before": {
+      "count": 121,
+      "maximum": 0.49269704478860543
+    },
+    "afterFour": {
+      "count": 141,
+      "maximum": 1.5505463866229672
+    }
+  },
+  {
+    "tick": 138,
+    "before": {
+      "count": 134,
+      "maximum": 0.49612335818639686
+    },
+    "afterFour": {
+      "count": 128,
+      "maximum": 1.5250014347845946
+    }
+  },
+  {
+    "tick": 139,
+    "before": {
+      "count": 120,
+      "maximum": 0.49123551797935505
+    },
+    "afterFour": {
+      "count": 137,
+      "maximum": 1.4853635809818027
+    }
+  },
+  {
+    "tick": 140,
+    "before": {
+      "count": 110,
+      "maximum": 0.4928970376587536
+    },
+    "afterFour": {
+      "count": 124,
+      "maximum": 1.4248498919159829
+    }
+  },
+  {
+    "tick": 141,
+    "before": {
+      "count": 111,
+      "maximum": 0.4847421347220173
+    },
+    "afterFour": {
+      "count": 124,
+      "maximum": 1.5775318812454389
+    }
+  },
+  {
+    "tick": 142,
+    "before": {
+      "count": 110,
+      "maximum": 0.49789629841059124
+    },
+    "afterFour": {
+      "count": 128,
+      "maximum": 1.4774175544265349
+    }
+  },
+  {
+    "tick": 143,
+    "before": {
+      "count": 119,
+      "maximum": 0.5614661063882167
+    },
+    "afterFour": {
+      "count": 165,
+      "maximum": 1.225503489048008
+    }
+  },
+  {
+    "tick": 144,
+    "before": {
+      "count": 155,
+      "maximum": 0.5559992060607
+    },
+    "afterFour": {
+      "count": 185,
+      "maximum": 1.6965817462280253
+    }
+  },
+  {
+    "tick": 145,
+    "before": {
+      "count": 163,
+      "maximum": 0.574531911882584
+    },
+    "afterFour": {
+      "count": 174,
+      "maximum": 1.5693772115021734
+    }
+  },
+  {
+    "tick": 146,
+    "before": {
+      "count": 152,
+      "maximum": 0.5509783516838498
+    },
+    "afterFour": {
+      "count": 157,
+      "maximum": 1.2271411564729755
+    }
+  },
+  {
+    "tick": 147,
+    "before": {
+      "count": 136,
+      "maximum": 0.5108432820229796
+    },
+    "afterFour": {
+      "count": 180,
+      "maximum": 1.3739566465814441
+    }
+  },
+  {
+    "tick": 148,
+    "before": {
+      "count": 173,
+      "maximum": 0.500236789646042
+    },
+    "afterFour": {
+      "count": 205,
+      "maximum": 1.7479003326477374
+    }
+  },
+  {
+    "tick": 149,
+    "before": {
+      "count": 162,
+      "maximum": 0.5083680314596188
+    },
+    "afterFour": {
+      "count": 175,
+      "maximum": 1.6542757981837939
+    }
+  },
+  {
+    "tick": 150,
+    "before": {
+      "count": 161,
+      "maximum": 0.4961856322733169
+    },
+    "afterFour": {
+      "count": 173,
+      "maximum": 1.5178199686458909
+    }
+  },
+  {
+    "tick": 151,
+    "before": {
+      "count": 155,
+      "maximum": 0.5063452181072812
+    },
+    "afterFour": {
+      "count": 177,
+      "maximum": 1.4666207825897928
+    }
+  },
+  {
+    "tick": 152,
+    "before": {
+      "count": 186,
+      "maximum": 0.5413035971540392
+    },
+    "afterFour": {
+      "count": 196,
+      "maximum": 1.390245131499217
+    }
+  },
+  {
+    "tick": 153,
+    "before": {
+      "count": 186,
+      "maximum": 0.541708525746257
+    },
+    "afterFour": {
+      "count": 203,
+      "maximum": 1.6251932210974829
+    }
+  },
+  {
+    "tick": 154,
+    "before": {
+      "count": 190,
+      "maximum": 0.5464359773915088
+    },
+    "afterFour": {
+      "count": 201,
+      "maximum": 1.1898154444115008
+    }
+  },
+  {
+    "tick": 155,
+    "before": {
+      "count": 189,
+      "maximum": 0.5015630287531954
+    },
+    "afterFour": {
+      "count": 225,
+      "maximum": 1.610010879012659
+    }
+  },
+  {
+    "tick": 156,
+    "before": {
+      "count": 218,
+      "maximum": 0.5332077112229658
+    },
+    "afterFour": {
+      "count": 234,
+      "maximum": 1.2835787450943181
+    }
+  },
+  {
+    "tick": 157,
+    "before": {
+      "count": 217,
+      "maximum": 0.49801586685116295
+    },
+    "afterFour": {
+      "count": 238,
+      "maximum": 1.4992041531693383
+    }
+  },
+  {
+    "tick": 158,
+    "before": {
+      "count": 182,
+      "maximum": 0.49168378654557543
+    },
+    "afterFour": {
+      "count": 220,
+      "maximum": 1.4232256615637313
+    }
+  },
+  {
+    "tick": 159,
+    "before": {
+      "count": 206,
+      "maximum": 0.5419369216203922
+    },
+    "afterFour": {
+      "count": 243,
+      "maximum": 1.4833929517678666
+    }
+  },
+  {
+    "tick": 160,
+    "before": {
+      "count": 238,
+      "maximum": 0.5365325975410578
+    },
+    "afterFour": {
+      "count": 253,
+      "maximum": 1.507020062282657
+    }
+  },
+  {
+    "tick": 161,
+    "before": {
+      "count": 223,
+      "maximum": 0.49510925072417766
+    },
+    "afterFour": {
+      "count": 234,
+      "maximum": 1.6845120153735396
+    }
+  },
+  {
+    "tick": 162,
+    "before": {
+      "count": 227,
+      "maximum": 0.5372685156823325
+    },
+    "afterFour": {
+      "count": 245,
+      "maximum": 1.5062065357473102
+    }
+  },
+  {
+    "tick": 163,
+    "before": {
+      "count": 224,
+      "maximum": 0.5436095819656428
+    },
+    "afterFour": {
+      "count": 260,
+      "maximum": 1.6666953890946745
+    }
+  },
+  {
+    "tick": 164,
+    "before": {
+      "count": 225,
+      "maximum": 0.5147715033805857
+    },
+    "afterFour": {
+      "count": 257,
+      "maximum": 1.9395871929310688
+    }
+  },
+  {
+    "tick": 165,
+    "before": {
+      "count": 201,
+      "maximum": 0.5006220862212416
+    },
+    "afterFour": {
+      "count": 206,
+      "maximum": 1.4854703281351371
+    }
+  },
+  {
+    "tick": 166,
+    "before": {
+      "count": 196,
+      "maximum": 0.5571681008454705
+    },
+    "afterFour": {
+      "count": 221,
+      "maximum": 1.4741424441077227
+    }
+  },
+  {
+    "tick": 167,
+    "before": {
+      "count": 230,
+      "maximum": 0.5790120101923222
+    },
+    "afterFour": {
+      "count": 232,
+      "maximum": 1.936560990042966
+    }
+  },
+  {
+    "tick": 168,
+    "before": {
+      "count": 220,
+      "maximum": 0.5816376274038548
+    },
+    "afterFour": {
+      "count": 215,
+      "maximum": 1.600811387138096
+    }
+  },
+  {
+    "tick": 169,
+    "before": {
+      "count": 206,
+      "maximum": 0.5560781773049186
+    },
+    "afterFour": {
+      "count": 231,
+      "maximum": 1.5550653220805346
+    }
+  },
+  {
+    "tick": 170,
+    "before": {
+      "count": 203,
+      "maximum": 0.568883567427072
+    },
+    "afterFour": {
+      "count": 229,
+      "maximum": 1.5803576829799084
+    }
+  },
+  {
+    "tick": 171,
+    "before": {
+      "count": 222,
+      "maximum": 0.5972538637376923
+    },
+    "afterFour": {
+      "count": 240,
+      "maximum": 1.8809324220443164
+    }
+  },
+  {
+    "tick": 172,
+    "before": {
+      "count": 224,
+      "maximum": 0.5857743066180507
+    },
+    "afterFour": {
+      "count": 248,
+      "maximum": 1.3636911675240642
+    }
+  },
+  {
+    "tick": 173,
+    "before": {
+      "count": 237,
+      "maximum": 0.5829075664620218
+    },
+    "afterFour": {
+      "count": 254,
+      "maximum": 1.5396512119946326
+    }
+  },
+  {
+    "tick": 174,
+    "before": {
+      "count": 233,
+      "maximum": 0.5972187676707374
+    },
+    "afterFour": {
+      "count": 287,
+      "maximum": 1.6547574014971902
+    }
+  },
+  {
+    "tick": 175,
+    "before": {
+      "count": 243,
+      "maximum": 0.5748453569857732
+    },
+    "afterFour": {
+      "count": 271,
+      "maximum": 1.554180471248288
+    }
+  },
+  {
+    "tick": 176,
+    "before": {
+      "count": 260,
+      "maximum": 0.5699389815018874
+    },
+    "afterFour": {
+      "count": 292,
+      "maximum": 1.8746061838559909
+    }
+  },
+  {
+    "tick": 177,
+    "before": {
+      "count": 282,
+      "maximum": 0.573182464499224
+    },
+    "afterFour": {
+      "count": 277,
+      "maximum": 1.634372539823314
+    }
+  },
+  {
+    "tick": 178,
+    "before": {
+      "count": 272,
+      "maximum": 0.5804466854350956
+    },
+    "afterFour": {
+      "count": 299,
+      "maximum": 1.6032129528882981
+    }
+  },
+  {
+    "tick": 179,
+    "before": {
+      "count": 253,
+      "maximum": 0.5041821788026652
+    },
+    "afterFour": {
+      "count": 270,
+      "maximum": 1.5569252335020556
+    }
+  },
+  {
+    "tick": 180,
+    "before": {
+      "count": 249,
+      "maximum": 0.581038933339225
+    },
+    "afterFour": {
+      "count": 300,
+      "maximum": 1.6575497604164982
+    }
+  },
+  {
+    "tick": 181,
+    "before": {
+      "count": 257,
+      "maximum": 0.6049180479893774
+    },
+    "afterFour": {
+      "count": 282,
+      "maximum": 1.4745562733014177
+    }
+  },
+  {
+    "tick": 182,
+    "before": {
+      "count": 281,
+      "maximum": 0.5797700217863646
+    },
+    "afterFour": {
+      "count": 294,
+      "maximum": 1.6471020697401721
+    }
+  },
+  {
+    "tick": 183,
+    "before": {
+      "count": 272,
+      "maximum": 0.5738354266785368
+    },
+    "afterFour": {
+      "count": 334,
+      "maximum": 1.5171000061991604
+    }
+  },
+  {
+    "tick": 184,
+    "before": {
+      "count": 307,
+      "maximum": 0.5593276727940895
+    },
+    "afterFour": {
+      "count": 333,
+      "maximum": 1.686117967614952
+    }
+  },
+  {
+    "tick": 185,
+    "before": {
+      "count": 271,
+      "maximum": 0.5650918577834574
+    },
+    "afterFour": {
+      "count": 322,
+      "maximum": 1.6913976109471793
+    }
+  },
+  {
+    "tick": 186,
+    "before": {
+      "count": 285,
+      "maximum": 0.5762735260405334
+    },
+    "afterFour": {
+      "count": 319,
+      "maximum": 1.8238073402737847
+    }
+  },
+  {
+    "tick": 187,
+    "before": {
+      "count": 273,
+      "maximum": 0.5819508063202461
+    },
+    "afterFour": {
+      "count": 318,
+      "maximum": 1.8787751238171033
+    }
+  },
+  {
+    "tick": 188,
+    "before": {
+      "count": 289,
+      "maximum": 0.5718316418292417
+    },
+    "afterFour": {
+      "count": 308,
+      "maximum": 1.6434472858327043
+    }
+  },
+  {
+    "tick": 189,
+    "before": {
+      "count": 290,
+      "maximum": 0.5783537277471735
+    },
+    "afterFour": {
+      "count": 337,
+      "maximum": 1.8687933667440824
+    }
+  },
+  {
+    "tick": 190,
+    "before": {
+      "count": 282,
+      "maximum": 0.5446470902133216
+    },
+    "afterFour": {
+      "count": 332,
+      "maximum": 1.6531620857130722
+    }
+  },
+  {
+    "tick": 191,
+    "before": {
+      "count": 302,
+      "maximum": 0.57956608598362
+    },
+    "afterFour": {
+      "count": 330,
+      "maximum": 2.0844747156366124
+    }
+  },
+  {
+    "tick": 192,
+    "before": {
+      "count": 324,
+      "maximum": 0.5804121782152887
+    },
+    "afterFour": {
+      "count": 309,
+      "maximum": 1.777850604297667
+    }
+  },
+  {
+    "tick": 193,
+    "before": {
+      "count": 285,
+      "maximum": 0.5575206679714224
+    },
+    "afterFour": {
+      "count": 310,
+      "maximum": 1.7852829516187922
+    }
+  },
+  {
+    "tick": 194,
+    "before": {
+      "count": 279,
+      "maximum": 0.5740280234862203
+    },
+    "afterFour": {
+      "count": 299,
+      "maximum": 1.6540413905996223
+    }
+  },
+  {
+    "tick": 195,
+    "before": {
+      "count": 282,
+      "maximum": 0.5907130478072693
+    },
+    "afterFour": {
+      "count": 294,
+      "maximum": 1.626607525417926
+    }
+  },
+  {
+    "tick": 196,
+    "before": {
+      "count": 290,
+      "maximum": 0.5987709235506049
+    },
+    "afterFour": {
+      "count": 322,
+      "maximum": 1.5354948316365284
+    }
+  },
+  {
+    "tick": 197,
+    "before": {
+      "count": 303,
+      "maximum": 0.6077354736627045
+    },
+    "afterFour": {
+      "count": 330,
+      "maximum": 1.9416089652373651
+    }
+  },
+  {
+    "tick": 198,
+    "before": {
+      "count": 309,
+      "maximum": 0.5558591763789433
+    },
+    "afterFour": {
+      "count": 341,
+      "maximum": 1.7337345365307426
+    }
+  },
+  {
+    "tick": 199,
+    "before": {
+      "count": 271,
+      "maximum": 0.6299332446328751
+    },
+    "afterFour": {
+      "count": 319,
+      "maximum": 1.6238279420013235
+    }
+  },
+  {
+    "tick": 200,
+    "before": {
+      "count": 300,
+      "maximum": 0.6286303383718419
+    },
+    "afterFour": {
+      "count": 328,
+      "maximum": 1.7576109075221593
+    }
+  },
+  {
+    "tick": 201,
+    "before": {
+      "count": 315,
+      "maximum": 0.6205300268972582
+    },
+    "afterFour": {
+      "count": 342,
+      "maximum": 1.8497528015471758
+    }
+  },
+  {
+    "tick": 202,
+    "before": {
+      "count": 296,
+      "maximum": 0.5776071342194706
+    },
+    "afterFour": {
+      "count": 321,
+      "maximum": 1.5576871747539034
+    }
+  },
+  {
+    "tick": 203,
+    "before": {
+      "count": 304,
+      "maximum": 0.6207523085422011
+    },
+    "afterFour": {
+      "count": 328,
+      "maximum": 1.8764861598578975
+    }
+  },
+  {
+    "tick": 204,
+    "before": {
+      "count": 311,
+      "maximum": 0.6111121455658433
+    },
+    "afterFour": {
+      "count": 336,
+      "maximum": 1.5069945462203194
+    }
+  },
+  {
+    "tick": 205,
+    "before": {
+      "count": 329,
+      "maximum": 0.573940030479478
+    },
+    "afterFour": {
+      "count": 361,
+      "maximum": 1.6719719081723117
+    }
+  },
+  {
+    "tick": 206,
+    "before": {
+      "count": 340,
+      "maximum": 0.6005732379011244
+    },
+    "afterFour": {
+      "count": 384,
+      "maximum": 1.739589387212237
+    }
+  },
+  {
+    "tick": 207,
+    "before": {
+      "count": 334,
+      "maximum": 0.5821506526097258
+    },
+    "afterFour": {
+      "count": 391,
+      "maximum": 1.6429559587447766
+    }
+  },
+  {
+    "tick": 208,
+    "before": {
+      "count": 356,
+      "maximum": 0.5744744900750138
+    },
+    "afterFour": {
+      "count": 382,
+      "maximum": 1.9689524834892245
+    }
+  },
+  {
+    "tick": 209,
+    "before": {
+      "count": 330,
+      "maximum": 0.5864088066737816
+    },
+    "afterFour": {
+      "count": 347,
+      "maximum": 1.9164536698104726
+    }
+  },
+  {
+    "tick": 210,
+    "before": {
+      "count": 312,
+      "maximum": 0.5983609973059858
+    },
+    "afterFour": {
+      "count": 347,
+      "maximum": 1.72113206117689
+    }
+  },
+  {
+    "tick": 211,
+    "before": {
+      "count": 307,
+      "maximum": 0.5825508677387097
+    },
+    "afterFour": {
+      "count": 350,
+      "maximum": 1.8210798360884937
+    }
+  },
+  {
+    "tick": 212,
+    "before": {
+      "count": 311,
+      "maximum": 0.5955247937972636
+    },
+    "afterFour": {
+      "count": 329,
+      "maximum": 1.8231352212012304
+    }
+  },
+  {
+    "tick": 213,
+    "before": {
+      "count": 283,
+      "maximum": 0.5763141532181848
+    },
+    "afterFour": {
+      "count": 327,
+      "maximum": 1.6021621572593885
+    }
+  },
+  {
+    "tick": 214,
+    "before": {
+      "count": 274,
+      "maximum": 0.5130982902717607
+    },
+    "afterFour": {
+      "count": 311,
+      "maximum": 1.9357740307812747
+    }
+  },
+  {
+    "tick": 215,
+    "before": {
+      "count": 260,
+      "maximum": 0.6347824938260826
+    },
+    "afterFour": {
+      "count": 301,
+      "maximum": 2.0684720759984714
+    }
+  },
+  {
+    "tick": 216,
+    "before": {
+      "count": 251,
+      "maximum": 0.6174845961855269
+    },
+    "afterFour": {
+      "count": 274,
+      "maximum": 1.7902039424544514
+    }
+  },
+  {
+    "tick": 217,
+    "before": {
+      "count": 255,
+      "maximum": 0.6920430445353789
+    },
+    "afterFour": {
+      "count": 268,
+      "maximum": 1.5379624409380748
+    }
+  },
+  {
+    "tick": 218,
+    "before": {
+      "count": 228,
+      "maximum": 0.544910382880432
+    },
+    "afterFour": {
+      "count": 265,
+      "maximum": 1.7575744553852184
+    }
+  },
+  {
+    "tick": 219,
+    "before": {
+      "count": 227,
+      "maximum": 0.5027692541114623
+    },
+    "afterFour": {
+      "count": 249,
+      "maximum": 1.4477140337584542
+    }
+  },
+  {
+    "tick": 220,
+    "before": {
+      "count": 249,
+      "maximum": 0.5942259134077474
+    },
+    "afterFour": {
+      "count": 268,
+      "maximum": 1.4521704328477592
+    }
+  },
+  {
+    "tick": 221,
+    "before": {
+      "count": 249,
+      "maximum": 0.6125252766598592
+    },
+    "afterFour": {
+      "count": 279,
+      "maximum": 1.8236080987730183
+    }
+  },
+  {
+    "tick": 222,
+    "before": {
+      "count": 252,
+      "maximum": 0.5564873513051731
+    },
+    "afterFour": {
+      "count": 272,
+      "maximum": 1.5376495535035213
+    }
+  },
+  {
+    "tick": 223,
+    "before": {
+      "count": 260,
+      "maximum": 0.6176602975009313
+    },
+    "afterFour": {
+      "count": 300,
+      "maximum": 1.6695236897515109
+    }
+  },
+  {
+    "tick": 224,
+    "before": {
+      "count": 268,
+      "maximum": 0.6249799422723816
+    },
+    "afterFour": {
+      "count": 316,
+      "maximum": 1.6873233657527198
+    }
+  },
+  {
+    "tick": 225,
+    "before": {
+      "count": 277,
+      "maximum": 0.6164169908856145
+    },
+    "afterFour": {
+      "count": 307,
+      "maximum": 1.7136251654192316
+    }
+  },
+  {
+    "tick": 226,
+    "before": {
+      "count": 293,
+      "maximum": 0.5625181371330266
+    },
+    "afterFour": {
+      "count": 312,
+      "maximum": 1.4917337442211833
+    }
+  },
+  {
+    "tick": 227,
+    "before": {
+      "count": 274,
+      "maximum": 0.6412368073166261
+    },
+    "afterFour": {
+      "count": 287,
+      "maximum": 1.747087528244525
+    }
+  },
+  {
+    "tick": 228,
+    "before": {
+      "count": 230,
+      "maximum": 0.5874353839941575
+    },
+    "afterFour": {
+      "count": 289,
+      "maximum": 1.5918010952053532
+    }
+  },
+  {
+    "tick": 229,
+    "before": {
+      "count": 277,
+      "maximum": 0.5900421211624103
+    },
+    "afterFour": {
+      "count": 321,
+      "maximum": 1.5541312162611058
+    }
+  },
+  {
+    "tick": 230,
+    "before": {
+      "count": 294,
+      "maximum": 0.5903774563627566
+    },
+    "afterFour": {
+      "count": 319,
+      "maximum": 2.3166908079217183
+    }
+  },
+  {
+    "tick": 231,
+    "before": {
+      "count": 282,
+      "maximum": 0.5896656262644138
+    },
+    "afterFour": {
+      "count": 322,
+      "maximum": 1.5780352713295542
+    }
+  },
+  {
+    "tick": 232,
+    "before": {
+      "count": 305,
+      "maximum": 0.6531431774296186
+    },
+    "afterFour": {
+      "count": 334,
+      "maximum": 1.59287009653546
+    }
+  },
+  {
+    "tick": 233,
+    "before": {
+      "count": 306,
+      "maximum": 0.6110609658091946
+    },
+    "afterFour": {
+      "count": 363,
+      "maximum": 1.5313907325231133
+    }
+  },
+  {
+    "tick": 234,
+    "before": {
+      "count": 342,
+      "maximum": 0.62050919126761
+    },
+    "afterFour": {
+      "count": 379,
+      "maximum": 1.5781273714487734
+    }
+  },
+  {
+    "tick": 235,
+    "before": {
+      "count": 335,
+      "maximum": 0.6491761241274956
+    },
+    "afterFour": {
+      "count": 365,
+      "maximum": 1.595760435602446
+    }
+  },
+  {
+    "tick": 236,
+    "before": {
+      "count": 315,
+      "maximum": 0.6792400556356109
+    },
+    "afterFour": {
+      "count": 374,
+      "maximum": 1.5237288369232997
+    }
+  },
+  {
+    "tick": 237,
+    "before": {
+      "count": 337,
+      "maximum": 0.7391684677694519
+    },
+    "afterFour": {
+      "count": 396,
+      "maximum": 1.7048478551307218
+    }
+  },
+  {
+    "tick": 238,
+    "before": {
+      "count": 350,
+      "maximum": 0.6590312920681578
+    },
+    "afterFour": {
+      "count": 398,
+      "maximum": 1.5555569413618633
+    }
+  },
+  {
+    "tick": 239,
+    "before": {
+      "count": 328,
+      "maximum": 0.5311444241918828
+    },
+    "afterFour": {
+      "count": 394,
+      "maximum": 1.67384555571544
+    }
+  },
+  {
+    "tick": 240,
+    "before": {
+      "count": 339,
+      "maximum": 0.6077668883962541
+    },
+    "afterFour": {
+      "count": 383,
+      "maximum": 1.504905393984493
+    }
+  },
+  {
+    "tick": 241,
+    "before": {
+      "count": 334,
+      "maximum": 0.6124720351532398
+    },
+    "afterFour": {
+      "count": 397,
+      "maximum": 1.577899597048357
+    }
+  },
+  {
+    "tick": 242,
+    "before": {
+      "count": 364,
+      "maximum": 0.5940858550200705
+    },
+    "afterFour": {
+      "count": 402,
+      "maximum": 1.6334161210996303
+    }
+  },
+  {
+    "tick": 243,
+    "before": {
+      "count": 362,
+      "maximum": 0.6179646036414841
+    },
+    "afterFour": {
+      "count": 396,
+      "maximum": 1.5215895819427336
+    }
+  },
+  {
+    "tick": 244,
+    "before": {
+      "count": 364,
+      "maximum": 0.5885637660188889
+    },
+    "afterFour": {
+      "count": 435,
+      "maximum": 1.629686617937458
+    }
+  },
+  {
+    "tick": 245,
+    "before": {
+      "count": 380,
+      "maximum": 0.5826922060053041
+    },
+    "afterFour": {
+      "count": 406,
+      "maximum": 1.6631249601246259
+    }
+  },
+  {
+    "tick": 246,
+    "before": {
+      "count": 373,
+      "maximum": 0.5938996143490991
+    },
+    "afterFour": {
+      "count": 417,
+      "maximum": 1.7893390965923928
+    }
+  },
+  {
+    "tick": 247,
+    "before": {
+      "count": 360,
+      "maximum": 0.5884212338241825
+    },
+    "afterFour": {
+      "count": 409,
+      "maximum": 1.800522575440545
+    }
+  },
+  {
+    "tick": 248,
+    "before": {
+      "count": 382,
+      "maximum": 0.6239061508326564
+    },
+    "afterFour": {
+      "count": 424,
+      "maximum": 1.5533850506025884
+    }
+  },
+  {
+    "tick": 249,
+    "before": {
+      "count": 373,
+      "maximum": 0.6145190444915958
+    },
+    "afterFour": {
+      "count": 428,
+      "maximum": 1.570086006403951
+    }
+  },
+  {
+    "tick": 250,
+    "before": {
+      "count": 336,
+      "maximum": 0.6093507094156561
+    },
+    "afterFour": {
+      "count": 410,
+      "maximum": 1.4933729187690954
+    }
+  },
+  {
+    "tick": 251,
+    "before": {
+      "count": 368,
+      "maximum": 0.6327342411759833
+    },
+    "afterFour": {
+      "count": 433,
+      "maximum": 1.6316373067154455
+    }
+  },
+  {
+    "tick": 252,
+    "before": {
+      "count": 394,
+      "maximum": 0.5618080143825539
+    },
+    "afterFour": {
+      "count": 469,
+      "maximum": 1.892110204017789
+    }
+  },
+  {
+    "tick": 253,
+    "before": {
+      "count": 419,
+      "maximum": 0.5761290437934852
+    },
+    "afterFour": {
+      "count": 465,
+      "maximum": 1.4529829700886268
+    }
+  },
+  {
+    "tick": 254,
+    "before": {
+      "count": 409,
+      "maximum": 0.6584078422848352
+    },
+    "afterFour": {
+      "count": 472,
+      "maximum": 1.3669033836652797
+    }
+  },
+  {
+    "tick": 255,
+    "before": {
+      "count": 371,
+      "maximum": 0.5122793421379122
+    },
+    "afterFour": {
+      "count": 498,
+      "maximum": 1.6199160609790768
+    }
+  },
+  {
+    "tick": 256,
+    "before": {
+      "count": 421,
+      "maximum": 0.5979440140263002
+    },
+    "afterFour": {
+      "count": 495,
+      "maximum": 1.6052726552375702
+    }
+  },
+  {
+    "tick": 257,
+    "before": {
+      "count": 436,
+      "maximum": 0.5775204483166823
+    },
+    "afterFour": {
+      "count": 506,
+      "maximum": 1.710702385149884
+    }
+  },
+  {
+    "tick": 258,
+    "before": {
+      "count": 446,
+      "maximum": 0.5738447744833044
+    },
+    "afterFour": {
+      "count": 508,
+      "maximum": 1.5762036050302939
+    }
+  },
+  {
+    "tick": 259,
+    "before": {
+      "count": 443,
+      "maximum": 0.59690495705334
+    },
+    "afterFour": {
+      "count": 507,
+      "maximum": 1.8184616018315412
+    }
+  },
+  {
+    "tick": 260,
+    "before": {
+      "count": 424,
+      "maximum": 0.5666164931384818
+    },
+    "afterFour": {
+      "count": 474,
+      "maximum": 1.947724064306274
+    }
+  },
+  {
+    "tick": 261,
+    "before": {
+      "count": 404,
+      "maximum": 0.6017297269591753
+    },
+    "afterFour": {
+      "count": 492,
+      "maximum": 1.5526974989715
+    }
+  },
+  {
+    "tick": 262,
+    "before": {
+      "count": 436,
+      "maximum": 0.5909780693939419
+    },
+    "afterFour": {
+      "count": 483,
+      "maximum": 1.7924502131957132
+    }
+  },
+  {
+    "tick": 263,
+    "before": {
+      "count": 440,
+      "maximum": 0.627463576872306
+    },
+    "afterFour": {
+      "count": 507,
+      "maximum": 1.5413185654713448
+    }
+  },
+  {
+    "tick": 264,
+    "before": {
+      "count": 417,
+      "maximum": 0.5892152622672997
+    },
+    "afterFour": {
+      "count": 505,
+      "maximum": 1.6762668476448876
+    }
+  },
+  {
+    "tick": 265,
+    "before": {
+      "count": 461,
+      "maximum": 0.6196656883913683
+    },
+    "afterFour": {
+      "count": 527,
+      "maximum": 1.707326748104781
+    }
+  },
+  {
+    "tick": 266,
+    "before": {
+      "count": 477,
+      "maximum": 0.6778674826081357
+    },
+    "afterFour": {
+      "count": 533,
+      "maximum": 1.7148636296790718
+    }
+  },
+  {
+    "tick": 267,
+    "before": {
+      "count": 474,
+      "maximum": 0.5938179585021466
+    },
+    "afterFour": {
+      "count": 543,
+      "maximum": 1.8864934370722963
+    }
+  },
+  {
+    "tick": 268,
+    "before": {
+      "count": 475,
+      "maximum": 0.6541982748501471
+    },
+    "afterFour": {
+      "count": 551,
+      "maximum": 1.578412237369987
+    }
+  },
+  {
+    "tick": 269,
+    "before": {
+      "count": 517,
+      "maximum": 0.597518962277781
+    },
+    "afterFour": {
+      "count": 596,
+      "maximum": 1.65269215672122
+    }
+  },
+  {
+    "tick": 270,
+    "before": {
+      "count": 530,
+      "maximum": 0.6145585795271753
+    },
+    "afterFour": {
+      "count": 593,
+      "maximum": 1.6223444723023936
+    }
+  },
+  {
+    "tick": 271,
+    "before": {
+      "count": 514,
+      "maximum": 0.5895935554366512
+    },
+    "afterFour": {
+      "count": 632,
+      "maximum": 1.6993965155654696
+    }
+  },
+  {
+    "tick": 272,
+    "before": {
+      "count": 527,
+      "maximum": 0.6118818986269003
+    },
+    "afterFour": {
+      "count": 576,
+      "maximum": 1.8078124843204852
+    }
+  },
+  {
+    "tick": 273,
+    "before": {
+      "count": 492,
+      "maximum": 0.6194092002089651
+    },
+    "afterFour": {
+      "count": 562,
+      "maximum": 1.608900456365122
+    }
+  },
+  {
+    "tick": 274,
+    "before": {
+      "count": 492,
+      "maximum": 0.5944148829959435
+    },
+    "afterFour": {
+      "count": 554,
+      "maximum": 1.6365927570644594
+    }
+  },
+  {
+    "tick": 275,
+    "before": {
+      "count": 484,
+      "maximum": 0.5913250947886768
+    },
+    "afterFour": {
+      "count": 591,
+      "maximum": 1.7287533960670896
+    }
+  },
+  {
+    "tick": 276,
+    "before": {
+      "count": 488,
+      "maximum": 0.5855936702788247
+    },
+    "afterFour": {
+      "count": 592,
+      "maximum": 1.5172192086663694
+    }
+  },
+  {
+    "tick": 277,
+    "before": {
+      "count": 500,
+      "maximum": 0.5687397245506194
+    },
+    "afterFour": {
+      "count": 595,
+      "maximum": 1.6433650508108215
+    }
+  },
+  {
+    "tick": 278,
+    "before": {
+      "count": 559,
+      "maximum": 0.5901047263102566
+    },
+    "afterFour": {
+      "count": 583,
+      "maximum": 1.5164278826435167
+    }
+  },
+  {
+    "tick": 279,
+    "before": {
+      "count": 537,
+      "maximum": 0.6080566476935987
+    },
+    "afterFour": {
+      "count": 622,
+      "maximum": 1.5162752647455706
+    }
+  },
+  {
+    "tick": 280,
+    "before": {
+      "count": 518,
+      "maximum": 0.5815722481083299
+    },
+    "afterFour": {
+      "count": 614,
+      "maximum": 1.7624191331159995
+    }
+  },
+  {
+    "tick": 281,
+    "before": {
+      "count": 538,
+      "maximum": 0.5867624805002576
+    },
+    "afterFour": {
+      "count": 640,
+      "maximum": 1.6536810683245617
+    }
+  },
+  {
+    "tick": 282,
+    "before": {
+      "count": 554,
+      "maximum": 0.5838107313109759
+    },
+    "afterFour": {
+      "count": 624,
+      "maximum": 1.3910213090998003
+    }
+  },
+  {
+    "tick": 283,
+    "before": {
+      "count": 547,
+      "maximum": 0.572976798258579
+    },
+    "afterFour": {
+      "count": 674,
+      "maximum": 1.723727237221909
+    }
+  },
+  {
+    "tick": 284,
+    "before": {
+      "count": 561,
+      "maximum": 0.5819735136990118
+    },
+    "afterFour": {
+      "count": 652,
+      "maximum": 1.779339974602836
+    }
+  },
+  {
+    "tick": 285,
+    "before": {
+      "count": 554,
+      "maximum": 0.6227586080694714
+    },
+    "afterFour": {
+      "count": 635,
+      "maximum": 1.8810361960366553
+    }
+  },
+  {
+    "tick": 286,
+    "before": {
+      "count": 545,
+      "maximum": 0.6130033643561958
+    },
+    "afterFour": {
+      "count": 641,
+      "maximum": 1.8038740740075063
+    }
+  },
+  {
+    "tick": 287,
+    "before": {
+      "count": 554,
+      "maximum": 0.5626480774941429
+    },
+    "afterFour": {
+      "count": 599,
+      "maximum": 1.6887526863649214
+    }
+  },
+  {
+    "tick": 288,
+    "before": {
+      "count": 523,
+      "maximum": 0.5520710203774222
+    },
+    "afterFour": {
+      "count": 614,
+      "maximum": 1.9113635995393476
+    }
+  },
+  {
+    "tick": 289,
+    "before": {
+      "count": 540,
+      "maximum": 0.5975854810488288
+    },
+    "afterFour": {
+      "count": 626,
+      "maximum": 1.6115594107849889
+    }
+  },
+  {
+    "tick": 290,
+    "before": {
+      "count": 544,
+      "maximum": 0.589308714282466
+    },
+    "afterFour": {
+      "count": 629,
+      "maximum": 1.7362962614615407
+    }
+  },
+  {
+    "tick": 291,
+    "before": {
+      "count": 577,
+      "maximum": 0.5947984388693337
+    },
+    "afterFour": {
+      "count": 630,
+      "maximum": 1.6546470712900225
+    }
+  },
+  {
+    "tick": 292,
+    "before": {
+      "count": 574,
+      "maximum": 0.5525066529261862
+    },
+    "afterFour": {
+      "count": 662,
+      "maximum": 1.6297341983772178
+    }
+  },
+  {
+    "tick": 293,
+    "before": {
+      "count": 593,
+      "maximum": 0.6013603754711587
+    },
+    "afterFour": {
+      "count": 651,
+      "maximum": 1.5245269621386308
+    }
+  },
+  {
+    "tick": 294,
+    "before": {
+      "count": 592,
+      "maximum": 0.5550422648630144
+    },
+    "afterFour": {
+      "count": 680,
+      "maximum": 1.802399026465995
+    }
+  },
+  {
+    "tick": 295,
+    "before": {
+      "count": 587,
+      "maximum": 0.558965810571137
+    },
+    "afterFour": {
+      "count": 690,
+      "maximum": 1.6963497291076326
+    }
+  },
+  {
+    "tick": 296,
+    "before": {
+      "count": 608,
+      "maximum": 0.6212951279004564
+    },
+    "afterFour": {
+      "count": 706,
+      "maximum": 1.6233935865557614
+    }
+  },
+  {
+    "tick": 297,
+    "before": {
+      "count": 599,
+      "maximum": 0.6414618083631947
+    },
+    "afterFour": {
+      "count": 727,
+      "maximum": 1.8708682445333373
+    }
+  },
+  {
+    "tick": 298,
+    "before": {
+      "count": 601,
+      "maximum": 0.6093714779873336
+    },
+    "afterFour": {
+      "count": 669,
+      "maximum": 1.7182565130024292
+    }
+  },
+  {
+    "tick": 299,
+    "before": {
+      "count": 577,
+      "maximum": 0.6142749292747594
+    },
+    "afterFour": {
+      "count": 661,
+      "maximum": 2.0612976637152043
+    }
+  },
+  {
+    "tick": 300,
+    "before": {
+      "count": 570,
+      "maximum": 0.6037597384445199
+    },
+    "afterFour": {
+      "count": 631,
+      "maximum": 1.6758960628195352
+    }
+  },
+  {
+    "tick": 301,
+    "before": {
+      "count": 585,
+      "maximum": 0.5678747842718641
+    },
+    "afterFour": {
+      "count": 629,
+      "maximum": 1.777695758847135
+    }
+  },
+  {
+    "tick": 302,
+    "before": {
+      "count": 570,
+      "maximum": 0.5816398295088643
+    },
+    "afterFour": {
+      "count": 635,
+      "maximum": 1.9425054079004207
+    }
+  },
+  {
+    "tick": 303,
+    "before": {
+      "count": 557,
+      "maximum": 0.5944577189399585
+    },
+    "afterFour": {
+      "count": 649,
+      "maximum": 1.7410347510265893
+    }
+  },
+  {
+    "tick": 304,
+    "before": {
+      "count": 534,
+      "maximum": 0.5515767171190094
+    },
+    "afterFour": {
+      "count": 571,
+      "maximum": 1.705599475406709
+    }
+  },
+  {
+    "tick": 305,
+    "before": {
+      "count": 510,
+      "maximum": 0.5837334908449643
+    },
+    "afterFour": {
+      "count": 597,
+      "maximum": 1.7136576497635465
+    }
+  },
+  {
+    "tick": 306,
+    "before": {
+      "count": 549,
+      "maximum": 0.5861321304017881
+    },
+    "afterFour": {
+      "count": 601,
+      "maximum": 1.646694793780326
+    }
+  },
+  {
+    "tick": 307,
+    "before": {
+      "count": 542,
+      "maximum": 0.5746749367972841
+    },
+    "afterFour": {
+      "count": 632,
+      "maximum": 1.5743532264820583
+    }
+  },
+  {
+    "tick": 308,
+    "before": {
+      "count": 549,
+      "maximum": 0.5814956922793835
+    },
+    "afterFour": {
+      "count": 639,
+      "maximum": 1.5865049372478675
+    }
+  },
+  {
+    "tick": 309,
+    "before": {
+      "count": 575,
+      "maximum": 0.5888379191817075
+    },
+    "afterFour": {
+      "count": 645,
+      "maximum": 1.8340127896351834
+    }
+  },
+  {
+    "tick": 310,
+    "before": {
+      "count": 548,
+      "maximum": 0.6524197596561407
+    },
+    "afterFour": {
+      "count": 653,
+      "maximum": 1.8365650212874378
+    }
+  },
+  {
+    "tick": 311,
+    "before": {
+      "count": 573,
+      "maximum": 0.6482542634824817
+    },
+    "afterFour": {
+      "count": 622,
+      "maximum": 1.9537642278636467
+    }
+  },
+  {
+    "tick": 312,
+    "before": {
+      "count": 532,
+      "maximum": 0.602975957538666
+    },
+    "afterFour": {
+      "count": 631,
+      "maximum": 1.895407950771502
+    }
+  },
+  {
+    "tick": 313,
+    "before": {
+      "count": 524,
+      "maximum": 0.7119585324862756
+    },
+    "afterFour": {
+      "count": 611,
+      "maximum": 1.7108179007244146
+    }
+  },
+  {
+    "tick": 314,
+    "before": {
+      "count": 528,
+      "maximum": 0.5919449279338531
+    },
+    "afterFour": {
+      "count": 613,
+      "maximum": 1.7636778691513966
+    }
+  },
+  {
+    "tick": 315,
+    "before": {
+      "count": 571,
+      "maximum": 0.5909112500266609
+    },
+    "afterFour": {
+      "count": 637,
+      "maximum": 1.906834749131309
+    }
+  },
+  {
+    "tick": 316,
+    "before": {
+      "count": 515,
+      "maximum": 0.7303473201770387
+    },
+    "afterFour": {
+      "count": 587,
+      "maximum": 2.068740334671623
+    }
+  },
+  {
+    "tick": 317,
+    "before": {
+      "count": 530,
+      "maximum": 0.6414389528506117
+    },
+    "afterFour": {
+      "count": 598,
+      "maximum": 1.7284070233949071
+    }
+  },
+  {
+    "tick": 318,
+    "before": {
+      "count": 526,
+      "maximum": 0.6335643502865471
+    },
+    "afterFour": {
+      "count": 583,
+      "maximum": 2.044170483374068
+    }
+  },
+  {
+    "tick": 319,
+    "before": {
+      "count": 521,
+      "maximum": 0.6127412086332971
+    },
+    "afterFour": {
+      "count": 613,
+      "maximum": 1.5426435418549627
+    }
+  },
+  {
+    "tick": 320,
+    "before": {
+      "count": 568,
+      "maximum": 0.5879816794742103
+    },
+    "afterFour": {
+      "count": 605,
+      "maximum": 1.7834838856779784
+    }
+  },
+  {
+    "tick": 321,
+    "before": {
+      "count": 531,
+      "maximum": 0.6113429926791909
+    },
+    "afterFour": {
+      "count": 609,
+      "maximum": 2.011267944368753
+    }
+  },
+  {
+    "tick": 322,
+    "before": {
+      "count": 497,
+      "maximum": 0.6013477413779036
+    },
+    "afterFour": {
+      "count": 574,
+      "maximum": 1.5258231328780516
+    }
+  },
+  {
+    "tick": 323,
+    "before": {
+      "count": 545,
+      "maximum": 0.5983525113568451
+    },
+    "afterFour": {
+      "count": 603,
+      "maximum": 1.6453205446239894
+    }
+  },
+  {
+    "tick": 324,
+    "before": {
+      "count": 557,
+      "maximum": 0.5720560660615073
+    },
+    "afterFour": {
+      "count": 620,
+      "maximum": 1.4861481455559815
+    }
+  },
+  {
+    "tick": 325,
+    "before": {
+      "count": 548,
+      "maximum": 0.5978879148681386
+    },
+    "afterFour": {
+      "count": 618,
+      "maximum": 1.9300609178263093
+    }
+  },
+  {
+    "tick": 326,
+    "before": {
+      "count": 518,
+      "maximum": 0.56066032915089
+    },
+    "afterFour": {
+      "count": 602,
+      "maximum": 1.7456388369383449
+    }
+  },
+  {
+    "tick": 327,
+    "before": {
+      "count": 520,
+      "maximum": 0.5617218283113932
+    },
+    "afterFour": {
+      "count": 578,
+      "maximum": 1.5933641403368473
+    }
+  },
+  {
+    "tick": 328,
+    "before": {
+      "count": 533,
+      "maximum": 0.5941684774653231
+    },
+    "afterFour": {
+      "count": 591,
+      "maximum": 1.6237533990923438
+    }
+  },
+  {
+    "tick": 329,
+    "before": {
+      "count": 521,
+      "maximum": 0.565132870183203
+    },
+    "afterFour": {
+      "count": 600,
+      "maximum": 1.5427605039309409
+    }
+  },
+  {
+    "tick": 330,
+    "before": {
+      "count": 554,
+      "maximum": 0.5751956523438997
+    },
+    "afterFour": {
+      "count": 609,
+      "maximum": 1.6969189959096012
+    }
+  },
+  {
+    "tick": 331,
+    "before": {
+      "count": 550,
+      "maximum": 0.5704883338372841
+    },
+    "afterFour": {
+      "count": 631,
+      "maximum": 1.6582214838544358
+    }
+  },
+  {
+    "tick": 332,
+    "before": {
+      "count": 562,
+      "maximum": 0.5687803471752293
+    },
+    "afterFour": {
+      "count": 640,
+      "maximum": 1.6321058206885244
+    }
+  },
+  {
+    "tick": 333,
+    "before": {
+      "count": 547,
+      "maximum": 0.5552732877670312
+    },
+    "afterFour": {
+      "count": 624,
+      "maximum": 1.8935482102836492
+    }
+  },
+  {
+    "tick": 334,
+    "before": {
+      "count": 533,
+      "maximum": 0.5556178296357599
+    },
+    "afterFour": {
+      "count": 600,
+      "maximum": 1.6499081879304667
+    }
+  },
+  {
+    "tick": 335,
+    "before": {
+      "count": 518,
+      "maximum": 0.579108451638338
+    },
+    "afterFour": {
+      "count": 622,
+      "maximum": 1.8876398775997725
+    }
+  },
+  {
+    "tick": 336,
+    "before": {
+      "count": 550,
+      "maximum": 0.6366016364267901
+    },
+    "afterFour": {
+      "count": 606,
+      "maximum": 1.7144365088774807
+    }
+  },
+  {
+    "tick": 337,
+    "before": {
+      "count": 543,
+      "maximum": 0.6647639571267012
+    },
+    "afterFour": {
+      "count": 648,
+      "maximum": 1.948374557289978
+    }
+  },
+  {
+    "tick": 338,
+    "before": {
+      "count": 545,
+      "maximum": 0.6511975698126626
+    },
+    "afterFour": {
+      "count": 587,
+      "maximum": 1.9723170601235678
+    }
+  },
+  {
+    "tick": 339,
+    "before": {
+      "count": 530,
+      "maximum": 0.6406668870268248
+    },
+    "afterFour": {
+      "count": 587,
+      "maximum": 1.5452504156125713
+    }
+  },
+  {
+    "tick": 340,
+    "before": {
+      "count": 558,
+      "maximum": 0.6217776970707511
+    },
+    "afterFour": {
+      "count": 602,
+      "maximum": 1.6361238637953406
+    }
+  },
+  {
+    "tick": 341,
+    "before": {
+      "count": 511,
+      "maximum": 0.620294270568917
+    },
+    "afterFour": {
+      "count": 621,
+      "maximum": 1.635991602137528
+    }
+  },
+  {
+    "tick": 342,
+    "before": {
+      "count": 536,
+      "maximum": 0.5946532460034399
+    },
+    "afterFour": {
+      "count": 632,
+      "maximum": 1.7110182712079567
+    }
+  },
+  {
+    "tick": 343,
+    "before": {
+      "count": 544,
+      "maximum": 0.6213775150721181
+    },
+    "afterFour": {
+      "count": 601,
+      "maximum": 1.7185903833425122
+    }
+  },
+  {
+    "tick": 344,
+    "before": {
+      "count": 536,
+      "maximum": 0.5731320149241599
+    },
+    "afterFour": {
+      "count": 573,
+      "maximum": 1.6783148039793145
+    }
+  },
+  {
+    "tick": 345,
+    "before": {
+      "count": 537,
+      "maximum": 0.6268743023403802
+    },
+    "afterFour": {
+      "count": 601,
+      "maximum": 1.7067531909320177
+    }
+  },
+  {
+    "tick": 346,
+    "before": {
+      "count": 571,
+      "maximum": 0.5716331817185836
+    },
+    "afterFour": {
+      "count": 653,
+      "maximum": 2.136167827195062
+    }
+  },
+  {
+    "tick": 347,
+    "before": {
+      "count": 565,
+      "maximum": 0.5725975244548209
+    },
+    "afterFour": {
+      "count": 617,
+      "maximum": 1.6836793893649187
+    }
+  },
+  {
+    "tick": 348,
+    "before": {
+      "count": 565,
+      "maximum": 0.5755744828282374
+    },
+    "afterFour": {
+      "count": 650,
+      "maximum": 1.6062941647040638
+    }
+  },
+  {
+    "tick": 349,
+    "before": {
+      "count": 553,
+      "maximum": 0.5819472935972261
+    },
+    "afterFour": {
+      "count": 678,
+      "maximum": 1.7594537759502122
+    }
+  },
+  {
+    "tick": 350,
+    "before": {
+      "count": 631,
+      "maximum": 0.6417261503227216
+    },
+    "afterFour": {
+      "count": 654,
+      "maximum": 1.6960273285552043
+    }
+  },
+  {
+    "tick": 351,
+    "before": {
+      "count": 588,
+      "maximum": 0.5693466910127452
+    },
+    "afterFour": {
+      "count": 682,
+      "maximum": 1.9485164924267018
+    }
+  },
+  {
+    "tick": 352,
+    "before": {
+      "count": 591,
+      "maximum": 0.5961126596952617
+    },
+    "afterFour": {
+      "count": 672,
+      "maximum": 1.7185846297937415
+    }
+  },
+  {
+    "tick": 353,
+    "before": {
+      "count": 570,
+      "maximum": 0.582109500010084
+    },
+    "afterFour": {
+      "count": 667,
+      "maximum": 1.824567660120894
+    }
+  },
+  {
+    "tick": 354,
+    "before": {
+      "count": 587,
+      "maximum": 0.6002654470098658
+    },
+    "afterFour": {
+      "count": 656,
+      "maximum": 1.572011570174661
+    }
+  },
+  {
+    "tick": 355,
+    "before": {
+      "count": 603,
+      "maximum": 0.568179101627293
+    },
+    "afterFour": {
+      "count": 691,
+      "maximum": 1.488228006309777
+    }
+  },
+  {
+    "tick": 356,
+    "before": {
+      "count": 637,
+      "maximum": 0.5831869066022302
+    },
+    "afterFour": {
+      "count": 680,
+      "maximum": 1.6312182372548447
+    }
+  },
+  {
+    "tick": 357,
+    "before": {
+      "count": 594,
+      "maximum": 0.5683195293535617
+    },
+    "afterFour": {
+      "count": 686,
+      "maximum": 1.6446695647180478
+    }
+  },
+  {
+    "tick": 358,
+    "before": {
+      "count": 602,
+      "maximum": 0.6160041473394902
+    },
+    "afterFour": {
+      "count": 709,
+      "maximum": 1.77121894566878
+    }
+  },
+  {
+    "tick": 359,
+    "before": {
+      "count": 605,
+      "maximum": 0.6028513323644411
+    },
+    "afterFour": {
+      "count": 706,
+      "maximum": 1.5560772058396584
+    }
+  },
+  {
+    "tick": 360,
+    "before": {
+      "count": 680,
+      "maximum": 0.5836315571728186
+    },
+    "afterFour": {
+      "count": 763,
+      "maximum": 1.745399118624336
+    }
+  },
+  {
+    "tick": 361,
+    "before": {
+      "count": 656,
+      "maximum": 0.5947857105391545
+    },
+    "afterFour": {
+      "count": 788,
+      "maximum": 1.592759707148053
+    }
+  },
+  {
+    "tick": 362,
+    "before": {
+      "count": 720,
+      "maximum": 0.5725631634299422
+    },
+    "afterFour": {
+      "count": 772,
+      "maximum": 2.0096108553565033
+    }
+  },
+  {
+    "tick": 363,
+    "before": {
+      "count": 642,
+      "maximum": 0.5733042231520438
+    },
+    "afterFour": {
+      "count": 700,
+      "maximum": 1.63140615224588
+    }
+  },
+  {
+    "tick": 364,
+    "before": {
+      "count": 660,
+      "maximum": 0.6211004622695739
+    },
+    "afterFour": {
+      "count": 731,
+      "maximum": 1.6825390704948848
+    }
+  },
+  {
+    "tick": 365,
+    "before": {
+      "count": 666,
+      "maximum": 0.6504986421894969
+    },
+    "afterFour": {
+      "count": 730,
+      "maximum": 1.6167685918970331
+    }
+  },
+  {
+    "tick": 366,
+    "before": {
+      "count": 609,
+      "maximum": 0.5939873040420904
+    },
+    "afterFour": {
+      "count": 732,
+      "maximum": 1.550445215389706
+    }
+  },
+  {
+    "tick": 367,
+    "before": {
+      "count": 665,
+      "maximum": 0.5944657359374954
+    },
+    "afterFour": {
+      "count": 747,
+      "maximum": 1.8051539280121176
+    }
+  },
+  {
+    "tick": 368,
+    "before": {
+      "count": 631,
+      "maximum": 0.6079661778682199
+    },
+    "afterFour": {
+      "count": 730,
+      "maximum": 1.6843308562015853
+    }
+  },
+  {
+    "tick": 369,
+    "before": {
+      "count": 592,
+      "maximum": 0.6178948488983256
+    },
+    "afterFour": {
+      "count": 666,
+      "maximum": 1.5144783632415226
+    }
+  },
+  {
+    "tick": 370,
+    "before": {
+      "count": 572,
+      "maximum": 0.611642168743769
+    },
+    "afterFour": {
+      "count": 650,
+      "maximum": 1.7973540263548013
+    }
+  },
+  {
+    "tick": 371,
+    "before": {
+      "count": 561,
+      "maximum": 0.6115995679388613
+    },
+    "afterFour": {
+      "count": 644,
+      "maximum": 1.6580010245022523
+    }
+  },
+  {
+    "tick": 372,
+    "before": {
+      "count": 568,
+      "maximum": 0.5974175626185376
+    },
+    "afterFour": {
+      "count": 639,
+      "maximum": 1.641006405204262
+    }
+  },
+  {
+    "tick": 373,
+    "before": {
+      "count": 553,
+      "maximum": 0.6040132975055803
+    },
+    "afterFour": {
+      "count": 659,
+      "maximum": 1.7232713147806153
+    }
+  },
+  {
+    "tick": 374,
+    "before": {
+      "count": 570,
+      "maximum": 0.5634628547990914
+    },
+    "afterFour": {
+      "count": 636,
+      "maximum": 1.473174240191117
+    }
+  },
+  {
+    "tick": 375,
+    "before": {
+      "count": 584,
+      "maximum": 0.5592362194023339
+    },
+    "afterFour": {
+      "count": 678,
+      "maximum": 1.868142269929324
+    }
+  },
+  {
+    "tick": 376,
+    "before": {
+      "count": 597,
+      "maximum": 0.5812644082763576
+    },
+    "afterFour": {
+      "count": 673,
+      "maximum": 1.5796758716751294
+    }
+  },
+  {
+    "tick": 377,
+    "before": {
+      "count": 565,
+      "maximum": 0.573639638892522
+    },
+    "afterFour": {
+      "count": 676,
+      "maximum": 1.8270988672261659
+    }
+  },
+  {
+    "tick": 378,
+    "before": {
+      "count": 563,
+      "maximum": 0.5604106278241812
+    },
+    "afterFour": {
+      "count": 658,
+      "maximum": 1.5483114495177794
+    }
+  },
+  {
+    "tick": 379,
+    "before": {
+      "count": 557,
+      "maximum": 0.567305292346882
+    },
+    "afterFour": {
+      "count": 690,
+      "maximum": 1.6448610144482645
+    }
+  },
+  {
+    "tick": 380,
+    "before": {
+      "count": 547,
+      "maximum": 0.5801432553694994
+    },
+    "afterFour": {
+      "count": 687,
+      "maximum": 1.5415382847701782
+    }
+  },
+  {
+    "tick": 381,
+    "before": {
+      "count": 549,
+      "maximum": 0.6168201756332001
+    },
+    "afterFour": {
+      "count": 656,
+      "maximum": 1.5351493217097127
+    }
+  },
+  {
+    "tick": 382,
+    "before": {
+      "count": 550,
+      "maximum": 0.5935258994736552
+    },
+    "afterFour": {
+      "count": 704,
+      "maximum": 1.6424896105544695
+    }
+  },
+  {
+    "tick": 383,
+    "before": {
+      "count": 569,
+      "maximum": 0.5972378405647714
+    },
+    "afterFour": {
+      "count": 687,
+      "maximum": 1.5309094639353518
+    }
+  },
+  {
+    "tick": 384,
+    "before": {
+      "count": 581,
+      "maximum": 0.6049920557281023
+    },
+    "afterFour": {
+      "count": 681,
+      "maximum": 1.7266855099533105
+    }
+  },
+  {
+    "tick": 385,
+    "before": {
+      "count": 598,
+      "maximum": 0.5672459887587058
+    },
+    "afterFour": {
+      "count": 701,
+      "maximum": 1.4954358926510132
+    }
+  },
+  {
+    "tick": 386,
+    "before": {
+      "count": 593,
+      "maximum": 0.5781327144733632
+    },
+    "afterFour": {
+      "count": 685,
+      "maximum": 1.6420973680440785
+    }
+  },
+  {
+    "tick": 387,
+    "before": {
+      "count": 586,
+      "maximum": 0.7185454258067994
+    },
+    "afterFour": {
+      "count": 694,
+      "maximum": 1.6668472610308482
+    }
+  },
+  {
+    "tick": 388,
+    "before": {
+      "count": 587,
+      "maximum": 0.6650409059467028
+    },
+    "afterFour": {
+      "count": 696,
+      "maximum": 1.8020054584404628
+    }
+  },
+  {
+    "tick": 389,
+    "before": {
+      "count": 591,
+      "maximum": 0.6150012063692474
+    },
+    "afterFour": {
+      "count": 682,
+      "maximum": 1.6420202543577815
+    }
+  },
+  {
+    "tick": 390,
+    "before": {
+      "count": 576,
+      "maximum": 0.6360833732843707
+    },
+    "afterFour": {
+      "count": 719,
+      "maximum": 1.602221025726764
+    }
+  },
+  {
+    "tick": 391,
+    "before": {
+      "count": 594,
+      "maximum": 0.6159492453680606
+    },
+    "afterFour": {
+      "count": 684,
+      "maximum": 1.777430308104357
+    }
+  },
+  {
+    "tick": 392,
+    "before": {
+      "count": 572,
+      "maximum": 0.6216212350907435
+    },
+    "afterFour": {
+      "count": 684,
+      "maximum": 1.6768846350366724
+    }
+  },
+  {
+    "tick": 393,
+    "before": {
+      "count": 575,
+      "maximum": 0.5938644267418525
+    },
+    "afterFour": {
+      "count": 709,
+      "maximum": 1.6035269124923044
+    }
+  },
+  {
+    "tick": 394,
+    "before": {
+      "count": 612,
+      "maximum": 0.5803322821650054
+    },
+    "afterFour": {
+      "count": 706,
+      "maximum": 1.6697200322648484
+    }
+  },
+  {
+    "tick": 395,
+    "before": {
+      "count": 633,
+      "maximum": 0.5786106073424575
+    },
+    "afterFour": {
+      "count": 725,
+      "maximum": 1.7602664724274621
+    }
+  },
+  {
+    "tick": 396,
+    "before": {
+      "count": 646,
+      "maximum": 0.6220475698684753
+    },
+    "afterFour": {
+      "count": 748,
+      "maximum": 1.7590404029474707
+    }
+  },
+  {
+    "tick": 397,
+    "before": {
+      "count": 626,
+      "maximum": 0.6185583566554005
+    },
+    "afterFour": {
+      "count": 764,
+      "maximum": 1.8964486825432516
+    }
+  },
+  {
+    "tick": 398,
+    "before": {
+      "count": 597,
+      "maximum": 0.6160268745532562
+    },
+    "afterFour": {
+      "count": 733,
+      "maximum": 1.897379362173453
+    }
+  },
+  {
+    "tick": 399,
+    "before": {
+      "count": 613,
+      "maximum": 0.5923420112123479
+    },
+    "afterFour": {
+      "count": 670,
+      "maximum": 1.432601377248738
+    }
+  },
+  {
+    "tick": 400,
+    "before": {
+      "count": 590,
+      "maximum": 0.5876791920784301
+    },
+    "afterFour": {
+      "count": 701,
+      "maximum": 1.865343705012429
+    }
+  },
+  {
+    "tick": 401,
+    "before": {
+      "count": 580,
+      "maximum": 0.6197677152405321
+    },
+    "afterFour": {
+      "count": 669,
+      "maximum": 1.8579995241283553
+    }
+  },
+  {
+    "tick": 402,
+    "before": {
+      "count": 579,
+      "maximum": 0.6388356140385651
+    },
+    "afterFour": {
+      "count": 648,
+      "maximum": 1.8360656253162961
+    }
+  },
+  {
+    "tick": 403,
+    "before": {
+      "count": 528,
+      "maximum": 0.5957792671805855
+    },
+    "afterFour": {
+      "count": 570,
+      "maximum": 1.8297861427851645
+    }
+  },
+  {
+    "tick": 404,
+    "before": {
+      "count": 488,
+      "maximum": 0.6165457761166726
+    },
+    "afterFour": {
+      "count": 538,
+      "maximum": 1.4949670921374816
+    }
+  },
+  {
+    "tick": 405,
+    "before": {
+      "count": 486,
+      "maximum": 0.5925379726220754
+    },
+    "afterFour": {
+      "count": 572,
+      "maximum": 1.7346900720534872
+    }
+  },
+  {
+    "tick": 406,
+    "before": {
+      "count": 521,
+      "maximum": 0.6271079038020231
+    },
+    "afterFour": {
+      "count": 621,
+      "maximum": 2.1161758863690974
+    }
+  },
+  {
+    "tick": 407,
+    "before": {
+      "count": 511,
+      "maximum": 0.5214739012551242
+    },
+    "afterFour": {
+      "count": 532,
+      "maximum": 1.598124981554422
+    }
+  },
+  {
+    "tick": 408,
+    "before": {
+      "count": 467,
+      "maximum": 0.6271965662556926
+    },
+    "afterFour": {
+      "count": 511,
+      "maximum": 1.8966524148073836
+    }
+  },
+  {
+    "tick": 409,
+    "before": {
+      "count": 465,
+      "maximum": 0.5641274345955463
+    },
+    "afterFour": {
+      "count": 554,
+      "maximum": 1.3778789437884305
+    }
+  },
+  {
+    "tick": 410,
+    "before": {
+      "count": 511,
+      "maximum": 0.5770722588412065
+    },
+    "afterFour": {
+      "count": 566,
+      "maximum": 1.7943536876203154
+    }
+  },
+  {
+    "tick": 411,
+    "before": {
+      "count": 481,
+      "maximum": 0.662597159358997
+    },
+    "afterFour": {
+      "count": 526,
+      "maximum": 1.717654497697091
+    }
+  },
+  {
+    "tick": 412,
+    "before": {
+      "count": 486,
+      "maximum": 0.5816216694968697
+    },
+    "afterFour": {
+      "count": 550,
+      "maximum": 1.7149080813892414
+    }
+  },
+  {
+    "tick": 413,
+    "before": {
+      "count": 494,
+      "maximum": 0.5805870934810535
+    },
+    "afterFour": {
+      "count": 547,
+      "maximum": 1.9091681370415632
+    }
+  },
+  {
+    "tick": 414,
+    "before": {
+      "count": 460,
+      "maximum": 0.6596416931712303
+    },
+    "afterFour": {
+      "count": 492,
+      "maximum": 1.7272843393897288
+    }
+  },
+  {
+    "tick": 415,
+    "before": {
+      "count": 478,
+      "maximum": 0.6338675217190488
+    },
+    "afterFour": {
+      "count": 507,
+      "maximum": 1.894348473578872
+    }
+  },
+  {
+    "tick": 416,
+    "before": {
+      "count": 452,
+      "maximum": 0.6313057667696755
+    },
+    "afterFour": {
+      "count": 496,
+      "maximum": 1.54795783420992
+    }
+  },
+  {
+    "tick": 417,
+    "before": {
+      "count": 453,
+      "maximum": 0.5855775779533925
+    },
+    "afterFour": {
+      "count": 513,
+      "maximum": 1.3736195251313248
+    }
+  },
+  {
+    "tick": 418,
+    "before": {
+      "count": 512,
+      "maximum": 0.5996088192174032
+    },
+    "afterFour": {
+      "count": 560,
+      "maximum": 1.6165238319595296
+    }
+  },
+  {
+    "tick": 419,
+    "before": {
+      "count": 513,
+      "maximum": 0.5871253178438263
+    },
+    "afterFour": {
+      "count": 576,
+      "maximum": 1.5803721292757125
+    }
+  },
+  {
+    "tick": 420,
+    "before": {
+      "count": 530,
+      "maximum": 0.6100038552648357
+    },
+    "afterFour": {
+      "count": 578,
+      "maximum": 1.5711218014497828
+    }
+  },
+  {
+    "tick": 421,
+    "before": {
+      "count": 520,
+      "maximum": 0.5891388745979098
+    },
+    "afterFour": {
+      "count": 586,
+      "maximum": 1.5523938811763207
+    }
+  },
+  {
+    "tick": 422,
+    "before": {
+      "count": 522,
+      "maximum": 0.6108282658417714
+    },
+    "afterFour": {
+      "count": 606,
+      "maximum": 1.572961160201693
+    }
+  },
+  {
+    "tick": 423,
+    "before": {
+      "count": 544,
+      "maximum": 0.5533818382078444
+    },
+    "afterFour": {
+      "count": 593,
+      "maximum": 1.5611484652232646
+    }
+  },
+  {
+    "tick": 424,
+    "before": {
+      "count": 520,
+      "maximum": 0.596729728400863
+    },
+    "afterFour": {
+      "count": 616,
+      "maximum": 1.925518748088888
+    }
+  },
+  {
+    "tick": 425,
+    "before": {
+      "count": 524,
+      "maximum": 0.6619342358751297
+    },
+    "afterFour": {
+      "count": 637,
+      "maximum": 1.5515353363319555
+    }
+  },
+  {
+    "tick": 426,
+    "before": {
+      "count": 511,
+      "maximum": 0.5153972596885419
+    },
+    "afterFour": {
+      "count": 617,
+      "maximum": 1.758278404851616
+    }
+  },
+  {
+    "tick": 427,
+    "before": {
+      "count": 517,
+      "maximum": 0.6085070186022152
+    },
+    "afterFour": {
+      "count": 585,
+      "maximum": 1.5256802173371815
+    }
+  },
+  {
+    "tick": 428,
+    "before": {
+      "count": 549,
+      "maximum": 0.5820446725963615
+    },
+    "afterFour": {
+      "count": 616,
+      "maximum": 1.9048583040906237
+    }
+  },
+  {
+    "tick": 429,
+    "before": {
+      "count": 527,
+      "maximum": 0.5928751270630022
+    },
+    "afterFour": {
+      "count": 594,
+      "maximum": 1.6246466130339368
+    }
+  },
+  {
+    "tick": 430,
+    "before": {
+      "count": 514,
+      "maximum": 0.5973261574691655
+    },
+    "afterFour": {
+      "count": 619,
+      "maximum": 1.8759637515162835
+    }
+  },
+  {
+    "tick": 431,
+    "before": {
+      "count": 530,
+      "maximum": 0.5800822601173401
+    },
+    "afterFour": {
+      "count": 597,
+      "maximum": 1.4723926446476643
+    }
+  },
+  {
+    "tick": 432,
+    "before": {
+      "count": 525,
+      "maximum": 0.5536415200365781
+    },
+    "afterFour": {
+      "count": 622,
+      "maximum": 1.88586911236969
+    }
+  },
+  {
+    "tick": 433,
+    "before": {
+      "count": 560,
+      "maximum": 0.5695461645061641
+    },
+    "afterFour": {
+      "count": 617,
+      "maximum": 1.7529269106716763
+    }
+  },
+  {
+    "tick": 434,
+    "before": {
+      "count": 584,
+      "maximum": 0.5961042463048631
+    },
+    "afterFour": {
+      "count": 607,
+      "maximum": 1.4703069010593728
+    }
+  },
+  {
+    "tick": 435,
+    "before": {
+      "count": 544,
+      "maximum": 0.5938385226021561
+    },
+    "afterFour": {
+      "count": 645,
+      "maximum": 1.888316067178204
+    }
+  },
+  {
+    "tick": 436,
+    "before": {
+      "count": 552,
+      "maximum": 0.5601168182335448
+    },
+    "afterFour": {
+      "count": 626,
+      "maximum": 1.5068005407317555
+    }
+  },
+  {
+    "tick": 437,
+    "before": {
+      "count": 618,
+      "maximum": 0.6823999895238755
+    },
+    "afterFour": {
+      "count": 640,
+      "maximum": 1.7297335103537828
+    }
+  },
+  {
+    "tick": 438,
+    "before": {
+      "count": 561,
+      "maximum": 0.5871639866864768
+    },
+    "afterFour": {
+      "count": 654,
+      "maximum": 1.7301954968371076
+    }
+  },
+  {
+    "tick": 439,
+    "before": {
+      "count": 576,
+      "maximum": 0.5723784949944859
+    },
+    "afterFour": {
+      "count": 587,
+      "maximum": 1.7280033814334166
+    }
+  },
+  {
+    "tick": 440,
+    "before": {
+      "count": 530,
+      "maximum": 0.56830914108615
+    },
+    "afterFour": {
+      "count": 607,
+      "maximum": 1.7708637041581117
+    }
+  },
+  {
+    "tick": 441,
+    "before": {
+      "count": 555,
+      "maximum": 0.5675062624465674
+    },
+    "afterFour": {
+      "count": 660,
+      "maximum": 1.83968919572271
+    }
+  },
+  {
+    "tick": 442,
+    "before": {
+      "count": 587,
+      "maximum": 0.5903397705930331
+    },
+    "afterFour": {
+      "count": 628,
+      "maximum": 1.764146228100496
+    }
+  },
+  {
+    "tick": 443,
+    "before": {
+      "count": 591,
+      "maximum": 0.5558403820189657
+    },
+    "afterFour": {
+      "count": 635,
+      "maximum": 1.8039551509831186
+    }
+  },
+  {
+    "tick": 444,
+    "before": {
+      "count": 573,
+      "maximum": 0.5830344938797554
+    },
+    "afterFour": {
+      "count": 608,
+      "maximum": 1.5576462948453145
+    }
+  },
+  {
+    "tick": 445,
+    "before": {
+      "count": 562,
+      "maximum": 0.5938136670479688
+    },
+    "afterFour": {
+      "count": 605,
+      "maximum": 1.8086984577385632
+    }
+  },
+  {
+    "tick": 446,
+    "before": {
+      "count": 554,
+      "maximum": 0.573905854437589
+    },
+    "afterFour": {
+      "count": 585,
+      "maximum": 1.8595785035885903
+    }
+  },
+  {
+    "tick": 447,
+    "before": {
+      "count": 539,
+      "maximum": 0.5555899714917265
+    },
+    "afterFour": {
+      "count": 601,
+      "maximum": 1.8745604469968056
+    }
+  },
+  {
+    "tick": 448,
+    "before": {
+      "count": 532,
+      "maximum": 0.6006008324528729
+    },
+    "afterFour": {
+      "count": 581,
+      "maximum": 1.7158639024730231
+    }
+  },
+  {
+    "tick": 449,
+    "before": {
+      "count": 498,
+      "maximum": 0.6032380225089495
+    },
+    "afterFour": {
+      "count": 543,
+      "maximum": 1.7351868114692452
+    }
+  },
+  {
+    "tick": 450,
+    "before": {
+      "count": 483,
+      "maximum": 0.6172002142630593
+    },
+    "afterFour": {
+      "count": 538,
+      "maximum": 1.671286270093316
+    }
+  },
+  {
+    "tick": 451,
+    "before": {
+      "count": 477,
+      "maximum": 0.6026134504849896
+    },
+    "afterFour": {
+      "count": 551,
+      "maximum": 1.724953027882841
+    }
+  },
+  {
+    "tick": 452,
+    "before": {
+      "count": 514,
+      "maximum": 0.5922640308748548
+    },
+    "afterFour": {
+      "count": 557,
+      "maximum": 1.538812621040634
+    }
+  },
+  {
+    "tick": 453,
+    "before": {
+      "count": 467,
+      "maximum": 0.5672229277753491
+    },
+    "afterFour": {
+      "count": 534,
+      "maximum": 1.836988340873857
+    }
+  },
+  {
+    "tick": 454,
+    "before": {
+      "count": 485,
+      "maximum": 0.6060453509100849
+    },
+    "afterFour": {
+      "count": 541,
+      "maximum": 1.7715981121733257
+    }
+  },
+  {
+    "tick": 455,
+    "before": {
+      "count": 497,
+      "maximum": 0.5555381608143319
+    },
+    "afterFour": {
+      "count": 502,
+      "maximum": 1.8314970272832323
+    }
+  },
+  {
+    "tick": 456,
+    "before": {
+      "count": 469,
+      "maximum": 0.5524841815710264
+    },
+    "afterFour": {
+      "count": 513,
+      "maximum": 1.9500370352672212
+    }
+  },
+  {
+    "tick": 457,
+    "before": {
+      "count": 513,
+      "maximum": 0.5646252886634455
+    },
+    "afterFour": {
+      "count": 498,
+      "maximum": 1.571592388118277
+    }
+  },
+  {
+    "tick": 458,
+    "before": {
+      "count": 475,
+      "maximum": 0.5664659340438858
+    },
+    "afterFour": {
+      "count": 536,
+      "maximum": 1.6067781234300833
+    }
+  },
+  {
+    "tick": 459,
+    "before": {
+      "count": 481,
+      "maximum": 0.5626613343129163
+    },
+    "afterFour": {
+      "count": 578,
+      "maximum": 1.7851990962307838
+    }
+  },
+  {
+    "tick": 460,
+    "before": {
+      "count": 504,
+      "maximum": 0.5494693948896403
+    },
+    "afterFour": {
+      "count": 545,
+      "maximum": 1.722819770975332
+    }
+  },
+  {
+    "tick": 461,
+    "before": {
+      "count": 521,
+      "maximum": 0.5629638484029842
+    },
+    "afterFour": {
+      "count": 564,
+      "maximum": 1.4873213456745615
+    }
+  },
+  {
+    "tick": 462,
+    "before": {
+      "count": 525,
+      "maximum": 0.5742063451875454
+    },
+    "afterFour": {
+      "count": 560,
+      "maximum": 1.628763356342949
+    }
+  },
+  {
+    "tick": 463,
+    "before": {
+      "count": 499,
+      "maximum": 0.5742282347966006
+    },
+    "afterFour": {
+      "count": 563,
+      "maximum": 1.670141326983698
+    }
+  },
+  {
+    "tick": 464,
+    "before": {
+      "count": 492,
+      "maximum": 0.5585204182020291
+    },
+    "afterFour": {
+      "count": 528,
+      "maximum": 1.7895947509881438
+    }
+  },
+  {
+    "tick": 465,
+    "before": {
+      "count": 474,
+      "maximum": 0.5519871561029577
+    },
+    "afterFour": {
+      "count": 545,
+      "maximum": 1.7113175462878143
+    }
+  },
+  {
+    "tick": 466,
+    "before": {
+      "count": 492,
+      "maximum": 0.5565240224977446
+    },
+    "afterFour": {
+      "count": 556,
+      "maximum": 1.6484703552641404
+    }
+  },
+  {
+    "tick": 467,
+    "before": {
+      "count": 516,
+      "maximum": 0.5714069792573104
+    },
+    "afterFour": {
+      "count": 559,
+      "maximum": 1.4348940045715315
+    }
+  },
+  {
+    "tick": 468,
+    "before": {
+      "count": 544,
+      "maximum": 0.5595904885235585
+    },
+    "afterFour": {
+      "count": 585,
+      "maximum": 1.5133399460555
+    }
+  },
+  {
+    "tick": 469,
+    "before": {
+      "count": 554,
+      "maximum": 0.5505412168501227
+    },
+    "afterFour": {
+      "count": 606,
+      "maximum": 2.017788806397438
+    }
+  },
+  {
+    "tick": 470,
+    "before": {
+      "count": 527,
+      "maximum": 0.564792849428061
+    },
+    "afterFour": {
+      "count": 590,
+      "maximum": 1.645902461975031
+    }
+  },
+  {
+    "tick": 471,
+    "before": {
+      "count": 517,
+      "maximum": 0.6509207988967765
+    },
+    "afterFour": {
+      "count": 585,
+      "maximum": 1.7870044256676678
+    }
+  },
+  {
+    "tick": 472,
+    "before": {
+      "count": 529,
+      "maximum": 0.6241881884221181
+    },
+    "afterFour": {
+      "count": 593,
+      "maximum": 1.5373012855189971
+    }
+  },
+  {
+    "tick": 473,
+    "before": {
+      "count": 536,
+      "maximum": 0.6235093399939293
+    },
+    "afterFour": {
+      "count": 623,
+      "maximum": 1.678148023056604
+    }
+  },
+  {
+    "tick": 474,
+    "before": {
+      "count": 548,
+      "maximum": 0.5988405636070944
+    },
+    "afterFour": {
+      "count": 634,
+      "maximum": 1.6657751875968865
+    }
+  },
+  {
+    "tick": 475,
+    "before": {
+      "count": 518,
+      "maximum": 0.581698934584475
+    },
+    "afterFour": {
+      "count": 625,
+      "maximum": 1.7662185219885407
+    }
+  },
+  {
+    "tick": 476,
+    "before": {
+      "count": 532,
+      "maximum": 0.6006652267596708
+    },
+    "afterFour": {
+      "count": 614,
+      "maximum": 1.7930382000570617
+    }
+  },
+  {
+    "tick": 477,
+    "before": {
+      "count": 528,
+      "maximum": 0.6675804031622903
+    },
+    "afterFour": {
+      "count": 614,
+      "maximum": 1.9392187470644409
+    }
+  },
+  {
+    "tick": 478,
+    "before": {
+      "count": 512,
+      "maximum": 0.644728564145451
+    },
+    "afterFour": {
+      "count": 606,
+      "maximum": 1.8217069620531756
+    }
+  },
+  {
+    "tick": 479,
+    "before": {
+      "count": 505,
+      "maximum": 0.6173155337028877
+    },
+    "afterFour": {
+      "count": 586,
+      "maximum": 2.00347240726738
+    }
+  },
+  {
+    "tick": 480,
+    "before": {
+      "count": 494,
+      "maximum": 0.5965117501317696
+    },
+    "afterFour": {
+      "count": 577,
+      "maximum": 1.4705450961398006
+    }
+  },
+  {
+    "tick": 481,
+    "before": {
+      "count": 541,
+      "maximum": 0.6742477868760686
+    },
+    "afterFour": {
+      "count": 568,
+      "maximum": 1.5521778503085484
+    }
+  },
+  {
+    "tick": 482,
+    "before": {
+      "count": 508,
+      "maximum": 0.6426755973686555
+    },
+    "afterFour": {
+      "count": 582,
+      "maximum": 1.7548499618475875
+    }
+  },
+  {
+    "tick": 483,
+    "before": {
+      "count": 504,
+      "maximum": 0.7177715471652766
+    },
+    "afterFour": {
+      "count": 595,
+      "maximum": 1.5166806223005622
+    }
+  },
+  {
+    "tick": 484,
+    "before": {
+      "count": 532,
+      "maximum": 0.5906199158046368
+    },
+    "afterFour": {
+      "count": 637,
+      "maximum": 1.9705014424348706
+    }
+  },
+  {
+    "tick": 485,
+    "before": {
+      "count": 494,
+      "maximum": 0.5740236920259258
+    },
+    "afterFour": {
+      "count": 527,
+      "maximum": 1.7040962070649694
+    }
+  },
+  {
+    "tick": 486,
+    "before": {
+      "count": 464,
+      "maximum": 0.5566784595522138
+    },
+    "afterFour": {
+      "count": 549,
+      "maximum": 1.6939854323880814
+    }
+  },
+  {
+    "tick": 487,
+    "before": {
+      "count": 487,
+      "maximum": 0.5509091469641021
+    },
+    "afterFour": {
+      "count": 563,
+      "maximum": 2.087992771836139
+    }
+  },
+  {
+    "tick": 488,
+    "before": {
+      "count": 476,
+      "maximum": 0.5662576672121844
+    },
+    "afterFour": {
+      "count": 545,
+      "maximum": 1.5972856846411965
+    }
+  },
+  {
+    "tick": 489,
+    "before": {
+      "count": 483,
+      "maximum": 0.5574732798613296
+    },
+    "afterFour": {
+      "count": 575,
+      "maximum": 1.713722539395195
+    }
+  },
+  {
+    "tick": 490,
+    "before": {
+      "count": 502,
+      "maximum": 0.5436734599017843
+    },
+    "afterFour": {
+      "count": 554,
+      "maximum": 1.6486080009713904
+    }
+  },
+  {
+    "tick": 491,
+    "before": {
+      "count": 511,
+      "maximum": 0.5474826401125785
+    },
+    "afterFour": {
+      "count": 549,
+      "maximum": 1.8584219532835
+    }
+  },
+  {
+    "tick": 492,
+    "before": {
+      "count": 506,
+      "maximum": 0.5536772417725544
+    },
+    "afterFour": {
+      "count": 560,
+      "maximum": 1.848818870357901
+    }
+  },
+  {
+    "tick": 493,
+    "before": {
+      "count": 508,
+      "maximum": 0.5566404157998575
+    },
+    "afterFour": {
+      "count": 565,
+      "maximum": 1.647190902849533
+    }
+  },
+  {
+    "tick": 494,
+    "before": {
+      "count": 528,
+      "maximum": 0.6281390018337305
+    },
+    "afterFour": {
+      "count": 551,
+      "maximum": 1.6060531733173065
+    }
+  },
+  {
+    "tick": 495,
+    "before": {
+      "count": 490,
+      "maximum": 0.5843616989933178
+    },
+    "afterFour": {
+      "count": 546,
+      "maximum": 1.4976377772495395
+    }
+  },
+  {
+    "tick": 496,
+    "before": {
+      "count": 489,
+      "maximum": 0.5963370574242006
+    },
+    "afterFour": {
+      "count": 531,
+      "maximum": 1.542991570754082
+    }
+  },
+  {
+    "tick": 497,
+    "before": {
+      "count": 490,
+      "maximum": 0.5446729560204426
+    },
+    "afterFour": {
+      "count": 567,
+      "maximum": 1.8879065714141943
+    }
+  },
+  {
+    "tick": 498,
+    "before": {
+      "count": 523,
+      "maximum": 0.5967677353195615
+    },
+    "afterFour": {
+      "count": 572,
+      "maximum": 1.4977611872551666
+    }
+  },
+  {
+    "tick": 499,
+    "before": {
+      "count": 515,
+      "maximum": 0.6091175164390208
+    },
+    "afterFour": {
+      "count": 583,
+      "maximum": 1.4402034086893787
+    }
+  },
+  {
+    "tick": 500,
+    "before": {
+      "count": 556,
+      "maximum": 0.5601668359066672
+    },
+    "afterFour": {
+      "count": 591,
+      "maximum": 1.7389854500622812
+    }
+  },
+  {
+    "tick": 501,
+    "before": {
+      "count": 540,
+      "maximum": 0.559212898099867
+    },
+    "afterFour": {
+      "count": 605,
+      "maximum": 1.5835115777849191
+    }
+  },
+  {
+    "tick": 502,
+    "before": {
+      "count": 565,
+      "maximum": 0.5659310991102773
+    },
+    "afterFour": {
+      "count": 644,
+      "maximum": 1.606293764952138
+    }
+  },
+  {
+    "tick": 503,
+    "before": {
+      "count": 550,
+      "maximum": 0.6036795575799179
+    },
+    "afterFour": {
+      "count": 683,
+      "maximum": 1.792714095588913
+    }
+  },
+  {
+    "tick": 504,
+    "before": {
+      "count": 602,
+      "maximum": 0.587979660114681
+    },
+    "afterFour": {
+      "count": 633,
+      "maximum": 1.6921390397689349
+    }
+  },
+  {
+    "tick": 505,
+    "before": {
+      "count": 571,
+      "maximum": 0.5655654674250163
+    },
+    "afterFour": {
+      "count": 629,
+      "maximum": 2.075337427292949
+    }
+  },
+  {
+    "tick": 506,
+    "before": {
+      "count": 559,
+      "maximum": 0.5585192601003133
+    },
+    "afterFour": {
+      "count": 613,
+      "maximum": 1.620661018330492
+    }
+  },
+  {
+    "tick": 507,
+    "before": {
+      "count": 554,
+      "maximum": 0.5525314105136214
+    },
+    "afterFour": {
+      "count": 653,
+      "maximum": 1.9649314312154447
+    }
+  },
+  {
+    "tick": 508,
+    "before": {
+      "count": 618,
+      "maximum": 0.5525141200323693
+    },
+    "afterFour": {
+      "count": 666,
+      "maximum": 1.507504474693219
+    }
+  },
+  {
+    "tick": 509,
+    "before": {
+      "count": 576,
+      "maximum": 0.5532008361195135
+    },
+    "afterFour": {
+      "count": 650,
+      "maximum": 1.6109529299880538
+    }
+  },
+  {
+    "tick": 510,
+    "before": {
+      "count": 551,
+      "maximum": 0.5541702714610075
+    },
+    "afterFour": {
+      "count": 626,
+      "maximum": 1.622995435655203
+    }
+  },
+  {
+    "tick": 511,
+    "before": {
+      "count": 546,
+      "maximum": 0.5652188691883344
+    },
+    "afterFour": {
+      "count": 608,
+      "maximum": 1.972265148006497
+    }
+  },
+  {
+    "tick": 512,
+    "before": {
+      "count": 534,
+      "maximum": 0.5702936895090644
+    },
+    "afterFour": {
+      "count": 603,
+      "maximum": 1.7063258604781355
+    }
+  },
+  {
+    "tick": 513,
+    "before": {
+      "count": 549,
+      "maximum": 0.5710024411173977
+    },
+    "afterFour": {
+      "count": 621,
+      "maximum": 1.5791619138084538
+    }
+  },
+  {
+    "tick": 514,
+    "before": {
+      "count": 569,
+      "maximum": 0.6061381284382295
+    },
+    "afterFour": {
+      "count": 627,
+      "maximum": 1.559526309753772
+    }
+  },
+  {
+    "tick": 515,
+    "before": {
+      "count": 559,
+      "maximum": 0.5920767014774553
+    },
+    "afterFour": {
+      "count": 631,
+      "maximum": 1.666331730821514
+    }
+  },
+  {
+    "tick": 516,
+    "before": {
+      "count": 565,
+      "maximum": 0.5826618619781385
+    },
+    "afterFour": {
+      "count": 642,
+      "maximum": 1.9445236462855826
+    }
+  },
+  {
+    "tick": 517,
+    "before": {
+      "count": 567,
+      "maximum": 0.5761374820257767
+    },
+    "afterFour": {
+      "count": 659,
+      "maximum": 2.0344999931254284
+    }
+  },
+  {
+    "tick": 518,
+    "before": {
+      "count": 581,
+      "maximum": 0.5937482283846549
+    },
+    "afterFour": {
+      "count": 622,
+      "maximum": 1.5506009647126282
+    }
+  },
+  {
+    "tick": 519,
+    "before": {
+      "count": 574,
+      "maximum": 0.5854977777169976
+    },
+    "afterFour": {
+      "count": 619,
+      "maximum": 1.5145108235321763
+    }
+  }
+]
