@@ -8,14 +8,14 @@ const options: CrowdFlowOptions = {targetDensity: 8, pressureIterations: 8,
   maximumSpeed: 86, fixedDelta: 1/60};
 
 describe('directional grid transport', () => {
-  it('observes physical knockback separately from voluntary channel alignment', () => {
+  it('observes pushed physical velocity through the ordinary grid transport', () => {
     const field = new CrowdField(96,96,16), solver = new CrowdFlowSolver(field), state = new AgentBuffer(1);
     state.active[0]=1;state.x[0]=48;state.y[0]=48;state.intentX[0]=1;state.vx[0]=-500;
     field.update(state,8,1/60);
     expect(sum(field.momentumX)).toBeCloseTo(-500,8);
     const desired=new Float64Array([86]);
-    solver.solve(state,desired,new Float64Array(1),{...options,externallyDriven:new Uint8Array([1])});
-    expect(sum(solver.momentumX)).toBeCloseTo(86,8);expect(state.vx[0]).toBe(-500);
+    solver.solve(state,desired,new Float64Array(1),options);
+    expect(sum(solver.momentumX)).toBeCloseTo(-500,8);expect(state.vx[0]).toBe(-500);
     expect(desired[0]).toBeGreaterThan(0);
   });
   it('conserves deposited mass, momentum and navigation velocity with two angular weights', () => {
@@ -126,10 +126,10 @@ describe('exact pressure frontier',()=>{
 });
 
 
-it('matches native and JS transfers through walls, signed headings, partial weights and buffer growth',()=>{
-  const field=new CrowdField(96,64,16),actual=new CrowdFlowSolver(field),expected=new CrowdFlowSolver(field);
-  expected.backend='js';
+it('reuses transfer buffers without stale entries through walls, signed headings, partial weights and growth',()=>{
+  const field=new CrowdField(96,64,16),actual=new CrowdFlowSolver(field);
   for(const [phase,count] of [0,1,65,4097,10,5000].entries()) {
+    const expected=new CrowdFlowSolver(field);
     const walls=phase%2?[{x:31,y:0,width:2,height:64}]:[];
     field.setObstacles(walls,1);actual.setObstacles(walls,1);expected.setObstacles(walls,1);
     for(let i=0;i<field.cellCount;i++)field.density[i]=(i*13+phase)%17/2;
@@ -143,9 +143,8 @@ it('matches native and JS transfers through walls, signed headings, partial weig
       if(a<area.length)area[a]=a%3?1:4;if(a<external.length)external[a]=a%7===0?1:0;
     }
     x.fill(123,count);y.fill(-456,count);const xx=x.slice(),yy=y.slice();
-    const settings={...options,targetDensity:1,pressureIterations:phase+1,maximumSpeed:phase===4?0:86,areaWeights:area,externallyDriven:external};
+    const settings={...options,targetDensity:1,pressureIterations:phase+1,maximumSpeed:phase===4?0:86,areaWeights:area};
     actual.solve(state,x,y,settings);expected.solve(state,xx,yy,settings);
-    expect(actual.kernelBytes).toBeGreaterThan(0);
     const same=(a:Float64Array,b:Float64Array)=>expect(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)).toEqual(new Uint8Array(b.buffer,b.byteOffset,b.byteLength));
     same(x,xx);same(y,yy);
     for(const name of ['mass','momentumX','momentumY','desiredX','desiredY','velocityX','velocityY','pressure','divergence','correctedDivergence'] as const)same(actual[name],expected[name]);

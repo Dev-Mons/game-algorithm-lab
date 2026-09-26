@@ -30,7 +30,7 @@ try {
     await page.evaluate(history=>{
       const sim=window.crowdDebug.simulation(),step=sim.step.bind(sim);
       const p=window.sessionProbe={target:0,done:true,goalInputs:0,forceInputs:0,minimumActive:sim.state.count,
-        maximumContactBytes:0,maximumKernelBytes:0,maximumPending:0,maximumEffects:0,stepCalls:0};
+        maximumPending:0,maximumEffects:0,stepCalls:0};
       const click=(tool,x,y)=>{
         document.querySelector('#external-tool').value=tool;
         const canvas=document.querySelector('#crowd-canvas'),r=canvas.getBoundingClientRect();
@@ -40,8 +40,6 @@ try {
         step();p.stepCalls++;
         const tick=sim.stepCount;
         p.minimumActive=Math.min(p.minimumActive,sim.metrics.activeCount);
-        p.maximumContactBytes=Math.max(p.maximumContactBytes,sim.external.stats.retainedBytes);
-        p.maximumKernelBytes=Math.max(p.maximumKernelBytes,sim.external.stats.kernelBytes);
         p.maximumPending=Math.max(p.maximumPending,sim.external.pending.length);
         p.maximumEffects=Math.max(p.maximumEffects,sim.external.effects.length);
         if(tick<=history||tick%120===0) {

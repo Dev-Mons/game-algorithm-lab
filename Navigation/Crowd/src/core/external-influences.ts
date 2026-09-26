@@ -3,14 +3,9 @@ import type { AgentBuffer } from './agent-state';
 
 /** px, seconds, unit inertial mass (independent of visual radius/area). */
 export const EXTERNAL_PROFILE = Object.freeze({
-  name: 'external-v2', maximumSpeed: 600, maximumDeltaVelocity: 600,
+  name: 'crowd-input-v3', maximumSpeed: 600, maximumDeltaVelocity: 600,
   maximumAcceleration: 1200, maximumProxySpeed: 300, maximumProxies: 8,
-  maximumInputs: 32, maximumRecords: 4096, maximumSubsteps: 16,
-  candidates: 64, iterations: 4, drag: 1.5, control: .25,
-  maximumContactAttempts: 5, maximumProjectionAttempts: 512, maximumProjectionRounds: 4,
-  velocityIterations: 16, positionIterations: 128, maximumPairFactor: 128,
-  positionTolerance: .45, velocityWorksetHalo: 1,
-  recoverySeconds: 4, compressionTolerance: .5,
+  maximumInputs: 32, maximumRecords: 4096,
 });
 export type ExternalTarget = { agent: number } | { x: number; y: number; radius: number; flow?: number };
 type Stamp = { id: string; tick: number; generation: number };
@@ -31,41 +26,23 @@ function canonical(value: unknown): unknown {
 }
 
 export class ExternalInfluences {
-  /** Kernel choice changes computation only; it is not a physical input or hash component. */
-  backend: 'auto' | 'js' = 'auto';
   generation = 0;
-  readonly affected: Uint8Array;
   readonly direct: Uint8Array;
   readonly proxies: MovingCircle[] = [];
-  readonly settings: { drag: number; control: number } = { drag: EXTERNAL_PROFILE.drag, control: EXTERNAL_PROFILE.control };
-  readonly stats = { inputs: 0, affected: 0, queryCells: 0, candidates: 0, substeps: 0,
-    planningMs: 0, planningCandidates: 0, planningFallbacks: 0, singleStepVerified: 0, singleStepFallbacks: 0,
-    substepRetries: 0, rejectedTrialCompressions: 0, rejectedTrialBudgetExhaustions: 0, rejectedTrialPenetration: 0,
-    contactAttempts: 0, attemptedSubsteps: 0,
-    colorBuilds: 0, colorBuildMs: 0, maximumColors: 0, colorFallbacks: 0,
-    workerThreads: 0,parallelPasses: 0,parallelPhaseMs: 0,workerFailures: 0,workerDiscardedMs: 0,
-    pairOwnershipSkips: 0, pairCapacityRetries: 0,
-    contactAffected: 0,
-    contactCellUpperBound: 0, proxyCells: 0, proxyCandidates: 0, staticSweeps: 0, staticExhaustions: 0,
-    rebuilds: 0, pairs: 0, saturatedQueries: 0, candidateFallbacks: 0, velocityPasses: 0, stabilizationPasses: 0, unresolvedCompression: 0, speedClamps: 0, crushed: 0,
-    velocityPairVisits: 0, velocityWorksets: 0, velocityFallbacks: 0,
-    positionBudgetExhaustions: 0, maxExhaustedPenetration: 0,
-    projectionPasses: 0, projectionAttempts: 0, projectionGroups: 0, projectedBodies: 0, projectionCandidates: 0,
-    warmRejections: 0, warmDamping: 0,
-    energyDampedContacts: 0,
-    wasm: 0, kernelBytes: 0, retainedBytes: 0, queryMs: 0, predictionMs: 0, contactMs: 0, staticMs: 0 };
+  readonly stats = { inputs: 0, affected: 0, queryCells: 0, candidates: 0,
+    proxyCandidates: 0, speedClamps: 0, rebuilds: 0, queryMs: 0 };
   private readonly records = new Map<string, ExternalInput>();
   private pending: ExternalInput[] = [];
   private effects: Effect[] = [];
   private grid: SpatialHash | null = null;
-  private running = false;
   constructor(private readonly capacity: number, private readonly width: number, private readonly height: number) {
-    this.affected = new Uint8Array(capacity); this.direct = new Uint8Array(capacity);
+    this.direct = new Uint8Array(capacity);
   }
-  get active(): boolean { return this.running || this.proxies.length > 0; }
+  /** Input lifetime only. Never selects a movement/physics execution path. */
+  get active(): boolean { return this.effects.length > 0 || this.proxies.length > 0; }
   reset(): void {
-    this.generation++; this.affected.fill(0); this.direct.fill(0);
-    this.records.clear(); this.pending = []; this.effects = []; this.proxies.length = 0; this.running = false;
+    this.generation++; this.direct.fill(0);
+    this.records.clear(); this.pending = []; this.effects = []; this.proxies.length = 0;
     for (const key of Object.keys(this.stats) as (keyof typeof this.stats)[]) this.stats[key] = 0;
   }
   /** Returns false only for an identical retransmission. Invalid/conflicting inputs throw atomically. */
@@ -142,12 +119,12 @@ export class ExternalInfluences {
     return true;
   }
   record(): ExternalInput[] { return structuredClone([...this.records.values()].sort((a,b) => a.tick-b.tick || (a.id < b.id ? -1 : 1))); }
-  /** Hash material includes consumed IDs, future inputs, wave hit masks and contact state. */
+  /** Input replay state only; all persistent motion lives in AgentBuffer. */
   fingerprint(): string {
     if (!this.records.size && !this.active) return '';
-    return JSON.stringify([this.generation,this.record(),this.pending,this.effects.map(e => [e.input,e.hit ? Array.from(e.hit) : null]),this.proxies,Array.from(this.affected),this.settings]);
+    return JSON.stringify([this.generation,this.record(),this.pending,this.effects.map(e => [e.input,e.hit ? Array.from(e.hit) : null]),this.proxies]);
   }
-  begin(state: AgentBuffer, flows: Uint16Array, tick: number, dt: number): void {
+  begin(state: AgentBuffer, flows: Uint16Array, tick: number, dt: number, radii?: Float64Array): void {
     for (const key of Object.keys(this.stats) as (keyof typeof this.stats)[]) this.stats[key] = 0;
     this.direct.fill(0);
     const started = performance.now();
@@ -168,7 +145,7 @@ export class ExternalInfluences {
         this.proxies.sort((a,b) => a.body < b.body ? -1 : 1);
       } else this.effects.push({ input, ...(input.kind === 'blast' && input.expansionSpeed ? { hit: new Uint8Array(state.count) } : {}) });
     }
-    if (this.effects.some(e => e.input.kind === 'blast' || ('target' in e.input && !('agent' in e.input.target)))) {
+    if (this.proxies.length || this.effects.some(e => e.input.kind === 'blast' || ('target' in e.input && !('agent' in e.input.target)))) {
       this.grid ??= new SpatialHash(this.width,this.height,32,this.capacity);
       this.grid.rebuild(state.x,state.y,state.active); this.stats.rebuilds++;
     }
@@ -193,13 +170,20 @@ export class ExternalInfluences {
     }
     this.effects = this.effects.filter(({input:e}) => e.kind === 'acceleration' ? tick+1 < e.endTick
       : e.kind === 'blast' && !!e.expansionSpeed && (tick-e.tick+1)*dt*e.expansionSpeed < e.radius);
-    this.running = this.affected.some(v => v === 1);
+    for (const proxy of this.proxies) this.pushCircle(state,proxy,dt,radii);
+    // Limit the combined input once, so overlapping sources add before the cap.
+    for (let a=0;a<state.count;a++) if(this.direct[a]) {
+      const speed=Math.hypot(state.vx[a]!,state.vy[a]!);
+      if(speed>EXTERNAL_PROFILE.maximumSpeed) {
+        const scale=EXTERNAL_PROFILE.maximumSpeed/speed;
+        state.vx[a]=state.vx[a]!*scale;state.vy[a]=state.vy[a]!*scale;this.stats.speedClamps++;
+      }
+    }
     this.stats.queryMs = performance.now()-started;
   }
   private kick(state: AgentBuffer, a: number, x: number, y: number): void {
     if (state.active[a] !== 1 || (x === 0 && y === 0)) return;
     state.vx[a] = state.vx[a]!+x; state.vy[a] = state.vy[a]!+y;
-    this.affected[a] = 1;
     if (!this.direct[a]) { this.direct[a] = 1; this.stats.affected++; }
   }
   private visitRegion(state: AgentBuffer, region: {x:number;y:number;radius:number;flow?:number}, flows: Uint16Array, visit: (a:number) => void): void {
@@ -213,11 +197,26 @@ export class ExternalInfluences {
       if ((state.x[a]!-region.x)**2+(state.y[a]!-region.y)**2 <= region.radius**2) visit(a);
     });
   }
-  finish(state: AgentBuffer): void {
-    this.running = false;
-    for (let a=0; a<state.count; a++) {
-      if (state.active[a] !== 1) this.affected[a] = 0;
-      if (this.affected[a]) this.running = true;
-    }
+  /** A moving circular brush emits a local push; crowd/walls own the resulting
+   * motion. It is not a second rigid-body contact solver or a global mode. */
+  private pushCircle(state:AgentBuffer,p:MovingCircle,dt:number,radii?:Float64Array):void {
+    let maximumRadius=0;
+    for(let a=0;a<state.count;a++)maximumRadius=Math.max(maximumRadius,radii?.[a]??3.2);
+    const px=p.toX-p.x,py=p.toY-p.y;
+    const range=p.radius+maximumRadius+Math.hypot(px,py)+EXTERNAL_PROFILE.maximumSpeed*dt;
+    this.grid!.forEachCandidate(p.x,p.y,range,a=>{
+      this.stats.proxyCandidates++;
+      const x=state.x[a]!-p.x,y=state.y[a]!-p.y;
+      const dx=state.vx[a]!*dt-px,dy=state.vy[a]!*dt-py;
+      const radius=p.radius+(radii?.[a]??3.2),d2=dx*dx+dy*dy;
+      const t=d2>1e-12?Math.max(0,Math.min(1,-(x*dx+y*dy)/d2)):0;
+      let nx=x+dx*t,ny=y+dy*t,near=Math.hypot(nx,ny);
+      if(near>=radius)return;
+      if(near<1e-9){nx=x;ny=y;near=Math.hypot(nx,ny);}
+      if(near<1e-9){nx=1;ny=0;near=1;}
+      nx/=near;ny/=near;
+      const push=Math.max(0,radius-((x+dx)*nx+(y+dy)*ny))/dt;
+      this.kick(state,a,nx*push,ny*push);
+    });
   }
 }

@@ -36,7 +36,7 @@ export function appTemplate(): string {
             <select id="external-tool">
               <option value="goal">목표 이동</option><option value="blast">폭발</option>
               <option value="wave">확장 충격파</option><option value="wind">오른쪽 지속 밀림 (1초)</option>
-              <option value="vehicle">이동 원형 물체 (1초)</option>
+              <option value="vehicle">이동 원형 밀림 (1초)</option>
             </select>
           </div>
           <div id="external-status" role="status">외력 도구를 선택하고 군중 근처를 클릭하세요.</div>

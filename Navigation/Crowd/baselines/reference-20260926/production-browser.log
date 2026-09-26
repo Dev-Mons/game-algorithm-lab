@@ -1,0 +1,14 @@
+
+> crowd-navigation-lab@1.0.0 test:e2e
+> playwright test tests/browser/external-reference.spec.ts --workers=1 --output=playwright-report/reference-production
+
+
+Running 3 tests using 1 worker
+
+(node:42564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\external-reference.spec.ts:3:1 › unscaled 5K request keeps running with the actual spawned population after a UI blast (695ms)
+  ok 2 tests\browser\external-reference.spec.ts:18:1 › 6K rocky UI repeats blasts and resets without Worker or WebAssembly support (2.9s)
+  ok 3 tests\browser\external-reference.spec.ts:50:1 › a contact failure stays visible through metric refresh and reset clears it (1.0s)
+
+  3 passed (5.2s)

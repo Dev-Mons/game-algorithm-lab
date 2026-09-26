@@ -2,16 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { CrowdSimulation, DEFAULT_CONFIG } from '../../src/core/simulation';
 import { getScenario } from '../../src/scenarios/scenarios';
 
-// Rebased on 2026-09-21 for actual movement turn limiting and persistent heading
-// in the hash. The former immediate reverse-momentum cancellation was removed.
-// These hashes protect the legacy solver's command and reset lifecycle.
+// Rebased on 2026-09-26 for the intentionally unified motion contract:
+// acceleration-limited motor response, swept pair motion and pre-contact wall
+// clipping now apply to all inputs. Prior values are preserved in
+// baselines/unified-20260926/prior-movement-baseline.txt, not overwritten there.
+// Behavioral turn, progress, wall and contact-budget gates run separately.
 const BASELINES = [
   { name: 'open', scenario: 'open-field', largeAgentPercent: 0,
-    initial: '876a2f74', step120: '448364e5', command: 'fffe126b', command60: '0b31610d' },
+    initial: '876a2f74', step120: 'ee75635d', command: 'f09ad175', command60: 'f713018b' },
   { name: 'corners', scenario: 'winding-corners', largeAgentPercent: 0,
-    initial: '20137ce9', step120: '9f4d2c16', command: '67909cbd', command60: '181fb658' },
+    initial: '20137ce9', step120: '0551df9d', command: '1e74ad9d', command60: 'd983886f' },
   { name: 'mixed sizes at corners', scenario: 'winding-corners', largeAgentPercent: 5,
-    initial: '805de773', step120: '988a1868', command: 'c9a9b55b', command60: 'ec2c6e66' },
+    initial: '805de773', step120: 'a2887663', command: '7dd5c820', command60: '025c852c' },
 ] as const;
 
 describe('legacy movement-turn baseline', () => {

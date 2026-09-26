@@ -1,4 +1,3 @@
-import { CrowdTransferKernel } from './crowd-transfer-kernel';
 import type { AgentBuffer } from './agent-state';
 import type { CrowdField } from './crowd-field';
 import { clamp } from './math';
@@ -17,8 +16,6 @@ export interface CrowdFlowOptions {
   maximumSpeed: number;
   fixedDelta: number;
   areaWeights?: Float64Array;
-  /** External momentum is observed by CrowdField, but is not voluntary channel alignment. */
-  externallyDriven?: Uint8Array;
 }
 
 /**
@@ -28,9 +25,6 @@ export interface CrowdFlowOptions {
  * Buffers, four-cell transfers and pressure stencils have fixed sizes.
  */
 export class CrowdFlowSolver {
-  backend:'auto'|'js'='auto';
-  private transferKernel:CrowdTransferKernel|null|undefined;
-  get kernelBytes():number {return this.transferKernel?.memory.buffer.byteLength??0;}
   readonly mass: Float64Array;
   readonly momentumX: Float64Array;
   readonly momentumY: Float64Array;
@@ -116,23 +110,17 @@ export class CrowdFlowSolver {
 
   solve(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array,
     options: CrowdFlowOptions): void {
-    if(this.backend==='auto'&&this.transferKernel===undefined)this.transferKernel=CrowdTransferKernel.create();
-    const kernel=this.backend==='auto'?this.transferKernel:null;
-    if(!kernel&&this.transferChannels.length<state.count) {
+    if(this.transferChannels.length<state.count) {
       this.transferCells=new Int32Array(state.count*4);this.transferWeights=new Float64Array(state.count*4);
       this.transferChannels=new Uint8Array(state.count);this.transferFractions=new Float64Array(state.count);
     }
-    if(kernel) {
-      kernel.scatter(state,desiredX,desiredY,this.field,this.openRight,this.openDown,options.areaWeights,options.externallyDriven);
-      for(const name of ['mass','momentumX','momentumY','desiredX','desiredY'] as const)this[name].set(kernel.arrays[name]);
-    } else this.scatter(state, desiredX, desiredY, options.areaWeights, options.externallyDriven);
+    this.scatter(state, desiredX, desiredY, options.areaWeights);
     this.buildVelocities(options);
     this.project(options);
-    if(kernel)kernel.gather(state.count,desiredX,desiredY,this.velocityX,this.velocityY,this.unprojectedX,this.unprojectedY,options.targetDensity,options.maximumSpeed);
-    else this.gather(state, desiredX, desiredY, options);
+    this.gather(state, desiredX, desiredY, options);
   }
 
-  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array, external?: Uint8Array): void {
+  private scatter(state: AgentBuffer, desiredX: Float64Array, desiredY: Float64Array, areaWeights?: Float64Array): void {
     this.mass.fill(0);
     this.momentumX.fill(0);
     this.momentumY.fill(0);
@@ -154,8 +142,8 @@ export class CrowdFlowSolver {
           const weight = this.weights[corner]! * angularWeight * (areaWeights?.[a] ?? 1);
           const i = this.cells[corner]! + offset;
           this.mass[i] = this.mass[i]! + weight;
-          this.momentumX[i] = this.momentumX[i]! + (external?.[a] ? desiredX[a]! : state.vx[a]!) * weight;
-          this.momentumY[i] = this.momentumY[i]! + (external?.[a] ? desiredY[a]! : state.vy[a]!) * weight;
+          this.momentumX[i] = this.momentumX[i]! + state.vx[a]! * weight;
+          this.momentumY[i] = this.momentumY[i]! + state.vy[a]! * weight;
           this.desiredX[i] = this.desiredX[i]! + desiredX[a]! * weight;
           this.desiredY[i] = this.desiredY[i]! + desiredY[a]! * weight;
         }
@@ -229,6 +217,9 @@ export class CrowdFlowSolver {
     const workset=this.pressureWorkset(options.pressureIterations);
     this.pressureWorksetFallback=workset<0;
     this.pressureWorksetSize=workset<0?cellCount:workset;
+    // Read/write ping-pong is the Jacobi barrier. Preserve the public pressure
+    // buffer identity without copying the entire grid on every iteration.
+    let pressure=this.pressure, nextPressure=this.pressureNext;
     for (let iteration = 0; iteration < options.pressureIterations; iteration++) {
       for (let slot = 0; slot < this.pressureWorksetSize; slot++) {
         const i=workset<0?slot:this.pressureCells[slot]!;
@@ -239,14 +230,15 @@ export class CrowdFlowSolver {
         const wr = this.faceDensityX[i]!;
         const wd = this.faceDensityY[i]!;
         const diagonal = wl + wr + wu + wd;
-        const neighborPressure = wl * this.pressure[left]! + wu * this.pressure[up]!
-          + (wr > 0 ? wr * this.pressure[i+1]! : 0)
-          + (wd > 0 ? wd * this.pressure[i+columns]! : 0);
-        this.pressureNext[i] = diagonal > EPSILON
+        const neighborPressure = wl * pressure[left]! + wu * pressure[up]!
+          + (wr > 0 ? wr * pressure[i+1]! : 0)
+          + (wd > 0 ? wd * pressure[i+columns]! : 0);
+        nextPressure[i] = diagonal > EPSILON
           ? Math.max(0, (this.rhs[i]! * cellSize * cellSize + neighborPressure) / diagonal) : 0;
       }
-      this.pressure.set(this.pressureNext);
+      const swap=pressure;pressure=nextPressure;nextPressure=swap;
     }
+    if(pressure!==this.pressure)this.pressure.set(pressure);
     const limit = options.maximumAcceleration * horizon;
     this.pressureGradientCells=0;
     for (let i = 0; i < cellCount; i++) {

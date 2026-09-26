@@ -5,14 +5,13 @@ import {
   distanceSquaredToRect,
   projectCircleOutsideRectWithinBounds,
   SweptCircleStaticIntegrator,
+  segmentDistanceSquaredToRect,
   type CircleProjection,
   type SweptCircleSlideOutput,
 } from './obstacle-collision';
 import type { Rect } from './types';
 import { StaticObstacleIndex } from './static-obstacle-index';
 import { StaticFreeSpace } from './static-free-space';
-import type { ExternalInfluences } from './external-influences';
-import { ExternalContactSolver } from './external-contact-solver';
 
 const EPSILON = 1e-9;
 const REPORTABLE_PENETRATION = 0.01;
@@ -22,7 +21,6 @@ export const CONTACT_ITERATIONS = 8;
 export const MAX_CONTACT_QUERY_VISITS = 24;
 
 export interface CrowdMovementInput {
-  external?: ExternalInfluences;
   current: AgentBuffer;
   next: AgentBuffer;
   index: SpatialHash;
@@ -74,12 +72,13 @@ export interface CrowdMovementResult {
  * simultaneously before the existing swept static collision path runs.
  */
 export class CrowdMovementSolver {
-  private externalContact: ExternalContactSolver | null = null;
   private readonly freeSpace: StaticFreeSpace;
   constructor(private readonly obstacleIndex = new StaticObstacleIndex()) { this.freeSpace = new StaticFreeSpace(obstacleIndex); }
   private readonly sweepObstacles: Rect[] = [];
   private velocityX = new Float64Array(0);
   private velocityY = new Float64Array(0);
+  private wallVelocityCorrectionX = new Float64Array(0);
+  private wallVelocityCorrectionY = new Float64Array(0);
   private headings = new Float64Array(0);
   private predictedX = new Float64Array(0);
   private predictedY = new Float64Array(0);
@@ -135,27 +134,20 @@ export class CrowdMovementSolver {
   };
 
   solve(input: CrowdMovementInput): CrowdMovementResult {
-    this.prewarmExternal(input.current.count,input.external?.backend);
     this.obstacleIndex.update(input.obstacles);
     const count = input.current.count;
     this.freeSpace.begin(count,input.worldWidth,input.worldHeight);
     this.ensureCapacity(count);
     this.reset(input);
-    const predictionStarted = performance.now();
     this.predictPositions(input);
-    if (input.external?.active) {
-      input.external.stats.predictionMs = performance.now() - predictionStarted;
-      this.externalContact ??= new ExternalContactSolver();
-      this.externalContact.solve(input, input.external, this.velocityX, this.velocityY, this.headings, this.result,
-        this.contactCorrected, this.contactCorrectionLength);
-      return this.result;
-    }
-
-    this.externalContact?.reset();
+    for(let a=0;a<count;a++) if(input.current.active[a])this.freeSpace.prepare(a,input.current.x[a]!,input.current.y[a]!,this.wallClearance(input,a));
+    // Contacts see reachable positions, so a push cannot act through a wall.
+    // The final sweep still checks displacements added by crowd contacts.
+    this.integratePredictions(input);
+    this.predictedX.set(input.next.x); this.predictedY.set(input.next.y);
     // The index is the contact-only grid owned by CrowdSimulation. It is
     // rebuilt from predicted positions, never from partially corrected ones.
     input.index.rebuild(this.predictedX, this.predictedY, input.current.active);
-    for(let a=0;a<count;a++) if(input.current.active[a])this.freeSpace.prepare(a,input.current.x[a]!,input.current.y[a]!,this.wallClearance(input,a));
     this.buildContactConstraints(input);
     this.solveContactConstraints(input);
     this.integratePredictions(input);
@@ -167,15 +159,9 @@ export class CrowdMovementSolver {
 
   /** Kept as a stable lifecycle hook; this solver has no cross-step recovery mode. */
   resetRecoveryState(): void {
-    this.externalContact?.reset();
     // XPBD lambdas deliberately live for one fixed step only.
   }
-  dispose():void {this.externalContact?.dispose();}
-  prewarmExternal(count:number,backend?:'auto'|'js'):void {
-    if(count>=5000&&backend==='auto') {this.externalContact??=new ExternalContactSolver();this.externalContact.prewarm();}
-  }
-
-  hashState(mix:(value:number)=>void):void { this.externalContact?.hashState(mix); }
+  dispose():void {this.resetRecoveryState();}
 
   private reset(input: CrowdMovementInput): void {
     const count = input.current.count;
@@ -199,6 +185,8 @@ export class CrowdMovementSolver {
     this.contactCorrected.fill(0, 0, count);
     this.contactCorrectionLength.fill(0, 0, count);
     this.contactLambda.fill(0, 0, count * MAX_CONTACTS_PER_AGENT);
+    this.wallVelocityCorrectionX.fill(0,0,count);
+    this.wallVelocityCorrectionY.fill(0,0,count);
   }
 
   private predictPositions(input: CrowdMovementInput): void {
@@ -218,23 +206,6 @@ export class CrowdMovementSolver {
 
       let velocityX = input.current.vx[agent]!;
       let velocityY = input.current.vy[agent]!;
-      if (input.external?.affected[agent]) {
-        const control = input.external.settings.control;
-        const maximumDelta = maximumVelocityDelta * control;
-        const speed = Math.hypot(velocityX, velocityY);
-        const forward = velocityX * input.current.intentX[agent]! + velocityY * input.current.intentY[agent]!;
-        const damping = speed > input.maxSpeed * 1.05 || forward < 0
-          ? Math.exp(-input.external.settings.drag * input.fixedDelta) : 1;
-        velocityX *= damping; velocityY *= damping;
-        const dx = input.desiredVelocityX[agent]! - velocityX, dy = input.desiredVelocityY[agent]! - velocityY;
-        const length = Math.hypot(dx, dy), scale = length > 0 ? Math.min(1, maximumDelta / length) : 0;
-        this.velocityX[agent] = velocityX + dx * scale; this.velocityY[agent] = velocityY + dy * scale;
-        this.predictedX[agent] = startX + this.velocityX[agent]! * input.fixedDelta;
-        this.predictedY[agent] = startY + this.velocityY[agent]! * input.fixedDelta;
-        const target = Math.atan2(input.current.intentY[agent]!, input.current.intentX[agent]!);
-        this.headings[agent] = angleDelta(0, this.headings[agent]! + clamp(angleDelta(this.headings[agent]!, target), -maximumTurn, maximumTurn));
-        continue;
-      }
       let deltaX = input.desiredVelocityX[agent]! - velocityX;
       let deltaY = input.desiredVelocityY[agent]! - velocityY;
       const deltaLength = Math.hypot(deltaX, deltaY);
@@ -273,6 +244,18 @@ export class CrowdMovementSolver {
           velocityY = forwardY * forwardSpeed;
         }
       }
+      // Speed/turn limits describe the walking motor's target. They must not
+      // instantly erase physical velocity (from a push OR an ordinary contact).
+      // Apply the complete steering proposal through the same acceleration
+      // budget for every body; no force history or activation state is consulted.
+      const steeringX = velocityX - input.current.vx[agent]!;
+      const steeringY = velocityY - input.current.vy[agent]!;
+      const steeringLength = Math.hypot(steeringX, steeringY);
+      if (steeringLength > maximumVelocityDelta && steeringLength > EPSILON) {
+        const scale = maximumVelocityDelta / steeringLength;
+        velocityX = input.current.vx[agent]! + steeringX * scale;
+        velocityY = input.current.vy[agent]! + steeringY * scale;
+      }
       let predictedX = startX + velocityX * input.fixedDelta;
       let predictedY = startY + velocityY * input.fixedDelta;
       if (
@@ -310,7 +293,7 @@ export class CrowdMovementSolver {
       const radius = this.radius(input, agent);
       // Retain near contacts that another Jacobi correction can close later
       // in this step, without rebuilding the index or increasing its query cap.
-      const padding = Math.max(0, input.maximumContactCorrection) * 2 + CONTACT_QUERY_PADDING;
+      const padding = this.contactPadding(input,agent);
       const queryRadius = radius + (input.maxAgentRadius ?? input.agentRadius)
         + Math.max(0, input.agentGap) + padding;
       const candidateCount = input.index.queryCandidates(
@@ -325,12 +308,23 @@ export class CrowdMovementSolver {
         const other = this.queryCandidates[candidateIndex]!;
         // Store every physical pair at most once. The lower index owns it,
         // while both endpoints receive the symmetric Jacobi correction.
-        if (other <= agent || input.current.active[other] !== 1) continue;
+        if (other === agent || input.current.active[other] !== 1) continue;
         const dx = this.predictedX[other]! - this.predictedX[agent]!;
         const dy = this.predictedY[other]! - this.predictedY[agent]!;
         const distanceSquared = dx * dx + dy * dy;
         const contactDistance = radius + this.radius(input, other) + Math.max(0, input.agentGap);
         if (distanceSquared > (contactDistance + padding) ** 2) continue;
+        // A faster higher-ID body can discover a swept pair beyond the lower
+        // body's ordinary horizon. Exactly one endpoint owns that pair.
+        if(other<agent&&distanceSquared<=(contactDistance+this.contactPadding(input,other))**2)continue;
+        if(!(this.freeSpace.contains(agent,input.current.x[other]!,input.current.y[other]!))) {
+          const ax=input.current.x[agent]!,ay=input.current.y[agent]!;
+          const bx=input.current.x[other]!,by=input.current.y[other]!;
+          let blocked=false;
+          for(const i of this.obstacleIndex.query(Math.min(ax,bx),Math.min(ay,by),Math.max(ax,bx),Math.max(ay,by)))
+            if(segmentDistanceSquaredToRect(ax,ay,bx,by,input.obstacles[i]!)<=1e-12){blocked=true;break;}
+          if(blocked)continue;
+        }
         // Surface distance makes a touching large body compete fairly with
         // nearby small centers under the same fixed contact budget.
         this.insertNearestContact(agent, other, distanceSquared / (contactDistance * contactDistance));
@@ -340,6 +334,33 @@ export class CrowdMovementSolver {
       this.result.totalNeighbors += count;
       this.result.maxNeighbors = Math.max(this.result.maxNeighbors, count);
     }
+  }
+
+  private contactPadding(input:CrowdMovementInput,a:number):number {
+    const travel=Math.hypot(this.predictedX[a]!-input.current.x[a]!,this.predictedY[a]!-input.current.y[a]!);
+    return Math.max(Math.max(0,input.maximumContactCorrection)*2,travel*2)+CONTACT_QUERY_PADDING;
+  }
+
+  /** Project closing swept motion in the ordinary bounded contact loop. This
+   * handles fast motion regardless of its source without global substeps. */
+  private projectClosingMotion(input:CrowdMovementInput,a:number,b:number,radius:number):void {
+    const x=input.current.x[b]!-input.current.x[a]!,y=input.current.y[b]!-input.current.y[a]!;
+    const dx=this.predictedX[b]!-this.predictedX[a]!-x,dy=this.predictedY[b]!-this.predictedY[a]!-y;
+    const dot=x*dx+y*dy,c=x*x+y*y-radius*radius;
+    if(dot>=0||c< -1e-8)return; // Existing overlap uses the usual XPBD repair.
+    const speed2=dx*dx+dy*dy,disc=dot*dot-speed2*Math.max(0,c);
+    if(speed2<1e-12||disc<0)return;
+    const time=Math.max(0,(-dot-Math.sqrt(disc))/speed2);
+    if(time>1)return;
+    const nx=(x+dx*time)/radius,ny=(y+dy*time)/radius;
+    const correction=-(dx*nx+dy*ny)*(1-time)*.5;
+    if(correction<=EPSILON)return;
+    this.predictedX[a]=this.predictedX[a]!-nx*correction;
+    this.predictedY[a]=this.predictedY[a]!-ny*correction;
+    this.predictedX[b]=this.predictedX[b]!+nx*correction;
+    this.predictedY[b]=this.predictedY[b]!+ny*correction;
+    this.contactCorrected[a]=1;this.contactCorrected[b]=1;
+    this.iterationCorrected[a]=1;this.iterationCorrected[b]=1;
   }
 
   private insertNearestContact(agent: number, other: number, distanceSquared: number): void {
@@ -395,6 +416,7 @@ export class CrowdMovementSolver {
           const other = this.contactNeighborIndices[lambdaIndex]!;
           if (input.current.active[other] !== 1) continue;
           const diameter = this.radius(input, agent) + this.radius(input, other) + Math.max(0, input.agentGap);
+          this.projectClosingMotion(input,agent,other,diameter);
           const lambdaLimit = Math.max(diameter, correctionLimit * 2);
           const dx = this.predictedX[other]! - this.predictedX[agent]!;
           const dy = this.predictedY[other]! - this.predictedY[agent]!;
@@ -573,6 +595,10 @@ export class CrowdMovementSolver {
       );
       input.next.x[agent] = this.integration.x;
       input.next.y[agent] = this.integration.y;
+      if(this.integration.contactCount>0) {
+        this.wallVelocityCorrectionX[agent]=this.integration.velocityX-(this.integration.x-startX)*inverseDelta;
+        this.wallVelocityCorrectionY[agent]=this.integration.velocityY-(this.integration.y-startY)*inverseDelta;
+      }
       this.projectNextOutsideStatics(input, agent);
     }
   }
@@ -723,11 +749,14 @@ export class CrowdMovementSolver {
         input.solvedVelocityY[agent] = 0;
         continue;
       }
-      let velocityX = (input.next.x[agent]! - input.current.x[agent]!) * inverseDelta;
-      let velocityY = (input.next.y[agent]! - input.current.y[agent]!) * inverseDelta;
+      let velocityX = (input.next.x[agent]! - input.current.x[agent]!) * inverseDelta+this.wallVelocityCorrectionX[agent]!;
+      let velocityY = (input.next.y[agent]! - input.current.y[agent]!) * inverseDelta+this.wallVelocityCorrectionY[agent]!;
       const speed = Math.hypot(velocityX, velocityY);
-      if (speed > input.maxSpeed && speed > EPSILON) {
-        const scale = input.maxSpeed / speed;
+      // Ordinary contact corrections retain their walking-speed cap. Existing
+      // faster physical motion may coast, but correction cannot amplify it.
+      const limit = Math.max(input.maxSpeed, Math.hypot(this.velocityX[agent]!, this.velocityY[agent]!));
+      if (speed > limit && speed > EPSILON) {
+        const scale = limit / speed;
         velocityX *= scale;
         velocityY *= scale;
       }
@@ -780,6 +809,8 @@ export class CrowdMovementSolver {
     if (this.velocityX.length >= count) return;
     this.velocityX = new Float64Array(count);
     this.velocityY = new Float64Array(count);
+    this.wallVelocityCorrectionX = new Float64Array(count);
+    this.wallVelocityCorrectionY = new Float64Array(count);
     this.headings = new Float64Array(count);
     this.predictedX = new Float64Array(count);
     this.predictedY = new Float64Array(count);

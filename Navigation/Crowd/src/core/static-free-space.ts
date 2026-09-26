@@ -14,10 +14,6 @@ export class StaticFreeSpace {
   constructor(private readonly index: StaticObstacleIndex) {}
   get bytes():number { return this.x.byteLength+this.y.byteLength+this.radius.byteLength+this.clearance.byteLength; }
 
-  copyCertificates(x:Float64Array,y:Float64Array,radius:Float64Array):void {
-    x.set(this.x.subarray(0,x.length));y.set(this.y.subarray(0,y.length));radius.set(this.radius.subarray(0,radius.length));
-  }
-
   begin(count: number, width: number, height: number): void {
     if(this.x.length<count) {
       this.x=new Float64Array(count);this.y=new Float64Array(count);

@@ -1,0 +1,102 @@
+
+> crowd-navigation-lab@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:27772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 35 tests using 9 workers
+
+(node:44288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 tests\browser\particle-repair.spec.ts:3:1 › replays identical physical fixtures and exposes the measured repair effect (763ms)
+  ok  4 tests\browser\mixed-sizes.spec.ts:3:1 › size controls rebuild scattered bodies, preserve pause, and replay on reset (934ms)
+  ok  2 tests\browser\external-reference.spec.ts:3:1 › unscaled 5K request keeps running with the actual spawned population after a UI blast (937ms)
+  ok  1 tests\browser\algorithm-lab.spec.ts:4:1 › each preset selects, runs, resets and survives switching without cached state (968ms)
+  ok 10 tests\browser\particle-repair.spec.ts:28:1 › fits the comparison and controls on a narrow viewport (191ms)
+  ok  3 tests\browser\external-influences.spec.ts:3:1 › external tools work while paused, preserve goals and export replay inputs (1.3s)
+  ok 13 tests\browser\algorithm-lab.spec.ts:37:1 › fair sequential comparison saves and exports reproducible results (489ms)
+  ok 11 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 1000 agents (583ms)
+  ok  8 tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 1000 agents (1.6s)
+  ok 14 tests\browser\external-influences.spec.ts:30:1 › external input overflow pauses visibly and reset recovers the UI (444ms)
+  ok  7 tests\browser\map-editor.spec.ts:28:1 › draws, resizes, moves, undoes, saves, and runs a custom map (1.8s)
+  ok 15 tests\browser\algorithm-lab.spec.ts:55:1 › scaled world preserves 10000 actual bodies and physical radii: open-field (390ms)
+  ok 19 tests\browser\algorithm-lab.spec.ts:55:1 › scaled world preserves 10000 actual bodies and physical radii: rocky-pass (562ms)
+  ok 18 tests\browser\map-editor.spec.ts:75:1 › blocks an unreachable map and cancels edits without changing the simulation (629ms)
+  ok 16 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 3000 agents (1.1s)
+  ok  6 tests\browser\frame-clock.spec.ts:3:1 › records the real app loop and keeps paused commands on fixed ticks (2.9s)
+  ok 20 tests\browser\algorithm-lab.spec.ts:74:1 › scheduled terrain edits replay and reset from original geometry (563ms)
+  ok 21 tests\browser\map-editor.spec.ts:95:1 › imports and exports JSON, rejects invalid input, and preserves bounded simulation work (698ms)
+  ok 12 tests\browser\external-reference.spec.ts:18:1 › 6K rocky UI repeats blasts and resets without Worker or WebAssembly support (2.3s)
+  ok 23 tests\browser\map-editor.spec.ts:121:1 › supports keyboard movement and deletion; keeps one spawn and one goal (355ms)
+  ok 25 tests\browser\map-editor.spec.ts:141:1 › a corrupt saved library leaves built-in maps usable (230ms)
+  ok 24 tests\browser\external-reference.spec.ts:50:1 › a contact failure stays visible through metric refresh and reset clears it (1.2s)
+  ok 22 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 6000 agents (2.1s)
+  x  17 tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 10000 agents (6.0s)
+(node:46476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 tests\browser\displaced-navigation.spec.ts:5:1 › a saved 깔때기V2 clears displaced large bodies at radius 3 and 10% (8.2s)
+  ok 26 tests\browser\crowd.spec.ts:32:1 › page opens with the default 1000-agent scenario (230ms)
+  ok 27 tests\browser\crowd.spec.ts:44:1 › the baseline and experiment scenarios are available; removed URLs fall back to flat (160ms)
+  ok 28 tests\browser\crowd.spec.ts:57:1 › run, pause, single step, and reset controls work (864ms)
+  ok 29 tests\browser\crowd.spec.ts:72:1 › a requested fixed step is deterministic and physically bounded (2.5s)
+  ok 30 tests\browser\crowd.spec.ts:86:1 › movement turn speed changes the actual path (247ms)
+  ok 31 tests\browser\crowd.spec.ts:112:1 › a pathological 1000-agent overlap remains bounded and keeps moving (179ms)
+  ok 32 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: winding-corners (2.2s)
+  ok 33 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: funnel-bypass (1.8s)
+  ok 34 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: four-way-merge (2.2s)
+  ok 35 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: rocky-pass (2.4s)
+
+
+  1) tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 10000 agents ──────
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('body')
+    Expected: "240"
+    Received: "210"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for locator('body')
+        - locator resolved to <body data-step="150" data-agents="10000" data-paused="false" data-preset="legacy">…</body>
+        - unexpected value "150"
+        - locator resolved to <body data-step="180" data-agents="10000" data-paused="false" data-preset="legacy">…</body>
+        - unexpected value "180"
+        - locator resolved to <body data-step="210" data-agents="10000" data-paused="false" data-preset="legacy">…</body>
+        - unexpected value "210"
+
+
+       7 |     await page.goto(`/?scenario=${scenario}&agents=${large ? 10000 : 1000}`
+       8 |       + `${large ? '&radius=1.5&gap=0.05' : ''}&seed=42&step=240&paused=true`);
+    >  9 |     await expect(page.locator('body')).toHaveAttribute('data-step','240');
+         |                                        ^
+      10 |     if (large) await expect(page.locator('#agent-radius')).toHaveValue('1.5');
+      11 |     await page.locator('#crowd-canvas').screenshot({path:testInfo.outputPath(`${scenario}-240.png`)});
+      12 |     const samples = await page.evaluate(() => {
+        at E:\Project\game-algorithm-lab\Navigation\Crowd\tests\browser\crowd.spec.ts:9:40
+
+    Error Context: test-results\crowd-grid-transport-visual-replay-open-field-10000-agents\error-context.md
+
+  1 failed
+    tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 10000 agents ───────
+  34 passed (23.1s)

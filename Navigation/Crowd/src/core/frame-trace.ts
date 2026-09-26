@@ -18,7 +18,7 @@ export class NumericRing {
 
 export const FRAME_COLUMNS = ['timeMs', 'tickBefore', 'tickAfter', 'intervalMs', 'cpuMs',
   'simulationMs', 'recorderMs', 'renderMs', 'uiMs', 'debtSeconds', 'droppedSeconds',
-  'clampedSeconds', 'steps', 'active', 'direct', 'contact', 'externalState'] as const;
+  'clampedSeconds', 'steps', 'active', 'direct', 'contact', 'ongoingInput'] as const;
 
 /** Columnar ring: no unbounded per-frame objects in the application loop. */
 export class FrameTrace {

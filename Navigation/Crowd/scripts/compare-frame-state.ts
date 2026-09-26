@@ -19,10 +19,12 @@ function sourceHash(root:string):string {
 const actualSourceSha256=sourceHash(resolve('.')),referenceSourceSha256=sourceHash(reference);
 const fixture=arg('fixture','baselines/frame-20260926/rocky-ui-quality.json.gz');
 const mode=arg('mode','wind'),seed=Number(arg('seed','42'));
+const selectedScenario=arg('scenario',''),selectedAgents=Number(arg('agents','0'));
 const data=readFileSync(fixture),report=JSON.parse((fixture.endsWith('.gz')?gunzipSync(data):data).toString('utf8'));
 const row=report.schema==='crowd-external-diagnostic-v1'
   ? {...report,agents:report.count,initial:{config:report.config}}
-  : report.rows.find((r:{mode:string;seed:number})=>r.mode===mode&&r.seed===seed);
+  : report.rows.find((r:{mode:string;seed:number;scenario:string;agents:number})=>r.mode===mode&&r.seed===seed
+    &&(!selectedScenario||r.scenario===selectedScenario)&&(!selectedAgents||r.agents===selectedAgents));
 if(!row||row.mode!==mode||row.seed!==seed||!Array.isArray(row.commands))throw new Error('No matching recorded input fixture.');
 const legacy=await import(pathToFileURL(resolve(reference,'src/core/simulation.ts')).href);
 if(legacy.CrowdSimulation===CrowdSimulation)throw new Error('Reference resolved to the candidate module.');
@@ -31,16 +33,15 @@ const actual=new CrowdSimulation(structuredClone(row.initial.config),structuredC
 const expected=new legacy.CrowdSimulation(structuredClone(row.initial.config),structuredClone(scenario)) as CrowdSimulation;
 const referenceBackend=arg('reference-backend','auto');
 if(referenceBackend!=='auto'&&referenceBackend!=='js')throw new Error('Unknown reference backend.');
-expected.external.backend=referenceBackend;
+// Archived references may expose a historical execution backend selector.
+if('backend' in expected.external)expected.external.backend=referenceBackend;
 const hashes:string[]=[],ticks=Number(arg('ticks',String(row.steps?.length??row.ticks)));
-let comparedBytes=0,comparedWarmValues=0,actualRetries=0,referenceRetries=0;
-type CacheView={movement:{externalContact?:{contactCache:{current:{count:number;used:Int32Array;keys:Float64Array;values:Float64Array}}}}};
+let comparedBytes=0;
 for(let tick=0;tick<ticks;tick++) {
   for(const command of row.commands)if(command.tick===tick) {
     actual.enqueueExternal(structuredClone(command));expected.enqueueExternal(structuredClone(command));
   }
   actual.step();expected.step();
-  actualRetries+=actual.external.stats.substepRetries??0;referenceRetries+=expected.external.stats.substepRetries??0;
   for(const owner of ['state','previousState'] as const)for(const [name,view] of Object.entries(actual[owner])) {
     if(!ArrayBuffer.isView(view))continue;
     const other=expected[owner][name as keyof typeof expected.state] as ArrayBufferView;
@@ -48,18 +49,7 @@ for(let tick=0;tick<ticks;tick++) {
     comparedBytes+=left.byteLength;
     if(!left.equals(right))throw new Error(`State byte difference at tick ${tick}: ${owner}.${name}`);
   }
-  for(const name of ['affected','direct'] as const)if(!Buffer.from(actual.external[name]).equals(Buffer.from(expected.external[name])))throw new Error(`Flag difference at tick ${tick}: ${name}`);
-  const currentCache=(actual as unknown as CacheView).movement.externalContact?.contactCache.current;
-  const referenceCache=(expected as unknown as CacheView).movement.externalContact?.contactCache.current;
-  if((currentCache?.count??0)!==(referenceCache?.count??0))throw new Error(`Warm cache count difference at tick ${tick}`);
-  if(currentCache&&referenceCache)for(let i=0;i<currentCache.count;i++) {
-    const a=currentCache.used[i]!,b=referenceCache.used[i]!;
-    if(currentCache.keys[a]!==referenceCache.keys[b])throw new Error(`Warm key order difference at tick ${tick}`);
-    for(let k=0;k<5;k++) {
-      const x=currentCache.values[a*5+k]!,y=referenceCache.values[b*5+k]!;comparedWarmValues++;
-      if(!Number.isFinite(x)||!Object.is(x,y))throw new Error(`Exact warm value difference at tick ${tick}, entry ${i}, value ${k}`);
-    }
-  }
+  for(const name of ['direct'] as const)if(!Buffer.from(actual.external[name]).equals(Buffer.from(expected.external[name])))throw new Error(`Flag difference at tick ${tick}: ${name}`);
   const hash=actual.stateHash();
   if(hash!==expected.stateHash())throw new Error(`Hash difference at tick ${tick}`);
   hashes.push(hash);
@@ -68,7 +58,7 @@ if(JSON.stringify(actual.external.record())!==JSON.stringify(expected.external.r
 const output=arg('output','test-results/native-state-comparison.json');mkdirSync(dirname(output),{recursive:true});
 writeFileSync(output,JSON.stringify({schema:'crowd-byte-comparison-v1',fixture,reference,actualSourceSha256,referenceSourceSha256,
   sourceStable:actualSourceSha256===sourceHash(resolve('.'))&&referenceSourceSha256===sourceHash(reference),scenario:row.scenario,agents:row.agents,seed,mode,ticks,
-  comparedBytes,comparedWarmValues,referenceBackend,actualRetries,referenceRetries,actualActive:actual.metrics.activeCount,referenceActive:expected.metrics.activeCount,
+  comparedBytes,referenceBackend,actualActive:actual.metrics.activeCount,referenceActive:expected.metrics.activeCount,
   profile:`Headless exact optimization comparison; recorded ${row.inputSource??'HTTP UI'} inputs. Not a performance or independent geometry result.`,
   mismatches:0,commands:actual.external.record(),hashes},null,2));
 console.log(JSON.stringify({ticks,comparedBytes,mismatches:0,hash:hashes.at(-1)}));

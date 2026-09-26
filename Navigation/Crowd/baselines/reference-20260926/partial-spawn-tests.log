@@ -1,0 +1,12 @@
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ✓ tests/simulation/external-influences.test.ts (41 tests) 1541ms
+   ✓ external physical movement > returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags  423ms
+   ✓ external physical movement > preserves a full session history, rejects overflow atomically, and releases it on reset  524ms
+
+ Test Files  1 passed (1)
+      Tests  41 passed (41)
+   Start at  13:19:40
+   Duration  2.19s (transform 145ms, setup 0ms, collect 232ms, tests 1.54s, environment 0ms, prepare 218ms)
+

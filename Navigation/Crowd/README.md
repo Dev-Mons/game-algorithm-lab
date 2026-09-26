@@ -27,7 +27,8 @@ Windows에서는 이 폴더의 **run.bat**을 실행해도 됩니다. 기본 포
    반경·속도·dt·격자 해상도는 그대로이며, 공간이 부족하면 실제 생성 수를 확인합니다.
 
 Legacy는 개별 유닛 목표 명령과 계층별 모듈 교체를 지원하지 않습니다.
-**이동 회전 속도 (°/초)**는 실제 이동 속도 벡터가 꺾이는 각도를 제한합니다.
+**이동 회전 속도 (°/초)**는 보행 제어가 제안하는 이동 방향의 회전을 제한합니다.
+외력·충돌로 얻은 물리 속도는 가속도 제한 안에서 그 방향을 따라 회복합니다.
 기본값은 360이며 0~720으로 조절합니다(0은 자발적 방향 전환 정지).
 60°/초처럼 낮추면 코너에서 더 크게 돌아가거나 벽 앞에서 감속하며,
 가속도 제한도 함께 작용하므로 높은 설정끼리는 차이가 작을 수 있습니다.
@@ -63,7 +64,7 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 ## Legacy solver와 기존 도구
 ### 외력 실험
 
-캔버스 아래 **클릭 도구**에서 폭발·확장 충격파·지속 밀림·이동 원형 물체를 선택합니다.
+캔버스 아래 **클릭 도구**에서 폭발·확장 충격파·지속 밀림·이동 원형 밀림를 선택합니다.
 군중 근처를 클릭하고 실행하거나 한 스텝을 진행하면 적용됩니다. 외력 반응과 이동 물체의 디버그 윤곽은 그리지 않습니다.
 입력은 고정 tick으로 기록되어 기존 재실행·결과 내보내기에 포함됩니다.
 외부 프로그램은 `CrowdSimulation.enqueueExternal()`을 사용합니다.
@@ -76,27 +77,18 @@ Legacy의 격자·접촉 구조를 유지하며, 회전 제한을 포함한 이�
 이 도구는 tick 30에 실제 캔버스 입력을 보내며, 구간별 요약과 원시 기록을 함께 저장합니다.
 `--quality=on`은 독립 품질 감사 실행입니다. 이 실행의 프레임 시간을 성능 결과로 사용하지 않습니다.
 
-외력 Contact는 f64 WebAssembly 커널을 사용합니다. 교차 출처 격리가 가능한 브라우저에서는
-충돌 쌍을 개체가 겹치지 않는 그룹으로 정렬해 main과 최대 7개 worker에서 계산합니다.
-Vite 개발·preview 서버는 필요한 COOP/COEP 헤더를 제공합니다. 다른 호스트에서는
-`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`가
-필요합니다. 지원하지 않는 환경은 단일 스레드 WebAssembly 또는 TypeScript로 실행합니다.
-직접 생성한 `CrowdSimulation`을 폐기할 때는 `dispose()`로 worker를 종료하세요.
-worker 실패 시 부분 결과를 버리고 같은 tick을 CPU에서 다시 계산합니다.
-접촉 커널은 `npm run build:contact`, 군중 흐름의 입자↔격자 전송 커널은
-`npm run build:transfer`로 생성 파일을 갱신합니다. 전송도 동일한 f64 연산 순서를 유지하며
-지원하지 않는 환경에서는 TypeScript 경로로 실행됩니다.
-`npm run verify`는 생성 파일과 원본의 일치도 확인합니다. 이 변경 자체가 10K 60FPS 수락을 뜻하지는 않습니다.
+외력은 개체의 물리 속도에 입력을 더합니다. 이후 평소와 동일한
+경로 안내 → 격자 압력 → 예측 이동 → 군중 접촉 → 벽 충돌 처리를 거칩니다.
+외력 전용 솔버·영향 상태 전파·전역 substep·복귀 모드는 없습니다.
+강한 밀림도 일반 가속도 제어로 보행 속도를 회복하며, 접촉은 기존의
+24개 후보·8개 접촉·8회 반복 예산 안에서 처리합니다.
+이동 원형 밀림은 원형 범위로 속도를 가하는 도구이며 강체 장애물이 아닙니다.
+밀집 상태의 겹침은 일반 군중 로직이 여러 틱에 걸쳐 해소할 수 있습니다.
 
-지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),
-실제 수치와 한계는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
-외력 최적화 이후의 측정 조건과 남은 한계는 [외력 계약](docs/external-forces.md#performance-evidence-and-limits)에 정리되어 있습니다.
-#32·#33은 개선 확인을 완료 기준으로 삼은 사용자 지시에 따라 마무리했습니다.
-실제 10K의 660tick × 3회 측정에서 프레임 CPU P95 중앙값은 평지 밀림/폭발
-12.81/12.98ms, 협곡 25.40/24.24ms입니다. 협곡의 60FPS·실시간 목표는 여전히 미달입니다.
-같은 장비·동일 초기 입력 구간의 기존 코드 대비 P95는 밀림 약 52%, 폭발 약 50% 줄었습니다.
-원시 결과·실행 소스·현재 한계는 `baselines/frame-20260926/summary.json`의 `completion`과
-[완료 검증](docs/external-forces.md#completion-under-amended-scope--2026-09-26)에 보존합니다.
+입력 단위·수명·지원 한계와 계산 순서는 [현재 계산 계약](docs/external-forces.md#current-typescript-reference),
+실측 결과는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
+Worker·공유 메모리·동기 대기·WASM·별도 백엔드는 없으며 실제 GPU 구현은 포함하지 않습니다.
+이전 외력 전용 솔버의 자료와 수치는 과거 연구 기록으로 보존합니다.
 
 기본 경로 안내는 **동일 목표·반경 클래스당 하나의 고정 Flow Field**를 공유합니다.
 혼잡도에 따른 우회 재계산은 꺼져 있으며, 목표 또는 맵이 바뀔 때만 경로를 갱신합니다.
@@ -114,9 +106,11 @@ Shared density-capacity pressure: 8 projected Jacobi passes
     ↓
 Corrected grid velocity → gather (retain dilute navigation detail)
     ↓
-Acceleration- and turn-rate-limited prediction
+Acceleration-limited motor response to a turn-limited walking target
     ↓
-Compact contact grid → at most 24 candidates / 8 pairs / 8 relaxed Jacobi passes
+Static sweep of predicted motion
+    ↓
+Compact contact grid → at most 24 candidates / 8 pairs / 8 contact passes (swept motion + XPBD repair)
     ↓
 Exact swept circle / static integration
 ```
@@ -298,6 +292,9 @@ src/core/simulation.ts                  공통 navigation과 pass orchestration
 src/core/crowd-field.ts                 shared density / momentum / overload
 src/core/crowd-flow-solver.ts           directional grid velocity / capacity pressure
 src/core/crowd-movement-solver.ts       bounded residual XPBD / static safety
+src/core/contact-pairs.ts              owned contact pairs from frozen CSR
+src/core/contact-velocity.ts           explicit array velocity projection
+src/core/external-contact-solver.ts    physical substeps / static and split stabilization
 src/algorithms/spatial-hash/spatial-hash.ts  count / prefix sum / contiguous indices
 src/core/crowd-continuity-metrics.ts    spacing / interior density / void / velocity RMS
 src/core/crowd-quality-metrics.ts       기존+새 품질 진단

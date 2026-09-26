@@ -1,0 +1,119 @@
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ❯ tests/simulation/external-influences.test.ts (38 tests | 5 failed) 1571ms
+   ✓ external inputs through ordinary crowd movement > uses exactly the same motion and contact response as setting physical velocity directly 102ms
+   ✓ external inputs through ordinary crowd movement > leaves a distant crowd byte-identical when only one isolated body is pushed 93ms
+   ✓ external inputs through ordinary crowd movement > keeps bounded ordinary contacts even for excessive overlap and combined inputs 16ms
+   ✓ external inputs through ordinary crowd movement > clears input state and reusable movement scratch after a smaller reset 9ms
+   ✓ external inputs through ordinary crowd movement > applies blasts when spawn capacity is smaller than the requested population 117ms
+   ✓ external inputs through ordinary crowd movement > integrates the same fixed-tick force and state at different render cadences 67ms
+   ✓ external inputs through ordinary crowd movement > consumes a blast immediately while motion keeps using ordinary contacts  412ms
+   ✓ external inputs through ordinary crowd movement > preserves weak sub-walking-speed momentum when voluntary control is disabled 4ms
+   ✓ external inputs through ordinary crowd movement > uses one step for coherent fast transport while retaining exact impulse displacement 3ms
+   ✓ external inputs through ordinary crowd movement > does not multiply whole-crowd work for a distant non-contacting proxy 1ms
+   ✓ external inputs through ordinary crowd movement > keeps randomized approaching contacts finite and below the compression profile 27ms
+   ✓ external inputs through ordinary crowd movement > preserves an unclamped one-shot delta velocity (500,0) 2ms
+   ✓ external inputs through ordinary crowd movement > preserves an unclamped one-shot delta velocity (-500,0) 1ms
+   ✓ external inputs through ordinary crowd movement > preserves an unclamped one-shot delta velocity (0,500) 1ms
+   ✓ external inputs through ordinary crowd movement > deduplicates, rejects conflicts/nonfinite/stale input, and clears reset state 3ms
+   ✓ external inputs through ordinary crowd movement > integrates acceleration in seconds, with an exclusive end tick and cancellation 26ms
+   ✓ external inputs through ordinary crowd movement > hits every agent in an area, including more than the contact candidate budget 2ms
+   ✓ external inputs through ordinary crowd movement > uses deterministic blast center direction and linear spatial falloff 1ms
+   ✓ external inputs through ordinary crowd movement > hits a wave target only once as the front expands 13ms
+   ✓ external inputs through ordinary crowd movement > transmits through 2 touching bodies without energy amplification 5ms
+   × external inputs through ordinary crowd movement > transmits through 3 touching bodies without energy amplification 9ms
+     → expected 2.291666666666652 to be less than or equal to 0.5
+   × external inputs through ordinary crowd movement > transmits through 16 touching bodies without energy amplification 6ms
+     → expected 2.291666666666652 to be less than or equal to 0.5
+   ✓ external inputs through ordinary crowd movement > detects crossing between endpoints and mixed radii with no side swap 2ms
+   × external inputs through ordinary crowd movement > keeps a pushed chain below its input energy with bounded crowd repair (distant brush: false) 3ms
+     → penetration at tick 0: expected 2.291666666666652 to be less than or equal to 0.5
+   × external inputs through ordinary crowd movement > keeps a pushed chain below its input energy with bounded crowd repair (distant brush: true) 3ms
+     → penetration at tick 0: expected 2.291666666666652 to be less than or equal to 0.5
+   × external inputs through ordinary crowd movement > keeps dense multidirectional crowd pushes bounded and outside walls 4ms
+     → penetration at tick 0: expected 2.291666666666652 to be less than or equal to 0.5
+   ✓ external inputs through ordinary crowd movement > sweeps thin walls and keeps removed wall-normal velocity removed next tick 2ms
+   ✓ external inputs through ordinary crowd movement > returns to 95% navigation speed within the declared four seconds 25ms
+   ✓ external inputs through ordinary crowd movement > pushes continuously with prescribed circular motion then removes the proxy 12ms
+   ✓ external inputs through ordinary crowd movement > keeps the static wall authoritative when a proxy crushes an agent 7ms
+   ✓ external inputs through ordinary crowd movement > keeps the arrival sink inactive even when an input targets it 1ms
+   ✓ external inputs through ordinary crowd movement > does not transmit contact momentum through a thin static wall 2ms
+   ✓ external inputs through ordinary crowd movement > stores input values defensively and accepts equivalent reordered retransmissions 1ms
+   ✓ external inputs through ordinary crowd movement > preserves a full session history, rejects overflow atomically, and releases it on reset  530ms
+   ✓ external inputs through ordinary crowd movement > rejects proxy discontinuities and excessive future body count atomically 2ms
+   ✓ external inputs through ordinary crowd movement > stops a moving proxy without leaving prescribed velocity in its next tick 1ms
+   ✓ external inputs through ordinary crowd movement > updates navigation after repeated hits and a new goal, without a position jump 26ms
+   ✓ external inputs through ordinary crowd movement > replays sorted inputs and all principal arrays exactly 28ms
+ ❯ tests/simulation/crowd-field-steering.test.ts (11 tests | 1 failed) 8283ms
+   ✓ CrowdField steering and quality instrumentation > updates crowd samples every step but rebuilds dynamic flow at the configured cadence 49ms
+   ✓ CrowdField steering and quality instrumentation > moves a dense merge crowd into the shared gate without curling behind its spawn  447ms
+   ✓ CrowdField steering and quality instrumentation > bounds dense detours with the same progress policy regardless of obstacle and flow counts 11ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in open-field  806ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in dense-spawn  1148ms
+   ✓ CrowdField steering and quality instrumentation > measures 4,990/5,000/5,010 field quality in obstacle-field  932ms
+   ✓ CrowdField steering and quality instrumentation > calculates the same bounded quality snapshot for the same replay 87ms
+   ✓ CrowdField steering and quality instrumentation > changes low-density Open Field goal progress by less than five percent 84ms
+   × CrowdField steering and quality instrumentation > combines field pressure with bounded XPBD work in a completely overlapping crowd 2518ms
+     → expected 213.81102551114287 to be less than or equal to 209.9813095394682
+   ✓ CrowdField steering and quality instrumentation > does not increase Dense Spawn density or penetration with fixed routing  1586ms
+   ✓ CrowdField steering and quality instrumentation > does not average opposing flows into a global stop  613ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/crowd-field-steering.test.ts > CrowdField steering and quality instrumentation > combines field pressure with bounded XPBD work in a completely overlapping crowd
+AssertionError: expected 213.81102551114287 to be less than or equal to 209.9813095394682
+ ❯ tests/simulation/crowd-field-steering.test.ts:259:32
+    257|     // pressure must still reduce density without worsening penetratio…
+    258|     expect(steered.occupiedArea).toBeGreaterThanOrEqual(unsteered.occu…
+    259|     expect(steered.densityP95).toBeLessThanOrEqual(unsteered.densityP9…
+       |                                ^
+    260|     expect(steered.penetrationP95).toBeLessThanOrEqual(unsteered.penet…
+    261|     expect(steered.averageGoalProgress).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/simulation/external-influences.test.ts > external inputs through ordinary crowd movement > transmits through 3 touching bodies without energy amplification
+ FAIL  tests/simulation/external-influences.test.ts > external inputs through ordinary crowd movement > transmits through 16 touching bodies without energy amplification
+AssertionError: expected 2.291666666666652 to be less than or equal to 0.5
+ ❯ tests/simulation/external-influences.test.ts:187:26
+    185|     }
+    186|     expect(s.state.x[count-1]).toBeGreaterThan(200+(count-1)*6.4+.1);
+    187|     expect(maximumDepth).toBeLessThanOrEqual(.5);
+       |                          ^
+    188|   });
+    189|   it('detects crossing between endpoints and mixed radii with no side …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/simulation/external-influences.test.ts > external inputs through ordinary crowd movement > keeps a pushed chain below its input energy with bounded crowd repair (distant brush: false)
+ FAIL  tests/simulation/external-influences.test.ts > external inputs through ordinary crowd movement > keeps a pushed chain below its input energy with bounded crowd repair (distant brush: true)
+AssertionError: penetration at tick 0: expected 2.291666666666652 to be less than or equal to 0.5
+ ❯ tests/simulation/external-influences.test.ts:203:60
+    201|       const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[…
+    202|       expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy…
+    203|       expect(penetration(s),`penetration at tick ${tick}`).toBeLessTha…
+       |                                                            ^
+    204|     }
+    205|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/simulation/external-influences.test.ts > external inputs through ordinary crowd movement > keeps dense multidirectional crowd pushes bounded and outside walls
+AssertionError: penetration at tick 0: expected 2.291666666666652 to be less than or equal to 0.5
+ ❯ tests/simulation/external-influences.test.ts:215:60
+    213|       const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[…
+    214|       expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy…
+    215|       expect(penetration(s),`penetration at tick ${tick}`).toBeLessTha…
+       |                                                            ^
+    216|       expect(s.metrics.wallOverlapCount).toBe(0);
+    217|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 43 passed (49)
+   Start at  14:23:39
+   Duration  8.72s (transform 183ms, setup 0ms, collect 372ms, tests 9.85s, environment 0ms, prepare 144ms)
+

@@ -1,0 +1,15 @@
+
+ RUN  v3.2.7 E:/Project/game-algorithm-lab/Navigation/Crowd
+
+ ✓ tests/unit/contact-pairs.test.ts (2 tests) 36ms
+ ✓ tests/simulation/exact-cache-equivalence.test.ts (1 test) 452ms
+   ✓ matches exhaustive geometry through mixed radii, forces and geometry/goal edits  451ms
+ ✓ tests/simulation/external-influences.test.ts (39 tests) 1498ms
+   ✓ external physical movement > returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags  487ms
+   ✓ external physical movement > preserves a full session history, rejects overflow atomically, and releases it on reset  544ms
+
+ Test Files  3 passed (3)
+      Tests  42 passed (42)
+   Start at  12:50:02
+   Duration  2.05s (transform 208ms, setup 0ms, collect 573ms, tests 1.99s, environment 0ms, prepare 224ms)
+

@@ -6,7 +6,9 @@ for (const agents of [1000, 10000]) {
     const large = agents === 10000;
     await page.goto(`/?scenario=${scenario}&agents=${large ? 10000 : 1000}`
       + `${large ? '&radius=1.5&gap=0.05' : ''}&seed=42&step=240&paused=true`);
-    await expect(page.locator('body')).toHaveAttribute('data-step','240');
+    // 240 fixed ticks take at least four seconds at 60 Hz. This is a replay/UI
+    // check, not an FPS gate; parallel browser tests can exceed the 5s default.
+    await expect(page.locator('body')).toHaveAttribute('data-step','240',{timeout:15_000});
     if (large) await expect(page.locator('#agent-radius')).toHaveValue('1.5');
     await page.locator('#crowd-canvas').screenshot({path:testInfo.outputPath(`${scenario}-240.png`)});
     const samples = await page.evaluate(() => {

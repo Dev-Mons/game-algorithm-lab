@@ -1,0 +1,26 @@
+[
+  {
+    "scenario": "open-field",
+    "percent": 0,
+    "initial": "876a2f74",
+    "step120": "ee75635d",
+    "command": "f09ad175",
+    "command60": "f713018b"
+  },
+  {
+    "scenario": "winding-corners",
+    "percent": 0,
+    "initial": "20137ce9",
+    "step120": "0551df9d",
+    "command": "1e74ad9d",
+    "command60": "d983886f"
+  },
+  {
+    "scenario": "winding-corners",
+    "percent": 5,
+    "initial": "805de773",
+    "step120": "a2887663",
+    "command": "7dd5c820",
+    "command60": "025c852c"
+  }
+]

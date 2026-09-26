@@ -1,0 +1,52 @@
+
+> crowd-navigation-lab@1.0.0 test:e2e
+> playwright test --workers=2 --output=playwright-report/reference-browser
+
+[WebServer] (node:41448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:41124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 35 tests using 2 workers
+
+(node:39572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 tests\browser\algorithm-lab.spec.ts:4:1 › each preset selects, runs, resets and survives switching without cached state (525ms)
+  ok  3 tests\browser\algorithm-lab.spec.ts:37:1 › fair sequential comparison saves and exports reproducible results (329ms)
+  ok  1 tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 1000 agents (983ms)
+  ok  4 tests\browser\algorithm-lab.spec.ts:55:1 › scaled world preserves 10000 actual bodies and physical radii: open-field (285ms)
+  ok  6 tests\browser\algorithm-lab.spec.ts:55:1 › scaled world preserves 10000 actual bodies and physical radii: rocky-pass (366ms)
+  ok  7 tests\browser\algorithm-lab.spec.ts:74:1 › scheduled terrain edits replay and reset from original geometry (574ms)
+  ok  8 tests\browser\displaced-navigation.spec.ts:5:1 › a saved 깔때기V2 clears displaced large bodies at radius 3 and 10% (5.0s)
+  ok  5 tests\browser\crowd.spec.ts:5:3 › grid transport visual replay: open-field, 10000 agents (6.2s)
+  ok 10 tests\browser\crowd.spec.ts:32:1 › page opens with the default 1000-agent scenario (184ms)
+  ok 11 tests\browser\crowd.spec.ts:44:1 › the baseline and experiment scenarios are available; removed URLs fall back to flat (158ms)
+  ok  9 tests\browser\external-influences.spec.ts:3:1 › external tools work while paused, preserve goals and export replay inputs (750ms)
+  ok 12 tests\browser\crowd.spec.ts:57:1 › run, pause, single step, and reset controls work (532ms)
+  ok 13 tests\browser\external-influences.spec.ts:30:1 › external input overflow pauses visibly and reset recovers the UI (319ms)
+  ok 15 tests\browser\external-reference.spec.ts:3:1 › unscaled 5K request keeps running with the actual spawned population after a UI blast (602ms)
+  ok 14 tests\browser\crowd.spec.ts:72:1 › a requested fixed step is deterministic and physically bounded (2.5s)
+  ok 17 tests\browser\crowd.spec.ts:86:1 › movement turn speed changes the actual path (263ms)
+  ok 18 tests\browser\crowd.spec.ts:112:1 › a pathological 1000-agent overlap remains bounded and keeps moving (185ms)
+  ok 16 tests\browser\external-reference.spec.ts:18:1 › 6K rocky UI repeats blasts and resets without Worker or WebAssembly support (2.9s)
+  ok 19 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: winding-corners (1.7s)
+  ok 20 tests\browser\external-reference.spec.ts:50:1 › a contact failure stays visible through metric refresh and reset clears it (1.1s)
+  ok 21 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: funnel-bypass (1.7s)
+  ok 22 tests\browser\frame-clock.spec.ts:3:1 › records the real app loop and keeps paused commands on fixed ticks (2.4s)
+  ok 23 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: four-way-merge (1.6s)
+  ok 24 tests\browser\map-editor.spec.ts:28:1 › draws, resizes, moves, undoes, saves, and runs a custom map (1.3s)
+  ok 26 tests\browser\map-editor.spec.ts:75:1 › blocks an unreachable map and cancels edits without changing the simulation (494ms)
+  ok 27 tests\browser\map-editor.spec.ts:95:1 › imports and exports JSON, rejects invalid input, and preserves bounded simulation work (451ms)
+  ok 28 tests\browser\map-editor.spec.ts:121:1 › supports keyboard movement and deletion; keeps one spawn and one goal (225ms)
+  ok 29 tests\browser\map-editor.spec.ts:141:1 › a corrupt saved library leaves built-in maps usable (162ms)
+  ok 25 tests\browser\crowd.spec.ts:155:3 › concept scenario selection and replay: rocky-pass (2.1s)
+  ok 30 tests\browser\mixed-sizes.spec.ts:3:1 › size controls rebuild scattered bodies, preserve pause, and replay on reset (477ms)
+  ok 31 tests\browser\particle-repair.spec.ts:3:1 › replays identical physical fixtures and exposes the measured repair effect (390ms)
+  ok 33 tests\browser\particle-repair.spec.ts:28:1 › fits the comparison and controls on a narrow viewport (137ms)
+  ok 32 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 1000 agents (434ms)
+  ok 34 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 3000 agents (722ms)
+  ok 35 tests\browser\mixed-sizes.spec.ts:34:3 › renders both physical sizes for 6000 agents (1.3s)
+
+  35 passed (22.9s)

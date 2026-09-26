@@ -81,6 +81,7 @@ let comparisonCancelled = false;
 let savedResults: LabResult[] = [];
 try { savedResults = JSON.parse(localStorage.getItem('crowd-lab-results-v1') ?? '[]').filter((r: LabResult) => r.schema === 'crowd-lab-result-v1').slice(-24); } catch { savedResults = []; }
 let running = !requestedPaused;
+let stepError: string | null = null;
 let fastForwarding = targetStep > 0;
 let timeScale = 1;
 const clock = new FixedClock(config.fixedDelta);
@@ -172,13 +173,11 @@ function frame(now: number): void {
   const uiMs = performance.now() - uiStarted;
   frameOtherMs = Math.max(renderMs + uiMs, frameOtherMs * .9);
   if (frameTrace.enabled) {
-    let externalState = 0;
-    for (const value of simulation.external.affected) externalState += value;
     frameTrace.record([now, tickBefore, simulation.stepCount, intervalMs, performance.now() - frameStarted,
       frameSimulationMs, frameRecorderMs, renderMs, uiMs, clock.timing.debt,
       Math.max(0,clock.timing.dropped-droppedBefore), Math.max(0,clock.timing.clamped-clampedBefore),
       simulation.stepCount-tickBefore, simulation.metrics.activeCount, simulation.external.stats.affected,
-      simulation.external.stats.contactAffected, externalState]);
+      simulation.metrics.contactCorrectedAgents, Number(simulation.external.active)]);
   }
   requestAnimationFrame(frame);
 }
@@ -200,7 +199,8 @@ function timedStep(): boolean {
     simulation.step();
   } catch (error) {
     running = false; fastForwarding = false;
-    element('external-status').textContent = `입력 처리 중지: ${String(error)} · 초기화 후 다시 실행하세요.`;
+    stepError = `입력 처리 중지: ${String(error)} · 초기화 후 다시 실행하세요.`;
+    element('external-status').textContent = stepError;
     updateRunState();
     if (comparisonRunning) throw error;
     return false;
@@ -221,12 +221,14 @@ function initializeControls(): void {
   element<HTMLInputElement>('seed').value = String(config.seed);
 
   element<HTMLButtonElement>('run-toggle').addEventListener('click', () => {
+    if(stepError)return;
     running = !running;
     fastForwarding = false;
     window.crowdDebug.ready = true;
     updateRunState();
   });
   element<HTMLButtonElement>('single-step').addEventListener('click', () => {
+    if(stepError)return;
     running = false;
     fastForwarding = false;
     timedStep();
@@ -348,6 +350,8 @@ function rebuildSimulation(scenario: ReturnType<typeof getScenario>): void {
   const started = performance.now();
   simulation.dispose();
   simulation = new CrowdSimulation(config, scaleScenario(baseScenario, worldScale));
+  stepError = null;
+  element('external-status').textContent = '외력 도구를 선택하고 군중 근처를 클릭하세요.';
   commandLog = defaultCommands(baseScenario, worldScale);
   appliedLiveCommands = new Set();
   pendingCommands.clear();indexedCommands=0;indexedCommandLog=commandLog;
@@ -421,9 +425,11 @@ function updateMetrics(): void {
   const timing = clock.timing;
   element('lab-live').textContent += ` · 시뮬/실시간 ${timing.wallElapsed > 0 ? (timing.simulated / timing.wallElapsed).toFixed(3) : '—'}`
     + ` · 지연 ${(timing.debt*1000).toFixed(1)}ms · 시간 손실 ${((timing.dropped+timing.clamped)*1000).toFixed(1)}ms`;
-  if (simulation.external.active || simulation.external.stats.affected) {
+  if(stepError) {
+    element('external-status').textContent = stepError;
+  } else if (simulation.external.active || simulation.external.stats.affected) {
     const e = simulation.external.stats;
-    element('external-status').textContent = `직접 영향 ${e.affected} · 접촉 영향 ${e.contactAffected} · substep ${e.substeps} · 후보 포화 ${e.saturatedQueries} · 잔여 침투 ${e.unresolvedCompression} · 속도 제한 ${e.speedClamps} · 끼임 ${e.crushed}`;
+    element('external-status').textContent = `직접 영향 ${e.affected} · 군중 접촉 보정 ${simulation.metrics.contactCorrectedAgents} · 입력 속도 제한 ${e.speedClamps}`;
   }
   const passLabels: Record<string, string> = { navigation: '경로 재구축', desired: 'Navigation/LOS', avoidance: 'CrowdFlow', density: 'CrowdField', contact: '이동/Contact' };
   element('lab-passes').textContent = Object.entries(stats.passMs).map(([key, value]) => `${passLabels[key] ?? key} ${value.toFixed(2)}ms`).join(' · ')
@@ -521,6 +527,7 @@ async function compareRuns(all: boolean): Promise<void> {
       const start = performance.now();
       simulation.dispose();
       simulation = new CrowdSimulation(config, scaleScenario(runScenario, worldScale));
+      stepError = null;
       recorder = new LabRecorder(simulation, quality, 0, performance.now() - start);
       runtimeMetrics.reset(); commandLog = structuredClone(replay); appliedLiveCommands = new Set();
       while (simulation.stepCount < steps && !comparisonCancelled) {

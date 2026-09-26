@@ -10,11 +10,14 @@ const arg = (name, fallback) => process.argv.find(a => a.startsWith(`--${name}=`
 const base = arg('url', 'http://127.0.0.1:4273');
 const output = arg('output', 'test-results/frame-measurement.json.gz');
 const ticks = Number(arg('ticks', '660'));
+const scaled = arg('scale','on') !== 'off';
 const quality = arg('quality','off')==='on';
-const backend = arg('backend','auto');
 const tracing = arg('trace','on')==='on';
 const profiling = arg('profile','off')==='on';
 const stages = arg('stages','off')==='on';
+const cpuCores=Number(arg('cpu-cores','0'));
+if(!Number.isInteger(cpuCores)||cpuCores<0||cpuCores>32||(cpuCores>0&&platform()!=='win32'))
+  throw new Error('--cpu-cores requires Windows and an integer from 1 to 32.');
 const source=await (await fetch(`${base}/__crowd_source`)).json();
 if(source.app!=='crowd-navigation-lab'||typeof source.root!=='string')throw new Error('Unknown HTTP source identity.');
 const sourceHash=()=>{
@@ -29,6 +32,7 @@ const workingSourceSha256=sourceHash();
 const browser = await chromium.launch({ headless: true });
 const rows = [];
 const cpuProbe=arg('process-cpu','off')==='on'?await browser.newBrowserCDPSession():null;
+const affinityProbe=cpuCores>0?(cpuProbe??await browser.newBrowserCDPSession()):null;
 const distribution = values => {
   const sorted = [...values].sort((a, b) => a - b);
   return { samples: values.length, mean: values.reduce((a,b) => a+b,0)/Math.max(1,values.length),
@@ -45,7 +49,7 @@ try {
             const errors=[]; page.on('pageerror', e=>errors.push(String(e)));
             // Wrap the real RAF callback, preserving its clock, renderer, recorder and UI.
             await page.addInitScript(() => {
-              window.frameProbe={frames:[],steps:[],audits:[],enabled:false,done:false,main:null};
+              window.frameProbe={frames:[],steps:[],audits:[],inputs:[],enabled:false,done:false,main:null};
               const raf=window.requestAnimationFrame.bind(window);
               window.requestAnimationFrame=callback=>{
                 if(!window.frameProbe.main&&window.crowdDebug)window.frameProbe.main=callback;
@@ -57,15 +61,26 @@ try {
                 p.frames.push({now,tick,after:sim.stepCount,cpu:performance.now()-start});
               });};
             });
-            await page.goto(`${base}/?preset=legacy&scenario=${scenario}&agents=${agents}&scale=true&seed=${seed}&paused=true`);
+            await page.goto(`${base}/?preset=legacy&scenario=${scenario}&agents=${agents}&scale=${scaled}&seed=${seed}&paused=true`);
             await page.waitForFunction(()=>window.crowdDebug?.ready);
+            // Diagnostic only: constrain this tool-owned Chromium instance, not
+            // system settings or the user's browser. Worker threads inherit the
+            // renderer's affinity; navigator.hardwareConcurrency stays truthful
+            // to the machine, exposing behavior under CPU contention.
+            let affinity=null;
+            if(affinityProbe) {
+              const processes=(await affinityProbe.send('SystemInfo.getProcessInfo')).processInfo;
+              const ids=processes.map(p=>p.id).filter(id=>Number.isSafeInteger(id)&&id>0);
+              const mask=((1n<<BigInt(cpuCores))-1n).toString();
+              const script=`$ErrorActionPreference='Stop'; $owned=Get-Process -Id ${ids.join(',')} -ErrorAction SilentlyContinue; $owned | ForEach-Object { $_.ProcessorAffinity=[IntPtr]${mask} }; $owned | Select-Object Id,@{Name='mask';Expression={$_.ProcessorAffinity.ToInt64()}} | ConvertTo-Json -Compress`;
+              affinity={requestedCores:cpuCores,processes:JSON.parse(execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{encoding:'utf8'}))};
+            }
             const profiler=profiling?await page.context().newCDPSession(page):null;
             if(profiler){await profiler.send('Profiler.enable');await profiler.send('Profiler.start');}
             const processBefore=cpuProbe?(await cpuProbe.send('SystemInfo.getProcessInfo')).processInfo:null;
             const processStarted=performance.now();
-            const initial=await page.evaluate(async({mode,ticks,quality,backend,tracing,stages})=>{
+            const initial=await page.evaluate(async({mode,ticks,quality,tracing,stages})=>{
               const sim=window.crowdDebug.simulation(), p=window.frameProbe;
-              if('backend' in sim.external)sim.external.backend=backend;
               window.crowdDebug.setFrameTracing?.(tracing);
               const audit=quality?(await import('/src/core/lab-results.ts')).auditGeometry:null;
               const stageTimes={};let prepareStages=()=>{};
@@ -76,18 +91,18 @@ try {
                   for(const name of methods) {const original=owner[name];owner[name]=function(...args){const start=performance.now();try{return original.apply(this,args);}finally{stageTimes[name]=(stageTimes[name]??0)+performance.now()-start;}};}
                 };
                 prepareStages=()=>{
-                  const solver=sim.movement.externalContact;if(!solver)return;
-                  wrap(solver,['prepareWarmContacts','buildPairs','buildVelocityWorkset','hasResidualCompression','prepareStatics']);
-                  wrap(solver.projection,['solve']);wrap(solver.kernel,['solveVelocity','solvePosition']);
+                  const solver=sim.movement;if(!solver)return;
+                  wrap(solver,['predictPositions','buildContactConstraints','solveContactConstraints','integratePredictions']);
                 };
               }
               const step=sim.step.bind(sim);
               const click=()=>{
                 if(mode==='none')return;
-                document.querySelector('#external-tool').value=mode;
+                document.querySelector('#external-tool').value=mode==='blast-repeat'?'blast':mode;
                 const bounds=document.querySelector('#crowd-canvas').getBoundingClientRect();
                 const spawn=sim.scenario.spawn;
                 const x=spawn.x+spawn.width*.5,y=spawn.y+spawn.height*.5;
+                p.inputs.push({tick:sim.stepCount,dispatchedAt:performance.now(),x,y});
                 document.querySelector('#crowd-canvas').dispatchEvent(new MouseEvent('click',{
                   clientX:bounds.left+x/sim.config.width*bounds.width,
                   clientY:bounds.top+y/sim.config.height*bounds.height,bubbles:true}));
@@ -95,21 +110,31 @@ try {
               sim.step=()=>{
                 prepareStages();
                 for(const key of Object.keys(stageTimes))stageTimes[key]=0;
-                const tick=sim.stepCount,start=performance.now(); step();
+                const tick=sim.stepCount,start=performance.now();
+                try {step();} catch(error) {p.failure={tick,error:String(error)};p.done=true;throw error;}
+                for(const input of p.inputs)if(input.appliedAt===undefined&&input.tick===tick) {
+                  input.appliedAt=performance.now();input.latencyMs=input.appliedAt-input.dispatchedAt;
+                }
                 p.steps.push({tick,ms:performance.now()-start,active:sim.metrics.activeCount,
                   stages:stages?{...stageTimes}:undefined,passes:{...sim.experimentStats.passMs},external:{...sim.external.stats},
-                  flow:{kernelBytes:sim.crowdFlow?.kernelBytes??0,pressureGradientCells:sim.crowdFlow?.pressureGradientCells??null,pressureWorksetSize:sim.crowdFlow?.pressureWorksetSize??null,pressureWorksetFallback:sim.crowdFlow?.pressureWorksetFallback??null,cells:sim.crowdField?.cellCount??null}});
-                if(audit&&(sim.stepCount%10===0||sim.external.stats.positionBudgetExhaustions||sim.external.stats.unresolvedCompression||sim.external.stats.substepRetries)) {
+                  movement:{candidates:sim.metrics.candidateChecks,contacts:sim.metrics.contactChecks,
+                    constraints:sim.metrics.contactConstraints,iterations:sim.metrics.constraintIterations,
+                    corrected:sim.metrics.contactCorrectedAgents,ongoingInput:sim.external.active},
+                  flow:{pressureGradientCells:sim.crowdFlow?.pressureGradientCells??null,pressureWorksetSize:sim.crowdFlow?.pressureWorksetSize??null,pressureWorksetFallback:sim.crowdFlow?.pressureWorksetFallback??null,cells:sim.crowdField?.cellCount??null}});
+                if(audit&&sim.stepCount%10===0) {
                   const auditStart=performance.now();
                   p.audits.push({step:sim.stepCount,...audit(sim),auditMs:performance.now()-auditStart});
                 }
                 // Dispatch after tick 29, before the next timedStep applies commands.
-                if(sim.stepCount===30)click();
+                if(sim.stepCount===30||(mode==='blast-repeat'&&(sim.stepCount===60||sim.stepCount===90)))click();
                 if(sim.stepCount>=ticks&&!p.done){p.done=true;document.querySelector('#run-toggle').click();}
               };
               p.enabled=true; document.querySelector('#run-toggle').click();
-              return {spawned:sim.state.count,config:sim.config,scenario:sim.scenario.id};
-            },{mode,ticks,quality,backend,tracing,stages});
+              return {spawned:sim.state.count,config:sim.config,scenario:sim.scenario.id,spawn:sim.scenario.spawn,
+                crossOriginIsolated:window.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency,
+                worldDensity:sim.state.count/(sim.config.width*sim.config.height),
+                spawnDensity:sim.state.count/(sim.scenario.spawn.width*sim.scenario.spawn.height)};
+            },{mode,ticks,quality,tracing,stages});
             await page.waitForFunction(()=>window.frameProbe.done,null,{timeout:600000,polling:250});
             const processAfter=cpuProbe?(await cpuProbe.send('SystemInfo.getProcessInfo')).processInfo:null;
             const processWallSeconds=(performance.now()-processStarted)/1000;
@@ -128,12 +153,16 @@ try {
             const raw=await page.evaluate(()=>{
               const p=window.frameProbe; p.enabled=false;
               const sim=window.crowdDebug.simulation();
-              return {frames:p.frames,steps:p.steps,audits:p.audits,commands:sim.external.record(),hash:sim.stateHash(),
+              return {frames:p.frames,steps:p.steps,audits:p.audits,inputs:p.inputs,failure:p.failure??null,completedTicks:sim.stepCount,
+                uiStatus:document.querySelector('#external-status').textContent,
+                commands:sim.external.record(),hash:sim.stateHash(),
                 trace:window.crowdDebug.getFrameTrace?.()??null};
             });
             const phases={};
             for(const [name,lo,hi] of [['pre',5,30],['onset',30,45],['sustained',45,90],['end',90,120],['recovery',120,ticks],['acceptance',30,ticks]]) {
-              const frames=raw.frames.filter(f=>f.tick>=lo&&f.tick<hi);
+              // The harness pauses and requests a hash in the final callback.
+              // Exclude that artificial callback from ordinary running frames.
+              const frames=raw.frames.filter(f=>f.tick>=lo&&f.tick<hi&&f.after<ticks);
               const steps=raw.steps.filter(s=>s.tick>=lo&&s.tick<hi);
               const intervals=frames.map(f=>{const i=raw.frames.indexOf(f);return i?f.now-raw.frames[i-1].now:0;}).filter(v=>v>0);
               const elapsed=intervals.reduce((a,b)=>a+b,0);
@@ -143,13 +172,13 @@ try {
                 wallSeconds:elapsed/1000,minimumActive:Math.min(...steps.map(s=>s.active)),
                 passes:Object.fromEntries(Object.keys(steps[0]?.passes??{}).map(k=>[k,distribution(steps.map(s=>s.passes[k]))]))};
             }
-            const row={scenario,agents,seed,mode,repeat,quality,backend,tracing,profiling,initial,errors,processCpu,phases,...raw}; rows.push(row);
+            const row={scenario,agents,seed,mode,repeat,quality,tracing,profiling,initial,errors,processCpu,affinity,phases,...raw}; rows.push(row);
             console.log(JSON.stringify({scenario,agents,seed,mode,repeat,errors,acceptance:phases.acceptance}));
             mkdirSync(dirname(output),{recursive:true});
             const report=JSON.stringify({schema:'crowd-real-frame-v1',createdAt:new Date().toISOString(),url:base,
               commit,workingSourceSha256,sourceStable:sourceHash()===workingSourceSha256,
               cpu:cpus()[0]?.model,platform:platform(),node:process.version,browser:browser.version(),
-              profile:`Real HTTP app RAF/FixedClock/timedStep/Canvas/UI; quality ${quality?'ON: independent audit every 10 ticks and on every exhausted position budget or retried tick; these frames are not performance results':'OFF'}; input tick 30 via Canvas click; seed/force/dt/radius unchanged; CPU submission, not GPU presentation`,rows});
+              profile:`Real HTTP app RAF/FixedClock/timedStep/Canvas/UI; quality ${quality?'ON: independent audit every 10 ticks; these frames are not performance results':'OFF'}; input tick 30 via Canvas click; seed/force/dt/radius unchanged; CPU submission, not GPU presentation`,rows});
             writeFileSync(output,output.endsWith('.gz')?gzipSync(report):report);
             await page.close();
           }

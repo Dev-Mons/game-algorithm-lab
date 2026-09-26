@@ -1,6 +1,97 @@
-# External forces — issue #32
+# External forces — common crowd movement
+
+## Current TypeScript reference
+
+As of 2026-09-26, an external input changes physical velocity and then uses the
+ordinary crowd pipeline. There is no external movement mode, affected-state
+propagation, warm-contact cache, global substep escalation or recovery timer.
+`ExternalContactSolver` and its pair/color/projection/cache modules were removed.
+The superseded external-v2 implementation and measurements are historical below.
+
+### Current stages and ownership
+
+1. `ExternalInfluences.begin` consumes fixed-tick inputs. Impulses add delta
+   velocity; sustained inputs add acceleration × dt; blasts use radial linear
+   falloff; expanding waves keep only their one-hit input mask. A circular moving
+   brush emits local velocity pushes along its swept footprint. The input layer
+   never writes positions or selects a solver.
+2. CrowdField and directional CrowdFlow observe the same physical velocity for
+   all bodies. Navigation, pressure and desired velocity use the ordinary path.
+3. CrowdMovementSolver proposes walking speed and heading. The complete motor
+   correction is acceleration-limited, so walking speed/turn limits cannot erase
+   a stronger incoming physical velocity in one tick. With maxAcceleration=0,
+   unopposed velocity coasts. There is no separate external drag/control setting.
+4. The existing static sweep clips predictions before neighbor contacts. The
+   normal compact grid admits at most 24 candidates and 8 owned pairs per body.
+   Each body's query horizon includes its own travel; a faster higher-ID body can
+   own a swept pair outside the lower body's horizon. No fastest-body value expands
+   every body's query and no force changes the global iteration count.
+5. The same 8 contact iterations project closing swept pair motion and apply the
+   usual bounded XPBD overlap/friction repair. Contacts across a static wall are
+   excluded. A final static sweep checks contact displacements. Removed wall-normal
+   velocity stays removed when publishing velocity for the next tick.
+6. Commit, arrivals, metrics, recorder and rendering follow normally. Input IDs,
+   pending events and wave hit masks are replay state; ordinary AgentBuffer velocity
+   is the only persistent motion state. Reset clears input and movement scratch.
+
+`maximumContactCorrection` bounds XPBD overlap repair, not collision stopping of
+an already moving body. Publication retains the ordinary walking-speed correction
+cap, allowing an already faster body to coast without amplifying its speed.
+These numerical rules apply equally to a directly assigned velocity and an external
+API impulse; a 120-tick equivalence test covers that boundary.
+
+### Input contract and observable limits
+
+The `enqueueExternal` API retains impulse, acceleration, blast/wave, proxy,
+remove-proxy and cancel commands, fixed-tick ordering, defensive copies, duplicate
+IDs, generation checks, input/history capacities and reset semantics. Units remain
+pixels and seconds. Individual delta velocity and combined directly driven speed
+are capped at 600 px/s; acceleration at 1200 px/s²; prescribed brush motion at
+300 px/s. Requested capacity and actual spawned count remain distinct.
+
+`external.direct` and `stats.affected` count this tick's directly pushed bodies.
+`external.active` means a continuing wave, acceleration or circular brush exists;
+it never gates simulation. The old `affected`, `settings`, `drivenCount`, `finish`
+and special-solver statistics are gone. Contact work is reported by normal
+`simulation.metrics`; it is not an external-influence count. Frame trace's final
+column is `ongoingInput`, a boolean input-lifetime value.
+
+The moving circle is now a push brush, not an infinitely rigid kinematic collider.
+Walls remain authoritative; dense crowd contacts can resist the brush and its
+footprint can overlap the crowd. The UI calls it “이동 원형 밀림”.
+
+The crowd solver intentionally retains fixed work under overload. It is not an
+exhaustive rigid-body solver: an overpacked neighborhood can exceed the candidate
+budget, and dense compression can persist across ticks. The former external-v2
+global 0.5px penetration acceptance and monotonic contact-energy guarantee are
+not claimed for this contract. Swept mixed-size crossing, thin walls, pushed chains,
+reset, input replay and force-free navigation have specific regression fixtures;
+large browser geometry audits are sampled and report observed residuals honestly.
+
+### Verification and port boundary
+
+Run `npm run verify` and `npm run test:e2e`. `scripts/measure-frame.mjs` exercises
+actual HTTP RAF/clock/UI/renderer/recorder paths with none, blast and blast-repeat
+inputs. Quality ON is separate from performance OFF; it audits every 10 ticks.
+See [current results and limitations](external-forces-results.md).
+
+CSR grids, typed scratch, spatial/static indices and geometry certificates remain.
+There are no Workers, shared memory, WASM kernels or spin waits. The bounded pair
+motion projection is ordered CPU work; a GPU implementation must resolve endpoint
+write conflicts and validate its chosen update order. This is a TypeScript reference,
+not an implemented GPU or engine port. Existing historical baselines are retained.
+
+## Historical external-v2 implementations
+
+Everything below documents superseded implementations. Its physics guarantees,
+backend commands, measurements and completion statements do not certify the
+current common crowd path. Use the current contract above for maintenance.
 
 ## Completion under amended scope — 2026-09-26
+
+**Historical Worker/WASM implementation. These figures do not certify the current
+TypeScript refactor.** Commands in this section require its archived source and
+scripts, not the current checkout.
 
 Issues #32 and #33 are completed under the user's explicit instruction to accept
 meaningful improvement even when the target frame time is missed. **Rocky 10K
@@ -91,9 +182,9 @@ ordinary performance report.
 independent of radius-squared CrowdField area. Agent input Δv <= 600 px/s,
 acceleration <= 1200 px/s², stored physical speed <= 600 px/s, proxy speed <= 300
 px/s. Up to 8 circular proxies (radius 1.5–64), 32 scheduled/ongoing effects,
-4096 recorded IDs between resets. Maximum 16 adaptive substeps. The 64-candidate
-scratch is a fast buffer, not a truncation limit: overflow reruns the same query
-into a count-sized buffer. Owned pairs grow up to 128 times the spawned count;
+4096 recorded IDs between resets. Maximum 16 adaptive substeps. Contact queries
+stream complete CSR cell ranges; bounded planning scratch only selects conservative
+substeps and never truncates physical contacts. Owned pairs grow up to 128 times the spawned count;
 exceeding that explicit overload budget throws and pauses the app instead of
 silently omitting contacts. Velocity projection runs 4–16 passes (one extra full
 pass if the final swept-workset bound expires); split stabilization runs 4–128
@@ -114,7 +205,7 @@ budgets are 20 / 120 / 240 ms for actual 1K / 10K / 20K agents. These are
 headless simulation budgets, **not a 60 Hz claim**. 50K is exploratory. Full
 independent spatial quality audits run separately and outside step timing.
 
-## Architecture and choices
+## Architecture and choices (historical implementation)
 
 `npm run research:external` loads the exact baseline solver from Git and runs
 backward impulse, 16-body chain, fast crossing, thin wall and recovery scenes.
@@ -187,7 +278,7 @@ motivates comparing smaller steps; this implementation additionally rebuilds
 candidates and tests swept contacts. Neither source's performance is used as
 this application's measured performance.
 
-### Contact work reuse and native kernel
+### Contact work reuse and native kernel (historical implementation)
 
 Warm impulses retain their world-space direction when the normal changes and
 are projected onto the current friction cone. Without a prescribed moving body,
@@ -299,15 +390,14 @@ Zero drag and zero acceleration give the analytical calibration profile.
 
 Overload policy: reject oversized individual inputs; clamp combined initial
 speed to the smaller of 600 and the 16-substep travel budget, with `speedClamps`.
-Candidate scratch overflow uses a complete requery. Exceeding the global pair
+Contact pairs stream from the full index without a scratch cap. Exceeding the global pair
 capacity increments `saturatedQueries` and throws instead of publishing omitted
 contacts; exhausted position budgets remain explicit quality failures. An advancing proxy against a static wall may overlap the agent;
 static walls win and `crushed` reports residual proxy penetration. There is no
 damage/despawn policy. Consumers must inspect these diagnostics.
 `affected` counts unique direct targets this tick; `contactAffected` counts
 unique agents whose velocity or position was changed by contact, and may overlap
-the direct set. `contactCellUpperBound` is the contact-query AABB cell budget
-(early candidate termination can visit fewer cells); `queryCells` and
+the direct set. `contactCellUpperBound` counts visited contact-grid cells; `queryCells` and
 `proxyCells` count the full region/proxy cell visits. Static slide exhaustion is
 reported separately. Contact timing includes split corrections' static sweeps;
 `staticMs` measures the physical integration pass only.
@@ -332,15 +422,14 @@ position input index. Full-grid rebuilds and full-population physical passes
 remain costs even for a local hit; sparse physical islands are a future
 optimization, not implemented here.
 
-Agent flags cost 2 bytes/agent. Physical pair IDs initially reserve 8 pairs/agent
-(64 bytes/agent for both ends) and grow geometrically up to the explicit global
-budget. Geometry, workset IDs, anchors, full-query scratch and collective
+Agent flags cost 2 bytes/agent. Physical pair IDs start with 32 slots and grow
+geometrically up to the explicit global budget. Geometry, workset IDs, anchors and collective
 projection queues use reusable typed arrays. Each warm-cache slot uses 52 bytes
 (key, five f64 values and used-slot ID); two power-of-two working tables and one trial checkpoint retain their
 high-water capacity, sized from touching contacts rather than broad-phase pairs.
 `external.stats.retainedBytes` reports the owned typed scratch, warm tables,
-empty-space certificates and kernel memory; `kernelBytes` reports the active
-WebAssembly memory reservation separately and is already included in that total.
+empty-space certificates, coloring and collective queues. The current runtime
+has no additional kernel memory or backend copy.
 These are capacities sampled on an external-contact tick, not allocation-site
 counts or total application heap. Zero on an ordinary-path tick means this
 diagnostic was not populated; it does not prove those retained buffers were freed.
@@ -401,8 +490,8 @@ frames/steps, phase summaries and explicit input spikes. Quality mode audits all
 spatial neighbors every ten ticks and every exhausted position budget. It also
 checks prescribed circles and nonfinite values. Chord sweeps between published
 states do not prove the complete curved path inside each substep. Quality-mode
-frame timings are not performance results. `--backend=js` compares the reference
-solver and `--trace=off` measures tracing overhead on the same application path.
+frame timings are not performance results. `--trace=off` measures tracing overhead
+on the same application path; there is no runtime backend selector.
 `--profile=on` additionally writes one CDP `.cpuprofile` per row; profiled frame
 timings are diagnostics, not performance acceptance.
 

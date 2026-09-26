@@ -1,0 +1,265 @@
+{
+  "currentSource": "8aa769012f420094644898cb972fdb0742cdd278b04bb8f83e07f88d9278bd25",
+  "priorSource": "d23a5954f672b2f2698a6c5e9ad2c5ab4743da41beabc64d710f641ec2b1d0ca",
+  "sourceStable": true,
+  "conditions": {
+    "browser": "151.0.7922.34",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+    "performance": "HTTP RAF, 360 ticks, seed42, audit OFF, three repeats each; UI blast radius100/speed400/tick30",
+    "quality": "Separate audit ON: 660 ticks, sampled every10 ticks, seed42; repeated blasts30/60/90",
+    "isolated": "Headless, 6000 bodies, one body deliberately moved 1362px from neighbors at tick30 in both cases; radius10/speed400, three repeats; simulation CPU, not FPS"
+  },
+  "timing": [
+    {
+      "agents": 6000,
+      "mode": "none",
+      "runs": 3,
+      "p95ByRun": [
+        15.400000000372529,
+        16.200000001117587,
+        15.799999998882413
+      ],
+      "frameCpuP95Median": 15.799999998882413,
+      "frameCpuMaximum": 21.399999998509884,
+      "recoveryP95Median": 15.900000000372529,
+      "simWallMedian": 0.997005951731578,
+      "over100ms": 0,
+      "priorExternalModeP95": null,
+      "minimumActive": 6000,
+      "boundedWork": true,
+      "continuingInputAfterBlast": null,
+      "errors": [],
+      "failures": []
+    },
+    {
+      "agents": 6000,
+      "mode": "blast",
+      "runs": 3,
+      "p95ByRun": [
+        16.100000001490116,
+        16.200000001117587,
+        16
+      ],
+      "frameCpuP95Median": 16.100000001490116,
+      "frameCpuMaximum": 21.09999999962747,
+      "recoveryP95Median": 16.299999998882413,
+      "simWallMedian": 0.9910235556358816,
+      "over100ms": 0,
+      "priorExternalModeP95": 31.40000000037253,
+      "minimumActive": 6000,
+      "boundedWork": true,
+      "continuingInputAfterBlast": false,
+      "errors": [],
+      "failures": []
+    },
+    {
+      "agents": 10000,
+      "mode": "none",
+      "runs": 3,
+      "p95ByRun": [
+        25.199999999254942,
+        25.700000001117587,
+        32.69999999925494
+      ],
+      "frameCpuP95Median": 25.700000001117587,
+      "frameCpuMaximum": 48.40000000037253,
+      "recoveryP95Median": 27.59999999962747,
+      "simWallMedian": 0.647665843796385,
+      "over100ms": 0,
+      "priorExternalModeP95": null,
+      "minimumActive": 10000,
+      "boundedWork": true,
+      "continuingInputAfterBlast": null,
+      "errors": [],
+      "failures": []
+    },
+    {
+      "agents": 10000,
+      "mode": "blast",
+      "runs": 3,
+      "p95ByRun": [
+        25.300000000745058,
+        24.90000000037253,
+        25.300000000745058
+      ],
+      "frameCpuP95Median": 25.300000000745058,
+      "frameCpuMaximum": 35.19999999925494,
+      "recoveryP95Median": 25.59999999962747,
+      "simWallMedian": 0.651513531282551,
+      "over100ms": 0,
+      "priorExternalModeP95": 54.39999999944121,
+      "minimumActive": 10000,
+      "boundedWork": true,
+      "continuingInputAfterBlast": false,
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "isolated": [
+    {
+      "mode": "none",
+      "meanOnsetMsByRun": [
+        8.424729999999984,
+        8.102419999999922,
+        8.031889999999839
+      ],
+      "medianMeanOnsetMs": 8.102419999999922,
+      "directHits": [
+        0,
+        0,
+        0
+      ],
+      "nearestOtherAtInput": [
+        1362.5090340152578,
+        1362.5090340152578,
+        1362.5090340152578
+      ],
+      "boundedWork": true
+    },
+    {
+      "mode": "blast",
+      "meanOnsetMsByRun": [
+        8.352306666666648,
+        8.361933333333763,
+        8.006173333333269
+      ],
+      "medianMeanOnsetMs": 8.352306666666648,
+      "directHits": [
+        1,
+        1,
+        1
+      ],
+      "nearestOtherAtInput": [
+        1362.5090340152578,
+        1362.5090340152578,
+        1362.5090340152578
+      ],
+      "boundedWork": true
+    }
+  ],
+  "geometry": [
+    {
+      "agents": 6000,
+      "mode": "none",
+      "ticks": 660,
+      "minimumActive": 6000,
+      "samples": 66,
+      "maximumPenetration": 1.3243770303087334,
+      "finalPenetration": 0.5462116461914546,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    },
+    {
+      "agents": 6000,
+      "mode": "blast",
+      "ticks": 660,
+      "minimumActive": 6000,
+      "samples": 66,
+      "maximumPenetration": 1.6586080982958995,
+      "finalPenetration": 0.45913507368839657,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    },
+    {
+      "agents": 6000,
+      "mode": "blast-repeat",
+      "ticks": 660,
+      "minimumActive": 6000,
+      "samples": 66,
+      "maximumPenetration": 1.120381517301773,
+      "finalPenetration": 0.5659451199938657,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    },
+    {
+      "agents": 10000,
+      "mode": "none",
+      "ticks": 660,
+      "minimumActive": 10000,
+      "samples": 66,
+      "maximumPenetration": 1.652163444333552,
+      "finalPenetration": 1.346182564256706,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    },
+    {
+      "agents": 10000,
+      "mode": "blast",
+      "ticks": 660,
+      "minimumActive": 10000,
+      "samples": 66,
+      "maximumPenetration": 1.6621121287065996,
+      "finalPenetration": 1.0227783518042797,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    },
+    {
+      "agents": 10000,
+      "mode": "blast-repeat",
+      "ticks": 660,
+      "minimumActive": 10000,
+      "samples": 66,
+      "maximumPenetration": 1.4773527986636967,
+      "finalPenetration": 0.7970818491324607,
+      "maximumWalls": 0,
+      "maximumNonfinite": 0,
+      "maximumChordTunnelingCandidates": 2,
+      "legacyHalfPixelThreshold": false,
+      "errors": [],
+      "failure": null
+    }
+  ],
+  "verification": {
+    "unitTests": 209,
+    "testFiles": 29,
+    "typecheck": true,
+    "productionBuild": true,
+    "developmentBrowserChecks": 35,
+    "browserNote": "34 initially passed; 10K visual replay exceeded its old 5s assertion deadline while still advancing. Set replay assertion timeout15s and reran the failed case successfully; no clock changes.",
+    "productionBrowserChecks": 3
+  },
+  "contractChanges": [
+    "External input only changes physical velocity; same movement path and bounded 24/8/8 contact budget for every body.",
+    "Motor response, pre-contact static sweep and swept pair projection changed ordinary trajectories too. Prior replay hashes are preserved; new hashes assert the requested common model.",
+    "Circular tool is a local push brush, not an infinitely rigid obstacle. Global half-pixel convergence and monotonic contact energy are not claimed.",
+    "The impossible 5000-body coincident fixture now tests bounded dispersion/pressure participation, not guaranteed improvement over disabled pressure after exactly60 ticks. Its separate diagnostics show densityP95 175.25 vs172.10 and penetrationP95 1.655 vs1.603. Valid Dense Spawn comparison retains its original quality gates."
+  ],
+  "limits": [
+    "10K remains CPU-bound even with no force; no 60FPS claim.",
+    "Sampled endpoint/straight-chord audit cannot certify every intermediate curved path. Chord candidates also appear without input.",
+    "No GPU or engine port. No equivalence claim with superseded external-v2 physical trajectories."
+  ],
+  "evidence": [
+    "frame-performance.json.gz",
+    "frame-quality.json.gz",
+    "local-push.json",
+    "prior-activation-diagnostic.json",
+    "final-verify.log",
+    "browser.log",
+    "browser-replay.log",
+    "production-browser.log",
+    "overpacked-quality.json",
+    "prior-movement-baseline.txt",
+    "movement-hashes.json"
+  ]
+}

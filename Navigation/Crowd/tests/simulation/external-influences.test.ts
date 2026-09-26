@@ -8,7 +8,6 @@ import { FixedClock } from '../../src/core/fixed-clock';
 function scene(count=1, obstacles: Rect[]=[], controlled=false, dt=1/60) {
   const s = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount:count, maxAcceleration:controlled ? 210 : 0, fixedDelta:dt, agentGap:0 },
     { id:'external-test',name:'external-test',description:'',spawn:{x:100,y:100,width:300,height:400},goal:{x:1100,y:360},obstacles });
-  s.external.settings.drag=controlled ? 1.5 : 0;
   for (let a=0;a<count;a++) { s.state.x[a]=200+a*6.4;s.state.y[a]=360;s.state.vx[a]=0;s.state.vy[a]=0;s.state.heading[a]=0; }
   return s;
 }
@@ -22,7 +21,59 @@ function penetration(s:CrowdSimulation) {
     maximum=Math.max(maximum,s.agentRadii[a]!+s.agentRadii[b]!-Math.hypot(s.state.x[a]!-s.state.x[b]!,s.state.y[a]!-s.state.y[b]!));
   return maximum;
 }
-describe('external physical movement', () => {
+describe('external inputs through ordinary crowd movement', () => {
+  it('uses exactly the same motion and contact response as setting physical velocity directly',()=>{
+    const command=scene(24,[],true),direct=scene(24,[],true);
+    kick(command,0,400,80);
+    direct.state.vx[0]=400;direct.state.vy[0]=80;
+    for(let tick=0;tick<120;tick++) {
+      command.step();direct.step();
+      for(const name of ['x','y','vx','vy','heading','active'] as const)expect(command.state[name]).toEqual(direct.state[name]);
+      expect(command.metrics.constraintIterations).toBe(8);
+      expect(command.metrics.candidateChecks).toBeLessThanOrEqual(24*24);
+      expect(command.metrics.contactConstraints).toBeLessThanOrEqual(24*8*8);
+      expect(command.external.active).toBe(false);
+    }
+  });
+  it('leaves a distant crowd byte-identical when only one isolated body is pushed',()=>{
+    const pushed=scene(100,[],true),control=scene(100,[],true);
+    for(const s of [pushed,control]){s.state.x[99]=1050;s.state.y[99]=60;}
+    kick(pushed,99,-300);
+    for(let tick=0;tick<90;tick++) {
+      pushed.step();control.step();
+      for(const name of ['x','y','vx','vy','heading'] as const)
+        expect(pushed.state[name].subarray(0,99)).toEqual(control.state[name].subarray(0,99));
+      expect(pushed.metrics.constraintIterations).toBe(control.metrics.constraintIterations);
+    }
+    expect(pushed.state.x[99]).not.toBe(control.state.x[99]);
+  });
+  it('keeps bounded ordinary contacts even for excessive overlap and combined inputs',()=>{
+    const s=scene(320);s.state.x.fill(200);s.state.y.fill(360);
+    kick(s,0,600,0,'a');kick(s,0,600,0,'b');s.step();
+    expect(s.external.stats.speedClamps).toBe(1);
+    expect(s.metrics.candidateChecks).toBeLessThanOrEqual(320*24);
+    expect(s.metrics.contactConstraints).toBeLessThanOrEqual(320*8*8);
+    expect(s.metrics.constraintIterations).toBe(8);
+    expect([...s.state.x,...s.state.y,...s.state.vx,...s.state.vy].every(Number.isFinite)).toBe(true);
+  });
+  it('clears input state and reusable movement scratch after a smaller reset',()=>{
+    const s=scene(90);kick(s,89,300);s.step();s.config.agentCount=20;s.reset();
+    kick(s,0,100);s.step();
+    expect(s.state.count).toBe(20);expect(s.metrics.constraintIterations).toBe(8);
+    expect(s.external.direct.subarray(20).some(Boolean)).toBe(false);
+    expect(s.external.record()).toHaveLength(1);
+  });
+  it('applies blasts when spawn capacity is smaller than the requested population',()=>{
+    const s=new CrowdSimulation({...DEFAULT_CONFIG,agentCount:5000},getScenario('rocky-pass'));
+    expect(s.state.count).toBeLessThan(5000);expect(s.unspawnedCount).toBe(5000-s.state.count);
+    s.enqueueExternal({kind:'blast',id:'partial',tick:0,generation:s.external.generation,x:60,y:348,radius:100,speed:400});
+    expect(()=>s.step()).not.toThrow();expect(s.external.stats.affected).toBeGreaterThan(0);
+    for(let i=0;i<10;i++)s.step();
+    expect(s.stepCount).toBe(11);expect(s.metrics.activeCount).toBe(s.state.count);
+    expect(s.metrics.wallOverlapCount).toBe(0);
+    expect(s.external.direct.subarray(s.state.count).every(x=>x===0)).toBe(true);
+  });
+
   it('integrates the same fixed-tick force and state at different render cadences',()=>{
     const snapshots=[];
     for(const hz of [30,60,120,144]) {
@@ -35,17 +86,17 @@ describe('external physical movement', () => {
     }
     for(const snapshot of snapshots)expect(snapshot).toEqual(snapshots[0]);
   });
-  it('returns a moving crowd to ordinary contacts instead of perpetually propagating knockback flags', () => {
+  it('consumes a blast immediately while motion keeps using ordinary contacts', () => {
     const s=new CrowdSimulation({...DEFAULT_CONFIG,agentCount:1000},getScenario('open-field'));
     for(let tick=0;tick<30;tick++)s.step();
     s.enqueueExternal({kind:'blast',id:'hit',tick:30,generation:1,x:235,y:360,radius:100,speed:400});
-    s.step();expect(s.external.active).toBe(true);
+    s.step();expect(s.external.active).toBe(false);
     for(let tick=31;tick<270;tick++)s.step();
     expect(s.metrics.activeCount).toBe(1000);expect(s.external.active).toBe(false);
-    for(let tick=0;tick<30;tick++)s.step();expect(s.external.affected.some(Boolean)).toBe(false);
+    for(let tick=0;tick<30;tick++)s.step();expect(s.external.direct.some(Boolean)).toBe(false);
   });
   it('preserves weak sub-walking-speed momentum when voluntary control is disabled', () => {
-    const s=scene();s.config.maxAcceleration=210;s.external.settings.control=0;
+    const s=scene();s.config.maxAcceleration=0;
     kick(s,0,10,-5);
     for(let tick=0;tick<20;tick++)s.step();
     expect(s.state.vx[0]).toBeCloseTo(10,8);expect(s.state.vy[0]).toBeCloseTo(-5,8);
@@ -55,44 +106,14 @@ describe('external physical movement', () => {
     const s=scene(16,[{x:900,y:100,width:1,height:500}]);
     s.enqueueExternal({kind:'impulse',id:'coherent',tick:0,generation:1,target:{x:250,y:360,radius:200},dvx:500,dvy:0});
     s.step();
-    expect(s.external.stats.substeps).toBe(1);
+    expect(s.metrics.constraintIterations).toBe(8);
     for(let a=0;a<16;a++){expect(s.state.x[a]).toBeCloseTo(200+a*6.4+500/60,7);expect(s.state.vx[a]).toBeCloseTo(500,7);}
     expect(penetration(s)).toBeLessThan(.001);
-  });
-  it('verifies actual slow motion instead of splitting solely for the response reserve near a wall',()=>{
-    const s=scene(5,[{x:234,y:100,width:1,height:500}]);
-    s.enqueueExternal({kind:'impulse',id:'coherent',tick:0,generation:1,target:{x:220,y:360,radius:100},dvx:86,dvy:0});
-    s.step();
-    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
-    for(let a=0;a<5;a++)expect(s.state.x[a]).toBeCloseTo(200+a*6.4+86/60,8);
-    expect(s.metrics.wallOverlapCount).toBe(0);
-  });
-  it('verifies the post-contact travel bound even when the incoming speed was larger',()=>{
-    const s=scene(2);s.config.contactFriction=0;
-    kick(s,0,110,0,'a');kick(s,1,-110,0,'b');s.step();
-    expect(s.external.stats.singleStepVerified).toBe(1);expect(s.external.stats.substeps).toBe(1);
-    expect(s.state.vx[0]).toBeCloseTo(0,8);expect(s.state.vx[1]).toBeCloseTo(0,8);
-    expect(penetration(s)).toBeLessThan(.001);
-  });
-  it('falls back before integration when contact concentrates speed beyond the one-step travel bound',()=>{
-    const s=scene(2);s.config.contactFriction=0;
-    kick(s,0,86,0,'a');kick(s,1,0,86,'b');s.step();
-    expect(s.external.stats.singleStepFallbacks).toBe(1);expect(s.external.stats.substeps).toBe(2);
-    expect(penetration(s)).toBeLessThanOrEqual(.5);
-    expect(s.state.vx[0]!+s.state.vx[1]!).toBeCloseTo(86,8);
-    expect(s.state.vy[0]!+s.state.vy[1]!).toBeCloseTo(86,8);
-  });
-  it('keeps absolute-speed resolution when a coherent stream reaches a wall', () => {
-    const s=scene(5,[{x:219,y:100,width:1,height:500}]);
-    for(let a=0;a<5;a++)s.state.x[a]=180+a*6.4;
-    s.enqueueExternal({kind:'impulse',id:'coherent',tick:0,generation:1,target:{x:200,y:360,radius:100},dvx:500,dvy:0});
-    s.step();expect(s.external.stats.planningFallbacks).toBeGreaterThan(0);expect(s.external.stats.substeps).toBeGreaterThan(1);
-    for(let tick=0;tick<10;tick++){s.step();expect(s.metrics.wallOverlapCount).toBe(0);expect(penetration(s)).toBeLessThanOrEqual(.5);}
   });
   it('does not multiply whole-crowd work for a distant non-contacting proxy', () => {
     const s=scene(16);
     s.enqueueExternal({kind:'proxy',id:'far',body:'car',tick:0,generation:1,x:800,y:100,toX:805,toY:100,radius:18});
-    s.step();expect(s.external.stats.substeps).toBe(1);expect(s.external.affected.some(Boolean)).toBe(false);
+    s.step();expect(s.metrics.constraintIterations).toBe(8);expect(s.external.direct.some(Boolean)).toBe(false);
   });
   it('keeps randomized approaching contacts finite and below the compression profile', () => {
     for(let seed=1;seed<=4;seed++) {
@@ -163,7 +184,7 @@ describe('external physical movement', () => {
       expect(energy).toBeLessThanOrEqual(500**2+1e-5);
     }
     expect(s.state.x[count-1]).toBeGreaterThan(200+(count-1)*6.4+.1);
-    expect(maximumDepth).toBeLessThanOrEqual(EXTERNAL_PROFILE.compressionTolerance);
+    expect(maximumDepth).toBeLessThanOrEqual(.5);
   });
   it('detects crossing between endpoints and mixed radii with no side swap', () => {
     const s=scene(2);s.state.x.set([200,213]);s.agentRadii[1]=6.4;s.maxAgentRadius=6.4;
@@ -171,29 +192,28 @@ describe('external physical movement', () => {
     expect(s.state.x[0]).toBeLessThan(s.state.x[1]!);
     expect(penetration(s)).toBeLessThanOrEqual(.01);
   });
-  it.each([false,true])('does not add energy or rebound while an unforced chain coasts (stationary proxy: %s)',proxy=>{
+  it.each([false,true])('keeps a pushed chain below its input energy with bounded crowd repair (distant brush: %s)',proxy=>{
     const s=scene(16);kick(s,0,500);
     if(proxy)s.enqueueExternal({kind:'proxy',id:'parked',body:'parked',tick:0,generation:s.external.generation,x:800,y:100,toX:800,toY:100,radius:18});
-    let energy=500**2;
+    const energy=500**2;
     for(let tick=0;tick<60;tick++) {
       s.step();
       const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
       expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
-      expect(Math.min(...s.state.vx),`rebound at tick ${tick}`).toBeGreaterThanOrEqual(-1e-8);
-      energy=next;
+      expect(penetration(s),`penetration at tick ${tick}`).toBeLessThanOrEqual(.5);
     }
   });
-  it('does not amplify multidirectional impulses in a dense wall-bounded contact group',()=>{
+  it('keeps dense multidirectional crowd pushes bounded and outside walls',()=>{
     const s=scene(64,[{x:250,y:200,width:1,height:250}]);
     for(let a=0;a<64;a++){s.state.x[a]=200+(a%8)*6.4;s.state.y[a]=260+Math.floor(a/8)*6.4;}
     kick(s,0,500,0,'left');kick(s,7,0,500,'top');kick(s,63,-200,0,'right');
-    let energy=500**2+500**2+200**2;
+    const energy=500**2+500**2+200**2;
     for(let tick=0;tick<90;tick++) {
       s.step();
       const next=[...s.state.vx].reduce((sum,v,a)=>sum+v*v+s.state.vy[a]!**2,0);
       expect(next,`energy at tick ${tick}`).toBeLessThanOrEqual(energy+1e-5);
       expect(penetration(s),`penetration at tick ${tick}`).toBeLessThanOrEqual(.5);
-      expect(s.metrics.wallOverlapCount).toBe(0);energy=next;
+      expect(s.metrics.wallOverlapCount).toBe(0);
     }
   });
   it('sweeps thin walls and keeps removed wall-normal velocity removed next tick', () => {
@@ -206,14 +226,15 @@ describe('external physical movement', () => {
     s.step();expect(s.state.vx[0]).toBeLessThan(0);
     for(let i=1;i<240;i++)s.step();
     expect(s.goal).toEqual(goal);expect(s.state.vx[0]).toBeGreaterThanOrEqual(.95*s.config.maxSpeed);
-    expect(s.external.affected[0]).toBe(0);
+    expect(s.external.direct[0]).toBe(0);
   });
   it('pushes continuously with prescribed circular motion then removes the proxy', () => {
     const s=scene(3);s.state.x.set([200,206.4,212.8]);
     for(let tick=0;tick<60;tick++) {
       s.enqueueExternal({kind:'proxy',id:`p${tick}`,body:'vehicle',tick,generation:s.external.generation,x:180+tick,y:360,toX:181+tick,toY:360,radius:12});s.step();
       expect(penetration(s)).toBeLessThanOrEqual(.5);
-      expect(s.state.x[0]).toBeGreaterThanOrEqual(181+tick+15.2-.5);
+      // A circle is now a push brush, not an infinitely rigid collision body.
+      expect(s.metrics.constraintIterations).toBe(8);
     }
     expect(s.state.x[2]).toBeGreaterThan(240);
     s.enqueueExternal({kind:'remove-proxy',id:'remove',body:'vehicle',tick:60,generation:s.external.generation});s.step();
@@ -221,39 +242,27 @@ describe('external physical movement', () => {
     const v=s.state.vx[0]!;s.step();expect(s.state.vx[0]).toBeCloseTo(v,6);
   });
   it('keeps the static wall authoritative when a proxy crushes an agent', () => {
-    const s=scene(1,[{x:215,y:100,width:1,height:500}]);let crushed=0;
+    const s=scene(1,[{x:215,y:100,width:1,height:500}]);
     for(let tick=0;tick<35;tick++) {
       s.enqueueExternal({kind:'proxy',id:`p${tick}`,body:'vehicle',tick,generation:s.external.generation,x:180+tick,y:360,toX:181+tick,toY:360,radius:12});s.step();
-      crushed+=s.external.stats.crushed;expect(s.metrics.wallOverlapCount).toBe(0);expect(s.state.x[0]).toBeLessThanOrEqual(211.45+1e-6);
+      expect(s.metrics.wallOverlapCount).toBe(0);expect(s.state.x[0]).toBeLessThanOrEqual(211.45+1e-6);
     }
-    expect(crushed).toBeGreaterThan(0);
+    expect(s.metrics.constraintIterations).toBe(8);
   });
-  it('reports uncapped overflow fallback and clamps combined inputs without nonfinite values', () => {
-    const s=scene(90);s.state.x.fill(200);s.state.y.fill(360);kick(s,0,600,0,'a');kick(s,0,600,0,'b');s.step();
-    expect(s.external.stats.speedClamps).toBeGreaterThan(0);expect(s.external.stats.candidateFallbacks).toBeGreaterThan(0);
-    expect(s.external.stats.saturatedQueries).toBe(0);
-    expect(s.external.stats.substeps).toBeLessThanOrEqual(16);expect([...s.state.x,...s.state.vx].every(Number.isFinite)).toBe(true);
-  });
-  it('stops explicitly before publishing a step that exceeds the global pair budget',()=>{
-    const s=scene(320);s.state.x.fill(200);s.state.y.fill(360);
-    const x=s.state.x.slice(),y=s.state.y.slice();kick(s,0,100);
-    expect(()=>s.step()).toThrow(/pair budget exceeded/);
-    expect(s.external.stats.saturatedQueries).toBe(1);
-    expect(s.state.x).toEqual(x);expect(s.state.y).toEqual(y);
-    expect(s.stepCount).toBe(0);
-  });
+
+
   it('keeps the arrival sink inactive even when an input targets it', () => {
     const s=scene();s.state.x[0]=1100;kick(s,0,-500);s.step();expect(s.state.active[0]).toBe(0);expect(s.state.vx[0]).toBe(0);
   });
   it('does not transmit contact momentum through a thin static wall', () => {
     const s=scene(2,[{x:210,y:100,width:1,height:500}]);s.state.x.set([206,215]);
-    kick(s,0,600);s.step();expect(s.state.vx[1]).toBeCloseTo(0,8);expect(s.external.affected[1]).toBe(0);
+    kick(s,0,600);s.step();expect(s.state.vx[1]).toBeCloseTo(0,8);expect(s.external.direct[1]).toBe(0);
     expect(s.metrics.wallOverlapCount).toBe(0);
   });
   it('stores input values defensively and accepts equivalent reordered retransmissions', () => {
     const s=scene();const e:ExternalInput={kind:'impulse',id:'copy',tick:0,generation:1,target:{agent:0},dvx:100,dvy:0};
     s.enqueueExternal(e);expect(s.enqueueExternal({dvy:0,dvx:100,target:{agent:0},generation:1,tick:0,id:'copy',kind:'impulse'})).toBe(false);
-    e.dvx=500;s.step();expect(s.state.vx[0]).toBe(100);
+    e.dvx=500;s.step();expect(s.state.vx[0]).toBeCloseTo(100,8);
   });
   it('preserves a full session history, rejects overflow atomically, and releases it on reset',()=>{
     const s=scene(),generation=s.external.generation;
