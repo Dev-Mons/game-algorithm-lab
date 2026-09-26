@@ -1,5 +1,8 @@
 # External forces acceptance results — issue #32
 
+Current #32/#33 completion evidence and the user-accepted 60Hz limitation are in
+[the final completion section](external-forces.md#completion-under-amended-scope--2026-09-26).
+
 This is the historical external-v1 acceptance snapshot. Its PASS statements do
 not certify the current external-v2 solver or the later issue #33 real-frame
 60Hz target. Subsequent changes and their limits are recorded in

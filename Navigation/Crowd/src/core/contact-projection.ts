@@ -25,7 +25,7 @@ export class ContactProjection {
   solve(input:CrowdMovementInput,index:StaticObstacleIndex,free:StaticFreeSpace,
     pairA:Int32Array,pairB:Int32Array,pairs:number,tolerance:number,minimumRadius:number,
     move:(agent:number,dx:number,dy:number)=>void,proxyFraction=1):number {
-    const s=input.next,stats=input.external!.stats;
+    const s=input.next,stats=input.external!.stats,radii=input.agentRadii,baseRadius=input.agentRadius;
     stats.projectionPasses++;
     if(this.first.length<s.count) {
       this.first=new Int32Array(s.count);this.second=new Int32Array(s.count);this.marks=new Uint32Array(s.count);
@@ -36,7 +36,7 @@ export class ContactProjection {
     let accepted=0,attempts=0;
     for(let pair=0;pair<pairs&&attempts<EXTERNAL_PROFILE.maximumProjectionAttempts;pair++) {
       const a=pairA[pair]!,b=pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
-      const target=this.radius(input,a)+this.radius(input,b)-tolerance;
+      const target=(radii?.[a]??baseRadius)+(radii?.[b]??baseRadius)-tolerance;
       // hypot cannot be smaller than either absolute component. Reject these
       // provably distant pairs without changing any accepted pair arithmetic.
       if(Math.abs(dx)>=target||Math.abs(dy)>=target)continue;
@@ -100,10 +100,11 @@ export class ContactProjection {
     seed:number,excluded:number,dx:number,dy:number,tolerance:number,queue:Int32Array,proxyFraction:number):number {
     this.epoch=(this.epoch+1)>>>0;
     if(!this.epoch){this.marks.fill(0);this.epoch=1;}
-    const s=input.next,travel=Math.hypot(dx,dy),travelSquared=dx*dx+dy*dy;
+    const s=input.next,travel=Math.hypot(dx,dy),travelSquared=dx*dx+dy*dy,radii=input.agentRadii,baseRadius=input.agentRadius;
+    const absX=Math.abs(dx),absY=Math.abs(dy);
     let count=1;queue[0]=seed;this.marks[seed]=this.epoch;
     for(let cursor=0;cursor<count;cursor++) {
-      const a=queue[cursor]!,x=s.x[a]!,y=s.y[a]!,radius=this.radius(input,a);
+      const a=queue[cursor]!,x=s.x[a]!,y=s.y[a]!,radius=radii?.[a]??baseRadius;
       const clearance=radius+input.wallClearance-input.agentRadius,ex=x+dx,ey=y+dy;
       if(ex<clearance-1e-8||ey<clearance-1e-8||ex>input.worldWidth-clearance+1e-8||ey>input.worldHeight-clearance+1e-8)return -1;
       for(const proxy of input.external!.proxies) {
@@ -131,10 +132,13 @@ export class ContactProjection {
       for(let k=0;k<n;k++) {
         const b=candidates[k]!;
         if(this.marks[b]===this.epoch)continue;
-        const rx=s.x[b]!-x,ry=s.y[b]!-y,oldSquared=rx*rx+ry*ry;
+        const rx=s.x[b]!-x,ry=s.y[b]!-y,target=radius+(radii?.[b]??baseRadius)-tolerance;
+        // An axis farther than the whole swept segment plus contact radius
+        // cannot enter the circle. The reserve keeps this rejection conservative.
+        if(Math.abs(rx)>=target+absX+1e-8||Math.abs(ry)>=target+absY+1e-8)continue;
+        const oldSquared=rx*rx+ry*ry;
         const t=Math.max(0,Math.min(1,(rx*dx+ry*dy)/travelSquared));
         const nx=rx-dx*t,ny=ry-dy*t,minimum=nx*nx+ny*ny;
-        const target=radius+this.radius(input,b)-tolerance;
         // Existing compression may improve or stay unchanged, never worsen.
         if(minimum>=target*target-1e-10||minimum>=oldSquared-1e-10)continue;
         if(b===excluded)return -1;
@@ -143,5 +147,4 @@ export class ContactProjection {
     }
     return count;
   }
-  private radius(input:CrowdMovementInput,a:number):number { return input.agentRadii?.[a]??input.agentRadius; }
 }

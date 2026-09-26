@@ -1,4 +1,5 @@
 import { CONTACT_KERNEL_BASE64, CONTACT_SHARED_KERNEL_BASE64 } from './contact-kernel.generated';
+import type { WarmContactCache } from './warm-contact-cache';
 import { AgentBuffer } from './agent-state';
 import { ContactWorkerPool } from './contact-worker-pool';
 import { MAX_CONTACT_PARTICIPANTS,CONTACT_TABLE_OFFSET,CONTACT_ARENA_OFFSET,WORKER_CONTROL_OFFSET,WORKER_RESULTS_OFFSET,
@@ -7,6 +8,8 @@ import { MAX_CONTACT_PARTICIPANTS,CONTACT_TABLE_OFFSET,CONTACT_ARENA_OFFSET,WORK
 
 interface Exports {
   configure: (table: number) => void;
+  warm:(pairs:number,agents:number,dt:number,friction:number,keys:number,values:number,used:number,mask:number,oldKeys:number,oldValues:number,oldMask:number)=>number;
+  colorPairs:(pairs:number,agents:number)=>number;
   velocity: (count:number,dt:number,friction:number,motorSquared:number) => number;
   position: (count:number,gap:number,minimumRadius:number) => void;
   constraintCount: () => number;
@@ -43,6 +46,7 @@ export class ContactKernel {
   count = 0;
   capacity = 0;
   private cells = 0;
+  private warmCapacity=0;
   arrays!: {
     x:Float64Array; y:Float64Array; vx:Float64Array; vy:Float64Array;
     radii:Float64Array; freeX:Float64Array; freeY:Float64Array; freeRadius:Float64Array;
@@ -54,7 +58,7 @@ export class ContactKernel {
     active:Uint8Array; cellStart:Int32Array; cellIndices:Int32Array;
     anchorX:Float64Array; anchorY:Float64Array;
     colorStarts:Int32Array;control:Int32Array;parallelResults:Float64Array;deferred:Int8Array;velocityStarts:Int32Array;
-    pairScratchA:Int32Array;pairScratchB:Int32Array;
+    pairScratchA:Int32Array;pairScratchB:Int32Array;colorMasks:Int32Array;pairColors:Uint8Array;warmContacts:Int32Array;warmKeys:Float64Array;warmValues:Float64Array;warmUsed:Int32Array;oldWarmKeys:Float64Array;oldWarmValues:Float64Array;
   };
   private shadow: AgentBuffer | null = null;
 
@@ -79,13 +83,13 @@ export class ContactKernel {
     }
   }
 
-  ensure(count:number,capacity:number,cells=this.cells):void {
-    if(this.arrays&&count===this.count&&capacity<=this.capacity&&cells<=this.cells)return;
+  ensure(count:number,capacity:number,cells=this.cells,warmCapacity=this.warmCapacity):void {
+    if(this.arrays&&count===this.count&&capacity<=this.capacity&&cells<=this.cells&&warmCapacity<=this.warmCapacity)return;
     // Body-column offsets depend only on count. Memory growth preserves their
     // bytes, so pair/cell capacity growth needs no transient body snapshots.
     const saved=this.arrays&&count!==this.count?Object.fromEntries(Object.entries(this.arrays).slice(0,11).map(([k,v])=>[k,v.slice()])):null;
-    this.count=count;this.capacity=Math.max(capacity,this.capacity);this.cells=Math.max(cells,this.cells);
-    const bytes=CONTACT_ARENA_OFFSET+count*128+this.capacity*(104+(this.shared?MAX_CONTACT_PARTICIPANTS*8:0))+this.cells*4;
+    this.count=count;this.capacity=Math.max(capacity,this.capacity);this.cells=Math.max(cells,this.cells);this.warmCapacity=Math.max(warmCapacity,this.warmCapacity);
+    const bytes=CONTACT_ARENA_OFFSET+256+count*128+this.capacity*(108+(this.shared?MAX_CONTACT_PARTICIPANTS*8:0))+this.cells*4+this.warmCapacity*100;
     const pages=Math.ceil(bytes/65536);
     if(this.memory.buffer.byteLength<pages*65536)this.memory.grow(pages-this.memory.buffer.byteLength/65536);
     let offset=CONTACT_ARENA_OFFSET;
@@ -102,8 +106,11 @@ export class ContactKernel {
       parallelResults:new Float64Array(this.memory.buffer,WORKER_RESULTS_OFFSET,WORKER_RESULTS_LENGTH),
       deferred:new Int8Array(u(m).buffer,offset-m,m),
       velocityStarts:new Int32Array(this.memory.buffer,VELOCITY_COLORS_OFFSET,65),
-      pairScratchA:i(this.shared?m*MAX_CONTACT_PARTICIPANTS:0),pairScratchB:i(this.shared?m*MAX_CONTACT_PARTICIPANTS:0)};
-    const table=new Uint32Array(this.memory.buffer,CONTACT_TABLE_OFFSET,36);
+      pairScratchA:i(m*(this.shared?MAX_CONTACT_PARTICIPANTS:1)),pairScratchB:i(m*(this.shared?MAX_CONTACT_PARTICIPANTS:1)),
+      colorMasks:i(count*2),pairColors:u(m),warmContacts:i(m),
+      warmKeys:f(this.warmCapacity),warmValues:f(this.warmCapacity*5),warmUsed:i(this.warmCapacity),
+      oldWarmKeys:f(this.warmCapacity),oldWarmValues:f(this.warmCapacity*5)};
+    const table=new Uint32Array(this.memory.buffer,CONTACT_TABLE_OFFSET,44);
     Object.values(this.arrays).forEach((a,j)=>{table[j]=a.byteOffset;});
     this.arrays.deferred.fill(0);
     if(saved)for(const [key,value] of Object.entries(saved)) {
@@ -112,6 +119,20 @@ export class ContactKernel {
     }
     if(this.shadow)this.bind(this.shadow);
     this.exports.configure(table.byteOffset);
+  }
+
+  prepareWarm(cache:WarmContactCache,pairs:number,agents:number,dt:number,friction:number):void {
+    const current=cache.currentTable,previous=cache.previousTable;
+    this.ensure(agents,this.capacity,this.cells,Math.max(current.keys.length,previous.keys.length,1));
+    const d=this.arrays;
+    d.warmKeys.fill(0,0,current.keys.length);
+    // Keep ownership/checkpoints in the JS cache. Only reusable scratch storage
+    // enters the shared arena, so a failed worker cannot mutate the saved tick.
+    d.oldWarmKeys.fill(0);d.oldWarmKeys.set(previous.keys);d.oldWarmValues.set(previous.values);
+    current.count=this.exports.warm(pairs,agents,dt,friction,d.warmKeys.byteOffset,d.warmValues.byteOffset,d.warmUsed.byteOffset,
+      current.keys.length-1,d.oldWarmKeys.byteOffset,d.oldWarmValues.byteOffset,Math.max(0,previous.keys.length-1));
+    current.keys.set(d.warmKeys.subarray(0,current.keys.length));current.values.set(d.warmValues.subarray(0,current.values.length));
+    current.used.set(d.warmUsed.subarray(0,current.count));
   }
 
   attach(next:AgentBuffer):AgentBuffer {
@@ -130,7 +151,7 @@ export class ContactKernel {
   beginFrame():void {this.pool?.begin();}
   endFrame():void {this.pool?.end();}
   get workerThreads():number {return this.pool?.ready?this.pool.participants-1:0;}
-  configureColors(starts:Int32Array,groups:number):void {this.groups=groups;this.arrays.colorStarts.set(starts);}
+  orderPairs(pairs:number,agents:number):number {this.groups=this.exports.colorPairs(pairs,agents);return this.groups;}
   configureVelocityColors(count:number):void {
     if(this.shared&&this.groups>0)this.exports.classifyVelocityWorkset(count);
     const data=this.arrays;let at=0;data.velocityStarts[0]=0;

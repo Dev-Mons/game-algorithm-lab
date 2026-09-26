@@ -372,7 +372,9 @@ export class ExternalContactSolver {
     external.stats.contactAffected=result.contactCorrectedAgents;
     for (let pair=0;pair<this.pairCount;pair++) {
       const a=this.pairA[pair]!,b=this.pairB[pair]!;
-      if (Math.hypot(next.x[a]!-next.x[b]!,next.y[a]!-next.y[b]!) < this.radius(input,a)+this.radius(input,b)-.01) {
+      const dx=next.x[a]!-next.x[b]!,dy=next.y[a]!-next.y[b]!,radius=this.radius(input,a)+this.radius(input,b)-.01;
+      if(Math.abs(dx)>=radius||Math.abs(dy)>=radius)continue;
+      if (Math.hypot(dx,dy) < radius) {
         result.overlapPairs++; input.overlapFlags[a]=1;input.overlapFlags[b]=1;
       }
     }
@@ -455,11 +457,20 @@ export class ExternalContactSolver {
       this.pairContacts[pair]=-2;touching++;
     }
     this.contactCache.begin(touching);
-    for(let pair=0;pair<this.pairCount;pair++) {
-      if(kernel?kernel.arrays.kind[pair]!==1&&kernel.arrays.kind[pair]!==3:this.pairContacts[pair]!==-2)continue;
+    if(kernel) {
+      for(let pair=0;pair<this.pairCount;pair++)if(kernel.arrays.kind[pair]===3) {
+        const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
+        this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);kernel.arrays.nx[pair]=this.nx;kernel.arrays.ny[pair]=this.ny;
+      }
+      kernel.prepareWarm(this.contactCache,this.pairCount,s.count,dt,input.contactFriction);
+      this.pairA=kernel.arrays.a;this.pairB=kernel.arrays.b;
+      this.pairRadius=kernel.arrays.radius;this.pairDX=kernel.arrays.dx;this.pairDY=kernel.arrays.dy;
+      this.corrected=kernel.arrays.corrected;this.correctionLengths=kernel.arrays.lengths;
+      this.pairContacts.set(kernel.arrays.warmContacts.subarray(0,this.pairCount));
+    } else for(let pair=0;pair<this.pairCount;pair++) {
+      if(this.pairContacts[pair]!==-2)continue;
       const a=this.pairA[pair]!,b=this.pairB[pair]!,dx=s.x[b]!-s.x[a]!,dy=s.y[b]!-s.y[a]!;
-      if(kernel&&kernel.arrays.kind[pair]===1){this.nx=kernel.arrays.nx[pair]!;this.ny=kernel.arrays.ny[pair]!;}
-      else this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);
+      this.normal(dx,dy,Math.sqrt(dx*dx+dy*dy),a,b);
       const key=a*s.count+b;
       const base=this.contactCache.add(key,this.nx,this.ny,dt,input.contactFriction),values=this.contactCache.values;
       this.pairContacts[pair]=base;
@@ -565,8 +576,7 @@ export class ExternalContactSolver {
       this.orderPairs(count,external);
   }
   private orderPairs(count:number,external:ExternalInfluences,kernel?:ContactKernel):void {
-    const start=performance.now(),groups=this.coloring.order(this.pairA,this.pairB,this.pairCount,count);
-    kernel?.configureColors(this.coloring.starts,groups);
+    const start=performance.now(),groups=kernel?kernel.orderPairs(this.pairCount,count):this.coloring.order(this.pairA,this.pairB,this.pairCount,count);
     external.stats.colorBuilds++;external.stats.colorBuildMs+=performance.now()-start;
     external.stats.maximumColors=Math.max(external.stats.maximumColors,groups);
     if(this.pairCount>0&&!groups)external.stats.colorFallbacks++;

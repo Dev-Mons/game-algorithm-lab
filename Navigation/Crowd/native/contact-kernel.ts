@@ -253,3 +253,65 @@ export function positionRange(start:i32,end:i32,stride:i32,gap:f64,minimumRadius
     write(p9,a,read(p9,a)+length);write(p9,b,read(p9,b)+length);
   }
 }
+
+/** Stable greedy matching order; exact counterpart of ContactColoring. The
+ * existing pair-query scratch and velocity-start prefix are idle in this phase. */
+export function colorPairs(pairs:i32,agents:i32):i32 {
+  const a=ptr(11),b=ptr(12),starts=ptr(29),cursor=ptr(33),outA=ptr(34),outB=ptr(35),masks=ptr(36),colors=ptr(37);
+  memory.fill(masks,0,<usize>agents<<3);memory.fill(starts,0,260);let groups:i32=0;
+  for(let pair:i32=0;pair<pairs;pair++) {
+    const x=masks+(<usize>load<i32>(a+(<usize>pair<<2))<<3),y=masks+(<usize>load<i32>(b+(<usize>pair<<2))<<3);
+    let available=~(load<i32>(x)|load<i32>(y)),word:i32=0;
+    if(available==0){word=1;available=~(load<i32>(x+4)|load<i32>(y+4));}
+    if(available==0){memory.fill(starts,0,260);return 0;}
+    const bit=available&-available,color=word*32+31-clz<i32>(bit),offset=<usize>word<<2;
+    store<i32>(x+offset,load<i32>(x+offset)|bit);store<i32>(y+offset,load<i32>(y+offset)|bit);
+    store<u8>(colors+<usize>pair,<u8>color);
+    const count=starts+(<usize>(color+1)<<2);store<i32>(count,load<i32>(count)+1);groups=imax(groups,color+1);
+  }
+  for(let color:i32=0;color<groups;color++) {
+    const at=starts+(<usize>color<<2);store<i32>(at+4,load<i32>(at+4)+load<i32>(at));
+  }
+  memory.copy(cursor,starts,256);
+  for(let pair:i32=0;pair<pairs;pair++) {
+    const color=<i32>load<u8>(colors+<usize>pair),at=cursor+(<usize>color<<2),slot=load<i32>(at);store<i32>(at,slot+1);
+    store<i32>(outA+(<usize>slot<<2),load<i32>(a+(<usize>pair<<2)));
+    store<i32>(outB+(<usize>slot<<2),load<i32>(b+(<usize>pair<<2)));
+  }
+  memory.copy(a,outA,<usize>pairs<<2);memory.copy(b,outB,<usize>pairs<<2);return groups;
+}
+
+export function warm(pairs:i32,agents:i32,dt:f64,friction:f64,keys:usize,values:usize,used:usize,mask:i32,oldKeys:usize,oldValues:usize,oldMask:i32):i32 {
+  const a=ptr(11),b=ptr(12),nxIn=ptr(16),nyIn=ptr(17),kind=ptr(20),contacts=ptr(38),vx=ptr(2),vy=ptr(3),corrected=ptr(8);
+  memory.fill(contacts,255,<usize>pairs<<2);
+  let count:i32=0;
+  for(let pair:i32=0;pair<pairs;pair++) {
+    const type=load<i8>(kind+<usize>pair);if(type!=1&&type!=3)continue;
+    store<i8>(kind+<usize>pair,1);
+    const ia=load<i32>(a+(<usize>pair<<2)),ib=load<i32>(b+(<usize>pair<<2)),nx=read(nxIn,pair),ny=read(nyIn,pair);
+    const encoded=<f64>ia*<f64>agents+<f64>ib+1;
+    const hash=<i32>(<u32><u64>encoded*<u32>2654435761);
+    let old:i32=-1,slot=hash&oldMask;
+    while(read(oldKeys,slot)!=0) {
+      if(read(oldKeys,slot)==encoded){old=slot*5;break;}
+      slot=(slot+1)&oldMask;
+    }
+    slot=hash&mask;
+    while(read(keys,slot)!=0)slot=(slot+1)&mask;
+    write(keys,slot,encoded);store<i32>(used+(<usize>count<<2),slot);count++;
+    const base=slot*5;
+    const cosine=old>=0?read(oldValues,old+2)*nx+read(oldValues,old+3)*ny:0;
+    const sine=old>=0?read(oldValues,old+2)*ny-read(oldValues,old+3)*nx:0;
+    const scale=old>=0&&cosine>.95?dt/read(oldValues,old+4):0;
+    const normal=old>=0?Math.max(0,(read(oldValues,old)*cosine-read(oldValues,old+1)*sine)*scale):0;
+    const rawTangent=old>=0?(read(oldValues,old)*sine+read(oldValues,old+1)*cosine)*scale:0;
+    const tangent=Math.max(-friction*normal,Math.min(friction*normal,rawTangent));
+    write(values,base,normal);write(values,base+1,tangent);write(values,base+2,nx);write(values,base+3,ny);write(values,base+4,dt);
+    store<i32>(contacts+(<usize>pair<<2),base);
+    if(normal==0&&tangent==0)continue;
+    store<i8>(corrected+<usize>ia,1);store<i8>(corrected+<usize>ib,1);
+    const ix=-normal*nx-tangent*ny,iy=-normal*ny+tangent*nx;
+    write(vx,ia,read(vx,ia)+ix);write(vy,ia,read(vy,ia)+iy);write(vx,ib,read(vx,ib)-ix);write(vy,ib,read(vy,ib)-iy);
+  }
+  return count;
+}

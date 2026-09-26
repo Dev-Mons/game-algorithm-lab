@@ -55,6 +55,7 @@ try {
       if(!ArrayBuffer.isView(left))continue;const right=expected[owner][name];comparedBytes+=left.byteLength;
       for(let i=0;i<left.length;i++)if(!Number.isFinite(left[i])||!Object.is(left[i],right[i]))throw new Error(`State difference: tick${tick}, ${owner}.${name}[${i}]`);
     }
+    if(actual.overlapFlags&&expected.overlapFlags)for(let i=0;i<actual.overlapFlags.length;i++)if(actual.overlapFlags[i]!==expected.overlapFlags[i])throw new Error(`Overlap flag difference at tick${tick}, agent${i}`);
     for(const name of ['affected','direct'])for(let i=0;i<actual.external[name].length;i++)if(actual.external[name][i]!==expected.external[name][i])throw new Error(`Flag difference: tick${tick}, ${name}[${i}]`);
     const a=actual.movement.externalContact?.contactCache.current,b=expected.movement.externalContact?.contactCache.current;
     if((a?.count??0)!==(b?.count??0))throw new Error(`Warm count difference at tick${tick}`);

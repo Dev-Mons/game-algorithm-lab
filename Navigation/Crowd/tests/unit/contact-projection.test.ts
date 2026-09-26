@@ -111,4 +111,3 @@ it('preserves every pair outside the residual list during certified collective m
     expect(radii[i]!+3-Math.hypot(state.x[i]!-45,state.y[i]!-30)).toBeLessThanOrEqual(tolerance+1e-8);
   }
 });
-

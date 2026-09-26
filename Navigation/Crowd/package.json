@@ -22,7 +22,8 @@
     "research:freeze": "vite-node scripts/measure-repair.ts --freeze --seeds=42,7,19,73",
     "research:repair": "vite-node scripts/measure-repair.ts",
     "research:audit": "vite-node scripts/check-repair-replays.ts",
-    "verify": "node scripts/build-contact-kernel.mjs --check && npm run typecheck && npm run test:run && npm run build"
+    "verify": "node scripts/build-contact-kernel.mjs --check && node scripts/build-crowd-transfer.mjs --check && npm run typecheck && npm run test:run && npm run build",
+    "build:transfer": "node scripts/build-crowd-transfer.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

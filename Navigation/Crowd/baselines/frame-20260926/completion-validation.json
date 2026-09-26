@@ -1,0 +1,18 @@
+{
+  "command": "npm run verify",
+  "exitCode": 0,
+  "testFiles": 33,
+  "tests": 226,
+  "generatedCode": "PASS (contact and transfer)",
+  "typecheck": "PASS",
+  "build": "PASS",
+  "productionBrowser": {
+    "passed": 3,
+    "skipped": 1,
+    "skipReason": "development-module-only pair partition test"
+  },
+  "developmentBrowser": {
+    "passed": 1
+  },
+  "scope": "Final source; quality/equivalence/matrix ran concurrently and their durations are not performance evidence. Actual-frame performance and no-force measurements ran separately."
+}

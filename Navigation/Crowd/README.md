@@ -82,14 +82,21 @@ Vite 개발·preview 서버는 필요한 COOP/COEP 헤더를 제공합니다. �
 `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`가
 필요합니다. 지원하지 않는 환경은 단일 스레드 WebAssembly 또는 TypeScript로 실행합니다.
 직접 생성한 `CrowdSimulation`을 폐기할 때는 `dispose()`로 worker를 종료하세요.
-worker 실패 시 부분 결과를 버리고 같은 tick을 CPU에서 다시 계산합니다. 커널 수정 후 `npm run build:contact`로 생성 파일을 갱신하세요.
+worker 실패 시 부분 결과를 버리고 같은 tick을 CPU에서 다시 계산합니다.
+접촉 커널은 `npm run build:contact`, 군중 흐름의 입자↔격자 전송 커널은
+`npm run build:transfer`로 생성 파일을 갱신합니다. 전송도 동일한 f64 연산 순서를 유지하며
+지원하지 않는 환경에서는 TypeScript 경로로 실행됩니다.
 `npm run verify`는 생성 파일과 원본의 일치도 확인합니다. 이 변경 자체가 10K 60FPS 수락을 뜻하지는 않습니다.
 
 지원 범위, 단위, 중복·reset·끼임 정책은 [외력 설계 및 입력 계약](docs/external-forces.md),
 실제 수치와 한계는 [외력 검증 결과](docs/external-forces-results.md)에 있습니다.
 외력 최적화 이후의 측정 조건과 남은 한계는 [외력 계약](docs/external-forces.md#performance-evidence-and-limits)에 정리되어 있습니다.
-현재 #33 후보는 외력 없는 성능과 표본 접촉 품질을 개선했지만, 실제 10K 외력의
-60FPS·실시간 진행률 수락 기준에는 미달합니다. 원시 측정은 `baselines/frame-20260926/`에 보존합니다.
+#32·#33은 개선 확인을 완료 기준으로 삼은 사용자 지시에 따라 마무리했습니다.
+실제 10K의 660tick × 3회 측정에서 프레임 CPU P95 중앙값은 평지 밀림/폭발
+12.81/12.98ms, 협곡 25.40/24.24ms입니다. 협곡의 60FPS·실시간 목표는 여전히 미달입니다.
+같은 장비·동일 초기 입력 구간의 기존 코드 대비 P95는 밀림 약 52%, 폭발 약 50% 줄었습니다.
+원시 결과·실행 소스·현재 한계는 `baselines/frame-20260926/summary.json`의 `completion`과
+[완료 검증](docs/external-forces.md#completion-under-amended-scope--2026-09-26)에 보존합니다.
 
 기본 경로 안내는 **동일 목표·반경 클래스당 하나의 고정 Flow Field**를 공유합니다.
 혼잡도에 따른 우회 재계산은 꺼져 있으며, 목표 또는 맵이 바뀔 때만 경로를 갱신합니다.

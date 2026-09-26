@@ -13,13 +13,15 @@ self.onmessage=({data}:{data:ContactWorkerSetup})=>{
       correctPair:()=>{throw new Error('Worker attempted a host geometry callback.');}}});
     const api=instance.exports as unknown as ParallelContactExports;
     api.configure(CONTACT_TABLE_OFFSET);api.setDeferredPositions(1);self.postMessage({ready:true});
-    let seen=0;
+    let seen=0,idleSince=performance.now(),idlePolls=0;
     while(!Atomics.load(control,C.stop)) {
       const command=Atomics.load(control,C.command);
       if(command===seen) {
-        // Sleep between frames; short color/iteration gaps stay in the native
-        // shared-memory protocol rather than paying an OS wakeup per group.
-        if(!Atomics.load(control,C.active))Atomics.wait(control,C.command,seen);
+        // Keep very short inter-job gaps hot, but release the CPU during the
+        // main thread's longer geometry/cache phases. Native color barriers
+        // still rendezvous inside the job; command publication wakes sleepers.
+        if(!Atomics.load(control,C.active)||((++idlePolls&127)===0&&performance.now()-idleSince>=.05))
+          Atomics.wait(control,C.command,seen);
         continue;
       }
       seen=command;
@@ -32,6 +34,7 @@ self.onmessage=({data}:{data:ContactWorkerSetup})=>{
         : api.parallelBuildWorkset(groups,values[p]!,values[p+1]!,values[p+2]!,worker,participants);
       if(!success)fail();
       Atomics.store(control,WORKER_DONE_BASE+worker*WORKER_DONE_STRIDE,command);
+      idleSince=performance.now();idlePolls=0;
     }
   } catch(error) {fail();self.postMessage({error:String(error)});}
 };

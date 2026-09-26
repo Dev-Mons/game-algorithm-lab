@@ -14,6 +14,7 @@ const quality = arg('quality','off')==='on';
 const backend = arg('backend','auto');
 const tracing = arg('trace','on')==='on';
 const profiling = arg('profile','off')==='on';
+const stages = arg('stages','off')==='on';
 const source=await (await fetch(`${base}/__crowd_source`)).json();
 if(source.app!=='crowd-navigation-lab'||typeof source.root!=='string')throw new Error('Unknown HTTP source identity.');
 const sourceHash=()=>{
@@ -27,6 +28,7 @@ const commit=execFileSync('git',['-C',source.root,'rev-parse','HEAD'],{encoding:
 const workingSourceSha256=sourceHash();
 const browser = await chromium.launch({ headless: true });
 const rows = [];
+const cpuProbe=arg('process-cpu','off')==='on'?await browser.newBrowserCDPSession():null;
 const distribution = values => {
   const sorted = [...values].sort((a, b) => a - b);
   return { samples: values.length, mean: values.reduce((a,b) => a+b,0)/Math.max(1,values.length),
@@ -59,11 +61,26 @@ try {
             await page.waitForFunction(()=>window.crowdDebug?.ready);
             const profiler=profiling?await page.context().newCDPSession(page):null;
             if(profiler){await profiler.send('Profiler.enable');await profiler.send('Profiler.start');}
-            const initial=await page.evaluate(async({mode,ticks,quality,backend,tracing})=>{
+            const processBefore=cpuProbe?(await cpuProbe.send('SystemInfo.getProcessInfo')).processInfo:null;
+            const processStarted=performance.now();
+            const initial=await page.evaluate(async({mode,ticks,quality,backend,tracing,stages})=>{
               const sim=window.crowdDebug.simulation(), p=window.frameProbe;
               if('backend' in sim.external)sim.external.backend=backend;
               window.crowdDebug.setFrameTracing?.(tracing);
               const audit=quality?(await import('/src/core/lab-results.ts')).auditGeometry:null;
+              const stageTimes={};let prepareStages=()=>{};
+              if(stages) {
+                const wrapped=new WeakSet();
+                const wrap=(owner,methods)=>{
+                  if(!owner||wrapped.has(owner))return;wrapped.add(owner);
+                  for(const name of methods) {const original=owner[name];owner[name]=function(...args){const start=performance.now();try{return original.apply(this,args);}finally{stageTimes[name]=(stageTimes[name]??0)+performance.now()-start;}};}
+                };
+                prepareStages=()=>{
+                  const solver=sim.movement.externalContact;if(!solver)return;
+                  wrap(solver,['prepareWarmContacts','buildPairs','buildVelocityWorkset','hasResidualCompression','prepareStatics']);
+                  wrap(solver.projection,['solve']);wrap(solver.kernel,['solveVelocity','solvePosition']);
+                };
+              }
               const step=sim.step.bind(sim);
               const click=()=>{
                 if(mode==='none')return;
@@ -76,9 +93,12 @@ try {
                   clientY:bounds.top+y/sim.config.height*bounds.height,bubbles:true}));
               };
               sim.step=()=>{
+                prepareStages();
+                for(const key of Object.keys(stageTimes))stageTimes[key]=0;
                 const tick=sim.stepCount,start=performance.now(); step();
                 p.steps.push({tick,ms:performance.now()-start,active:sim.metrics.activeCount,
-                  passes:{...sim.experimentStats.passMs},external:{...sim.external.stats}});
+                  stages:stages?{...stageTimes}:undefined,passes:{...sim.experimentStats.passMs},external:{...sim.external.stats},
+                  flow:{kernelBytes:sim.crowdFlow?.kernelBytes??0,pressureGradientCells:sim.crowdFlow?.pressureGradientCells??null,pressureWorksetSize:sim.crowdFlow?.pressureWorksetSize??null,pressureWorksetFallback:sim.crowdFlow?.pressureWorksetFallback??null,cells:sim.crowdField?.cellCount??null}});
                 if(audit&&(sim.stepCount%10===0||sim.external.stats.positionBudgetExhaustions||sim.external.stats.unresolvedCompression||sim.external.stats.substepRetries)) {
                   const auditStart=performance.now();
                   p.audits.push({step:sim.stepCount,...audit(sim),auditMs:performance.now()-auditStart});
@@ -89,8 +109,21 @@ try {
               };
               p.enabled=true; document.querySelector('#run-toggle').click();
               return {spawned:sim.state.count,config:sim.config,scenario:sim.scenario.id};
-            },{mode,ticks,quality,backend,tracing});
+            },{mode,ticks,quality,backend,tracing,stages});
             await page.waitForFunction(()=>window.frameProbe.done,null,{timeout:600000,polling:250});
+            const processAfter=cpuProbe?(await cpuProbe.send('SystemInfo.getProcessInfo')).processInfo:null;
+            const processWallSeconds=(performance.now()-processStarted)/1000;
+            let processCpu=null;
+            if(processBefore&&processAfter) {
+              const before=new Map(processBefore.map(p=>[p.id,p.cpuTime]));
+              const afterIds=new Set(processAfter.map(p=>p.id));
+              const cpuSeconds=processAfter.reduce((n,p)=>n+p.cpuTime-(before.get(p.id)??0),0);
+              processCpu={cpuSeconds,wallSeconds:processWallSeconds,averageLogicalCores:cpuSeconds/processWallSeconds,
+                missingProcessIds:processBefore.filter(p=>!afterIds.has(p.id)).map(p=>p.id),
+                resetProcessIds:processAfter.filter(p=>p.cpuTime<(before.get(p.id)??0)).map(p=>p.id),
+                before:processBefore,after:processAfter,
+                coverage:'Chromium instance process CPU deltas including renderer worker threads, sampled before Start and after the completion poll; excludes GPU device time and processes that exited before the final snapshot.'};
+            }
             if(profiler){const {profile}=await profiler.send('Profiler.stop');mkdirSync(dirname(output),{recursive:true});writeFileSync(`${output}.${scenario}-${agents}-${seed}-${mode}-${repeat}.cpuprofile`,JSON.stringify(profile));await profiler.detach();}
             const raw=await page.evaluate(()=>{
               const p=window.frameProbe; p.enabled=false;
@@ -110,7 +143,7 @@ try {
                 wallSeconds:elapsed/1000,minimumActive:Math.min(...steps.map(s=>s.active)),
                 passes:Object.fromEntries(Object.keys(steps[0]?.passes??{}).map(k=>[k,distribution(steps.map(s=>s.passes[k]))]))};
             }
-            const row={scenario,agents,seed,mode,repeat,quality,backend,tracing,profiling,initial,errors,phases,...raw}; rows.push(row);
+            const row={scenario,agents,seed,mode,repeat,quality,backend,tracing,profiling,initial,errors,processCpu,phases,...raw}; rows.push(row);
             console.log(JSON.stringify({scenario,agents,seed,mode,repeat,errors,acceptance:phases.acceptance}));
             mkdirSync(dirname(output),{recursive:true});
             const report=JSON.stringify({schema:'crowd-real-frame-v1',createdAt:new Date().toISOString(),url:base,

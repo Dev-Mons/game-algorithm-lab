@@ -8,6 +8,8 @@ export class WarmContactCache {
   private previous=empty();
   private checkpoint=empty();
   private checkpointWidth=0;
+  get currentTable():Table { return this.current; }
+  get previousTable():Table { return this.previous; }
   get values():Float64Array { return this.current.values; }
   get bytes():number { return [this.current,this.previous,this.checkpoint].reduce((n,t)=>n+t.keys.byteLength+t.values.byteLength+t.used.byteLength,0); }
 

@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ok 1 tests\browser\contact-workers.spec.ts:33:1 › parallel pair construction preserves a skewed complete query and reports global overflow (247ms)
+
+  1 passed (788ms)

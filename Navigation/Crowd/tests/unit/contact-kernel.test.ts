@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest';
 import { ContactKernel } from '../../src/core/contact-kernel';
+import { ContactColoring } from '../../src/core/contact-coloring';
+import { WarmContactCache } from '../../src/core/warm-contact-cache';
 import { SpatialHash } from '../../src/algorithms/spatial-hash/spatial-hash';
 
 it('preserves full center-first pair order through mixed radii, inactive bodies and capacity growth',()=>{
@@ -47,5 +49,63 @@ it('preserves body state and correction bookkeeping across arena capacity growth
   const bytes=kernel.memory.buffer.byteLength;kernel.ensure(100,4096,512);
   expect(kernel.memory.buffer.byteLength).toBeGreaterThan(bytes);
   for(const [i,name] of names.entries())expect(kernel.arrays[name]).toEqual(before[i]);
+  kernel.dispose();
+});
+
+
+it('matches stable JS color order and retains the complete list on native color overflow',()=>{
+  const kernel=ContactKernel.create(()=>0,()=>{},false)!;kernel.ensure(100,512);
+  const cases=[{a:Int32Array.from({length:400},(_,i)=>i%90),b:Int32Array.from({length:400},(_,i)=>i%90+1+i%9)},
+    {a:new Int32Array(70),b:Int32Array.from({length:70},(_,i)=>i+1)}];
+  for(const {a,b} of cases) {
+    const aa=a.slice(),bb=b.slice(),color=new ContactColoring(),expected=color.order(aa,bb,a.length,100);
+    kernel.arrays.a.set(a);kernel.arrays.b.set(b);
+    expect(kernel.orderPairs(a.length,100)).toBe(expected);
+    expect(kernel.arrays.a.subarray(0,a.length)).toEqual(aa);expect(kernel.arrays.b.subarray(0,b.length)).toEqual(bb);
+    expect(kernel.arrays.colorStarts).toEqual(color.starts);
+  }
+  kernel.dispose();
+});
+
+
+it('includes alignment padding when a small body arena crosses a memory page boundary',()=>{
+  const kernel=ContactKernel.create(()=>0,()=>{},false)!;
+  kernel.ensure(1,0,12253);kernel.arrays.colorMasks.fill(7);
+  expect(kernel.orderPairs(0,1)).toBe(0);expect([...kernel.arrays.colorMasks]).toEqual([0,0]);
+  kernel.dispose();
+});
+
+it('reproduces warm hash collisions, basis changes, time scaling and growth without sharing checkpoint storage',()=>{
+  const kernel=ContactKernel.create(()=>0,()=>{},false)!,actual=new WarmContactCache(),expected=new WarmContactCache();
+  const agents=65538,pairs=[[0,1],[0,17],[0,33],[0,49],[65536,65537]];
+  kernel.ensure(agents,pairs.length);
+  const vx=new Float64Array(agents),vy=new Float64Array(agents),corrected=new Uint8Array(agents);
+  for(let phase=0;phase<5;phase++) {
+    actual.begin(phase===2?1024:pairs.length);expected.begin(phase===2?1024:pairs.length);
+    const dt=phase%2?1/120:1/60,friction=.2,angle=phase*.1,nx=Math.cos(angle),ny=Math.sin(angle);
+    kernel.arrays.vx.set(vx);kernel.arrays.vy.set(vy);kernel.arrays.corrected.set(corrected);
+    for(const [pair,[a,b]] of pairs.entries()) {
+      kernel.arrays.a[pair]=a!;kernel.arrays.b[pair]=b!;kernel.arrays.kind[pair]=1;
+      kernel.arrays.nx[pair]=nx;kernel.arrays.ny[pair]=ny;
+      const base=expected.add(a!*agents+b!,nx,ny,dt,friction),values=expected.values;
+      const normal=values[base]!,tangent=values[base+1]!;
+      if(normal===0&&tangent===0)continue;
+      corrected[a!]=1;corrected[b!]=1;
+      const ix=-normal*nx-tangent*ny,iy=-normal*ny+tangent*nx;
+      vx[a!]=vx[a!]!+ix;vy[a!]=vy[a!]!+iy;vx[b!]=vx[b!]!-ix;vy[b!]=vy[b!]!-iy;
+    }
+    kernel.prepareWarm(actual,pairs.length,agents,dt,friction);
+    expect(kernel.arrays.vx).toEqual(vx);expect(kernel.arrays.vy).toEqual(vy);expect(kernel.arrays.corrected).toEqual(corrected);
+    expect(actual.currentTable.count).toBe(expected.currentTable.count);
+    expect(actual.currentTable.keys).toEqual(expected.currentTable.keys);
+    expect(actual.currentTable.used.subarray(0,pairs.length)).toEqual(expected.currentTable.used.subarray(0,pairs.length));
+    for(const slot of expected.currentTable.used.subarray(0,pairs.length)) {
+      for(let j=0;j<5;j++)expect(Object.is(actual.values[slot*5+j],expected.values[slot*5+j])).toBe(true);
+      actual.values[slot*5]=expected.values[slot*5]=10+slot;actual.values[slot*5+1]=expected.values[slot*5+1]=.5;
+    }
+    actual.saveCurrent();const saved:number[]=[];actual.hashState(n=>saved.push(n));
+    kernel.arrays.warmValues.fill(99);actual.restoreCurrent();const restored:number[]=[];actual.hashState(n=>restored.push(n));
+    expect(restored).toEqual(saved);
+  }
   kernel.dispose();
 });

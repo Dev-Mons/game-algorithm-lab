@@ -1,5 +1,90 @@
 # External forces — issue #32
 
+## Completion under amended scope — 2026-09-26
+
+Issues #32 and #33 are completed under the user's explicit instruction to accept
+meaningful improvement even when the target frame time is missed. **Rocky 10K
+still fails the original 60Hz/real-time gate.** The target and physical quality
+thresholds were not weakened or reported as passing. Earlier candidate sections
+below are historical checkpoints; this section and `summary.json.completion`
+supersede their outstanding-work status.
+
+Final runtime SHA-256: `3557d89647139a49a9ad2226686106643f46387c1804f52d311190c465cf18b5`.
+The exact source, tools and raw results are in
+[`frame-20260926`](../baselines/frame-20260926/), including `completion-source.zip`.
+Windows / Ryzen 9 9950X3D / Node 22.22.0 / Chromium 151.0.7922.34; actual HTTP
+RAF, fixed clock, renderer, UI and recorder; audit OFF for performance. All runs
+retain 10,000 active agents with the original radius, forces and fixed dt.
+
+| 10K scene / UI input | 660-tick × 3 CPU P95 median | sim/wall range |
+|---|---:|---:|
+| Open field / wind | 12.805ms | 0.99846 |
+| Open field / blast | 12.980ms | 0.99530–0.99688 |
+| Rocky pass / wind | 25.395ms | 0.68556–0.68931 |
+| Rocky pass / blast | 24.235ms | 0.70394–0.70789 |
+
+No run had a RAF interval above 100ms. A separate same-machine comparison with
+the clean original `a04aa21` checkout uses matching `tickBefore` 30–178, omitting
+the original run's final pause/hash callback. Original wind/blast CPU P95 was
+56.50/55.90ms (one run); final three-run medians for that same window were
+27.12/28.185ms: 52.0%/49.6% reductions. These short-window comparisons are not
+interchangeable with the 660-tick table. No-force three-repeat P95 improved in
+all six open/rocky 1K/10K/20K conditions and passed the 10% regression limit.
+
+Final validation: 226 tests in 33 files, generated contact/transfer source checks,
+typecheck and production build; three production-browser checks plus the separate
+development-only pair partition test. All 15 headless 1K/10K/20K external-input
+quality cases passed. Rocky wind/blast × seed42/7 (660 ticks each) had independent
+sampled penetration <=0.449999px, zero walls and nonfinite values. 50K few-impulse
+quality passed in one exploratory run. Quality runs are separate from timings.
+The large-scene audit remains a sampled published-state check, not a proof of
+all curved intermediate paths; the existing small-scene crossing tests remain.
+
+The final worker implementation matched 858MB of 10K state and 55,139,500 used
+warm-cache values across 660 ticks, plus 468MB/20,647,120 values for a 20K moving
+proxy. Overlap flags, command history and hashes are compared too. A workset
+worker failure discarded the shared state and reproduced the JS result exactly.
+
+A 2,000-tick 10K HTTP session with repeated UI wind retained all active agents.
+Contact/transfer linear memory stayed at 35,651,584/10,551,296 bytes from tick500
+through tick2000. All three resets retired the seven workers and released their
+owned kernels; all three 200-tick rewarms resumed parallel computation with zero
+failures. Page heap grew 5,094,836→5,322,296 bytes while bounded record/trace rings
+were filling. `completion-worker-memory.json.gz` includes GC snapshots and heap
+sampling. This is page-isolate/buffer evidence, not total process/GPU memory or a
+proof of every allocation. The earlier 12K history test covers ring saturation.
+
+The final exact optimizations include finite-pressure propagation worksets,
+positive-zero gradient elision, native stable contact coloring and warm-cache
+scratch, conservative axis rejections, and native scatter/gather with the host's
+`atan2`/`hypot`. JS owns warm checkpoints; native scratch cannot mutate them.
+Native transfer storage copies inputs and outputs so public grid/state ownership
+stays unchanged. Worker idle waits release CPU in longer host-only gaps; the
+historical single comparison reduced Chromium CPU time 77.3→45.9 seconds while
+latency stayed near 26ms. It is not a final-source repeated CPU-power claim.
+
+Rejected trials are preserved as evidence: collective-first repair, independent
+velocity colors, order-preserving velocity barrier compaction, projection
+adjacency reuse, static preparation filtering and sixteen participants. None is
+active. A relative-motion probe suggested further opportunities but did not
+change the strict post-contact half-radius travel certificate.
+
+Reproduce from `Navigation/Crowd` (serve Vite separately on the chosen port):
+
+```powershell
+npm run verify
+node scripts/measure-frame.mjs --url=http://127.0.0.1:4273 --scenarios=rocky-pass --agents=10000 --seeds=42 --modes=wind,blast --repeats=3 --ticks=660
+node scripts/measure-frame.mjs --url=http://127.0.0.1:4273 --scenarios=rocky-pass --agents=10000 --seeds=42,7 --modes=wind,blast --repeats=1 --ticks=660 --quality=on
+Expand-Archive baselines/frame-20260926/post-contact-source.zip test-results/post-contact-reference
+node scripts/compare-worker-state.mjs --url=http://127.0.0.1:4273 --reference=test-results/post-contact-reference --ticks=660
+node scripts/measure-worker-session.mjs --url=http://127.0.0.1:4273
+```
+
+`--stages=on` adds diagnostic host-stage timing; `--process-cpu=on` samples
+Chromium process CPU (including worker threads, excluding GPU device time and
+uncaptured exited processes). Keep these diagnostic runs separate from the
+ordinary performance report.
+
 ## Profile fixed before final acceptance measurements
 
 `external-v2`: pixels and seconds, dt <= 1/30, unit inertial mass for every body,
@@ -331,7 +416,7 @@ step counts remain separate. Hashing is deferred while the simulation runs;
 explicit snapshots and result exports still compute it.
 
 
-## Issue #33 candidate — 2026-09-26
+## Historical issue #33 candidate — 2026-09-26
 
 **This candidate has not passed the 10K 60Hz acceptance gate.** It includes
 product frame/time accounting, exact LOS witnesses and empty-space certificates,

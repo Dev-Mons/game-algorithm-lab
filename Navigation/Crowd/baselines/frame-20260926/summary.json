@@ -1,5 +1,507 @@
 {
-  "status": "NOT_ACCEPTED",
+  "status": "COMPLETED_WITH_ACCEPTED_PERFORMANCE_LIMIT",
+  "completion": {
+    "decision": "COMPLETED_WITH_ACCEPTED_PERFORMANCE_LIMIT",
+    "acceptanceChange": "User explicitly allowed completion when there is a meaningful improvement even if the issue target frame time is not reached. The original 60 Hz target remains failed for rocky-pass; it was not relabeled as a pass.",
+    "sourceSha256": "3557d89647139a49a9ad2226686106643f46387c1804f52d311190c465cf18b5",
+    "sourceArchive": "completion-source.zip",
+    "environment": {
+      "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
+      "platform": "win32",
+      "node": "v22.22.0",
+      "browser": "151.0.7922.34"
+    },
+    "originalBaselineCommit": "a04aa21c5ef09b8ad557eb62776d3dbeda877cf5",
+    "originalComparison": [
+      {
+        "mode": "wind",
+        "baselineP95Ms": 56.5,
+        "candidateP95Ms": [
+          27.229999996721745,
+          27.12000000476837,
+          26.719999998807907
+        ],
+        "candidateMedianP95Ms": 27.12000000476837,
+        "reductionPercent": 51.9999999915604,
+        "window": "tickBefore 30..178; excludes baseline stop/hash callback at tick 179; baseline 1 run, candidate 3 runs"
+      },
+      {
+        "mode": "blast",
+        "baselineP95Ms": 55.900000005960464,
+        "candidateP95Ms": [
+          28.185000002384186,
+          27.83500000089407,
+          28.515000000596046
+        ],
+        "candidateMedianP95Ms": 28.185000002384186,
+        "reductionPercent": 49.579606441182655,
+        "window": "tickBefore 30..178; excludes baseline stop/hash callback at tick 179; baseline 1 run, candidate 3 runs"
+      }
+    ],
+    "activeFrames": [
+      {
+        "scenario": "open-field",
+        "mode": "wind",
+        "repeats": 3,
+        "ticks": 660,
+        "cpuP95Ms": [
+          12.785000003874302,
+          12.804999999701977,
+          12.950000002980232
+        ],
+        "medianCpuP95Ms": 12.804999999701977,
+        "simWall": [
+          0.9984552470962781,
+          0.9984557218169232,
+          0.9984552470962781
+        ],
+        "rafP95Ms": [
+          16.670000000000073,
+          16.670000000000073,
+          16.670000000000073
+        ],
+        "rafP99Ms": [
+          16.670000000000073,
+          16.670000000000073,
+          16.670000000000073
+        ],
+        "over100ms": [
+          0,
+          0,
+          0
+        ],
+        "over50msRatio": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "scenario": "open-field",
+        "mode": "blast",
+        "repeats": 3,
+        "ticks": 660,
+        "cpuP95Ms": [
+          12.935000002384186,
+          12.994999997317791,
+          12.979999996721745
+        ],
+        "medianCpuP95Ms": 12.979999996721745,
+        "simWall": [
+          0.9953002868360635,
+          0.9968755073384279,
+          0.9953007585613639
+        ],
+        "rafP95Ms": [
+          16.670000000000073,
+          16.670000000000073,
+          16.670000000000073
+        ],
+        "rafP99Ms": [
+          16.670000000000073,
+          16.670000000000073,
+          16.670000000000073
+        ],
+        "over100ms": [
+          0,
+          0,
+          0
+        ],
+        "over50msRatio": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "scenario": "rocky-pass",
+        "mode": "wind",
+        "repeats": 3,
+        "ticks": 660,
+        "cpuP95Ms": [
+          24.929999999701977,
+          25.549999997019768,
+          25.394999995827675
+        ],
+        "medianCpuP95Ms": 25.394999995827675,
+        "simWall": [
+          0.6855551249979188,
+          0.6863020964568183,
+          0.6893054263107881
+        ],
+        "rafP95Ms": [
+          33.335000000000946,
+          33.335000000000036,
+          33.335000000000036
+        ],
+        "rafP99Ms": [
+          33.335000000000946,
+          33.335000000000946,
+          33.33999999999969
+        ],
+        "over100ms": [
+          0,
+          0,
+          0
+        ],
+        "over50msRatio": [
+          0,
+          0.0015873015873015873,
+          0
+        ]
+      },
+      {
+        "scenario": "rocky-pass",
+        "mode": "blast",
+        "repeats": 3,
+        "ticks": 660,
+        "cpuP95Ms": [
+          23.924999997019768,
+          24.234999999403954,
+          24.259999997913837
+        ],
+        "medianCpuP95Ms": 24.234999999403954,
+        "simWall": [
+          0.707893484278697,
+          0.7039387720760227,
+          0.7047261283252587
+        ],
+        "rafP95Ms": [
+          33.335000000000946,
+          33.335000000000946,
+          33.335000000000036
+        ],
+        "rafP99Ms": [
+          33.339999999999236,
+          33.335000000000946,
+          33.335000000000946
+        ],
+        "over100ms": [
+          0,
+          0,
+          0
+        ],
+        "over50msRatio": [
+          0.0015873015873015873,
+          0.0015873015873015873,
+          0.0015873015873015873
+        ]
+      }
+    ],
+    "noForce": [
+      {
+        "scenario": "open-field",
+        "agents": 1000,
+        "baselineP95Ms": 1.800000000745058,
+        "candidateP95Ms": 1.5449999943375587,
+        "changePercent": -14.16666701677497,
+        "passed": true
+      },
+      {
+        "scenario": "open-field",
+        "agents": 10000,
+        "baselineP95Ms": 15.099999997764826,
+        "candidateP95Ms": 11.094999998807907,
+        "changePercent": -26.523178804965287,
+        "passed": true
+      },
+      {
+        "scenario": "open-field",
+        "agents": 20000,
+        "baselineP95Ms": 31.400000002235174,
+        "candidateP95Ms": 21.799999997019768,
+        "changePercent": -30.57324842207656,
+        "passed": true
+      },
+      {
+        "scenario": "rocky-pass",
+        "agents": 1000,
+        "baselineP95Ms": 3.599999997764826,
+        "candidateP95Ms": 2.380000002682209,
+        "changePercent": -33.8888887733359,
+        "passed": true
+      },
+      {
+        "scenario": "rocky-pass",
+        "agents": 10000,
+        "baselineP95Ms": 28.800000000745058,
+        "candidateP95Ms": 16.435000002384186,
+        "changePercent": -42.93402777097566,
+        "passed": true
+      },
+      {
+        "scenario": "rocky-pass",
+        "agents": 20000,
+        "baselineP95Ms": 58.099999997764826,
+        "candidateP95Ms": 32.16499999910593,
+        "changePercent": -44.638554216276496,
+        "passed": true
+      }
+    ],
+    "quality": [
+      {
+        "scenario": "rocky-pass",
+        "mode": "wind",
+        "seed": 42,
+        "audits": 66,
+        "maxPenetration": 0.4499983918305146,
+        "maxProxyPenetration": 0,
+        "walls": 0,
+        "nonfinite": 0
+      },
+      {
+        "scenario": "rocky-pass",
+        "mode": "blast",
+        "seed": 42,
+        "audits": 66,
+        "maxPenetration": 0.4499974370247086,
+        "maxProxyPenetration": 0,
+        "walls": 0,
+        "nonfinite": 0
+      },
+      {
+        "scenario": "rocky-pass",
+        "mode": "wind",
+        "seed": 7,
+        "audits": 66,
+        "maxPenetration": 0.4499951398687658,
+        "maxProxyPenetration": 0,
+        "walls": 0,
+        "nonfinite": 0
+      },
+      {
+        "scenario": "rocky-pass",
+        "mode": "blast",
+        "seed": 7,
+        "audits": 66,
+        "maxPenetration": 0.44999876762570334,
+        "maxProxyPenetration": 0,
+        "walls": 0,
+        "nonfinite": 0
+      }
+    ],
+    "matrix": [
+      {
+        "count": 1000,
+        "mode": "few",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 10000,
+        "mode": "few",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 20000,
+        "mode": "few",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 1000,
+        "mode": "blast",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 10000,
+        "mode": "blast",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 20000,
+        "mode": "blast",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 1000,
+        "mode": "global",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 10000,
+        "mode": "global",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 20000,
+        "mode": "global",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 1000,
+        "mode": "proxy",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 65
+      },
+      {
+        "count": 10000,
+        "mode": "proxy",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 3.752016857205831e-05,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 43
+      },
+      {
+        "count": 20000,
+        "mode": "proxy",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 59
+      },
+      {
+        "count": 1000,
+        "mode": "overlap",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 10000,
+        "mode": "overlap",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      },
+      {
+        "count": 20000,
+        "mode": "overlap",
+        "sampledQualityGate": true,
+        "maxPenetration": 0,
+        "maxProxyPenetration": 0,
+        "maxWalls": 0,
+        "maxNonfinite": 0,
+        "proxyDrivenPeak": 0
+      }
+    ],
+    "byteProof": {
+      "byte-660": {
+        "comparedBytes": 858000000,
+        "comparedWarmValues": 55139500,
+        "parallelPasses": 17689,
+        "maximumWorkers": 7,
+        "workerFailures": 0,
+        "active": 10000,
+        "mismatches": 0
+      },
+      "failure": {
+        "comparedBytes": 117000000,
+        "comparedWarmValues": 3911385,
+        "parallelPasses": 642,
+        "maximumWorkers": 7,
+        "workerFailures": 1,
+        "active": 10000,
+        "mismatches": 0
+      },
+      "proxy-20000": {
+        "comparedBytes": 468000000,
+        "comparedWarmValues": 20647120,
+        "parallelPasses": 6361,
+        "maximumWorkers": 7,
+        "workerFailures": 0,
+        "active": 20000,
+        "mismatches": 0
+      }
+    },
+    "validation": {
+      "command": "npm run verify",
+      "exitCode": 0,
+      "testFiles": 33,
+      "tests": 226,
+      "generatedCode": "PASS (contact and transfer)",
+      "typecheck": "PASS",
+      "build": "PASS",
+      "productionBrowser": {
+        "passed": 3,
+        "skipped": 1,
+        "skipReason": "development-module-only pair partition test"
+      },
+      "developmentBrowser": {
+        "passed": 1
+      },
+      "scope": "Final source; quality/equivalence/matrix ran concurrently and their durations are not performance evidence. Actual-frame performance and no-force measurements ran separately.",
+      "textLogFormatting": "Browser output text preserves content; CRLF normalized to LF for repository whitespace checks."
+    },
+    "workerMemory": {
+      "file": "completion-worker-memory.json.gz",
+      "ticks": 2000,
+      "resetCycles": 3,
+      "rewarmTicks": 200,
+      "stableContactKernelBytes": 35651584,
+      "stableFlowKernelBytes": 10551296,
+      "workerFailures": 0,
+      "pageHeapUsedAt500": 5094836,
+      "pageHeapUsedAt2000": 5322296,
+      "limits": "Actual HTTP RAF/clock/recorder/renderer/UI; 10K rocky repeated wind, 2,000 ticks plus three reset/200-tick rewarm cycles. GC only while paused. Timings are not performance evidence. Heap sampling covers the page isolate; worker isolates and GPU device memory are not fully measured. Contact retainedBytes is instrumented typed/linear capacity, not total process memory. Frame/timing rings are still filling; the earlier 12K session separately tested their bounds."
+    },
+    "limitations": [
+      "Rocky 10K remains below real-time: frame P95 about 24–25 ms and sim/wall about 0.69–0.71. No 60 Hz guarantee.",
+      "Large-scene geometry is independently sampled at published states; it is not a proof of all curved intermediate contact paths. Small-scene crossing/wall tests cover explicit cases.",
+      "50K is a single headless few-impulse quality exploration, not a 60 Hz or all-input acceptance claim.",
+      "Page heap sampling and instrumented buffer capacities do not measure every worker isolate, GPU allocation or total process allocation.",
+      "Final active-frame timings repeat seed42 three times; independent seed7 quality is included, but the original full two-seed repeated simultaneous 60 Hz gate was not claimed.",
+      "completion-none-progress15.json.gz is the provisional 15-row checkpoint copied before the run finished; use completion-none.json.gz with all 18 rows."
+    ]
+  },
+  "historicalSectionsNote": "All following sections preserve earlier candidate measurements and their then-open limitations; completion above is the final amended-scope result.",
   "baselineCommit": "a04aa21c5ef09b8ad557eb62776d3dbeda877cf5",
   "environment": {
     "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor          ",
@@ -206,11 +708,15 @@
     "finalBuild": "PASS"
   },
   "files": {
+    ".gitattributes": "5ac3ec419a34eee559ece381575e5cef6fa67a2989595c9c4ee24285d0070694",
     "active.json.gz": "16c05bd1402c7e3fd329076ac23bad881c335ee5b6ae0a0fc411f95a56462f4c",
     "adaptive-byte-wind.json": "59d57399dceea7f75cc37a49752607b13c1b9a561a4a45ad272a0493e542d3ff",
     "adaptive-performance.json.gz": "cb83b39e1e3cbbd4b3170332029d28ad5e59f280316942466d2644645cea369b",
     "adaptive-quality.json.gz": "cc71504c25561209a87a16dc582b097ba0a2d7f4495532437ad7a0d66e2a6745",
     "adaptive-source.zip": "d10a0331b2d4f17323f772a2cf59cd1ed70dd72b37597e0b72ed0b1a0d44daad",
+    "adjacent-projection-byte-90.json": "fe1c6ee10d866ebcaf1ddb36e8b1e6f7b7ef98324f501d4ea7db941568b91971",
+    "adjacent-projection-source.zip": "d61025a17e2bfd54f018a49f072643ff2e6545a77163d2b099a23078e428b343",
+    "adjacent-projection-stages.json.gz": "b00f1b30520fd1824269c84de7200ece198721f93bc658caf8b3d31f89a1cd0e",
     "backend-source.zip": "374d25b202e32f60f94f90381939b16a899c2d7fce3b5d3c50074fdc17a87a08",
     "baseline-none.json.gz": "066e61b05ea44642496f63bdb2c417dcc0833d3b0819050fdd19e6bde1f34658",
     "batch-projection-blast-quality.json.gz": "989d4a7855e0ded28db0f02eca76fffe49c875d9b2df4fb2a02cf606f5047f5a",
@@ -238,6 +744,26 @@
     "color-probe-wind.json": "13b80202f59331db314f3e8de7442dde827d8eae8f39453dde2945096d80908c",
     "colored-quality.json.gz": "0021b425b29cdffeb21776a866ef128c06f3f9ce5763a834a06292e9f6e4e3d0",
     "colored-source.zip": "3b8cbff4f1c999828899ab7102b19825432576e94b6e69526d7b83de84fc88bb",
+    "completion-50000.json": "65336390bd05475abf620510b326b596d4aae9c166b3ee0a1110750d15322856",
+    "completion-blast.json": "914ba9b11cc56ec84789444788a0041ad5fe289fe6fc93f40ed0511086f867d6",
+    "completion-browser-development.txt": "04a96c054a92b55f4e5c6d7ed76ca40502e3ed54c493106de95290814966c03f",
+    "completion-browser-production.txt": "68c5e64d2c2785a47b6bbaa62e0886a8a671847966e20a38f168c6fc0c4b9a13",
+    "completion-byte-660.json": "9f410ed193e85737fdda82fc6f6b1dd12fe44ebdd7760bcfa3d60d31dd474fc4",
+    "completion-failure.json": "9325d024063964ff7d1f0bec6334f86d736b29e34e1dfad17dbacf8d07be6e74",
+    "completion-few.json": "e989720d3b6431b5c2c527bbf5ab8cbdf204e39e09878b48adf2319d39782967",
+    "completion-global.json": "623d74b70a8f04e5237de481d6f0394adf70535c5425bafbf5d328490342d3ac",
+    "completion-none-progress15.json.gz": "179ab9ddff2f1f8dd4cb547f8bbf3d8dbf5979e08bac49c93aa78e6cd38fea04",
+    "completion-none.json.gz": "c0d456b06d0d996b73b93d781941740576fc709cd59586ad79787d3149565a22",
+    "completion-original-active.json.gz": "55f9693affa665966ff801cc9594ef69beb26ab6c727b59d63ed9c7a34520389",
+    "completion-overlap.json": "e792144aa10cf6eb0244958a0c965bbd385b103e22ef50bfcffdb920a31d6b93",
+    "completion-performance.json.gz": "696cc466ee37c5b1cef7efbe6f17117361f429d5f2c833d326dd95474f032a59",
+    "completion-proxy-20000.json": "d00e218578a9ae5ecd7db4a704cf06733f969d50da9cf9d2f6ce4250ae53601b",
+    "completion-proxy.json": "5a9bc2c0ac61fcf355ccc691353370b1ccc7aa53fa2e9b1f2ed8be3978357b0f",
+    "completion-quality.json.gz": "2989fe4d09a63de7bc09ed637c0dac1e0cd968427d11cf68fb500e4a08befe03",
+    "completion-source.zip": "3e18a6a2278fd13a27b6ab520140f3384624499723876afd653c941b419aca93",
+    "completion-validation.json": "9cb36782966b950060d645523ae0aa94d992c7cf5994f08d25a558e2380227f8",
+    "completion-worker-memory.json.gz": "fc13bf11f5e2fc2f036e69588440eaef0ac0c6df608d17fa06c941c5730c57da",
+    "completion-worker-memory.json.gz.heapprofile.gz": "9b339fe2328167bd42b3087e52315e2b8031dca415e9b2e04aa01f2d47e6651a",
     "contact.cpuprofile.gz": "bb419e653dd7aec541ab80faf0088bcdf000afd9270c2b2153ff78c3a6e7eea9",
     "early-projection-performance.json.gz": "d343df312792dd7fae11cc627c6330ef59f5fe35cff4c9d845e497840316bdb5",
     "early-projection-quality.json.gz": "b52e3919c0b23dbbff1f589eced68aba8855ff5d0b0d5f40e692b2938dbbd2bb",
@@ -248,6 +774,7 @@
     "frontier-reuse-performance.json.gz": "bac89bfa07d01934a284005485b0bbd522cd580a0c791540867315454d9c95cd",
     "frontier-reuse-quality.json.gz": "5e5ac4187d411bd85a865ba7136efcf3327bf7351c205e024c0be17b01646167",
     "history-test.txt": "941b064ee08667c2e775e286a507e045ee72fbc689b39d09af732593e0ad6bb4",
+    "hybrid-stages.json.gz": "b7799989a08f418ec3f7ca1f9ddeffa610b483626e00c36c2b37616965996373",
     "initial-compression-probe.json": "f985b8c7dc2fc97131a2a3435789a87a2d9d6110a0334b0c2af976fcf5953985",
     "initial-compression-probe.mjs": "26f6fe24109a6182b9f819edcc1abdd2477e25619a2f5d50b10fd7faab65432b",
     "kernel-auto.json.gz": "3b97d34329ffa3f812f5df1ba0743e06c5bb1b50efa59c86d5f50aeb3297675d",
@@ -264,12 +791,20 @@
     "matrix-proxy-performance.json": "9cf4c596a88da0d0cee0fade08e5fe3f4c420a281e4f310c8558cfb2681d67a6",
     "matrix-proxy-quality.json": "6444f4cc00005fefa1375a973f2d4513052f62c0164344ff5a76425ff1659333",
     "native-browser-tests.txt": "222b3bafcdb5790e988fb61bb853ff9e210e8caa1003e6b0943bbc523c5c1999",
+    "native-colors-byte-90.json": "1f8e5356cb7c5780095feb5ab39d015d4b76b1494739201147b6a1c3cc0c26c0",
+    "native-colors-performance.json.gz": "06ec86bcd785ea8a5717136554a51d3e6209c795073b23dd45203269165b7dfc",
+    "native-colors-source.zip": "b9fb5446b27407f44be88f09ed623bf6027a06ba7ec4636c03c3cd3fe4a7533b",
     "native-geometry.json.gz": "d3246b65194c33e96ecd1915009103f8265a15c09c2e588513866ecd5edcd5d5",
     "native-pairs.json.gz": "819e86da68ae45349897b3cca10c4763fbe506262ad70db2917e3d670f707fa3",
     "native-reductions.json.gz": "a308d3b144f457b52f8f0d805cca42e21540409fc4d2629fd1775ae78d5ad0a6",
     "native-source.zip": "6eec575d37ac6f3dd3ffbced4a4598c8f6c664e3ecd7fe99a438949c836a855c",
+    "native-transfer-byte-90.json": "b396f2f3e61d37dd6fd13b39e2e78dc151c6361d95f62848755a752fe6b45eb0",
+    "native-transfer-performance.json.gz": "fb631afbf7f22a3549cf2ca2a03c6dd068b36cf1b8ad47dbe644694cdab660ef",
     "native-verify.txt": "c43b6a5cc63b5f1625fb36d2e981c3caa77d51fe19a98fbd22bcac6a9fb84229",
     "native-warm.json.gz": "e0770307f6542f94eadcd6dc2b90c0dd8641ec94a10c838d3eb304e537d55c51",
+    "ordered-velocity-byte-90.json": "cb016d714bb18b809b8a3984dfe8798b5ef42b9baa59a9f581ee7d610ef1bc2e",
+    "ordered-velocity-source.zip": "dc5b9855a5ad64bbcaeb15ef6b565e549dca27c3331717b08b4980fd74b2c9f1",
+    "ordered-velocity-stages.json.gz": "f0e7b5a8099fece1a7115ec0c3e701c5bbd0a7c1704a991b1b1bdc7383002faf",
     "parallel-pairs-byte-660.json": "315c9f4df0f6c52f3f8287fd3510ba9b6b8a9ad91d44196ef1932e6eb189994b",
     "parallel-pairs-failure-byte.json": "ae4e52b2fdd07d39ce0fc6820f9f5a75ff1264e1b60df40a650ee88c7e90fa17",
     "parallel-pairs-performance.json.gz": "b59b7224a0c3237802edcb036571c2a0c68b3940f905fe36fefbb7851f7401c5",
@@ -286,6 +821,12 @@
     "post-contact-performance.json.gz": "ecd7aa78eaaa5487b02da1468ddf9979214e2c5ad2e26a8546501e79dab7f484",
     "post-contact-quality.json.gz": "650581602d7e4b965be2a5c0cab345ac44bfb849060db8847c69ec46cbdd36b4",
     "post-contact-source.zip": "39378c6c19a69457f9fd23d0f449e4f0b30893e7926e445ba21c6b5c2acd2a3f",
+    "pressure-gradient-byte-660.json": "269d4f470f3239ec79e5f1303af194eedbc137a76bdbfd6079bf61474e26fce7",
+    "pressure-gradient-performance.json.gz": "a859580d1bc2177f281c3b5f70b8baaf4c36fabca4321c6af5104e719d691d5c",
+    "pressure-gradient-source.zip": "153bad37aa4e02af1821858118f48e22f84bdc68677c14a961acc01ba4b541e5",
+    "pressure-workset-byte-660.json": "4b6e5efc33677c2c522020125d6bee81d5a174444e3e4df503fc4be794293a54",
+    "pressure-workset-performance.json.gz": "5ede0514d9814f185e4b59ab560d1ccdc647d3abc6fd760f8fdf1e3f994209c4",
+    "pressure-workset-source.zip": "414fdf46644e6db846cb3cd310ba8aecfcab6a51669159e4c46d3637f05648cb",
     "projection-axis-byte-660.json": "6cc275bc081f84757d2607f8808776364be09feeb983a5634d154fc978e08dc6",
     "projection-axis-performance.json.gz": "9ade7635d51028128c5aa731d511096743f91cef6b19865c0fd0c4b7371ca448",
     "projection-axis-source.zip": "edfd8640077ba662d2609dac801a4c0165b7dbfb080da20e7b61cb903afa8f54",
@@ -305,6 +846,7 @@
     "refined-rocky-proxy-performance.json": "a3560f659d844826a595b60c1c9943f89e582b9bb2888493247c687fc5d183c7",
     "refined-source.zip": "67596ea37131aca3442e2213ccd83905cbb73b873acb08dc173310744493b4fb",
     "refined-verify.txt": "d68006e84e2a1deac09a0b13671f15e5a84713453d4514eec28da45b6796b9dd",
+    "rejected-collective-first-source.zip": "67c7f9e64d6e616bd44dba778644a68e0769a54d4dbb1b50a5f720ba1d0dbe8e",
     "rejected-extrapolation-quality.json.gz": "1292dca8317074023fd542204303d068acc380a4e1d3dd1a747d172ad75e9405",
     "rejected-extrapolation-source.zip": "1c9e9dfe44da4c4d35ea03d9725a46a83f4ae8fcff1ea1bb435660e3b6c68ba2",
     "rejected-free-motion-source.zip": "ec4e0998c38752eccc542d383c0b2dd55efe0cb386cbe5ae55405d0edfb3d8f9",
@@ -318,8 +860,11 @@
     "rejected-position-workset-source.zip": "02efa8f0a1e269737a1022c65784f07f1b2ed5287507fc4fcbc09399506d91c8",
     "rejected-single-step-quality.json.gz": "32bc5bcf9e9459741b6514e6608d36b4c7ea220c0836791f908d897e197bb585",
     "rejected-sor15-source.zip": "efaf0ae91df9411702a8886d5c3b7845acc5ef6b2063467735b1440e665518fa",
+    "rejected-velocity-colors-source.zip": "86e77775cb9e8b559419ff59a37754dd4b8ca6eef48f700ea77c17313870328d",
     "rejected-velocity-sor-source.zip": "5eda16eb904884b1f55b3d1db1cefd5c8fd137b4129623e9502c9ed683971f34",
     "rejected-worker-two-source.zip": "50a2c98cbfc0991459e24c9a8ecf18d03ce9b859654a21cc8977738ee60c63f8",
+    "relative-motion-probe-source.zip": "054d0e81825caa204eef9b08cf13a962d1249580fb9bc319f30679cf30e80ab5",
+    "relative-motion-probe.json.gz": "30a9cfa1409e9cc1d14867466961eb2bea1856816aa47a1ef3c9ef486ed0e372",
     "relative-plan-probe.json": "39e2c6f1943c9b649c2a3cd21f39e3c75179ed1fbca14eba39587631a83984c6",
     "replay-typecheck.txt": "5d2621db1ba917f0fd3e4b61d59d7346799c26ab7a867e1312f429f7a8c1bd50",
     "residual-rounds-blast-quality.json.gz": "796211633b606a8f5d3b48c0fd3467a6ce905b01a75df81f8b4cf95c9b859aef",
@@ -337,6 +882,7 @@
     "session-memory.heapprofile.gz": "afc44a1eb906acaabe83257cc104810d8aca79727bfaeb1a8d5736380514188b",
     "session-memory.json.gz": "90607b97065a3e2859c69b605038ba49f63ab9dfb42648b3c6fee6adb5fdaf59",
     "session-source.zip": "180c47d442d0f38c130283a8fe29ef8126955d8b86396c9e3f7b776f7d9274ac",
+    "shared-copy-probe.json": "cd7cbdee9713bc7f6d35457bab2eeff62480b575d1d896acdac908f299ba7345",
     "simd-combined-byte-wind.json": "e5e7894a5906bb35bb3e6e631200b9fdc35cc0a5dda75a9e3e4c58a049e2d1c5",
     "simd-combined-performance.json.gz": "f8a056809f477e355273b0b4f4c277b794560547f73f42fee64aeec842073903",
     "simd-combined-source.zip": "e439f5f608d2350c1d1c12a5f4551f078ce9026f9389d53a9ab9a0d5fd8d6c9b",
@@ -344,11 +890,22 @@
     "simd-position-performance.json.gz": "7ae594be94ef7da64b5c561364f8999fa08adb9188043ff18dc86c1c3c400c19",
     "simd-position-source.zip": "f78644e6c8c69314e670f89dc22a871b73f3634c253a648ff7bd97588c73086a",
     "sor15-quality.json.gz": "c39c449822e5cbcdcb30173004f29d46b4a937bbac9a1bea419967a12bb6a126",
+    "static-preparation-byte-90.json": "8103a376e74b91f47f1543deeb1ddbb1467d4080bf54670769092aafd8d67950",
+    "static-preparation-performance.json.gz": "8e1c69f300866360afb45522d4e3034985e1d45357177199fcbb10837da0dcd0",
+    "static-preparation-source.zip": "773515c199980ae05a5a430a5e575a12e60b2ddd74e1b2462f77bd35da4b8803",
     "targeted-tests.txt": "bf41fb797106e693e7fe6cf1f64fad17f0c36c11e8a2e73ef07364de8d727c3c",
     "trace-off.json.gz": "31399316a1c4e14772a7516cf7872a3503083f617120be4caa153260e8dffdc0",
     "velocity-sor-performance.json.gz": "c3f8bab6eb940694d3237fe81f61a728c0ca2781fcf519995b35dce979fea90e",
     "velocity-sor-quality.json.gz": "eb4eb8a0e65d169f1c46c3a8a8be6f136ccdf1003431f45c535f7d3297baec6d",
     "verify.txt": "010fa2537549d53aeb73301606c8830b291205934f60ed894def5420e28246be",
+    "warm-projection-axis-byte-660.json": "6cc275bc081f84757d2607f8808776364be09feeb983a5634d154fc978e08dc6",
+    "warm-projection-axis-performance.json.gz": "9ade7635d51028128c5aa731d511096743f91cef6b19865c0fd0c4b7371ca448",
+    "warm-projection-axis-source.zip": "3251d378fe56bde8e718feae69d0f5c19144e6a1d6e5d76a12c15895e48ddc8d",
+    "warm-projection-axis-stages.json.gz": "6de3a49f0bc12f69e41e1bb1f0bb7362936bece04234f58c8f7778e3eeb8089f",
+    "warm-scratch-byte-90.json": "4bb04845a1ce3b4d6d0a20ada16b9edcf05da6d66e563fe72d7a7c2d26bea02c",
+    "warm-scratch-performance.json.gz": "2d8222f9da3c0f842182f2ff188b04ab02b30989cb4bbce267a6ea5087c90dc6",
+    "warm-scratch-source.zip": "800542fdce4871b9cf9d0b2b9b85aea17b83e1a69ec2eb5a272460bd7b502f71",
+    "warm-scratch-stages-v2.json.gz": "898ed633483fbe4600da239d41723168487f5712068f561b5234a5b7564f6933",
     "wide-projection-performance.json.gz": "929c3f2a5de7d014e78a1835140a75754001a9923930f6aeff0322d23e7366eb",
     "wide-projection-quality.json.gz": "89872de97d18bbcbf8c2f3d6541a32d2b115b3a7825c7a7162e4d1d5c2e6ba8b",
     "wide-projection-source.zip": "31efd3e02af62a076434a51b9fb4c2f242a88e2f0f2831dcf8b6836c11f26b32",
@@ -364,10 +921,18 @@
     "worker-failure-byte.json": "daeff4b94609ba773a79415933c8182b13b314b4675a103ac92b9b5264475ae5",
     "worker-four-performance.json.gz": "5b313109dc2c5afa59290517718784f9b5819626178331ed5960de1c1f1770e8",
     "worker-four-source.zip": "34b18b9d9441e52affb0ff8043271be18801d1673eee3150018216e7a84a7fbe",
+    "worker-hybrid-byte-90.json": "f467d56e5d6e60dd7b5c4d1294241cb0106e6971439d7eea636847b0d27722bb",
+    "worker-hybrid-cpu.json.gz": "350aa70b9856a5a10314764b8d62ca1e3900dc3df45a5414f417d8c5115c9e68",
+    "worker-hybrid-source.zip": "578e61eb47d97b02df6572846d3a4359f15468fd1467ea50cd856bf8ed06156e",
     "worker-position-failure-byte.json": "59adbe9a86d2d8a4c1566a08c295e760d6edf47a3c75391452f1e429f565a3cc",
     "worker-profile.json.gz": "3ffb56ba598b2ec8c0ecdb4e5373410d0fc72d4d687df9943b9f752212942b92",
     "worker-profile.json.gz.rocky-pass-10000-42-wind-0.cpuprofile": "fb9003e317a4643132bf1ee6064a0de81c7b720d9b2490beda307587140e1aa1",
     "worker-proxy20k-byte.json": "713092907103ba869c12ffad71350ce31885872a8fc101df9f20a8714f237c75",
+    "worker-sixteen-byte-90.json": "d07f32bc898c5f45831f9e516626ab473f038fccd2c5b642dd5930b2cd4cd20a",
+    "worker-sixteen-performance.json.gz": "cdbe8365fcaea55db91414cf19187b5cb1b288169160169f312ad77f92bea053",
+    "worker-sixteen-source.zip": "fc0086e568c902ad02bd506300d219b18a1e0edb5865538001343477acd24aa1",
+    "worker-spin-cpu.json.gz": "cd6e82a5ecd7b0b8e406ac51d8a8579ee1b90336c19d38138ee954698bb7bb11",
+    "worker-spin-source.zip": "b604cf556d260a7a6a20f010928dd9c539df66690e39394617c2c187c7b3c3a1",
     "worker-two-performance.json.gz": "0e0c84fc2a83a017ca13447162e65caac5e92d1d120ce031f973ff362207e8c1",
     "worker-verify.txt": "ad1fec62319445163ca055002b6be76d820c1eea9967a929c1286c883e2cec46",
     "worker-workset-performance.json.gz": "cd14a4a189633ea1f218e25929760435d5b5324202e91f64487cb083e2bd299c",

@@ -1,0 +1,116 @@
+{
+  "browser": "151.0.7922.34",
+  "profile": "Isolated copy throughput in a paused page; not app frame or quality acceptance.",
+  "count": 10000,
+  "iterations": 10000,
+  "rows": [
+    {
+      "name": "regular-regular",
+      "repeat": 0,
+      "ms": 6.259999997913837,
+      "nsPerByte": 0.007824999997392296
+    },
+    {
+      "name": "regular-shared",
+      "repeat": 0,
+      "ms": 20.310000002384186,
+      "nsPerByte": 0.02538750000298023
+    },
+    {
+      "name": "shared-regular",
+      "repeat": 0,
+      "ms": 20.270000003278255,
+      "nsPerByte": 0.025337500004097818
+    },
+    {
+      "name": "shared-shared",
+      "repeat": 0,
+      "ms": 21.689999997615814,
+      "nsPerByte": 0.027112499997019767
+    },
+    {
+      "name": "wasm-f64-loop",
+      "repeat": 0,
+      "ms": 19.049999997019768,
+      "nsPerByte": 0.02381249999627471
+    },
+    {
+      "name": "wasm-memory-copy",
+      "repeat": 0,
+      "ms": 6.46000000089407,
+      "nsPerByte": 0.008075000001117588
+    },
+    {
+      "name": "regular-regular",
+      "repeat": 1,
+      "ms": 6.284999996423721,
+      "nsPerByte": 0.007856249995529651
+    },
+    {
+      "name": "regular-shared",
+      "repeat": 1,
+      "ms": 20.554999999701977,
+      "nsPerByte": 0.02569374999962747
+    },
+    {
+      "name": "shared-regular",
+      "repeat": 1,
+      "ms": 20.730000004172325,
+      "nsPerByte": 0.025912500005215406
+    },
+    {
+      "name": "shared-shared",
+      "repeat": 1,
+      "ms": 21.910000003874302,
+      "nsPerByte": 0.027387500004842878
+    },
+    {
+      "name": "wasm-f64-loop",
+      "repeat": 1,
+      "ms": 18.96000000089407,
+      "nsPerByte": 0.023700000001117588
+    },
+    {
+      "name": "wasm-memory-copy",
+      "repeat": 1,
+      "ms": 6.53999999910593,
+      "nsPerByte": 0.008174999998882413
+    },
+    {
+      "name": "regular-regular",
+      "repeat": 2,
+      "ms": 6.094999998807907,
+      "nsPerByte": 0.0076187499985098835
+    },
+    {
+      "name": "regular-shared",
+      "repeat": 2,
+      "ms": 20.484999999403954,
+      "nsPerByte": 0.02560624999925494
+    },
+    {
+      "name": "shared-regular",
+      "repeat": 2,
+      "ms": 20.61999999731779,
+      "nsPerByte": 0.02577499999664724
+    },
+    {
+      "name": "shared-shared",
+      "repeat": 2,
+      "ms": 21.92000000178814,
+      "nsPerByte": 0.027400000002235175
+    },
+    {
+      "name": "wasm-f64-loop",
+      "repeat": 2,
+      "ms": 18.774999998509884,
+      "nsPerByte": 0.023468749998137355
+    },
+    {
+      "name": "wasm-memory-copy",
+      "repeat": 2,
+      "ms": 6.345000006258488,
+      "nsPerByte": 0.00793125000782311
+    }
+  ]
+}
