@@ -1,10 +1,16 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+
+// Historical external-v1 data renderer. Never regenerate a current design document.
+const output = resolve(process.argv.find(value => value.startsWith('--output='))?.slice(9)
+  ?? 'test-results/external-v1-report.md');
 
 const read=(name:string)=>JSON.parse(readFileSync(`baselines/external-${name}.json`,'utf8'));
 const before=read('before'),after=read('after');
 const median=(v:number[])=>v.sort((a,b)=>a-b)[Math.floor(v.length/2)]!;
 const f=(v:number)=>v.toFixed(2);
-const lines=[`# External forces acceptance results — issue #32`, '',
+const lines=[`# Historical external-v1 measurements`, '',
+  'These results describe the archived external-v1 implementation and its original gates. They do not certify the current CrowdKernel.', '',
   `Baseline: \`${before.commit}\`. Implementation: working tree source SHA-256 \`${after.workingSourceSha256}\`.`,
   `Measured on ${after.cpu.trim()}, Node ${after.runtime}. Headless CPU results exclude rendering.`, '',
   'No-input baseline was captured before implementation. Each normal timing case uses seed 42, default radius 3.2, dt 1/60, 30 warmup ticks and 90 measured ticks, with three repeats. Active inputs begin at tick 30. All reported counts are actual created and minimum active counts, not requested-only counts.', '',
@@ -37,7 +43,7 @@ for(const mode of modes) {
   }
 }
 lines.push('', '`few`: five backwards 400 px/s hits; `blast`: linear radial 400 px/s peak; `global`: whole-world +y 400 px/s; `proxy`: one radius-18 circle moving right at 240 px/s from 24 px behind the current leftmost agent; `overlap`: eight overlapping 50 px/s² acceleration regions. Direct applications sum per-tick unique targets; proxy recipients appear in contact counters, not direct input counts. Each proxy run must affect at least two agents (`proxyDrivenPeak`) or the gate fails. An earlier empty-space proxy trial was discarded after its zero candidate count exposed the invalid measurement setup.', '',
-  'Full pass distributions, cell-query work, speed caps, physical/contact recipients, static sweeps and process memory samples are in the corresponding `baselines/external-*-performance.json` files. Query-cell upper bounds are explicitly labeled; prediction/contact/static timing boundaries are documented in [the design](external-forces.md).', '',
+  'Full pass distributions, cell-query work, speed caps, physical/contact recipients, static sweeps and process memory samples are in the corresponding `baselines/external-*-performance.json` files. Interpret timing boundaries against the recorded source version, not the current solver.', '',
   '## Independent quality runs', '', '| Input | Actual agents | Maximum sampled penetration px | Maximum wall overlaps | Query saturation | Speed caps |',
   '|---|---:|---:|---:|---:|---:|');
 for(const mode of modes)for(const r of read(`${mode}-quality`).rows) {
@@ -62,6 +68,7 @@ lines.push('', `Chromium ${browser.browser}, 1440×960, headless, one fixed step
   '- Supported moving shapes are circles. Rotation-dependent box/capsule contact, two-way vehicle reaction, damage, GPU execution and engine porting are outside this profile. Region forces ignore wall occlusion. Stationary bodies retain collision geometry until removed.',
   '- Candidate truncation, initial overlap and crushing have bounded/diagnosed behavior, not an unlimited nonpenetration guarantee. Pair updates are sequential and require a new reduction/coloring design before parallelization.', '',
   `**Normal-profile gate: ${failed?'FAIL — do not close the issue on these results.':'PASS for the declared CPU profile and sampled quality scope.'}**`, '');
-writeFileSync('docs/external-forces-results.md',lines.join('\n'));
-console.log(`Wrote docs/external-forces-results.md; normal-profile gate ${failed?'FAIL':'PASS'}`);
+mkdirSync(dirname(output), { recursive: true });
+writeFileSync(output,lines.join('\n'));
+console.log(`Wrote ${output}; historical normal-profile gate ${failed?'FAIL':'PASS'}`);
 if(failed)process.exitCode=1;
