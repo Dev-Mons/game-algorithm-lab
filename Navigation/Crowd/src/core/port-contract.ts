@@ -3,6 +3,7 @@ import { DEFAULT_CROWD_CONFIG } from './config';
 import { validateInitialState, type CrowdInitialState, type CrowdAgentInput } from './kernel-input';
 import type { CrowdConfig, Rect, Vec2 } from './types';
 import type { ExternalInput } from './external-influences';
+import { validateGoalRegions } from './goal-regions';
 
 export const PORT_FIXTURE_SCHEMA = 'crowd-port-fixture-v1';
 export const PORT_OUTPUT_SCHEMA = 'crowd-port-output-v1';
@@ -11,6 +12,7 @@ export const AGENT_STATE_FIELDS = ['x', 'y', 'vx', 'vy', 'active', 'stalledFor',
 /** Commands apply before the transition tick -> tick + 1, in array order. */
 export type CrowdCommand = { tick: number } & (
   | { kind: 'goal'; x: number; y: number }
+  | { kind: 'goal-regions'; regions: Rect[] }
   | { kind: 'obstacles'; obstacles: Rect[] }
   | { kind: 'external'; input: ExternalInput }
 );
@@ -25,6 +27,7 @@ export interface CrowdRunInput {
 export interface CrowdFrame {
   tick: number;
   goals: Vec2[];
+  goalRegions?: Rect[];
   agents: Required<CrowdAgentInput>[];
 }
 export interface CrowdRunOutput {
@@ -45,6 +48,8 @@ export function parseCrowdRun(value: unknown): CrowdRunInput {
   }
   for (const [key, defaultValue] of Object.entries(DEFAULT_CROWD_CONFIG)) {
     const field = value.config[key];
+    // Additive TinyDead options: frozen v1 inputs retain false/0 defaults.
+    if ((key === 'preserveBlockedGoal' || key === 'excessSpeedHalfLife') && field === undefined) continue;
     if (typeof field !== typeof defaultValue || (typeof field === 'number' && !Number.isFinite(field))) {
       throw new TypeError(`Missing or invalid config.${key}`);
     }
@@ -69,6 +74,8 @@ export function parseCrowdRun(value: unknown): CrowdRunInput {
     previousTick = command.tick;
     if (command.kind === 'goal') {
       if (!Number.isFinite(command.x) || !Number.isFinite(command.y)) throw new RangeError('Invalid goal command.');
+    } else if (command.kind === 'goal-regions') {
+      validateGoalRegions(command.regions, run.config.width, run.config.height);
     } else if (command.kind === 'obstacles') {
       if (!Array.isArray(command.obstacles) || command.obstacles.some(rect => !object(rect)
         || ![rect.x, rect.y, rect.width, rect.height].every(Number.isFinite) || rect.width < 0 || rect.height < 0)) {
@@ -87,6 +94,7 @@ export function applyCrowdCommand(kernel: CrowdKernel, command: CrowdCommand): v
   if (command.tick !== kernel.stepCount) throw new RangeError('Command does not match the current tick.');
   switch (command.kind) {
     case 'goal': kernel.setGoal(command.x, command.y); break;
+    case 'goal-regions': kernel.setGoalRegions(command.regions); break;
     case 'obstacles': kernel.updateObstacles(command.obstacles); break;
     case 'external': kernel.enqueueExternal(command.input); break;
     default: throw new RangeError('Unknown crowd command.');
@@ -98,6 +106,7 @@ export function snapshotCrowd(kernel: CrowdKernel): CrowdFrame {
   return {
     tick: kernel.stepCount,
     goals: kernel.goals.map(goal => ({ ...goal })),
+    ...(kernel.goalRegions.length ? { goalRegions: kernel.goalRegions.map(region => ({ ...region })) } : {}),
     agents: Array.from({ length: kernel.state.count }, (_, i) => ({
       id: kernel.agentIds[i]!, flow: kernel.agentFlow[i]!, radius: kernel.agentRadii[i]!,
       x: kernel.state.x[i]!, y: kernel.state.y[i]!, vx: kernel.state.vx[i]!, vy: kernel.state.vy[i]!,

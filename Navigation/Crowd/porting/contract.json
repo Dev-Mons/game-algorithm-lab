@@ -11,9 +11,15 @@
     "movementAuthority": "CrowdKernel owns position and velocity integration. Engine physics must not independently integrate or resolve these same bodies.",
     "order": "Preserve agent array order, descending IDs within spatial cells, center-first bounded queries, obstacle order, heading channels and sequential swept-pair projection. Parallel endpoint writes require a separately validated algorithm.",
     "contacts": { "candidates": 24, "pairsPerAgent": 8, "iterations": 8 },
+    "goalRegions": "Optional shared alternatives: up to 32 positive rectangles inside the world override flow point goals. Multi-source reverse Dijkstra seeds valid interior points in intersecting cells with cell-center-to-seed cost. Preserve clearance and obstacles. Arrive when the agent center is inside any region with valid static clearance; goalRadius is ignored. No equal allocation or destination capacity policy.",
+    "blockedGoal": "preserveBlockedGoal=true keeps an obstacle-covered goal cell blocked and its potentials unreachable. Omitted/false preserves legacy goal-cell opening.",
+    "excessSpeed": "excessSpeedHalfLife>0 decays only prior speed above maxSpeed by exp2(-fixedDelta/halfLife), before current external input. Omitted/0 disables damping.",
+    "staticRecovery": "After an invalid static projection, try the four faces of at most eight initially overlapping rectangles, nearest valid candidate first. Preserve world clearance and do not cross initially separate obstacles. Bounded recovery can fail for fully blocked geometry.",
     "limitations": "Bounded crowd approximation; overcompression may persist. A moving circular proxy is a push brush, not a rigid collider. No global penetration guarantee."
   },
   "initialization": {
+    "optionalConfig": { "preserveBlockedGoal": false, "excessSpeedHalfLife": 0 },
+    "optionalInitialState": "goalRegions: Rect[]. Omitted/empty selects legacy flow point goals. Copy input; retain flow goals for point-mode restoration.",
     "inputs": "Explicit complete config, flows [{id,goal}], obstacle rectangles, maxAgentRadius and ordered agents. Fixture initial states include every motion field; target does not need a seed or spawn generator.",
     "agentFields": ["id", "flow", "radius", "x", "y", "vx", "vy", "active", "stalledFor", "intentX", "intentY", "heading"],
     "defaults": "For direct kernel callers only: vx/vy/stalledFor default to 0, active to 1, intent and heading to sampled navigation. Fixtures carry explicit values.",
@@ -22,6 +28,8 @@
     "lifecycle": "Create capacity, initialize once at tick 0 (external generation 1), then step. Reinitialize clears input history and increments generation. A replay is one generation; checkpoints are observations, not mid-run restore states."
   },
   "commands": {
+    "goal-regions": "{tick,kind:goal-regions,regions:Rect[]}: replace shared destination regions and rebuild both radius classes, reactivating arrivals while preserving velocity/heading. Empty regions restore flow point goals. A goal command clears regions.",
+    "liveKinematicStream": "Not a v1 replay command. external.setKinematicProxies(circles,present,dt) replaces up to 24 copied circular motion segments without input history; radius in (0,64], speed <=600. Borrowed presence mask can wake directly contacted arrivals; removed slots must also be inactive. Host supplies every step, clears with [], and records poses/presence separately for replay.",
     "ordering": "Sorted by nondecreasing tick; equal-tick commands execute in array order before step tick -> tick+1. No implicit frame clock. Individual command errors abort a replay; whole-tick transactions are not provided.",
     "goal": "{tick,kind:goal,x,y}: common goal, preserves momentum and heading, reactivates arrived bodies. Initial flows may have different goals; per-agent goal changes are unsupported.",
     "obstacles": "{tick,kind:obstacles,obstacles}: replaces the obstacle list and rebuilds navigation; rejected if intersecting active body clearance.",

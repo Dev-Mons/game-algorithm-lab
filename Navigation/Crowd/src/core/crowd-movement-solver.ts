@@ -88,6 +88,8 @@ export class CrowdMovementSolver {
   private recoveryDistance = new Float64Array(0);
   private contactNeighborIndices = new Int32Array(0);
   private contactDistances = new Float64Array(0);
+  private contactPaddingByAgent = new Float64Array(0);
+  private contactDiameters = new Float64Array(0);
   private contactLambda = new Float64Array(0);
   private contactCount = new Uint8Array(0);
   private contactCorrected = new Uint8Array(0);
@@ -99,6 +101,9 @@ export class CrowdMovementSolver {
   private readonly queryLimit = MAX_CONTACT_QUERY_VISITS;
   private pairNormalX = 1;
   private pairNormalY = 0;
+  private readonly escapeFaceX = new Float64Array(4);
+  private readonly escapeFaceY = new Float64Array(4);
+  private readonly escapeDistances = new Float64Array(4);
   private readonly integrator = new SweptCircleStaticIntegrator();
   private readonly integration: SweptCircleSlideOutput = {
     x: 0,
@@ -288,12 +293,17 @@ export class CrowdMovementSolver {
   }
 
   private buildContactConstraints(input: CrowdMovementInput): void {
+    // TinyDead CPU optimization: predictions stay fixed during candidate
+    // selection, so each body's swept search padding is computed once.
+    for (let agent = 0; agent < input.current.count; agent += 1) {
+      this.contactPaddingByAgent[agent] = this.contactPadding(input, agent);
+    }
     for (let agent = 0; agent < input.current.count; agent += 1) {
       if (input.current.active[agent] !== 1) continue;
       const radius = this.radius(input, agent);
       // Retain near contacts that another Jacobi correction can close later
       // in this step, without rebuilding the index or increasing its query cap.
-      const padding = this.contactPadding(input,agent);
+      const padding = this.contactPaddingByAgent[agent]!;
       const queryRadius = radius + (input.maxAgentRadius ?? input.agentRadius)
         + Math.max(0, input.agentGap) + padding;
       const candidateCount = input.index.queryCandidates(
@@ -316,7 +326,7 @@ export class CrowdMovementSolver {
         if (distanceSquared > (contactDistance + padding) ** 2) continue;
         // A faster higher-ID body can discover a swept pair beyond the lower
         // body's ordinary horizon. Exactly one endpoint owns that pair.
-        if(other<agent&&distanceSquared<=(contactDistance+this.contactPadding(input,other))**2)continue;
+        if (other < agent && distanceSquared <= (contactDistance + this.contactPaddingByAgent[other]!) ** 2) continue;
         if(!(this.freeSpace.contains(agent,input.current.x[other]!,input.current.y[other]!))) {
           const ax=input.current.x[agent]!,ay=input.current.y[agent]!;
           const bx=input.current.x[other]!,by=input.current.y[other]!;
@@ -330,6 +340,11 @@ export class CrowdMovementSolver {
         this.insertNearestContact(agent, other, distanceSquared / (contactDistance * contactDistance));
       }
       const count = this.contactCount[agent]!;
+      const base = agent * MAX_CONTACTS_PER_AGENT;
+      for (let contact = 0; contact < count; contact += 1) {
+        const other = this.contactNeighborIndices[base + contact]!;
+        this.contactDiameters[base + contact] = radius + this.radius(input, other) + Math.max(0, input.agentGap);
+      }
       this.result.contactChecks += count;
       this.result.totalNeighbors += count;
       this.result.maxNeighbors = Math.max(this.result.maxNeighbors, count);
@@ -415,7 +430,7 @@ export class CrowdMovementSolver {
           const lambdaIndex = base + contact;
           const other = this.contactNeighborIndices[lambdaIndex]!;
           if (input.current.active[other] !== 1) continue;
-          const diameter = this.radius(input, agent) + this.radius(input, other) + Math.max(0, input.agentGap);
+          const diameter = this.contactDiameters[lambdaIndex]!;
           this.projectClosingMotion(input,agent,other,diameter);
           const lambdaLimit = Math.max(diameter, correctionLimit * 2);
           const dx = this.predictedX[other]! - this.predictedX[agent]!;
@@ -551,9 +566,9 @@ export class CrowdMovementSolver {
 
   private integratePredictions(input: CrowdMovementInput): void {
     input.next.copyFrom(input.current);
-    input.next.heading.set(this.headings.subarray(0, input.current.count));
     const inverseDelta = 1 / Math.max(EPSILON, input.fixedDelta);
     for (let agent = 0; agent < input.current.count; agent += 1) {
+      input.next.heading[agent] = this.headings[agent]!;
       if (input.current.active[agent] !== 1) continue;
       const startX = input.current.x[agent]!;
       const startY = input.current.y[agent]!;
@@ -593,6 +608,14 @@ export class CrowdMovementSolver {
         4,
         this.integration,
       );
+      // Reuse the first integration's recovered prediction after contacts if
+      // it is still valid. Do not search for the same escape twice per step.
+      if (this.integration.startedOverlapping && input.recovery[agent] === 1
+        && this.canExitStaticOverlap(input, startX, startY, targetX, targetY, clearance)) {
+        input.next.x[agent] = targetX;
+        input.next.y[agent] = targetY;
+        continue;
+      }
       input.next.x[agent] = this.integration.x;
       input.next.y[agent] = this.integration.y;
       if(this.integration.contactCount>0) {
@@ -625,6 +648,7 @@ export class CrowdMovementSolver {
   ): boolean {
     let x = clamp(inputX, clearance, input.worldWidth - clearance);
     let y = clamp(inputY, clearance, input.worldHeight - clearance);
+    let adjusted = x !== inputX || y !== inputY;
     let candidates = this.obstacleIndex.query(x - clearance, y - clearance, x + clearance, y + clearance);
     let cursor = 0;
     while (cursor < candidates.length) {
@@ -647,11 +671,19 @@ export class CrowdMovementSolver {
       )) continue;
       x = this.projection.x;
       y = this.projection.y;
+      adjusted = true;
       // A repair can enter another obstacle's bounds. Re-query at the repaired
       // position, retaining the original one-pass obstacle order exactly.
       candidates = this.obstacleIndex.query(x - clearance, y - clearance, x + clearance, y + clearance);
       cursor = 0;
       while (cursor < candidates.length && candidates[cursor]! <= index) cursor++;
+    }
+    // Sequential projection can push a body back into an earlier rectangle
+    // at a seam. Only invalid repaired positions need the bounded face search.
+    if (adjusted && !this.staticPositionValid(input, x, y, clearance)
+      && this.escapeStaticOverlap(input, inputX, inputY, clearance)) {
+      x = this.projection.x;
+      y = this.projection.y;
     }
     // Publish even sub-EPSILON repairs: the navigation and sweep checks use
     // squared-distance tolerances and can reject this tiny penetration. Dropping
@@ -660,6 +692,73 @@ export class CrowdMovementSolver {
     if (x === inputX && y === inputY) return false;
     this.projection.x = x;
     this.projection.y = y;
+    return true;
+  }
+
+  private staticPositionValid(input: CrowdMovementInput, x: number, y: number, clearance: number): boolean {
+    if (x < clearance || y < clearance || x > input.worldWidth - clearance || y > input.worldHeight - clearance) {
+      return false;
+    }
+    for (const index of this.obstacleIndex.query(x - clearance, y - clearance, x + clearance, y + clearance)) {
+      if (distanceSquaredToRect(x, y, input.obstacles[index]!) < (clearance - 1e-7) ** 2) return false;
+    }
+    return true;
+  }
+
+  private escapeStaticOverlap(input: CrowdMovementInput, startX: number, startY: number, clearance: number): boolean {
+    let bestDistance = Number.POSITIVE_INFINITY;
+    let overlaps = 0;
+    const faceX = this.escapeFaceX, faceY = this.escapeFaceY, distances = this.escapeDistances;
+    // Preserve obstacle order; at most eight initial overlaps and four faces
+    // each. A failed search leaves the original projection result unchanged.
+    for (const rectangle of input.obstacles) {
+      if (distanceSquaredToRect(startX, startY, rectangle) >= clearance ** 2) continue;
+      if (++overlaps > 8) break;
+      const nearestX = clamp(startX, rectangle.x, rectangle.x + rectangle.width);
+      const nearestY = clamp(startY, rectangle.y, rectangle.y + rectangle.height);
+      faceX[0] = rectangle.x - clearance - 1e-4;
+      faceX[1] = rectangle.x + rectangle.width + clearance + 1e-4;
+      faceX[2] = nearestX;
+      faceX[3] = nearestX;
+      faceY[0] = nearestY;
+      faceY[1] = nearestY;
+      faceY[2] = rectangle.y - clearance - 1e-4;
+      faceY[3] = rectangle.y + rectangle.height + clearance + 1e-4;
+      for (let side = 0; side < 4; side++) {
+        distances[side] = (faceX[side]! - startX) ** 2 + (faceY[side]! - startY) ** 2;
+      }
+      // Nearest first avoids long segment queries once a closer escape exists.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        let side = 0;
+        for (let other = 1; other < 4; other++) {
+          if (distances[other]! < distances[side]!) side = other;
+        }
+        const distance = distances[side]!;
+        distances[side] = Number.POSITIVE_INFINITY;
+        if (distance >= bestDistance) break;
+        const x = faceX[side]!, y = faceY[side]!;
+        if (!this.canExitStaticOverlap(input, startX, startY, x, y, clearance)) continue;
+        bestDistance = distance;
+        this.projection.x = x;
+        this.projection.y = y;
+        break;
+      }
+    }
+    return Number.isFinite(bestDistance);
+  }
+
+  private canExitStaticOverlap(
+    input: CrowdMovementInput, startX: number, startY: number, x: number, y: number, clearance: number,
+  ): boolean {
+    if (!this.staticPositionValid(input, x, y, clearance)) return false;
+    // An initially overlapping rounded rectangle is convex, so a straight
+    // escape cannot reenter it. Every initially separate obstacle must remain
+    // clear along the entire segment, including narrow walls near the seam.
+    for (const index of this.obstacleIndex.querySegment(startX, startY, x, y, clearance)) {
+      const obstacle = input.obstacles[index]!;
+      if (distanceSquaredToRect(startX, startY, obstacle) >= clearance ** 2
+        && segmentDistanceSquaredToRect(startX, startY, x, y, obstacle) < (clearance - 1e-7) ** 2) return false;
+    }
     return true;
   }
 
@@ -820,6 +919,8 @@ export class CrowdMovementSolver {
     this.recoveryDistance = new Float64Array(count);
     this.contactNeighborIndices = new Int32Array(count * MAX_CONTACTS_PER_AGENT);
     this.contactDistances = new Float64Array(count * MAX_CONTACTS_PER_AGENT);
+    this.contactPaddingByAgent = new Float64Array(count);
+    this.contactDiameters = new Float64Array(count * MAX_CONTACTS_PER_AGENT);
     this.contactLambda = new Float64Array(count * MAX_CONTACTS_PER_AGENT);
     this.contactCount = new Uint8Array(count);
     this.contactCorrected = new Uint8Array(count);

@@ -29,6 +29,8 @@ export interface CrowdConfig {
   contactCellSize: number;
   maxSpeed: number;
   maxAcceleration: number;
+  /** Half-life of speed above maxSpeed, before new external input; omitted/0 disables damping. */
+  excessSpeedHalfLife?: number;
   /** Maximum commanded movement heading change in degrees per simulation second. */
   turnSpeed: number;
   agentRadius: number;
@@ -47,6 +49,8 @@ export interface CrowdConfig {
   maximumContactCorrection: number;
   /** Opt-in legacy congestion routing; the interactive app uses a fixed field. */
   dynamicRouting: boolean;
+  /** Keep an obstacle-covered goal cell blocked. Omitted means false for legacy replays. */
+  preserveBlockedGoal?: boolean;
   dynamicFlowRebuildInterval: number;
   dynamicFlowTargetDensity: number;
   dynamicFlowDensityWeight: number;
@@ -65,6 +69,8 @@ export interface ScenarioDefinition {
   name: string;
   description: string;
   goal: Vec2;
+  /** Shared alternative destinations. An agent may enter any region; overrides flow point goals. */
+  goalRegions?: readonly Rect[];
   obstacles: Rect[];
   spawn: Rect;
   flows?: readonly ScenarioFlowDefinition[];

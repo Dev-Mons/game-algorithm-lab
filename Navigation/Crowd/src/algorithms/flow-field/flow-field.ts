@@ -3,6 +3,7 @@ import { clamp } from '../../core/math';
 import { distanceSquaredToRect, segmentDistanceSquaredToRect } from '../../core/obstacle-collision';
 import type { GlobalNavigator, Rect, Vec2 } from '../../core/types';
 import { StaticObstacleIndex } from '../../core/static-obstacle-index';
+import { containsPoint, validateGoalRegions } from '../../core/goal-regions';
 
 const EPSILON = 1e-9;
 const DIRECT_GOAL_DENSITY_FALLOFF = 0.1;
@@ -137,6 +138,16 @@ export class FlowField implements GlobalNavigator {
   /** Backward-compatible alias for the final potential. */
   readonly costs: Float64Array;
   goalCell = -1;
+  preserveBlockedGoal = false;
+  private goalRegions: readonly Rect[] = [];
+  /** Valid seed count per region, for authoring diagnostics (overlap is allowed). */
+  readonly regionSeedCounts: number[] = [];
+  private readonly seedRegion: Int16Array;
+  private readonly seedX: Float64Array;
+  private readonly seedY: Float64Array;
+  private readonly seedCost: Float64Array;
+  private readonly staticTargetSeed: Int32Array;
+  private readonly dynamicTargetSeed: Int32Array;
   clearance = 0;
   staticRebuildCount = 0;
   dynamicRebuildCount = 0;
@@ -164,6 +175,12 @@ export class FlowField implements GlobalNavigator {
     this.columns = Math.ceil(width / cellSize);
     this.rows = Math.ceil(height / cellSize);
     this.cellCount = this.columns * this.rows;
+    this.seedRegion = new Int16Array(this.cellCount).fill(-1);
+    this.seedX = new Float64Array(this.cellCount);
+    this.seedY = new Float64Array(this.cellCount);
+    this.seedCost = new Float64Array(this.cellCount);
+    this.staticTargetSeed = new Int32Array(this.cellCount).fill(-1);
+    this.dynamicTargetSeed = new Int32Array(this.cellCount).fill(-1);
     this.blocked = new Uint8Array(this.cellCount);
     this.staticClearance = new Float64Array(this.cellCount);
     this.terrainCost = new Float64Array(this.cellCount);
@@ -190,11 +207,13 @@ export class FlowField implements GlobalNavigator {
     this.heap = new IndexedMinHeap(this.cellCount);
   }
 
-  rebuild(goal: Vec2, obstacles: readonly Rect[], clearance = 0): void {
-    this.rebuildStatic(goal, obstacles, clearance);
+  rebuild(goal: Vec2, obstacles: readonly Rect[], clearance = 0, goalRegions: readonly Rect[] = []): void {
+    this.rebuildStatic(goal, obstacles, clearance, goalRegions);
   }
 
-  rebuildStatic(goal: Vec2, obstacles: readonly Rect[], clearance = 0): void {
+  rebuildStatic(goal: Vec2, obstacles: readonly Rect[], clearance = 0, goalRegions: readonly Rect[] = []): void {
+    validateGoalRegions(goalRegions, this.width, this.height);
+    this.goalRegions = goalRegions.map(region => ({ ...region }));
     this.clearance = Math.max(0, clearance);
     this.obstacles = obstacles;
     this.goalBlockers.fill(-1);
@@ -207,7 +226,13 @@ export class FlowField implements GlobalNavigator {
     const goalColumn = clamp(Math.floor(goal.x / this.cellSize), 0, this.columns - 1);
     const goalRow = clamp(Math.floor(goal.y / this.cellSize), 0, this.rows - 1);
     this.goalCell = goalRow * this.columns + goalColumn;
-    this.blocked[this.goalCell] = 0;
+    if (this.goalRegions.length) {
+      this.goalCell = -1;
+      this.buildRegionSeeds();
+    } else {
+      this.regionSeedCounts.length = 0;
+      if (!this.preserveBlockedGoal) this.blocked[this.goalCell] = 0;
+    }
     this.computeStaticTraversal();
     this.computePotential(this.terrainCost, this.staticPotential);
     this.computeDirections(this.staticPotential, this.staticDirectionX, this.staticDirectionY, 0, false);
@@ -297,6 +322,20 @@ export class FlowField implements GlobalNavigator {
   }
 
   sampleDirection(x: number, y: number, out: Vec2): boolean {
+    let goalX = this.goalX, goalY = this.goalY, region = -1;
+    if (this.goalRegions.length) {
+      if (this.containsGoal(x, y)) { out.x = 0; out.y = 0; return false; }
+      const seed = this.selectRegionSeed(x, y);
+      if (seed < 0) { out.x = 0; out.y = 0; return false; }
+      region = this.seedRegion[seed]!;
+      const target = this.goalRegions[region]!;
+      // Aim just inside the selected region instead of collapsing a wide exit
+      // to its center. A partially obstructed region falls back to its safe seed.
+      const insetX = Math.min(1e-4, target.width / 2), insetY = Math.min(1e-4, target.height / 2);
+      goalX = clamp(x, target.x + insetX, target.x + target.width - insetX);
+      goalY = clamp(y, target.y + insetY, target.y + target.height - insetY);
+      if (!this.isSegmentSafe(x, y, goalX, goalY)) { goalX = this.seedX[seed]!; goalY = this.seedY[seed]!; }
+    }
     const gx = clamp(x / this.cellSize - 0.5, 0, this.columns - 1);
     const gy = clamp(y / this.cellSize - 0.5, 0, this.rows - 1);
     const column0 = Math.floor(gx);
@@ -316,12 +355,12 @@ export class FlowField implements GlobalNavigator {
     const fieldX = this.sampleStencil(
       this.directionX,
       index00, index10, index01, index11,
-      weight00, weight10, weight01, weight11,
+      weight00, weight10, weight01, weight11, region,
     );
     const fieldY = this.sampleStencil(
       this.directionY,
       index00, index10, index01, index11,
-      weight00, weight10, weight01, weight11,
+      weight00, weight10, weight01, weight11, region,
     );
     const fieldLength = Math.sqrt(fieldX * fieldX + fieldY * fieldY);
     if (fieldLength > EPSILON) {
@@ -332,9 +371,9 @@ export class FlowField implements GlobalNavigator {
       out.y = 0;
     }
 
-    if (this.hasLineOfSight(x, y, this.goalX, this.goalY)) {
-      const directX = this.goalX - x;
-      const directY = this.goalY - y;
+    if (this.hasLineOfSight(x, y, goalX, goalY)) {
+      const directX = goalX - x;
+      const directY = goalY - y;
       const directLength = Math.sqrt(directX * directX + directY * directY);
       if (directLength > EPSILON) {
         const density = this.sampleStencil(
@@ -379,11 +418,74 @@ export class FlowField implements GlobalNavigator {
     }
 
     // Bilinear blending can point between two individually safe grid edges.
-    const lookAhead = this.cellSize * 0.8;
-    if (!this.isSegmentSafe(x, y, x + out.x * lookAhead, y + out.y * lookAhead)) {
+    const lookAhead = region < 0 ? this.cellSize * 0.8
+      : Math.min(this.cellSize * 0.8, Math.max(EPSILON, Math.hypot(goalX - x, goalY - y)));
+    if ((region >= 0 && out.x === 0 && out.y === 0)
+      || !this.isSegmentSafe(x, y, x + out.x * lookAhead, y + out.y * lookAhead)) {
       this.sampleSafeDiscreteDirection(x, y, lookAhead, out);
     }
     return out.x !== 0 || out.y !== 0;
+  }
+
+  containsGoal(x: number, y: number): boolean {
+    return this.goalRegions.some(region => containsPoint(region, x, y)) && this.isSegmentSafe(x, y, x, y);
+  }
+
+  /** Route-owned region, rather than the geometrically nearest unreachable exit. */
+  sampleGoal(x: number, y: number, out: Vec2): boolean {
+    if (!this.goalRegions.length) { out.x = this.goalX; out.y = this.goalY; return true; }
+    const seed = this.selectRegionSeed(x, y);
+    if (seed < 0) { out.x = x; out.y = y; return false; }
+    const region = this.goalRegions[this.seedRegion[seed]!]!;
+    out.x = clamp(x, region.x, region.x + region.width);
+    out.y = clamp(y, region.y, region.y + region.height);
+    return true;
+  }
+
+  private selectRegionSeed(x: number, y: number): number {
+    const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
+    const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
+    let best = Infinity, seed = -1;
+    for (let ny = Math.max(0, row - 1); ny <= Math.min(this.rows - 1, row + 1); ny++) {
+      for (let nx = Math.max(0, column - 1); nx <= Math.min(this.columns - 1, column + 1); nx++) {
+        const cell = ny * this.columns + nx;
+        if (this.dynamicTargetSeed[cell]! < 0) continue;
+        const cx = Math.min(this.width - EPSILON, (nx + .5) * this.cellSize);
+        const cy = Math.min(this.height - EPSILON, (ny + .5) * this.cellSize);
+        const cost = this.dynamicPotential[cell]! + Math.hypot(cx - x, cy - y) / this.cellSize * this.dynamicTraversalCost[cell]!;
+        if (cost >= best || !this.isSegmentSafe(x, y, cx, cy)) continue;
+        best = cost;
+        seed = this.dynamicTargetSeed[cell]!;
+      }
+    }
+    return seed;
+  }
+
+  private buildRegionSeeds(): void {
+    this.seedRegion.fill(-1);
+    this.seedCost.fill(Infinity);
+    this.regionSeedCounts.length = this.goalRegions.length;
+    this.regionSeedCounts.fill(0);
+    this.goalRegions.forEach((region, index) => {
+      const left = Math.floor(region.x / this.cellSize), top = Math.floor(region.y / this.cellSize);
+      const right = Math.min(this.columns - 1, Math.floor((region.x + region.width) / this.cellSize));
+      const bottom = Math.min(this.rows - 1, Math.floor((region.y + region.height) / this.cellSize));
+      for (let row = top; row <= bottom; row++) for (let column = left; column <= right; column++) {
+        const cell = row * this.columns + column;
+        if (this.blocked[cell]) continue;
+        const cx = Math.min(this.width - EPSILON, (column + .5) * this.cellSize);
+        const cy = Math.min(this.height - EPSILON, (row + .5) * this.cellSize);
+        const x = clamp(cx, region.x + Math.min(1e-4, region.width / 2), region.x + region.width - Math.min(1e-4, region.width / 2));
+        const y = clamp(cy, region.y + Math.min(1e-4, region.height / 2), region.y + region.height - Math.min(1e-4, region.height / 2));
+        if (!this.isSegmentSafe(cx, cy, x, y)) continue;
+        this.regionSeedCounts[index]!++;
+        const cost = Math.hypot(x - cx, y - cy) / this.cellSize;
+        if (cost >= this.seedCost[cell]!) continue;
+        this.seedCost[cell] = cost;
+        this.seedRegion[cell] = index;
+        this.seedX[cell] = x; this.seedY[cell] = y;
+      }
+    });
   }
 
   isBlockedAt(x: number, y: number): boolean {
@@ -425,6 +527,7 @@ export class FlowField implements GlobalNavigator {
     this.dynamicCostTarget.set(this.terrainCost);
     this.dynamicTraversalCost.set(this.terrainCost);
     this.dynamicPotential.set(this.staticPotential);
+    this.dynamicTargetSeed.set(this.staticTargetSeed);
     this.directionX.set(this.staticDirectionX);
     this.directionY.set(this.staticDirectionY);
     this.minimumDynamicStaticDrop.fill(0);
@@ -586,9 +689,22 @@ export class FlowField implements GlobalNavigator {
 
   private computePotential(traversalCost: Float64Array, output: Float64Array): void {
     output.fill(Number.POSITIVE_INFINITY);
-    output[this.goalCell] = 0;
+    const targets = output === this.staticPotential ? this.staticTargetSeed : this.dynamicTargetSeed;
+    targets.fill(-1);
     this.heap.clear();
-    this.heap.pushOrDecrease(this.goalCell, 0);
+    if (this.goalRegions.length) {
+      for (let cell = 0; cell < this.cellCount; cell++) {
+        if (this.seedRegion[cell]! < 0) continue;
+        const cost = this.seedCost[cell]! * traversalCost[cell]!;
+        output[cell] = cost; targets[cell] = cell;
+        this.heap.pushOrDecrease(cell, cost);
+      }
+    } else {
+      // A destination does not open a wall/hole in collision-derived navigation.
+      if (this.blocked[this.goalCell] === 1) return;
+      output[this.goalCell] = 0;
+      this.heap.pushOrDecrease(this.goalCell, 0);
+    }
     while (this.heap.size > 0) {
       const cell = this.heap.pop();
       const currentCost = output[cell]!;
@@ -605,6 +721,7 @@ export class FlowField implements GlobalNavigator {
         const nextCost = currentCost + movementCost * edgeTraversal;
         if (nextCost < output[next]!) {
           output[next] = nextCost;
+          if (this.goalRegions.length) targets[next] = targets[cell]!;
           this.heap.pushOrDecrease(next, nextCost);
         }
       }
@@ -624,7 +741,9 @@ export class FlowField implements GlobalNavigator {
         const cell = row * this.columns + column;
         const previousX = outputX[cell]!;
         const previousY = outputY[cell]!;
-        if (this.blocked[cell] === 1 || !Number.isFinite(potential[cell]) || cell === this.goalCell) {
+        const targets = potential === this.staticPotential ? this.staticTargetSeed : this.dynamicTargetSeed;
+        if (this.blocked[cell] === 1 || !Number.isFinite(potential[cell]) || cell === this.goalCell
+          || (this.goalRegions.length > 0 && targets[cell] === cell)) {
           outputX[cell] = 0;
           outputY[cell] = 0;
           continue;
@@ -699,8 +818,9 @@ export class FlowField implements GlobalNavigator {
       for (let column = 0; column < this.columns; column += 1) {
         const cell = row * this.columns + column;
         const centerX = Math.min(this.width - EPSILON, (column + 0.5) * this.cellSize);
-        const goalX = this.goalX - centerX;
-        const goalY = this.goalY - centerY;
+        const seed = this.staticTargetSeed[cell]!;
+        const goalX = (this.goalRegions.length && seed >= 0 ? this.seedX[seed]! : this.goalX) - centerX;
+        const goalY = (this.goalRegions.length && seed >= 0 ? this.seedY[seed]! : this.goalY) - centerY;
         const goalLength = Math.hypot(goalX, goalY);
         if (goalLength > EPSILON) {
           this.directGoalDirectionX[cell] = goalX / goalLength;
@@ -719,6 +839,7 @@ export class FlowField implements GlobalNavigator {
           this.blocked[cell] === 1
           || !Number.isFinite(this.staticPotential[cell])
           || cell === this.goalCell
+          || (this.goalRegions.length > 0 && seed === cell)
         ) {
           this.staticProgressDrop[cell] = 0;
           continue;
@@ -772,7 +893,20 @@ export class FlowField implements GlobalNavigator {
     weight10: number,
     weight01: number,
     weight11: number,
+    region = -1,
   ): number {
+    if (region >= 0) {
+      // Adjacent cells can lead to opposite exits. Do not cancel their arrows
+      // across the watershed; interpolate only the chosen destination's side.
+      if (this.seedRegion[this.dynamicTargetSeed[index00]!] !== region) weight00 = 0;
+      if (this.seedRegion[this.dynamicTargetSeed[index10]!] !== region) weight10 = 0;
+      if (this.seedRegion[this.dynamicTargetSeed[index01]!] !== region) weight01 = 0;
+      if (this.seedRegion[this.dynamicTargetSeed[index11]!] !== region) weight11 = 0;
+      const weight = weight00 + weight10 + weight01 + weight11;
+      if (weight <= EPSILON) return 0;
+      return (buffer[index00]! * weight00 + buffer[index10]! * weight10
+        + buffer[index01]! * weight01 + buffer[index11]! * weight11) / weight;
+    }
     return buffer[index00]! * weight00
       + buffer[index10]! * weight10
       + buffer[index01]! * weight01

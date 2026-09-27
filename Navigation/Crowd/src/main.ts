@@ -247,7 +247,7 @@ function initializeControls(): void {
     running = false;
     fastForwarding = false;
     window.crowdDebug.ready = true;
-    editor.open({ ...simulation.scenario, goal: { ...simulation.goal } });
+    editor.open({ ...simulation.scenario, goal: { ...simulation.goal }, goalRegions: simulation.goalRegions });
     updateRunState();
     updateMetrics();
   });
@@ -309,6 +309,7 @@ function initializeControls(): void {
       return;
     }
     simulation.setGoal(goal.x, goal.y);
+    syncLabControls();
     const command: LabCommand = { step: simulation.stepCount, type: 'goal', goal };
     commandLog.push(command);
     appliedLiveCommands.add(command);
@@ -448,6 +449,11 @@ function syncLabControls(): void {
     ? '초록 빈 원은 각 유닛의 도착 슬롯입니다(최대 2,000개 표시). 파란 원은 부대 명령 중심이며, 목표에서 보이는 주변 공간에 슬롯이 분산됩니다. 초록색 유닛은 도착 후 자리를 유지합니다.'
     : preset.id === 'legacy' ? '파란 영역에 도착하면 유닛을 출구로 제거합니다. 기존 도착 판정을 보존한 기준 프리셋입니다.'
       : '파란 영역에 도착하면 유닛을 출구로 제거합니다. 벽에 가려진 목표는 도착으로 처리하지 않습니다.';
+  if (simulation.goalRegions.length) {
+    element('canvas-hint').textContent = `파란 사각형 ${simulation.goalRegions.length}곳: 목적지 영역 · 클릭하면 한 점 목적지로 전환`;
+    element('destination-description').textContent = `목적지 영역 ${simulation.goalRegions.length}곳 중 도달 가능한 경로를 선택합니다. 유닛 중심이 영역 안에 들어오면 도착합니다. 목표 반경 설정은 한 점 목적지에만 적용됩니다.`;
+  }
+  element<HTMLInputElement>('goal-radius').disabled = simulation.goalRegions.length > 0;
   element<HTMLButtonElement>('map-edit').disabled = scaledWorld && worldScale !== 1;
   element<HTMLInputElement>('scale-world').checked = scaledWorld;
 }

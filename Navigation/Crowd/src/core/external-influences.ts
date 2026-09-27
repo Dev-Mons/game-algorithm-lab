@@ -18,6 +18,8 @@ export type ExternalInput = Stamp & (
   | { kind: 'cancel'; input: string }
 );
 export interface MovingCircle { body: string; x: number; y: number; toX: number; toY: number; radius: number; }
+/** Host-supplied motion for one fixed step, independent of recorded commands. */
+export type KinematicCircle = Omit<MovingCircle, 'body'>;
 type Effect = { input: ExternalInput; hit?: Uint8Array };
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
@@ -29,6 +31,9 @@ export class ExternalInfluences {
   generation = 0;
   readonly direct: Uint8Array;
   readonly proxies: MovingCircle[] = [];
+  private kinematicProxies: KinematicCircle[] = [];
+  private kinematicPresent: Uint8Array | null = null;
+  private readonly kinematicQueryMask: Uint8Array;
   readonly stats = { inputs: 0, affected: 0, queryCells: 0, candidates: 0,
     proxyCandidates: 0, speedClamps: 0, rebuilds: 0, queryMs: 0 };
   private readonly records = new Map<string, ExternalInput>();
@@ -37,13 +42,33 @@ export class ExternalInfluences {
   private grid: SpatialHash | null = null;
   constructor(private readonly capacity: number, private readonly width: number, private readonly height: number, private readonly now: () => number = () => 0) {
     this.direct = new Uint8Array(capacity);
+    this.kinematicQueryMask = new Uint8Array(capacity);
   }
   /** Input lifetime only. Never selects a movement/physics execution path. */
-  get active(): boolean { return this.effects.length > 0 || this.proxies.length > 0; }
+  get active(): boolean { return this.effects.length > 0 || this.proxies.length > 0 || this.kinematicProxies.length > 0; }
   reset(): void {
     this.generation++; this.direct.fill(0);
     this.records.clear(); this.pending = []; this.effects = []; this.proxies.length = 0;
+    this.kinematicProxies.length = 0;
+    this.kinematicPresent = null;
     for (const key of Object.keys(this.stats) as (keyof typeof this.stats)[]) this.stats[key] = 0;
+  }
+  /** Replace at each step boundary; [] removes the stream. Poses are copied,
+   * present is a borrowed host-owned mask used to wake only arrived survivors.
+   * The host clears active as well when removing a slot. No history is added. */
+  setKinematicProxies(proxies: readonly KinematicCircle[], present: Uint8Array, dt: number): void {
+    if (proxies.length > 24 || !Number.isFinite(dt) || dt <= 0 || present.length > this.capacity) {
+      throw new RangeError('Invalid kinematic proxy budget/delta/presence mask.');
+    }
+    for (const proxy of proxies) {
+      if (![proxy.x, proxy.y, proxy.toX, proxy.toY, proxy.radius].every(Number.isFinite)
+        || proxy.radius <= 0 || proxy.radius > 64
+        || Math.hypot(proxy.toX - proxy.x, proxy.toY - proxy.y) > EXTERNAL_PROFILE.maximumSpeed * dt + 1e-6) {
+        throw new RangeError('Kinematic proxy outside movement profile.');
+      }
+    }
+    this.kinematicProxies = proxies.map(proxy => ({ ...proxy }));
+    this.kinematicPresent = present;
   }
   /** Returns false only for an identical retransmission. Invalid/conflicting inputs throw atomically. */
   enqueue(input: ExternalInput, tick: number, count: number, dt: number): boolean {
@@ -122,7 +147,10 @@ export class ExternalInfluences {
   /** Input replay state only; all persistent motion lives in AgentBuffer. */
   fingerprint(): string {
     if (!this.records.size && !this.active) return '';
-    return JSON.stringify([this.generation,this.record(),this.pending,this.effects.map(e => [e.input,e.hit ? Array.from(e.hit) : null]),this.proxies]);
+    const state: unknown[] = [this.generation,this.record(),this.pending,this.effects.map(e => [e.input,e.hit ? Array.from(e.hit) : null]),this.proxies];
+    // Preserve legacy hashes when the optional live stream is absent.
+    if (this.kinematicProxies.length) state.push(this.kinematicProxies, Array.from(this.kinematicPresent!));
+    return JSON.stringify(state);
   }
   begin(state: AgentBuffer, flows: Uint16Array, tick: number, dt: number, radii?: Float64Array): void {
     for (const key of Object.keys(this.stats) as (keyof typeof this.stats)[]) this.stats[key] = 0;
@@ -145,9 +173,17 @@ export class ExternalInfluences {
         this.proxies.sort((a,b) => a.body < b.body ? -1 : 1);
       } else this.effects.push({ input, ...(input.kind === 'blast' && input.expansionSpeed ? { hit: new Uint8Array(state.count) } : {}) });
     }
-    if (this.proxies.length || this.effects.some(e => e.input.kind === 'blast' || ('target' in e.input && !('agent' in e.input.target)))) {
+    if (this.proxies.length || this.kinematicProxies.length || this.effects.some(e => e.input.kind === 'blast' || ('target' in e.input && !('agent' in e.input.target)))) {
       this.grid ??= new SpatialHash(this.width,this.height,32,this.capacity);
-      this.grid.rebuild(state.x,state.y,state.active); this.stats.rebuilds++;
+      let mask = state.active;
+      if (this.kinematicProxies.length) {
+        this.kinematicQueryMask.fill(0);
+        for (let agent = 0; agent < state.count; agent++) {
+          this.kinematicQueryMask[agent] = state.active[agent] || this.kinematicPresent?.[agent] ? 1 : 0;
+        }
+        mask = this.kinematicQueryMask;
+      }
+      this.grid.rebuild(state.x,state.y,mask); this.stats.rebuilds++;
     }
     for (const effect of this.effects) {
       const e = effect.input;
@@ -171,6 +207,7 @@ export class ExternalInfluences {
     this.effects = this.effects.filter(({input:e}) => e.kind === 'acceleration' ? tick+1 < e.endTick
       : e.kind === 'blast' && !!e.expansionSpeed && (tick-e.tick+1)*dt*e.expansionSpeed < e.radius);
     for (const proxy of this.proxies) this.pushCircle(state,proxy,dt,radii);
+    for (const proxy of this.kinematicProxies) this.pushCircle(state,proxy,dt,radii,true);
     // Limit the combined input once, so overlapping sources add before the cap.
     for (let a=0;a<state.count;a++) if(this.direct[a]) {
       const speed=Math.hypot(state.vx[a]!,state.vy[a]!);
@@ -199,7 +236,7 @@ export class ExternalInfluences {
   }
   /** A moving circular brush emits a local push; crowd/walls own the resulting
    * motion. It is not a second rigid-body contact solver or a global mode. */
-  private pushCircle(state:AgentBuffer,p:MovingCircle,dt:number,radii?:Float64Array):void {
+  private pushCircle(state:AgentBuffer,p:KinematicCircle,dt:number,radii?:Float64Array,wakeOnContact=false):void {
     let maximumRadius=0;
     for(let a=0;a<state.count;a++)maximumRadius=Math.max(maximumRadius,radii?.[a]??3.2);
     const px=p.toX-p.x,py=p.toY-p.y;
@@ -216,6 +253,7 @@ export class ExternalInfluences {
       if(near<1e-9){nx=1;ny=0;near=1;}
       nx/=near;ny/=near;
       const push=Math.max(0,radius-((x+dx)*nx+(y+dy)*ny))/dt;
+      if (wakeOnContact && push > 0) state.active[a] = 1;
       this.kick(state,a,nx*push,ny*push);
     });
   }

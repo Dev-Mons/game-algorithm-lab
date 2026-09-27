@@ -8,6 +8,45 @@ import { getScenario, SCENARIOS } from '../../src/scenarios/scenarios';
 const flat = () => mapFromScenario(getScenario('open-field'));
 
 describe('custom map documents', () => {
+  it('round-trips v2 goal regions through storage, scenarios and world scaling', async () => {
+    const regions = [{ x: 960, y: 72, width: 168, height: 96 }, { x: 960, y: 528, width: 168, height: 96 }];
+    const map = parseMap({ ...flat(), version: 2, goalRegions: regions });
+    expect(validateMap(map, { ...DEFAULT_CONFIG, agentCount: 120 })).toContain('영역 2곳');
+    const scenario = scenarioFromMap(map, 'custom-exits');
+    expect(mapFromScenario(scenario)).toEqual(map);
+    const { scaleScenario } = await import('../../src/scenarios/lab-scenarios');
+    expect(scaleScenario(scenario, 2).goalRegions?.[0]).toEqual({ x: 1920, y: 144, width: 336, height: 192 });
+    const data = new Map<string, string>();
+    const storage = { getItem: (key: string) => data.get(key) ?? null,
+      setItem: (key: string, value: string) => { data.set(key, value); } };
+    saveMap(storage, { id: 'custom-exits', map });
+    expect(loadMaps(storage)[0]!.map).toEqual(map);
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 120 }, scenario);
+    expect(simulation.goalRegions).toEqual(regions);
+    expect(simulation.navigators).toHaveLength(1);
+    regions[0]!.x = 0;
+    expect(simulation.goalRegions[0]!.x).toBe(960);
+    simulation.setGoal(500, 360);
+    simulation.reset();
+    expect(simulation.goalRegions).toEqual(map.goalRegions);
+  });
+
+  it('validates usable regions and at least one reachable exit for each spawn', () => {
+    const map = parseMap({ ...flat(), version: 2, goalRegions: [
+      { x: 420, y: 240, width: 72, height: 192 }, { x: 1080, y: 240, width: 72, height: 192 },
+    ], obstacles: [{ x: 600, y: 0, width: 24, height: 720 }] });
+    expect(validateMap(map, DEFAULT_CONFIG)).toContain('연결됨');
+    map.goalRegions!.shift();
+    expect(() => validateMap(map, DEFAULT_CONFIG)).toThrow('목적지로 갈 수 없습니다');
+    map.goalRegions = [{ x: 600, y: 240, width: 24, height: 192 }];
+    expect(() => validateMap(map, DEFAULT_CONFIG)).toThrow('목적지 영역 1');
+    for (const goalRegions of [[], Array(33).fill({ x: 10, y: 10, width: 24, height: 24 }),
+      [{ x: 1190, y: 50, width: 20, height: 20 }]]) {
+      expect(() => parseMap({ ...flat(), version: 2, goalRegions })).toThrow();
+    }
+    expect(() => parseMap({ ...flat(), goalRegions: [{ x: 10, y: 10, width: 24, height: 24 }] })).toThrow('버전 2');
+  });
+
   it.each(SCENARIOS.map((scenario) => scenario.id))('copies and validates %s without modifying the built-in', (id) => {
     const original = getScenario(id);
     const snapshot = JSON.stringify(original);

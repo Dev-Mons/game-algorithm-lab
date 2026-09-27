@@ -32,6 +32,13 @@ const frame = snapshotCrowd(kernel); // tick 1의 복사된 관측값
 
 - 설정은 `CrowdConfig` 전체, 초기 상태는 flows·obstacles·maxAgentRadius·agents입니다.
   배열 순서가 고정 solver 인덱스이며 문자열 id는 호스트의 객체 매핑용입니다.
+- 추가 설정 `preserveBlockedGoal`과 `excessSpeedHalfLife`는 생략 시 각각 false와 0입니다.
+  기존 v1 fixture는 그대로 유효합니다. 두 옵션을 지정한 입력을 이식할 때는 해당 동작도 지원해야 하며
+  알 수 없는 설정을 조용히 무시해서는 안 됩니다. 수치·이동 의미는 [알고리즘](architecture.md)에 있습니다.
+- 초기 상태의 선택 필드 `goalRegions: Rect[]`는 모든 flow의 점 목표보다 우선하는 공통 출구 집합입니다.
+  최대 32개, 월드 안의 유한한 양수 크기 사각형이며 생략/빈 배열은 기존 점 목표를 사용합니다.
+  `setGoalRegions(regions)`로 교체하고 `setGoal(x,y)`로 점 모드로 전환합니다. 영역의 통행 가능한 부분·
+  경로 선택·도착 규칙은 [경로 안내](architecture.md#경로-안내)를 따릅니다. 초기 flow의 `goal`은 점 모드 복원용으로 유지합니다.
 - 유닛 필드는 `id, flow, radius, x, y, vx, vy, active, stalledFor, intentX, intentY, heading`입니다.
   직접 초기화에서는 속도·정체 시간 기본값 0, active 1, intent·heading은 경로 방향입니다.
   fixture는 모든 운동 값을 명시하므로 대상이 시드 배치까지 재현할 필요가 없습니다.
@@ -59,10 +66,13 @@ Float64 계산, 32비트 정수 래핑·`Math.imul`, 초기 배열 순서, 셀 �
 | kind | 입력 | 동작 |
 |---|---|---|
 | `goal` | `{tick,kind,x,y}` | 공통 목표 변경, 기존 속도·heading 유지 |
+| `goal-regions` | `{tick,kind,regions:Rect[]}` | 공통 출구 영역 교체·재활성화, 속도·heading 유지. 빈 배열은 flow의 점 목표 복원 |
 | `obstacles` | `{tick,kind,obstacles}` | 전체 장애물 교체·경로 갱신. 활성 유닛 clearance와 겹치면 거절 |
 | `external` | `{tick,kind,input}` | 아래 외력 입력 전달. 재생 파일은 같은 tick과 generation 1 사용 |
 
 재생 입력 스키마는 `crowd-port-fixture-v1`이며 `id, config, initial, commands, checkpoints`를 가집니다.
+영역 모드의 관측 frame에는 `goalRegions`가 추가되고, 점 모드에서는 이 키를 생략해 기존 fixture 형식을 보존합니다.
+frame의 `goals`는 flow의 점 목표 메타데이터이며 `goalRegions`가 있으면 이동은 영역 필드를 사용합니다.
 개별 명령의 오류는 재생을 중단합니다. 여러 명령을 묶은 tick 전체의 rollback은 제공하지 않습니다.
 
 대상 출력은 `crowd-port-output-v1`의 `{schema,id,frames:[{tick,goals,agents}]}`입니다.
@@ -93,6 +103,23 @@ dt ≤1/30초, Δv 및 직접 구동 속도 600px/s, 가속도 1200px/s², proxy
 proxy 반경 1.5~64px, proxy 8개, 대기·진행 입력 합계 32개, generation당 기록 4,096개입니다.
 현재보다 36,000tick을 초과해 앞선 입력과 36,000tick보다 긴 지속 입력은 거절합니다.
 원의 강체 접촉·벽 차폐·양방향 차량 반응은 외력 API가 제공하지 않습니다.
+
+### 연속 원형 밀기
+
+`kernel.external.setKinematicProxies(circles, present, fixedDelta)`는 고정 tick 경계에서 전체 목록을
+교체합니다. `circles`는 `{x,y,toX,toY,radius}` 배열이며 최대 24개, 반경 `0 < r ≤ 64`,
+이동 속도 최대 600px/s입니다. 일반 기록형 proxy의 8개·300px/s 제한과 별도입니다.
+`present`는 생존 슬롯의 `Uint8Array`이며 직접 접촉한 도착자를 다시 활성화할 때 사용합니다.
+제거 슬롯은 present와 active를 모두 0으로 유지합니다. 현재 코어에 런타임 슬롯 생성·삭제 API를 추가한 것은 아닙니다.
+
+좌표는 복사하지만 present는 빌려 쓰므로 호스트는 한 step 동안 일관되게 유지해야 합니다.
+각 step 전에 최신 이동 구간을 전달하고 정지 시 시작/끝을 같은 좌표로, 제거 시 `[]`를 전달합니다.
+갱신하지 않으면 마지막에 전달한 구간이 유지됩니다. 순간이동·재등록 때는 새 위치의 정지 구간부터
+시작해야 가짜 장거리 충돌이 생기지 않습니다. `initialize()`는 이 스트림도 지웁니다.
+
+이 API는 명령 기록·대기 큐를 소모하지 않으며 `record()`나 v1 JSON 재생 명령에 포함되지 않습니다.
+재현이 필요하면 호스트가 매 tick 구간과 presence를 별도로 기록·공급해야 합니다.
+일반 외력·기록형 proxy 다음에 배열 순서대로 적용하며 총 외력 속도 상한은 기존과 같습니다.
 
 ## 자료 내보내기와 비교
 

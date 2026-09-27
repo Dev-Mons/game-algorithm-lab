@@ -1,11 +1,13 @@
 import type { Rect, ScenarioDefinition, SimulationConfig, Vec2 } from '../core/types';
+import { MAX_GOAL_REGIONS } from '../core/goal-regions';
 import {
   CUSTOM_MAP_PREFIX, MapHistory, MAX_OBSTACLES, MAX_SPAWNS, mapFromScenario, parseMap,
   saveMap, scenarioFromMap, validateMap, type MapDocument,
 } from './map-document';
 
-type Tool = 'select' | 'obstacle' | 'spawn' | 'goal';
-type Selection = { kind: 'obstacle' | 'spawn'; index: number } | { kind: 'goal' };
+type RectangleKind = 'obstacle' | 'spawn' | 'goal-region';
+type Tool = 'select' | RectangleKind | 'goal';
+type Selection = { kind: RectangleKind; index: number } | { kind: 'goal' };
 interface Drag { start: Vec2; before: MapDocument; resize: boolean; preview: MapDocument }
 
 export class MapEditor {
@@ -94,7 +96,7 @@ export class MapEditor {
     });
     element<HTMLSelectElement>('editor-objects').addEventListener('change', (event) => {
       const [kind, index] = (event.currentTarget as HTMLSelectElement).value.split(':');
-      this.selection = kind === 'goal' ? { kind } : { kind: kind as 'spawn' | 'obstacle', index: Number(index) };
+      this.selection = kind === 'goal' ? { kind } : { kind: kind as RectangleKind, index: Number(index) };
       this.tool = 'select';
       this.refresh();
     });
@@ -144,7 +146,7 @@ export class MapEditor {
     this.active = true;
     for (const id of ['editor-toolbar', 'editor-panel', 'editor-canvas']) element(id).hidden = false;
     document.body.classList.add('editing-map');
-    this.status('장애물·생성 영역은 드래그, 목적지는 클릭해서 배치하세요.');
+    this.status('목적지 영역 그리기로 여러 출구를 추가하세요. 목적지 배치는 한 점 방식으로 전환합니다.');
     this.refresh();
     this.canvas.focus();
   }
@@ -174,6 +176,8 @@ export class MapEditor {
     const point = this.point(event);
     if (this.tool === 'goal') {
       const next = structuredClone(this.history.current);
+      delete next.goalRegions;
+      next.version = 1;
       next.goal = { x: clamp(this.snap(point.x), 12, 1188), y: clamp(this.snap(point.y), 12, 708) };
       this.history.commit(next);
       this.selection = { kind: 'goal' };
@@ -206,7 +210,8 @@ export class MapEditor {
         shape.height = clamp(this.snap(point.y - shape.y), 4, 720 - shape.y);
       } else this.moveShape(shape, this.snap(point.x - start.x), this.snap(point.y - start.y));
     } else {
-      const shapes = this.tool === 'spawn' ? next.spawns : next.obstacles;
+      if (this.tool === 'goal-region') { next.version = 2; next.goalRegions ??= []; }
+      const shapes = this.rectangles(next, this.tool as RectangleKind);
       const x1 = this.snap(start.x), y1 = this.snap(start.y);
       const x2 = this.snap(point.x), y2 = this.snap(point.y);
       shapes.push({ x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x1 - x2), height: Math.abs(y1 - y2) });
@@ -219,15 +224,15 @@ export class MapEditor {
     if (!this.drag) return;
     const next = this.drag.preview;
     this.drag = null;
-    const drawing = this.tool === 'obstacle' || this.tool === 'spawn';
+    const drawing = this.tool === 'obstacle' || this.tool === 'spawn' || this.tool === 'goal-region';
     if (drawing) {
-      const shapes = this.tool === 'spawn' ? next.spawns : next.obstacles;
-      const previousCount = this.tool === 'spawn' ? this.history.current.spawns.length : this.history.current.obstacles.length;
+      const shapes = this.rectangles(next, this.tool as RectangleKind);
+      const previousCount = this.rectangles(this.history.current, this.tool as RectangleKind).length;
       const shape = shapes.at(-1);
       if (shapes.length === previousCount || !shape || shape.width < 4 || shape.height < 4) { this.refresh(); return; }
-      const limit = this.tool === 'spawn' ? MAX_SPAWNS : MAX_OBSTACLES;
+      const limit = this.tool === 'spawn' ? MAX_SPAWNS : this.tool === 'goal-region' ? MAX_GOAL_REGIONS : MAX_OBSTACLES;
       if (shapes.length > limit) { this.status(`최대 ${limit}개까지 배치할 수 있습니다.`, true); this.refresh(); return; }
-      this.selection = { kind: this.tool as 'obstacle' | 'spawn', index: shapes.length - 1 };
+      this.selection = { kind: this.tool as RectangleKind, index: shapes.length - 1 };
     }
     this.history.commit(next);
     this.refresh();
@@ -239,9 +244,9 @@ export class MapEditor {
   }
   private hitTest(point: Vec2): Selection | null {
     const map = this.history.current;
-    if (Math.hypot(map.goal.x - point.x, map.goal.y - point.y) <= 24) return { kind: 'goal' };
-    for (const kind of ['spawn', 'obstacle'] as const) {
-      const shapes = kind === 'spawn' ? map.spawns : map.obstacles;
+    if (!map.goalRegions?.length && Math.hypot(map.goal.x - point.x, map.goal.y - point.y) <= 24) return { kind: 'goal' };
+    for (const kind of ['goal-region', 'spawn', 'obstacle'] as const) {
+      const shapes = this.rectangles(map, kind);
       for (let index = shapes.length - 1; index >= 0; index -= 1) {
         const r = shapes[index]!;
         if (point.x >= r.x && point.x <= r.x + r.width && point.y >= r.y && point.y <= r.y + r.height) return { kind, index };
@@ -249,19 +254,25 @@ export class MapEditor {
     }
     return null;
   }
+  private rectangles(map: MapDocument, kind: RectangleKind): Rect[] {
+    return kind === 'spawn' ? map.spawns : kind === 'goal-region' ? map.goalRegions ?? [] : map.obstacles;
+  }
   private selectedShape(map: MapDocument): Rect | Vec2 | null {
     const selection = this.selection;
     if (!selection) return null;
     return selection.kind === 'goal' ? map.goal
-      : (selection.kind === 'spawn' ? map.spawns : map.obstacles)[selection.index] ?? null;
+      : this.rectangles(map, selection.kind)[selection.index] ?? null;
   }
   private deleteSelection(): void {
     if (!this.selection || this.selection.kind === 'goal') return;
     if (this.selection.kind === 'spawn' && this.history.current.spawns.length === 1) {
       this.status('생성 영역은 하나 이상 필요합니다.', true); return;
     }
+    if (this.selection.kind === 'goal-region' && this.history.current.goalRegions?.length === 1) {
+      this.status('목적지 영역은 하나 이상 필요합니다. 한 점으로 바꾸려면 목적지 배치를 선택하세요.', true); return;
+    }
     const next = structuredClone(this.history.current);
-    (this.selection.kind === 'spawn' ? next.spawns : next.obstacles).splice(this.selection.index, 1);
+    this.rectangles(next, this.selection.kind).splice(this.selection.index, 1);
     this.history.commit(next);
     this.selection = null;
     this.refresh();
@@ -279,7 +290,9 @@ export class MapEditor {
     const select = element<HTMLSelectElement>('editor-objects');
     select.replaceChildren();
     map.spawns.forEach((_, index) => select.add(new Option(`생성 영역 ${index + 1}`, `spawn:${index}`)));
-    select.add(new Option('공통 목적지', 'goal'));
+    if (map.goalRegions?.length) {
+      map.goalRegions.forEach((_, index) => select.add(new Option(`목적지 영역 ${index + 1}`, `goal-region:${index}`)));
+    } else select.add(new Option('공통 목적지', 'goal'));
     map.obstacles.forEach((_, index) => select.add(new Option(`장애물 ${index + 1}`, `obstacle:${index}`)));
     select.value = this.selection ? this.selection.kind === 'goal' ? 'goal' : `${this.selection.kind}:${this.selection.index}` : '';
     const shape = this.selectedShape(map);
@@ -289,7 +302,8 @@ export class MapEditor {
       input.value = shape && key in shape ? String((shape as Rect)[key]) : '';
     }
     element<HTMLButtonElement>('editor-delete').disabled = !this.selection || this.selection.kind === 'goal'
-      || (this.selection.kind === 'spawn' && map.spawns.length <= 1);
+      || (this.selection.kind === 'spawn' && map.spawns.length <= 1)
+      || (this.selection.kind === 'goal-region' && (map.goalRegions?.length ?? 0) <= 1);
     element<HTMLButtonElement>('editor-undo').disabled = !this.history.canUndo;
     element<HTMLButtonElement>('editor-redo').disabled = !this.history.canRedo;
     document.querySelectorAll<HTMLButtonElement>('[data-editor-tool]').forEach((button) => {
@@ -308,22 +322,24 @@ export class MapEditor {
     for (let x = 0; x <= 1200; x += 24) { c.moveTo(x, 0); c.lineTo(x, 720); }
     for (let y = 0; y <= 720; y += 24) { c.moveTo(0, y); c.lineTo(1200, y); }
     c.stroke();
-    for (const kind of ['obstacle', 'spawn'] as const) {
-      const shapes = kind === 'spawn' ? map.spawns : map.obstacles;
+    for (const kind of ['obstacle', 'spawn', 'goal-region'] as const) {
+      const shapes = this.rectangles(map, kind);
       shapes.forEach((rect, index) => {
-        c.fillStyle = kind === 'spawn' ? '#482135' : '#263447';
-        c.strokeStyle = kind === 'spawn' ? '#ef4444' : '#94a3b8'; c.lineWidth = 2;
+        c.fillStyle = kind === 'spawn' ? '#482135' : kind === 'goal-region' ? '#0c4a6e' : '#263447';
+        c.strokeStyle = kind === 'spawn' ? '#ef4444' : kind === 'goal-region' ? '#38bdf8' : '#94a3b8'; c.lineWidth = 2;
         c.fillRect(rect.x, rect.y, rect.width, rect.height);
         c.strokeRect(rect.x, rect.y, rect.width, rect.height);
-        if (kind === 'spawn') {
-          c.fillStyle = '#fecaca'; c.font = '14px system-ui';
-          c.fillText(`생성 ${index + 1}`, rect.x + 8, rect.y + 21);
+        if (kind !== 'obstacle') {
+          c.fillStyle = kind === 'spawn' ? '#fecaca' : '#bae6fd'; c.font = '14px system-ui';
+          c.fillText(`${kind === 'spawn' ? '생성' : '목적지'} ${index + 1}`, rect.x + 8, rect.y + 21);
         }
       });
     }
-    c.fillStyle = '#0c4a6e'; c.strokeStyle = '#38bdf8'; c.beginPath();
-    c.arc(map.goal.x, map.goal.y, 22, 0, Math.PI * 2); c.fill(); c.stroke();
-    c.fillStyle = '#bae6fd'; c.font = '14px system-ui'; c.fillText('목적지', map.goal.x - 21, map.goal.y - 32);
+    if (!map.goalRegions?.length) {
+      c.fillStyle = '#0c4a6e'; c.strokeStyle = '#38bdf8'; c.beginPath();
+      c.arc(map.goal.x, map.goal.y, 22, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = '#bae6fd'; c.font = '14px system-ui'; c.fillText('목적지', map.goal.x - 21, map.goal.y - 32);
+    }
     const selected = this.selectedShape(map);
     if (selected) {
       c.strokeStyle = '#fbbf24'; c.lineWidth = 3;

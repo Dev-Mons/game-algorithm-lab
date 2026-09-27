@@ -10,6 +10,17 @@ type Fixture = CrowdRunInput & { expected: CrowdRunOutput; referenceHashes: Arra
 function fixture(name = 'open-goal.json'): Fixture { return JSON.parse(readFileSync(new URL(name, root), 'utf8')); }
 
 describe('native port contract against the pre-extraction solver', () => {
+  it('accepts optional TinyDead settings without requiring changes to frozen inputs', () => {
+    const run = fixture();
+    run.config.preserveBlockedGoal = true;
+    run.config.excessSpeedHalfLife = .15;
+    expect(parseCrowdRun(run)).toBe(run);
+    run.config.excessSpeedHalfLife = -1;
+    expect(() => parseCrowdRun(run)).toThrow(/excessSpeedHalfLife/);
+    const invalid = fixture() as unknown as { config: Record<string, unknown> };
+    invalid.config.preserveBlockedGoal = 'true';
+    expect(() => parseCrowdRun(invalid)).toThrow(/preserveBlockedGoal/);
+  });
   it('preserves the frozen evidence bytes', () => {
     const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8')) as { files: Record<string, string> };
     expect(files.sort()).toEqual(Object.keys(manifest.files).sort());

@@ -58,7 +58,7 @@ export class CrowdSimulation extends CrowdKernel {
       wallMargin: this.config.wallMargin, worldWidth: this.config.width, worldHeight: this.config.height,
       obstacles: this.scenario.obstacles, flows });
     this.unspawnedCount = Math.max(0, this.config.agentCount - positions.length);
-    this.initialize({ flows, obstacles: this.scenario.obstacles,
+    this.initialize({ flows, obstacles: this.scenario.obstacles, goalRegions: this.scenario.goalRegions,
       maxAgentRadius: Math.round(this.config.agentCount * this.config.largeAgentPercent / 100) > 0
         ? this.config.agentRadius * this.config.largeAgentScale : this.config.agentRadius,
       agents: positions.map((position, index) => ({ id: 'agent-' + index, ...position })) });

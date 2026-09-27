@@ -8,6 +8,7 @@ export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
   contactCellSize: 24,
   maxSpeed: 86,
   maxAcceleration: 210,
+  excessSpeedHalfLife: 0,
   turnSpeed: 360,
   agentRadius: 3.2,
   agentGap: 0.4,
@@ -26,6 +27,7 @@ export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
   contactFriction: 0.08,
   maximumContactCorrection: 1.25,
   dynamicRouting: false,
+  preserveBlockedGoal: false,
   dynamicFlowRebuildInterval: 8,
   // Keep moderate density cheap, with a steep cost only once a route is crowded.
   dynamicFlowTargetDensity: 0.75,

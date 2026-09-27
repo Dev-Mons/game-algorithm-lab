@@ -18,6 +18,7 @@ export function appTemplate(): string {
             <button type="button" data-editor-tool="obstacle" aria-pressed="false">장애물 그리기</button>
             <button type="button" data-editor-tool="spawn" aria-pressed="false">생성 영역 그리기</button>
             <button type="button" data-editor-tool="goal" aria-pressed="false">목적지 배치</button>
+            <button type="button" data-editor-tool="goal-region" aria-pressed="false">목적지 영역 그리기</button>
           </div>
           <div class="editor-tool-group">
             <label><input id="editor-snap" type="checkbox" checked> 12px 스냅</label>
@@ -80,7 +81,7 @@ export function appTemplate(): string {
             <label>세로<input id="editor-height" type="number" min="4" max="720" step="1" disabled></label>
           </div>
           <button id="editor-delete" type="button" disabled>선택 삭제</button>
-          <p class="editor-help">생성 영역마다 같은 수로 분배되어 공통 목적지로 이동합니다. 방향키: 이동 · Shift: 1px · Delete: 삭제</p>
+          <p class="editor-help">목적지 영역은 최대 32곳입니다. 군중은 도달 가능한 출구 중 경로 비용이 낮은 곳을 선택합니다. 목적지 배치를 클릭하면 영역 대신 한 점을 사용합니다. 방향키: 이동 · Shift: 1px · Delete: 삭제</p>
           <div class="editor-actions">
             <button id="editor-apply" type="button" class="primary">적용하고 실행</button>
             <button id="editor-save" type="button">브라우저 저장</button>

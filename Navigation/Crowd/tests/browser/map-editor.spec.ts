@@ -145,3 +145,83 @@ test('a corrupt saved library leaves built-in maps usable', async ({ page }) => 
   await expect(page.locator('#scenario-select option')).toHaveCount(10);
   await expect(page.locator('#crowd-canvas')).toBeVisible();
 });
+
+test('draws and edits multiple exit regions, saves them and routes a crowd into both', async ({ page }, testInfo) => {
+  await page.goto('/?agents=120&paused=true');
+  await page.getByRole('button', { name: '맵 편집', exact: true }).click();
+  await page.locator('#editor-name').fill('두 출구 시험장');
+  await page.locator('#editor-name').press('Tab');
+  await page.getByRole('button', { name: '목적지 영역 그리기' }).click();
+  await drag(page, [960, 72], [1128, 168]);
+  await drag(page, [960, 528], [1128, 624]);
+  await expect(page.locator('#editor-objects option[value^="goal-region:"]')).toHaveCount(2);
+  await expect(page.locator('#editor-objects option[value="goal"]')).toHaveCount(0);
+  await page.getByRole('button', { name: '선택 / 이동' }).click();
+  await drag(page, [1128, 624], [1152, 648]);
+  await expect(page.locator('#editor-width')).toHaveValue('192');
+  await expect(page.locator('#editor-height')).toHaveValue('120');
+  await page.locator('#editor-canvas').focus();
+  await page.keyboard.press('Shift+ArrowLeft');
+  await expect(page.locator('#editor-x')).toHaveValue('959');
+  await page.getByRole('button', { name: '실행 취소', exact: true }).click();
+  await page.locator('#editor-objects').selectOption('goal-region:1');
+  await page.getByRole('button', { name: '선택 삭제', exact: true }).click();
+  await expect(page.locator('#editor-objects option[value^="goal-region:"]')).toHaveCount(1);
+  await page.getByRole('button', { name: '실행 취소', exact: true }).click();
+  await page.locator('#editor-objects').selectOption('goal-region:1');
+  await expect(page.locator('#editor-x')).toHaveValue('960');
+  await page.getByRole('button', { name: '브라우저 저장' }).click();
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'JSON 내보내기' }).click();
+  const saved = JSON.parse(await readFile((await (await downloadEvent).path())!, 'utf8'));
+  expect(saved.version).toBe(2);
+  expect(saved.goalRegions).toEqual([
+    { x: 960, y: 72, width: 168, height: 96 }, { x: 960, y: 528, width: 192, height: 120 },
+  ]);
+  await page.screenshot({ path: testInfo.outputPath('multi-region-editor.png'), fullPage: true });
+  await page.getByRole('button', { name: '적용하고 실행' }).click();
+  await page.getByRole('button', { name: /일시정지/ }).click();
+  await expect(page.locator('#canvas-hint')).toContainText('사각형 2곳');
+  await expect(page.locator('#goal-radius')).toBeDisabled();
+  const result = await page.evaluate(() => {
+    const simulation = window.crowdDebug.simulation();
+    let walls = 0;
+    for (let tick = 0; tick < 1500; tick++) {
+      simulation.step(); walls = Math.max(walls, simulation.metrics.wallOverlapCount);
+    }
+    return { id: simulation.scenario.id, arrived: simulation.metrics.arrivedCount, walls,
+      counts: simulation.goalRegions.map(region => Array.from(simulation.state.active).filter((active, i) =>
+        !active && simulation.state.x[i]! >= region.x && simulation.state.x[i]! <= region.x + region.width
+        && simulation.state.y[i]! >= region.y && simulation.state.y[i]! <= region.y + region.height).length) };
+  });
+  expect(result.walls).toBe(0);
+  expect(result.arrived).toBe(120);
+  expect(result.counts.every(count => count > 0)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('multi-region-arrived.png'), fullPage: true });
+  await page.goto('/?agents=120&paused=true');
+  await page.locator('#scenario-select').selectOption(result.id);
+  expect(await page.evaluate(() => window.crowdDebug.simulation().goalRegions)).toEqual(saved.goalRegions);
+  await page.getByRole('button', { name: '맵 편집', exact: true }).click();
+  await placeGoal(page, 1104, 360);
+  await expect(page.locator('#editor-objects option[value^="goal-region:"]')).toHaveCount(0);
+  await page.getByRole('button', { name: '실행 취소', exact: true }).click();
+  await expect(page.locator('#editor-objects option[value^="goal-region:"]')).toHaveCount(2);
+});
+
+test('imports v2 regions and reports an entirely obstructed exit before applying', async ({ page }) => {
+  await page.goto('/?agents=120&paused=true');
+  await page.getByRole('button', { name: '맵 편집', exact: true }).click();
+  const input = { ...importedMap, version: 2, goalRegions: [{ x: 600, y: 200, width: 48, height: 48 }] };
+  await page.locator('#editor-file').setInputFiles({ name: 'regions.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
+  await expect(page.locator('#editor-objects option[value^="goal-region:"]')).toHaveCount(1);
+  await page.getByRole('button', { name: '적용하고 실행' }).click();
+  await expect(page.locator('#editor-status')).toContainText('목적지 영역 1');
+  await expect(page.locator('#editor-canvas')).toBeVisible();
+  await page.locator('#editor-objects').selectOption('goal-region:0');
+  await expect(page.locator('#editor-delete')).toBeDisabled();
+  await page.locator('#editor-x').fill('1080');
+  await page.locator('#editor-x').press('Tab');
+  await page.getByRole('button', { name: '적용하고 실행' }).click();
+  await expect(page.locator('#editor-canvas')).toBeHidden();
+  expect(await page.evaluate(() => window.crowdDebug.simulation().goalRegions[0]!.x)).toBe(1080);
+});

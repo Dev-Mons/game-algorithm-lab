@@ -16,6 +16,7 @@ import { FlowField, type DynamicFlowFieldOptions } from '../algorithms/flow-fiel
 import { SpatialHash } from '../algorithms/spatial-hash/spatial-hash';
 import { ExternalInfluences, type ExternalInput } from './external-influences';
 import { validateCrowdConfig, validateInitialState, type CrowdInitialState } from './kernel-input';
+import { validateGoalRegions } from './goal-regions';
 
 export type CrowdPass = 'density' | 'navigation' | 'desired' | 'avoidance' | 'contact';
 
@@ -67,6 +68,9 @@ export class CrowdKernel {
   readonly crowdField: CrowdField;
   readonly crowdFlow: CrowdFlowSolver;
   obstacles: Rect[] = [];
+  private destinationRegions: Rect[] = [];
+  get goalRegions(): readonly Rect[] { return this.destinationRegions; }
+  private readonly regionGoal: Vec2 = { x: 0, y: 0 };
   agentIds: string[] = [];
   private initialized = false;
   goal: Vec2 = { x: 0, y: 0 };
@@ -173,9 +177,11 @@ export class CrowdKernel {
   /** Start at tick zero from owned copies of explicit data. Not a mid-run restore. */
   initialize(initial: CrowdInitialState): void {
     validateInitialState(initial, this.config, this.agentFlow.length);
+    if (initial.goalRegions?.length && this.usesCustomNavigation) throw new RangeError('Goal regions require the shared flow-field solver.');
     this.external.reset();
     this.terrainVersion = 0;
     this.obstacles = initial.obstacles.map(rect => ({ ...rect }));
+    this.destinationRegions = (initial.goalRegions ?? []).map(region => ({ ...region }));
     this.agentIds = initial.agents.map(agent => agent.id);
     this.maxAgentRadius = initial.maxAgentRadius;
     this.flowGoals = initial.flows.map(flow => ({ ...flow.goal }));
@@ -250,12 +256,25 @@ export class CrowdKernel {
    */
   setGoal(x: number, y: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError('Goal coordinates must be finite.');
+    this.destinationRegions = [];
     this.goal.x = clamp(x, 0, this.config.width - 0.001);
     this.goal.y = clamp(y, 0, this.config.height - 0.001);
     for (let flow = 0; flow < this.flowGoals.length; flow += 1) {
       this.flowGoals[flow]!.x = this.goal.x;
       this.flowGoals[flow]!.y = this.goal.y;
     }
+    this.refreshGoalNavigation();
+  }
+
+  /** All cohorts share a multi-source field per radius class. [] restores point goals. */
+  setGoalRegions(regions: readonly Rect[]): void {
+    validateGoalRegions(regions, this.config.width, this.config.height);
+    if (regions.length && this.usesCustomNavigation) throw new RangeError('Goal regions require the shared flow-field solver.');
+    this.destinationRegions = regions.map(region => ({ ...region }));
+    this.refreshGoalNavigation();
+  }
+
+  private refreshGoalNavigation(): void {
     this.configureNavigators();
     this.onGoalChanged();
     for (let agent = 0; agent < this.state.count; agent += 1) {
@@ -297,6 +316,20 @@ export class CrowdKernel {
     const next = this.nextState;
     this.previousState.copyFrom(current);
     this.deactivateArrivals(current);
+    // Dampen only prior excess speed. New pushes below retain their full
+    // impulse and the normal walking motor/turn constraints remain unchanged.
+    const halfLife = this.config.excessSpeedHalfLife ?? 0;
+    if (halfLife > 0) {
+      const retention = 2 ** (-this.config.fixedDelta / halfLife);
+      for (let agent = 0; agent < current.count; agent++) {
+        const speed = Math.hypot(current.vx[agent]!, current.vy[agent]!);
+        if (current.active[agent] && speed > this.config.maxSpeed && speed > EPSILON) {
+          const scale = (this.config.maxSpeed + (speed - this.config.maxSpeed) * retention) / speed;
+          current.vx[agent] = current.vx[agent]! * scale;
+          current.vy[agent] = current.vy[agent]! * scale;
+        }
+      }
+    }
     this.external.begin(current, this.agentFlow, this.stepCount, this.config.fixedDelta, this.agentRadii);
     this.onPass('density');
     this.crowdField.update(
@@ -383,17 +416,25 @@ export class CrowdKernel {
     if (!Number.isInteger(agent) || agent < 0 || agent >= this.state.count) {
       throw new RangeError(`Agent index ${agent} is outside 0..${this.state.count - 1}.`);
     }
+    if (this.destinationRegions.length) {
+      const goal = { x: 0, y: 0 };
+      this.navigatorForAgent(agent).sampleGoal(this.state.x[agent]!, this.state.y[agent]!, goal);
+      return goal;
+    }
     return this.flowGoals[this.agentFlow[agent]!]!;
   }
 
-  sampleNavigationDirection(agent: number, x: number, y: number, out: Vec2): boolean {
+  private navigatorForAgent(agent: number): FlowField {
     const flow = this.agentFlow[agent] ?? 0;
     // Body size changes clearance data, never the shared direction policy.
-    const navigator = (this.agentRadii[agent]! > this.config.agentRadius
+    return (this.agentRadii[agent]! > this.config.agentRadius
       ? this.largeFlowNavigators[flow] : this.flowNavigators[flow]) ?? this.navigator;
+  }
+
+  sampleNavigationDirection(agent: number, x: number, y: number, out: Vec2): boolean {
     // FlowField alone decides whether a direct-goal contribution is safe.
     // A failed sample must never turn into an unchecked direction through a wall.
-    return navigator.sampleDirection(x, y, out);
+    return this.navigatorForAgent(agent).sampleDirection(x, y, out);
   }
 
   stateHash(): string {
@@ -407,6 +448,12 @@ export class CrowdKernel {
     for (const goal of this.flowGoals) {
       mix(Math.round(goal.x * 1000));
       mix(Math.round(goal.y * 1000));
+    }
+    if (this.destinationRegions.length) {
+      mix(this.destinationRegions.length);
+      for (const region of this.destinationRegions) {
+        for (const value of [region.x, region.y, region.width, region.height]) mix(Math.round(value * 1000));
+      }
     }
     this.hashAdditionalState(mix);
     for (let agent = 0; agent < this.state.count; agent += 1) {
@@ -467,12 +514,13 @@ export class CrowdKernel {
     const build = (clearance: number, primary?: FlowField): FlowField[] => {
       const goals = new Map<string, FlowField>();
       return this.flowGoals.map((goal) => {
-        const key = `${goal.x},${goal.y}`;
+        const key = this.destinationRegions.length ? 'regions' : `${goal.x},${goal.y}`;
         let navigator = goals.get(key);
         if (!navigator) {
           navigator = goals.size === 0 && primary ? primary
             : new FlowField(this.config.width, this.config.height, this.config.navCellSize);
-          navigator.rebuild(goal, this.obstacles, clearance);
+          navigator.preserveBlockedGoal = this.config.preserveBlockedGoal ?? false;
+          navigator.rebuild(goal, this.obstacles, clearance, this.destinationRegions);
           goals.set(key, navigator);
         }
         return navigator;
@@ -494,7 +542,11 @@ export class CrowdKernel {
         this.desiredVelocityY[agent] = 0;
         continue;
       }
-      const goal = this.flowGoals[this.agentFlow[agent]!]!;
+      let goal = this.flowGoals[this.agentFlow[agent]!]!;
+      if (this.destinationRegions.length) {
+        this.navigatorForAgent(agent).sampleGoal(current.x[agent]!, current.y[agent]!, this.regionGoal);
+        goal = this.regionGoal;
+      }
       this.sampleNavigationDirection(agent, current.x[agent]!, current.y[agent]!, this.direction);
       current.intentX[agent] = this.direction.x;
       current.intentY[agent] = this.direction.y;
@@ -504,11 +556,14 @@ export class CrowdKernel {
         goal.x,
         goal.y,
       ));
-      const speed = this.config.maxSpeed * clamp(
+      // Region arrival requires actually entering it. Keep a small approach
+      // speed so slowdown never settles just outside its boundary.
+      const speed = this.config.maxSpeed * (this.destinationRegions.length
+        ? clamp(distance / Math.max(EPSILON, this.config.arrivalSlowRadius), 0.15, 1) : clamp(
         (distance - this.config.goalRadius) / slowSpan,
         0,
         1,
-      );
+      ));
       const positionX = current.x[agent]!;
       const positionY = current.y[agent]!;
       const density = this.crowdField.sampleDensity(positionX, positionY);
@@ -524,7 +579,9 @@ export class CrowdKernel {
     for (let agent = 0; agent < state.count; agent += 1) {
       if (state.active[agent] !== 1) continue;
       const goal = this.flowGoals[this.agentFlow[agent]!]!;
-      if (distanceSquared(state.x[agent]!, state.y[agent]!, goal.x, goal.y) > arrivalRadiusSquared) continue;
+      if (this.destinationRegions.length) {
+        if (!this.navigatorForAgent(agent).containsGoal(state.x[agent]!, state.y[agent]!)) continue;
+      } else if (distanceSquared(state.x[agent]!, state.y[agent]!, goal.x, goal.y) > arrivalRadiusSquared) continue;
       state.active[agent] = 0;
       state.vx[agent] = 0;
       state.vy[agent] = 0;

@@ -69,6 +69,7 @@ export function scaleScenario(scenario: ScenarioDefinition, scale: number): Scen
   const rect = (r: Rect): Rect => ({ ...point(r), width: r.width * scale, height: r.height * scale });
   return {
     ...scenario, goal: point(scenario.goal), spawn: rect(scenario.spawn), obstacles: scenario.obstacles.map(rect),
+    ...(scenario.goalRegions?.length ? { goalRegions: scenario.goalRegions.map(rect) } : {}),
     flows: scenario.flows?.map(flow => ({ ...flow, goal: point(flow.goal), spawn: rect(flow.spawn) })),
     routeGates: scenario.routeGates?.map(gate => ({ ...gate, region: rect(gate.region) })),
   };

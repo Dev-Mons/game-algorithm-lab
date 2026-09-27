@@ -72,7 +72,15 @@ export class CanvasRenderer implements Renderer {
     }
 
     const pulse = 3 + Math.sin(simulation.stepCount * 0.05) * 2;
-    for (const goal of simulation.goals) {
+    for (const [index, region] of simulation.goalRegions.entries()) {
+      context.fillStyle = 'rgba(14, 165, 233, 0.16)';
+      context.strokeStyle = '#38bdf8'; context.lineWidth = 2;
+      context.fillRect(region.x, region.y, region.width, region.height);
+      context.strokeRect(region.x, region.y, region.width, region.height);
+      context.fillStyle = '#bae6fd'; context.font = '14px system-ui';
+      context.fillText(`목적지 ${index + 1}`, region.x + 6, region.y + 18);
+    }
+    for (const goal of simulation.goalRegions.length ? [] : simulation.goals) {
       context.fillStyle = 'rgba(14, 165, 233, 0.12)';
       context.strokeStyle = '#0ea5e9';
       context.lineWidth = 2;

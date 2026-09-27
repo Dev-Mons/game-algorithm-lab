@@ -1,6 +1,7 @@
 import { FlowField } from '../algorithms/flow-field/flow-field';
 import { distanceSquaredToRect } from '../core/obstacle-collision';
 import { createSpawnLayout } from '../core/spawn-layout';
+import { MAX_GOAL_REGIONS } from '../core/goal-regions';
 import type { Rect, ScenarioDefinition, SimulationConfig, Vec2 } from '../core/types';
 
 export const MAP_STORAGE_KEY = 'crowd-lab.maps.v1';
@@ -9,31 +10,34 @@ export const MAX_OBSTACLES = 256;
 export const MAX_SPAWNS = 16;
 
 export interface MapDocument {
-  version: 1;
+  version: 1 | 2;
   name: string;
   width: 1200;
   height: 720;
   obstacles: Rect[];
   spawns: Rect[];
   goal: Vec2;
+  goalRegions?: Rect[];
 }
 
 export interface SavedMap { id: string; map: MapDocument }
 
 export function mapFromScenario(scenario: ScenarioDefinition): MapDocument {
   return structuredClone({
-    version: 1, name: scenario.name, width: 1200, height: 720,
+    version: scenario.goalRegions?.length ? 2 : 1, name: scenario.name, width: 1200, height: 720,
     obstacles: scenario.obstacles,
     spawns: scenario.flows?.map((flow) => flow.spawn) ?? [scenario.spawn],
     goal: scenario.goal,
+    ...(scenario.goalRegions?.length ? { goalRegions: [...scenario.goalRegions] } : {}),
   });
 }
 
 export function scenarioFromMap(map: MapDocument, id: string): ScenarioDefinition {
   const copy = structuredClone(map);
   return {
-    id, name: copy.name, description: `사용자 맵 · 생성 영역 ${copy.spawns.length}곳 · 장애물 ${copy.obstacles.length}개`,
+    id, name: copy.name, description: `사용자 맵 · 생성 영역 ${copy.spawns.length}곳 · 목적지 ${copy.goalRegions?.length ? `영역 ${copy.goalRegions.length}곳` : '한 점'} · 장애물 ${copy.obstacles.length}개`,
     obstacles: copy.obstacles, goal: copy.goal, spawn: copy.spawns[0]!,
+    ...(copy.goalRegions?.length ? { goalRegions: copy.goalRegions } : {}),
     flows: copy.spawns.map((spawn, index) => ({ id: `spawn-${index + 1}`, spawn, goal: { ...copy.goal } })),
   };
 }
@@ -41,9 +45,10 @@ export function scenarioFromMap(map: MapDocument, id: string): ScenarioDefinitio
 /** Explicitly reconstruct external data: no untrusted properties reach the engine or UI. */
 export function parseMap(value: unknown): MapDocument {
   const data = object(value);
-  if (data.version !== 1 || data.width !== 1200 || data.height !== 720) {
-    throw new Error('버전 1, 크기 1200 × 720인 맵 JSON이 필요합니다.');
+  if ((data.version !== 1 && data.version !== 2) || data.width !== 1200 || data.height !== 720) {
+    throw new Error('버전 1 또는 2, 크기 1200 × 720인 맵 JSON이 필요합니다.');
   }
+  if (data.version === 1 && data.goalRegions !== undefined) throw new Error('목적지 영역은 버전 2 맵에 저장하세요.');
   if (typeof data.name !== 'string' || !data.name.trim() || data.name.trim().length > 60) {
     throw new Error('맵 이름은 1~60자로 입력하세요.');
   }
@@ -61,22 +66,25 @@ export function parseMap(value: unknown): MapDocument {
       return { x, y, width, height };
     });
   }
-  const goal = object(data.goal);
+  const goalRegions = data.version === 2 ? rectangles(data.goalRegions, '목적지 영역', 1, MAX_GOAL_REGIONS) : undefined;
+  const first = goalRegions?.[0];
+  const goal = object(data.goal ?? (first ? { x: first.x + first.width / 2, y: first.y + first.height / 2 } : undefined));
   const x = finite(goal.x), y = finite(goal.y);
   if (x < 0 || x >= 1200 || y < 0 || y >= 720) throw new Error('목적지를 맵 안에 놓아주세요.');
   return {
-    version: 1, name: data.name.trim(), width: 1200, height: 720,
+    version: data.version, name: data.name.trim(), width: 1200, height: 720,
     obstacles: rectangles(data.obstacles, '장애물', 0, MAX_OBSTACLES),
     spawns: rectangles(data.spawns, '생성 영역', 1, MAX_SPAWNS), goal: { x, y },
+    ...(goalRegions ? { goalRegions } : {}),
   };
 }
 
 export function validateMap(map: MapDocument, config: SimulationConfig): string {
   const valid = parseMap(map);
   const clearance = config.agentRadius + config.wallMargin;
-  if (valid.goal.x < clearance || valid.goal.y < clearance
+  if (!valid.goalRegions?.length && (valid.goal.x < clearance || valid.goal.y < clearance
     || valid.goal.x > valid.width - clearance || valid.goal.y > valid.height - clearance
-    || valid.obstacles.some((rect) => distanceSquaredToRect(valid.goal.x, valid.goal.y, rect) < clearance ** 2)) {
+    || valid.obstacles.some((rect) => distanceSquaredToRect(valid.goal.x, valid.goal.y, rect) < clearance ** 2))) {
     throw new Error('목적지가 벽과 너무 가깝습니다. 빈 공간으로 옮겨주세요.');
   }
   for (let index = 0; index < valid.spawns.length; index += 1) {
@@ -90,10 +98,13 @@ export function validateMap(map: MapDocument, config: SimulationConfig): string 
   }
   const scenario = scenarioFromMap(valid, 'validation');
   const navigation = new FlowField(config.width, config.height, config.navCellSize);
-  navigation.rebuild(valid.goal, valid.obstacles, clearance);
+  navigation.rebuild(valid.goal, valid.obstacles, clearance, valid.goalRegions);
+  for (let region = 0; region < navigation.regionSeedCounts.length; region++) {
+    if (navigation.regionSeedCounts[region] === 0) throw new Error(`목적지 영역 ${region + 1}에 진입할 수 있는 빈 공간이 없습니다. 벽에서 떨어진 곳으로 옮기거나 넓혀주세요.`);
+  }
   const goalCell = Math.floor(valid.goal.y / config.navCellSize) * navigation.columns
     + Math.floor(valid.goal.x / config.navCellSize);
-  if (navigation.blocked[goalCell]) throw new Error('목적지 주변의 공간이 너무 좁습니다. 넓은 곳으로 옮겨주세요.');
+  if (!valid.goalRegions?.length && navigation.blocked[goalCell]) throw new Error('목적지 주변의 공간이 너무 좁습니다. 넓은 곳으로 옮겨주세요.');
   const points = createSpawnLayout({
     count: config.agentCount, seed: config.seed, agentRadius: config.agentRadius, agentGap: config.agentGap,
     largeAgentPercent: config.largeAgentPercent, largeAgentScale: config.largeAgentScale,
@@ -110,7 +121,7 @@ export function validateMap(map: MapDocument, config: SimulationConfig): string 
     let navigator = sizeNavigation.get(point.radius);
     if (!navigator) {
       navigator = new FlowField(config.width, config.height, config.navCellSize);
-      navigator.rebuild(valid.goal, valid.obstacles, point.radius + config.wallMargin);
+      navigator.rebuild(valid.goal, valid.obstacles, point.radius + config.wallMargin, valid.goalRegions);
       sizeNavigation.set(point.radius, navigator);
     }
     const cell = Math.floor(point.y / config.navCellSize) * navigator.columns + Math.floor(point.x / config.navCellSize);
@@ -120,7 +131,7 @@ export function validateMap(map: MapDocument, config: SimulationConfig): string 
   }
   return points.length < config.agentCount
     ? `공간 부족으로 ${config.agentCount.toLocaleString()}명 중 ${points.length.toLocaleString()}명만 생성됩니다.`
-    : `${points.length.toLocaleString()}명 생성 가능 · 목적지까지 연결됨`;
+    : `${points.length.toLocaleString()}명 생성 가능 · ${valid.goalRegions?.length ? `목적지 영역 ${valid.goalRegions.length}곳 중 도달 가능한 영역에 연결됨` : '목적지까지 연결됨'}`;
 }
 
 export function loadMaps(storage: Pick<Storage, 'getItem'>): SavedMap[] {

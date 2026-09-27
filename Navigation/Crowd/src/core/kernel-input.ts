@@ -1,4 +1,5 @@
 import type { CrowdConfig, Rect, Vec2 } from './types';
+import { validateGoalRegions } from './goal-regions';
 
 /** Array order is the stable solver index for the entire session. IDs are host metadata. */
 export interface CrowdAgentInput {
@@ -19,12 +20,20 @@ export interface CrowdAgentInput {
 export interface CrowdInitialState {
   flows: ReadonlyArray<{ id: string; goal: Vec2 }>;
   obstacles: readonly Rect[];
+  goalRegions?: readonly Rect[];
   /** Larger bodies share this conservative clearance class. */
   maxAgentRadius: number;
   agents: readonly CrowdAgentInput[];
 }
 
 export function validateCrowdConfig(config: CrowdConfig): void {
+  if (config.excessSpeedHalfLife !== undefined
+    && (!Number.isFinite(config.excessSpeedHalfLife) || config.excessSpeedHalfLife < 0)) {
+    throw new RangeError('config.excessSpeedHalfLife must be finite and nonnegative.');
+  }
+  if (config.preserveBlockedGoal !== undefined && typeof config.preserveBlockedGoal !== 'boolean') {
+    throw new TypeError('config.preserveBlockedGoal must be boolean.');
+  }
   for (const [key, value] of Object.entries(config)) {
     if (typeof value === 'number' && !Number.isFinite(value)) throw new RangeError(`Nonfinite config.${key}`);
   }
@@ -35,6 +44,7 @@ export function validateCrowdConfig(config: CrowdConfig): void {
 
 export function validateInitialState(initial: CrowdInitialState, config: CrowdConfig, capacity: number): void {
   validateCrowdConfig(config);
+  validateGoalRegions(initial.goalRegions === undefined ? [] : initial.goalRegions, config.width, config.height);
   if (!Array.isArray(initial.agents) || initial.agents.length > capacity) throw new RangeError('Initial agents exceed capacity.');
   if (!Array.isArray(initial.flows) || initial.flows.length < 1 || initial.flows.length > 65536) throw new RangeError('Invalid flow count.');
   if (!Number.isFinite(initial.maxAgentRadius) || initial.maxAgentRadius < config.agentRadius) throw new RangeError('Invalid maximum radius.');
