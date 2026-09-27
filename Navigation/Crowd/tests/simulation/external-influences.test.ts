@@ -22,13 +22,14 @@ function penetration(s:CrowdSimulation) {
   return maximum;
 }
 describe('external inputs through ordinary crowd movement', () => {
-  it('uses exactly the same motion and contact response as setting physical velocity directly',()=>{
+  it('uses exactly the same motion and contact response as setting total and push velocity directly',()=>{
     const command=scene(24,[],true),direct=scene(24,[],true);
     kick(command,0,400,80);
     direct.state.vx[0]=400;direct.state.vy[0]=80;
+    direct.state.pushVx[0]=400;direct.state.pushVy[0]=80;
     for(let tick=0;tick<120;tick++) {
       command.step();direct.step();
-      for(const name of ['x','y','vx','vy','heading','active'] as const)expect(command.state[name]).toEqual(direct.state[name]);
+      for(const name of ['x','y','vx','vy','pushVx','pushVy','heading','active'] as const)expect(command.state[name]).toEqual(direct.state[name]);
       expect(command.metrics.constraintIterations).toBe(8);
       expect(command.metrics.candidateChecks).toBeLessThanOrEqual(24*24);
       expect(command.metrics.contactConstraints).toBeLessThanOrEqual(24*8*8);
@@ -306,7 +307,7 @@ describe('external inputs through ordinary crowd movement', () => {
     for(const e of events)a.enqueueExternal(e);for(const e of [...events].reverse())b.enqueueExternal(e);
     for(let tick=0;tick<120;tick++){a.step();b.step();}
     expect(a.stateHash()).toBe(b.stateHash());
-    for(const k of ['x','y','vx','vy','heading','intentX','intentY','active'] as const) expect(a.state[k]).toEqual(b.state[k]);
+    for(const k of ['x','y','vx','vy','pushVx','pushVy','heading','intentX','intentY','active'] as const) expect(a.state[k]).toEqual(b.state[k]);
     expect(a.external.fingerprint()).toBe(b.external.fingerprint());
   });
 });

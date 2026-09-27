@@ -3,6 +3,9 @@ export class AgentBuffer {
   readonly y: Float64Array;
   readonly vx: Float64Array;
   readonly vy: Float64Array;
+  /** Physical velocity contributed by actual pushes/contacts, separate from walking. */
+  readonly pushVx: Float64Array;
+  readonly pushVy: Float64Array;
   readonly active: Uint8Array;
   readonly stalledFor: Float64Array;
   readonly intentX: Float64Array;
@@ -15,6 +18,8 @@ export class AgentBuffer {
     this.y = new Float64Array(count);
     this.vx = new Float64Array(count);
     this.vy = new Float64Array(count);
+    this.pushVx = new Float64Array(count);
+    this.pushVy = new Float64Array(count);
     this.active = new Uint8Array(count);
     this.stalledFor = new Float64Array(count);
     this.intentX = new Float64Array(count);
@@ -27,6 +32,8 @@ export class AgentBuffer {
     this.y.set(other.y);
     this.vx.set(other.vx);
     this.vy.set(other.vy);
+    this.pushVx.set(other.pushVx);
+    this.pushVy.set(other.pushVy);
     this.active.set(other.active);
     this.stalledFor.set(other.stalledFor);
     this.intentX.set(other.intentX);

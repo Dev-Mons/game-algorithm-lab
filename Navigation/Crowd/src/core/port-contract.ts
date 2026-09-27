@@ -7,7 +7,7 @@ import { validateGoalRegions } from './goal-regions';
 
 export const PORT_FIXTURE_SCHEMA = 'crowd-port-fixture-v1';
 export const PORT_OUTPUT_SCHEMA = 'crowd-port-output-v1';
-export const AGENT_STATE_FIELDS = ['x', 'y', 'vx', 'vy', 'active', 'stalledFor', 'intentX', 'intentY', 'heading'] as const;
+export const AGENT_STATE_FIELDS = ['x', 'y', 'vx', 'vy', 'pushVx', 'pushVy', 'active', 'stalledFor', 'intentX', 'intentY', 'heading'] as const;
 
 /** Commands apply before the transition tick -> tick + 1, in array order. */
 export type CrowdCommand = { tick: number } & (
@@ -110,6 +110,7 @@ export function snapshotCrowd(kernel: CrowdKernel): CrowdFrame {
     agents: Array.from({ length: kernel.state.count }, (_, i) => ({
       id: kernel.agentIds[i]!, flow: kernel.agentFlow[i]!, radius: kernel.agentRadii[i]!,
       x: kernel.state.x[i]!, y: kernel.state.y[i]!, vx: kernel.state.vx[i]!, vy: kernel.state.vy[i]!,
+      pushVx: kernel.state.pushVx[i]!, pushVy: kernel.state.pushVy[i]!,
       active: kernel.state.active[i]!, stalledFor: kernel.state.stalledFor[i]!,
       intentX: kernel.state.intentX[i]!, intentY: kernel.state.intentY[i]!, heading: kernel.state.heading[i]!,
     })),

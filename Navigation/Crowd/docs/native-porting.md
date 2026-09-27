@@ -39,9 +39,13 @@ const frame = snapshotCrowd(kernel); // tick 1의 복사된 관측값
   최대 32개, 월드 안의 유한한 양수 크기 사각형이며 생략/빈 배열은 기존 점 목표를 사용합니다.
   `setGoalRegions(regions)`로 교체하고 `setGoal(x,y)`로 점 모드로 전환합니다. 영역의 통행 가능한 부분·
   경로 선택·도착 규칙은 [경로 안내](architecture.md#경로-안내)를 따릅니다. 초기 flow의 `goal`은 점 모드 복원용으로 유지합니다.
-- 유닛 필드는 `id, flow, radius, x, y, vx, vy, active, stalledFor, intentX, intentY, heading`입니다.
+- 유닛 필드는 `id, flow, radius, x, y, vx, vy, pushVx, pushVy, active, stalledFor, intentX, intentY, heading`입니다.
   직접 초기화에서는 속도·정체 시간 기본값 0, active 1, intent·heading은 경로 방향입니다.
-  fixture는 모든 운동 값을 명시하므로 대상이 시드 배치까지 재현할 필요가 없습니다.
+  `vx/vy`는 전체 속도이며 `pushVx/pushVy`는 그중 실제 밀림 성분입니다. 보행만 지정하려면 pushV는 0,
+  순수 밀림 초기 속도를 지정하려면 전체 속도와 pushV에 같은 값을 줍니다. 이후 힘은 외력 API를 사용합니다.
+  기존 fixture는 pushV를 생략하며 초기값 0으로 읽습니다. 현재 snapshot은 두 필드도 명시하고
+  상태 복사·해시에 포함합니다. 기존 fixture의 보존 데이터나 기대값은 덮어쓰지 않습니다.
+  fixture에는 배치 좌표가 있으므로 대상이 시드 배치까지 재현할 필요가 없습니다.
 - 초기 데이터는 복사합니다. `state`는 step마다 교환되는 버퍼이므로 이전 참조를 최신 상태로 사용하지 않습니다.
   `snapshotCrowd()`의 출력은 독립 복사본입니다.
 - capacity·월드 크기·격자 크기를 바꾸려면 새 코어를 만듭니다. `initialize()`는 tick 0으로 시작하고

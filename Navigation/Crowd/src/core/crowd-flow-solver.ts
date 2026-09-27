@@ -61,6 +61,9 @@ export class CrowdFlowSolver {
   private transferWeights = new Float64Array(0);
   private transferChannels = new Uint8Array(0);
   private transferFractions = new Float64Array(0);
+  /** Gathered pressure correction only, excluding blended crowd momentum. */
+  pressureVelocityX = new Float64Array(0);
+  pressureVelocityY = new Float64Array(0);
 
   constructor(readonly field: CrowdField) {
     const size = field.cellCount * FLOW_CHANNELS;
@@ -113,7 +116,9 @@ export class CrowdFlowSolver {
     if(this.transferChannels.length<state.count) {
       this.transferCells=new Int32Array(state.count*4);this.transferWeights=new Float64Array(state.count*4);
       this.transferChannels=new Uint8Array(state.count);this.transferFractions=new Float64Array(state.count);
+      this.pressureVelocityX=new Float64Array(state.count);this.pressureVelocityY=new Float64Array(state.count);
     }
+    this.pressureVelocityX.fill(0);this.pressureVelocityY.fill(0);
     this.scatter(state, desiredX, desiredY, options.areaWeights);
     this.buildVelocities(options);
     this.project(options);
@@ -261,8 +266,8 @@ export class CrowdFlowSolver {
       const scale = Math.min(1, limit / Math.max(EPSILON, Math.hypot(x,y)));
       x *= scale;
       y *= scale;
-      // Publish corrected transport velocities on the grid. Agent gather
-      // only interpolates these channels; it adds no separate pressure force.
+      // Publish corrected transport velocities. Gather also exposes the pure
+      // pressure delta so the kernel can split walking and lateral pushing.
       for (let channel = 0; channel < FLOW_CHANNELS; channel++) {
         const slot = channel * cellCount + i;
         this.velocityX[slot] = this.velocityX[slot]! + x;
@@ -333,6 +338,8 @@ export class CrowdFlowSolver {
       }
       const blend = clamp(density / options.targetDensity, 0, 1);
       if (weightSum > EPSILON) {
+        this.pressureVelocityX[a] = (x - baseX) / weightSum;
+        this.pressureVelocityY[a] = (y - baseY) / weightSum;
         // Preserve sub-grid navigation detail in dilute cells while taking
         // the grid's entire velocity change. Dense cells use pure PIC gather.
         x = x / weightSum + (desiredX[a]! - baseX / weightSum) * (1 - blend);

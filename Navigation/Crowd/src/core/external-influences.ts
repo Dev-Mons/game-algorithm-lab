@@ -214,6 +214,7 @@ export class ExternalInfluences {
       if(speed>EXTERNAL_PROFILE.maximumSpeed) {
         const scale=EXTERNAL_PROFILE.maximumSpeed/speed;
         state.vx[a]=state.vx[a]!*scale;state.vy[a]=state.vy[a]!*scale;this.stats.speedClamps++;
+        state.pushVx[a]=state.pushVx[a]!*scale;state.pushVy[a]=state.pushVy[a]!*scale;
       }
     }
     this.stats.queryMs = this.now()-started;
@@ -221,6 +222,7 @@ export class ExternalInfluences {
   private kick(state: AgentBuffer, a: number, x: number, y: number): void {
     if (state.active[a] !== 1 || (x === 0 && y === 0)) return;
     state.vx[a] = state.vx[a]!+x; state.vy[a] = state.vy[a]!+y;
+    state.pushVx[a] = state.pushVx[a]!+x; state.pushVy[a] = state.pushVy[a]!+y;
     if (!this.direct[a]) { this.direct[a] = 1; this.stats.affected++; }
   }
   private visitRegion(state: AgentBuffer, region: {x:number;y:number;radius:number;flow?:number}, flows: Uint16Array, visit: (a:number) => void): void {

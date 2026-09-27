@@ -79,7 +79,9 @@ export class CrowdMovementSolver {
   private velocityY = new Float64Array(0);
   private wallVelocityCorrectionX = new Float64Array(0);
   private wallVelocityCorrectionY = new Float64Array(0);
+  private wallContact = new Uint8Array(0);
   private headings = new Float64Array(0);
+  private walkingSpeed = new Float64Array(0);
   private predictedX = new Float64Array(0);
   private predictedY = new Float64Array(0);
   private correctionX = new Float64Array(0);
@@ -192,10 +194,11 @@ export class CrowdMovementSolver {
     this.contactLambda.fill(0, 0, count * MAX_CONTACTS_PER_AGENT);
     this.wallVelocityCorrectionX.fill(0,0,count);
     this.wallVelocityCorrectionY.fill(0,0,count);
+    this.wallContact.fill(0, 0, count);
   }
 
   private predictPositions(input: CrowdMovementInput): void {
-    const maximumVelocityDelta = Math.max(0, input.maxAcceleration) * input.fixedDelta;
+    const maximumSpeedDelta = Math.max(0, input.maxAcceleration) * input.fixedDelta;
     const maximumTurn = Math.max(0, input.turnSpeed) * Math.PI / 180 * input.fixedDelta;
     for (let agent = 0; agent < input.current.count; agent += 1) {
       const startX = input.current.x[agent]!;
@@ -204,63 +207,39 @@ export class CrowdMovementSolver {
       if (input.current.active[agent] !== 1) {
         this.velocityX[agent] = 0;
         this.velocityY[agent] = 0;
+        this.walkingSpeed[agent] = 0;
         this.predictedX[agent] = startX;
         this.predictedY[agent] = startY;
         continue;
       }
 
-      let velocityX = input.current.vx[agent]!;
-      let velocityY = input.current.vy[agent]!;
-      let deltaX = input.desiredVelocityX[agent]! - velocityX;
-      let deltaY = input.desiredVelocityY[agent]! - velocityY;
-      const deltaLength = Math.hypot(deltaX, deltaY);
-      if (deltaLength > maximumVelocityDelta && deltaLength > EPSILON) {
-        const scale = maximumVelocityDelta / deltaLength;
-        deltaX *= scale;
-        deltaY *= scale;
-      }
-      velocityX += deltaX;
-      velocityY += deltaY;
-      const speed = Math.hypot(velocityX, velocityY);
-      if (speed > input.maxSpeed && speed > EPSILON) {
-        const scale = input.maxSpeed / speed;
-        velocityX *= scale;
-        velocityY *= scale;
-      }
-      // Limit the movement vector AFTER grid pressure and acceleration so those
-      // passes cannot overwrite the turn rate. A stopped agent can turn in place.
-      const moving = Math.hypot(velocityX, velocityY) > EPSILON;
-      const targetX = moving ? velocityX : input.current.intentX[agent]!;
-      const targetY = moving ? velocityY : input.current.intentY[agent]!;
+      const desiredX = input.desiredVelocityX[agent]!, desiredY = input.desiredVelocityY[agent]!;
+      const routeX = input.current.intentX[agent]!, routeY = input.current.intentY[agent]!;
+      const routeLength = Math.hypot(routeX, routeY);
+      const desiredSpeed = routeLength > EPSILON
+        ? clamp((desiredX * routeX + desiredY * routeY) / routeLength, 0, input.maxSpeed) : 0;
+      const previous = input.current.heading[agent]!;
+      const currentX = input.current.vx[agent]!, currentY = input.current.vy[agent]!;
+      const pushX = input.current.pushVx[agent]!, pushY = input.current.pushVy[agent]!;
+      const currentSpeed = Math.hypot(currentX - pushX, currentY - pushY);
+      // Face the navigation route, not the velocity blended with crowd momentum
+      // and pressure. Those affect speed/pushing, never the body's turn target.
+      const targetX = routeX;
+      const targetY = routeY;
       if (targetX * targetX + targetY * targetY > EPSILON) {
-        const previous = input.current.heading[agent]!;
         const delta = angleDelta(previous, Math.atan2(targetY, targetX));
-        const turnLimit = Math.abs(delta) > maximumTurn
-          && this.isNearStaticObstacle(input, startX, startY, Math.max(48, input.maxSpeed * input.fixedDelta * 12))
-          ? Math.PI * 2
-          : maximumTurn;
-        const heading = angleDelta(0, previous + clamp(delta, -turnLimit, turnLimit));
-        this.headings[agent] = heading;
-        if (Math.abs(delta) > turnLimit) {
-          const forwardX = Math.cos(heading), forwardY = Math.sin(heading);
-          // Orthogonal projection avoids injecting speed while restricting turn.
-          const forwardSpeed = Math.max(0, velocityX * forwardX + velocityY * forwardY);
-          velocityX = forwardX * forwardSpeed;
-          velocityY = forwardY * forwardSpeed;
-        }
+        this.headings[agent] = angleDelta(0, previous + clamp(delta, -maximumTurn, maximumTurn));
       }
-      // Speed/turn limits describe the walking motor's target. They must not
-      // instantly erase physical velocity (from a push OR an ordinary contact).
-      // Apply the complete steering proposal through the same acceleration
-      // budget for every body; no force history or activation state is consulted.
-      const steeringX = velocityX - input.current.vx[agent]!;
-      const steeringY = velocityY - input.current.vy[agent]!;
-      const steeringLength = Math.hypot(steeringX, steeringY);
-      if (steeringLength > maximumVelocityDelta && steeringLength > EPSILON) {
-        const scale = maximumVelocityDelta / steeringLength;
-        velocityX = input.current.vx[agent]! + steeringX * scale;
-        velocityY = input.current.vy[agent]! + steeringY * scale;
-      }
+      const forwardX = Math.cos(this.headings[agent]!), forwardY = Math.sin(this.headings[agent]!);
+      // One motor law for every body, with or without physical pushing.
+      // A sideways numerical error in total velocity cannot select another mode.
+      // Existing forward pushing already supplies part of the desired speed;
+      // do not accelerate the motor on top of it and amplify contact transport.
+      const walkingTarget = Math.max(0, desiredSpeed - Math.max(0, pushX * forwardX + pushY * forwardY));
+      const speed = currentSpeed + clamp(walkingTarget - currentSpeed, -maximumSpeedDelta, maximumSpeedDelta);
+      this.walkingSpeed[agent] = speed;
+      let velocityX = forwardX * speed + pushX;
+      let velocityY = forwardY * speed + pushY;
       let predictedX = startX + velocityX * input.fixedDelta;
       let predictedY = startY + velocityY * input.fixedDelta;
       if (
@@ -279,17 +258,6 @@ export class CrowdMovementSolver {
       this.predictedX[agent] = predictedX;
       this.predictedY[agent] = predictedY;
     }
-  }
-
-  private isNearStaticObstacle(input: CrowdMovementInput, x: number, y: number, distance: number): boolean {
-    if (input.obstacles.length === 0) return false;
-    const threshold = Math.max(12, distance);
-    const thresholdSquared = threshold * threshold;
-    for (const index of this.obstacleIndex.query(x - threshold, y - threshold, x + threshold, y + threshold)) {
-      const obstacle = input.obstacles[index]!;
-      if (distanceSquaredToRect(x, y, obstacle) <= thresholdSquared) return true;
-    }
-    return false;
   }
 
   private buildContactConstraints(input: CrowdMovementInput): void {
@@ -554,6 +522,7 @@ export class CrowdMovementSolver {
         this.wallClearance(input, agent),
       );
       if (!projected) continue;
+      this.wallContact[agent] = 1;
       const movement = Math.hypot(
         this.projection.x - originalX,
         this.projection.y - originalY,
@@ -608,6 +577,9 @@ export class CrowdMovementSolver {
         4,
         this.integration,
       );
+      // Preserve contacts from either sweep; the second sweep may be clear
+      // after the first has clipped the prediction to the wall.
+      if (this.integration.contactCount > 0) this.wallContact[agent] = 1;
       // Reuse the first integration's recovered prediction after contacts if
       // it is still valid. Do not search for the same escape twice per step.
       if (this.integration.startedOverlapping && input.recovery[agent] === 1
@@ -631,6 +603,7 @@ export class CrowdMovementSolver {
     const originalY = input.next.y[agent]!;
     const projected = this.projectOutsideStatics(input, originalX, originalY, this.wallClearance(input, agent));
     if (!projected) return;
+    this.wallContact[agent] = 1;
     const movement = Math.hypot(
       this.projection.x - originalX,
       this.projection.y - originalY,
@@ -844,12 +817,16 @@ export class CrowdMovementSolver {
       if (input.current.active[agent] !== 1) {
         input.next.vx[agent] = 0;
         input.next.vy[agent] = 0;
+        input.next.pushVx[agent] = 0;
+        input.next.pushVy[agent] = 0;
         input.solvedVelocityX[agent] = 0;
         input.solvedVelocityY[agent] = 0;
         continue;
       }
-      let velocityX = (input.next.x[agent]! - input.current.x[agent]!) * inverseDelta+this.wallVelocityCorrectionX[agent]!;
-      let velocityY = (input.next.y[agent]! - input.current.y[agent]!) * inverseDelta+this.wallVelocityCorrectionY[agent]!;
+      const contacted = this.contactCorrected[agent] !== 0 || this.wallContact[agent] !== 0;
+      // Do not manufacture physical momentum from position subtraction roundoff.
+      let velocityX = contacted ? (input.next.x[agent]! - input.current.x[agent]!) * inverseDelta+this.wallVelocityCorrectionX[agent]! : this.velocityX[agent]!;
+      let velocityY = contacted ? (input.next.y[agent]! - input.current.y[agent]!) * inverseDelta+this.wallVelocityCorrectionY[agent]! : this.velocityY[agent]!;
       const speed = Math.hypot(velocityX, velocityY);
       // Ordinary contact corrections retain their walking-speed cap. Existing
       // faster physical motion may coast, but correction cannot amplify it.
@@ -862,6 +839,30 @@ export class CrowdMovementSolver {
       if (!Number.isFinite(velocityX) || !Number.isFinite(velocityY)) {
         velocityX = 0;
         velocityY = 0;
+      }
+      if (this.wallContact[agent]) {
+        const routeX = input.current.intentX[agent]!, routeY = input.current.intentY[agent]!;
+        const routeLength = Math.hypot(routeX, routeY);
+        if (routeLength > EPSILON) {
+          // Reuse this tick's flow direction. Only actual static contact bypasses
+          // turnSpeed. Keep the swept position and post-collision speed; the
+          // aligned velocity takes effect on the next step, without another sweep.
+          input.next.heading[agent] = Math.atan2(routeY, routeX);
+          const forwardSpeed = Math.hypot(velocityX, velocityY);
+          velocityX = routeX / routeLength * forwardSpeed;
+          velocityY = routeY / routeLength * forwardSpeed;
+        }
+      }
+      if (contacted) {
+        const forwardX = Math.cos(input.next.heading[agent]!), forwardY = Math.sin(input.next.heading[agent]!);
+        // A blocked walker slows down; a pushed recipient keeps only the
+        // actual contact-generated remainder as physical velocity.
+        const motorLimit = this.wallContact[agent] ? input.maxSpeed : this.walkingSpeed[agent]!;
+        const walkingSpeed = clamp(velocityX * forwardX + velocityY * forwardY, 0, motorLimit);
+        const pushX = velocityX - forwardX * walkingSpeed;
+        const pushY = velocityY - forwardY * walkingSpeed;
+        input.next.pushVx[agent] = Math.abs(pushX) > EPSILON ? pushX : 0;
+        input.next.pushVy[agent] = Math.abs(pushY) > EPSILON ? pushY : 0;
       }
       input.next.vx[agent] = velocityX;
       input.next.vy[agent] = velocityY;
@@ -910,7 +911,9 @@ export class CrowdMovementSolver {
     this.velocityY = new Float64Array(count);
     this.wallVelocityCorrectionX = new Float64Array(count);
     this.wallVelocityCorrectionY = new Float64Array(count);
+    this.wallContact = new Uint8Array(count);
     this.headings = new Float64Array(count);
+    this.walkingSpeed = new Float64Array(count);
     this.predictedX = new Float64Array(count);
     this.predictedY = new Float64Array(count);
     this.correctionX = new Float64Array(count);

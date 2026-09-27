@@ -10,6 +10,9 @@ export interface CrowdAgentInput {
   y: number;
   vx?: number;
   vy?: number;
+  /** Portion of vx/vy caused by physical pushing; omitted means ordinary walking. */
+  pushVx?: number;
+  pushVy?: number;
   active?: number;
   stalledFor?: number;
   intentX?: number;
@@ -66,7 +69,7 @@ export function validateInitialState(initial: CrowdInitialState, config: CrowdCo
     if (!Number.isInteger(agent.flow) || agent.flow < 0 || agent.flow >= initial.flows.length) throw new RangeError('Invalid agent flow.');
     if (!Number.isFinite(agent.radius) || agent.radius <= 0 || agent.radius > initial.maxAgentRadius) throw new RangeError('Invalid agent radius.');
     if (!Number.isFinite(agent.x) || !Number.isFinite(agent.y)) throw new RangeError('Invalid agent position.');
-    for (const key of ['vx', 'vy', 'stalledFor', 'intentX', 'intentY', 'heading'] as const) {
+    for (const key of ['vx', 'vy', 'pushVx', 'pushVy', 'stalledFor', 'intentX', 'intentY', 'heading'] as const) {
       if (agent[key] !== undefined && !Number.isFinite(agent[key])) throw new RangeError(`Invalid agent.${key}`);
     }
     if (agent.active !== undefined && agent.active !== 0 && agent.active !== 1) throw new RangeError('Invalid active flag.');

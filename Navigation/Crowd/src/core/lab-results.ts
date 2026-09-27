@@ -23,7 +23,7 @@ export function auditGeometry(simulation: CrowdSimulation):GeometryAudit {
   const present = Uint8Array.from(state.active, (active, i) => retain || active === 1 || previous.active[i] === 1 ? 1 : 0);
   let nonfinite=0;
   for(let i=0;i<state.count;i++)if(present[i]) {
-    if(![state.x[i],state.y[i],state.vx[i],state.vy[i],state.heading[i],state.intentX[i],state.intentY[i],state.stalledFor[i],previous.x[i],previous.y[i]].every(Number.isFinite)) {
+    if(![state.x[i],state.y[i],state.vx[i],state.vy[i],state.pushVx[i],state.pushVy[i],state.heading[i],state.intentX[i],state.intentY[i],state.stalledFor[i],previous.x[i],previous.y[i]].every(Number.isFinite)) {
       nonfinite++;present[i]=0;
     }
   }

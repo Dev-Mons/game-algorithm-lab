@@ -11,6 +11,8 @@ describe('agent movement state', () => {
     source.y.set([30, 40]);
     source.vx.set([2, -4]);
     source.vy.set([3, 5]);
+    source.pushVx.set([0.5, -2]);
+    source.pushVy.set([-1, 4]);
     source.active.set([1, 0]);
     source.stalledFor.set([0.5, 1.25]);
     source.intentX.set([0.25, -0.75]);
@@ -24,6 +26,8 @@ describe('agent movement state', () => {
     expect([...target.y]).toEqual([...source.y]);
     expect([...target.vx]).toEqual([...source.vx]);
     expect([...target.vy]).toEqual([...source.vy]);
+    expect([...target.pushVx]).toEqual([...source.pushVx]);
+    expect([...target.pushVy]).toEqual([...source.pushVy]);
     expect([...target.active]).toEqual([...source.active]);
     expect([...target.stalledFor]).toEqual([...source.stalledFor]);
     expect([...target.intentX]).toEqual([...source.intentX]);
@@ -88,5 +92,18 @@ describe('agent movement state', () => {
     simulation.state.stalledFor[0] = 1.25;
 
     expect(simulation.stateHash()).not.toBe(before);
+  });
+
+  it('hashes explicit push momentum and clears it when resetting', () => {
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 1 }, getScenario('open-field'));
+    const before = simulation.stateHash();
+    simulation.state.pushVx[0] = 5;
+    simulation.state.pushVy[0] = -3;
+    expect(simulation.stateHash()).not.toBe(before);
+    simulation.reset();
+    expect(simulation.state.pushVx[0]).toBe(0);
+    expect(simulation.state.pushVy[0]).toBe(0);
+    expect(simulation.previousState.pushVx[0]).toBe(0);
+    expect(simulation.stateHash()).toBe(before);
   });
 });

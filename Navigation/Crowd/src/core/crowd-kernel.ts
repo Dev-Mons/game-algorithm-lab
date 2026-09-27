@@ -209,6 +209,8 @@ export class CrowdKernel {
       this.state.y[agent] = input.y;
       this.state.vx[agent] = input.vx ?? 0;
       this.state.vy[agent] = input.vy ?? 0;
+      this.state.pushVx[agent] = input.pushVx ?? 0;
+      this.state.pushVy[agent] = input.pushVy ?? 0;
       this.state.active[agent] = input.active ?? 1;
       this.state.stalledFor[agent] = input.stalledFor ?? 0;
       this.sampleNavigationDirection(agent, input.x, input.y, this.direction);
@@ -252,7 +254,7 @@ export class CrowdKernel {
 
   /**
    * A new command changes route intent immediately. Momentum and heading are
-   * preserved; the movement solver brakes and turns under the configured limits.
+   * preserved; the movement solver controls speed and rotation independently.
    */
   setGoal(x: number, y: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(y)) throw new RangeError('Goal coordinates must be finite.');
@@ -325,12 +327,31 @@ export class CrowdKernel {
         const speed = Math.hypot(current.vx[agent]!, current.vy[agent]!);
         if (current.active[agent] && speed > this.config.maxSpeed && speed > EPSILON) {
           const scale = (this.config.maxSpeed + (speed - this.config.maxSpeed) * retention) / speed;
+          // Charge physical drag to the existing push, not to the walking
+          // motor (which would otherwise accelerate back and cancel the drag).
+          if (Math.hypot(current.pushVx[agent]!, current.pushVy[agent]!) > EPSILON) {
+            current.pushVx[agent] = current.pushVx[agent]! + current.vx[agent]! * (scale - 1);
+            current.pushVy[agent] = current.pushVy[agent]! + current.vy[agent]! * (scale - 1);
+          }
           current.vx[agent] = current.vx[agent]! * scale;
           current.vy[agent] = current.vy[agent]! * scale;
         }
       }
     }
     this.external.begin(current, this.agentFlow, this.stepCount, this.config.fixedDelta, this.agentRadii);
+    // Recover only recorded physical momentum. Never infer a push from the
+    // angle between forward and velocity. All inputs use the same recovery.
+    const recoverySpeed = Math.max(0, this.config.maxAcceleration) * this.config.fixedDelta;
+    for (let agent = 0; agent < current.count; agent++) {
+      if (!current.active[agent]) continue;
+      const x = current.pushVx[agent]!, y = current.pushVy[agent]!;
+      const speed = Math.hypot(x, y);
+      const scale = speed > EPSILON ? Math.max(0, 1 - recoverySpeed / speed) : 0;
+      current.pushVx[agent] = x * scale;
+      current.pushVy[agent] = y * scale;
+      current.vx[agent] = current.vx[agent]! + x * (scale - 1);
+      current.vy[agent] = current.vy[agent]! + y * (scale - 1);
+    }
     this.onPass('density');
     this.crowdField.update(
       current,
@@ -354,6 +375,29 @@ export class CrowdKernel {
       areaWeights: this.agentAreaWeights,
     });
     this.onPass('contact');
+    // Lateral pressure is a real crowd push, not a change to the facing target.
+    // Its route-parallel part is already represented by the walking speed.
+    for (let agent = 0; agent < current.count; agent++) {
+      if (!current.active[agent]) continue;
+      const x = current.intentX[agent]!, y = current.intentY[agent]!;
+      const lengthSquared = x * x + y * y;
+      if (lengthSquared <= EPSILON) continue;
+      const px = this.crowdFlow.pressureVelocityX[agent]!, py = this.crowdFlow.pressureVelocityY[agent]!;
+      const along = (px * x + py * y) / lengthSquared;
+      const lateralX = px - x * along;
+      const lateralY = py - y * along;
+      const oldPushX = current.pushVx[agent]!, oldPushY = current.pushVy[agent]!;
+      const candidateX = oldPushX + lateralX, candidateY = oldPushY + lateralY;
+      // Bound the pressure contribution without rescaling the independent
+      // walking motor or erasing an existing stronger external push.
+      const limit = Math.max(this.config.maxSpeed, Math.hypot(oldPushX, oldPushY));
+      const scale = Math.min(1, limit / Math.max(EPSILON, Math.hypot(candidateX, candidateY)));
+      const nextX = candidateX * scale, nextY = candidateY * scale;
+      current.vx[agent] = current.vx[agent]! + (nextX - oldPushX);
+      current.vy[agent] = current.vy[agent]! + (nextY - oldPushY);
+      current.pushVx[agent] = nextX;
+      current.pushVy[agent] = nextY;
+    }
     const movement = this.movement.solve({
       current,
       next,
@@ -468,6 +512,8 @@ export class CrowdKernel {
       mix(this.agentFlow[agent]!);
       mix(Math.round(this.agentRadii[agent]! * 1000));
       mix(Math.round(this.state.heading[agent]! * 1_000_000));
+      mix(Math.round(this.state.pushVx[agent]! * 1_000_000));
+      mix(Math.round(this.state.pushVy[agent]! * 1_000_000));
     }
     const external = this.external.fingerprint();
     for (let i = 0; i < external.length; i++) mix(external.charCodeAt(i));
@@ -585,6 +631,8 @@ export class CrowdKernel {
       state.active[agent] = 0;
       state.vx[agent] = 0;
       state.vy[agent] = 0;
+      state.pushVx[agent] = 0;
+      state.pushVy[agent] = 0;
       state.stalledFor[agent] = 0;
       state.intentX[agent] = 0;
       state.intentY[agent] = 0;

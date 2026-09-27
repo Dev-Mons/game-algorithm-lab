@@ -101,14 +101,108 @@ test('movement turn speed changes the actual path', async ({ page }) => {
       s.state.x[0] = 500; s.state.y[0] = 300;
       s.state.vx[0] = 86; s.state.vy[0] = 0; s.state.heading[0] = 0;
       s.setGoal(500, 660);
-      for (let tick = 0; tick < 45; tick++) s.step();
-      return { x: s.state.x[0]!, y: s.state.y[0]!, turnSpeed: s.config.turnSpeed };
+      let minimumSpeed = Infinity;
+      for (let tick = 0; tick < 45; tick++) {
+        s.step();
+        minimumSpeed = Math.min(minimumSpeed, Math.hypot(s.state.vx[0]!, s.state.vy[0]!));
+      }
+      return { x: s.state.x[0]!, y: s.state.y[0]!, turnSpeed: s.config.turnSpeed, minimumSpeed };
     }));
   }
   expect(positions[0]!.turnSpeed).toBe(60);
   expect(positions[1]!.turnSpeed).toBe(720);
+  expect(positions[0]!.minimumSpeed).toBeGreaterThan(80);
   expect(positions[0]!.x - positions[1]!.x).toBeGreaterThan(15);
   expect(positions[1]!.y - positions[0]!.y).toBeGreaterThan(10);
+});
+
+test('slow forward rotation stays with travel near a wall', async ({ page }) => {
+  await page.goto('/?scenario=open-field&agents=1&paused=true');
+  await page.locator('#turn-speed').press('Home');
+  await page.locator('#turn-speed').press('ArrowRight');
+  const result = await page.evaluate(() => {
+    const s = window.crowdDebug.simulation();
+    s.config.maxAcceleration = 20;
+    s.state.x[0] = 500; s.state.y[0] = 300;
+    // This tiny off-forward error used to switch the motor into drift recovery.
+    s.state.vx[0] = 86; s.state.vy[0] = 0.000001; s.state.heading[0] = 0;
+    s.updateObstacles([{ x: 460, y: 270, width: 10, height: 60 }]);
+    s.setGoal(500, 660);
+    let maximumTurn = 0, maximumMisalignment = 0, minimumSpeed = Infinity;
+    const difference = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(b - a), Math.cos(b - a)));
+    for (let tick = 0; tick < 45; tick++) {
+      const heading = s.state.heading[0]!, x = s.state.x[0]!, y = s.state.y[0]!;
+      s.step();
+      maximumTurn = Math.max(maximumTurn, difference(heading, s.state.heading[0]!));
+      const travel = Math.atan2(s.state.y[0]! - y, s.state.x[0]! - x);
+      maximumMisalignment = Math.max(maximumMisalignment, difference(s.state.heading[0]!, travel));
+      minimumSpeed = Math.min(minimumSpeed, Math.hypot(s.state.vx[0]!, s.state.vy[0]!));
+    }
+    return { turnSpeed: s.config.turnSpeed, fixedDelta: s.config.fixedDelta, heading: s.state.heading[0]!,
+      maximumTurn, maximumMisalignment, minimumSpeed };
+  });
+  expect(result.turnSpeed).toBe(30);
+  expect(result.maximumTurn).toBeLessThanOrEqual(30 * Math.PI / 180 * result.fixedDelta + 1e-8);
+  expect(result.maximumMisalignment).toBeLessThan(1e-8);
+  expect(result.heading).toBeCloseTo(30 * Math.PI / 180 * result.fixedDelta * 45, 8);
+  expect(result.minimumSpeed).toBeGreaterThan(80);
+});
+
+test('dense crowd momentum does not slow the forward turn toward navigation', async ({ page }) => {
+  await page.goto('/?scenario=open-field&agents=961&paused=true');
+  const control = page.locator('#turn-speed');
+  await control.press('Home');
+  for (let i = 0; i < 12; i++) await control.press('ArrowRight');
+  const result = await page.evaluate(() => {
+    const s = window.crowdDebug.simulation();
+    for (let i = 0; i < s.state.count; i++) {
+      s.state.x[i] = 500 + (i % 31 - 15) * 6.8;
+      s.state.y[i] = 300 + (Math.floor(i / 31) - 15) * 6.8;
+      s.state.vx[i] = 86; s.state.vy[i] = 0; s.state.heading[i] = 0;
+    }
+    s.setGoal(500, 660);
+    let maximumDifference = 0, contactSteps = 0;
+    for (let tick = 0; tick < 15; tick++) {
+      s.step();
+      const route = Math.atan2(s.state.intentY[480]!, s.state.intentX[480]!);
+      const corrected = Math.atan2(s.debugLayers.desiredVelocityY[480]!, s.debugLayers.desiredVelocityX[480]!);
+      maximumDifference = Math.max(maximumDifference, Math.abs(route - corrected));
+      if (s.metrics.contactCorrectedAgents > 0) contactSteps++;
+    }
+    return { heading: s.state.heading[480]!, turnSpeed: s.config.turnSpeed, maximumDifference, contactSteps };
+  });
+  expect(result.turnSpeed).toBe(360);
+  expect(result.maximumDifference).toBeGreaterThan(20 * Math.PI / 180);
+  expect(result.contactSteps).toBeGreaterThan(0);
+  expect(result.heading).toBeCloseTo(Math.PI / 2, 8);
+});
+
+test('wall contact immediately aligns forward and the next movement with the flow', async ({ page }) => {
+  await page.goto('/?scenario=open-field&agents=1&paused=true');
+  await page.locator('#turn-speed').press('Home');
+  const result = await page.evaluate(() => {
+    const s = window.crowdDebug.simulation();
+    s.state.x[0] = 500; s.state.y[0] = 300;
+    s.state.heading[0] = 0.4;
+    s.state.vx[0] = 86 * Math.cos(0.4); s.state.vy[0] = 86 * Math.sin(0.4);
+    s.updateObstacles([{ x: 504, y: 200, width: 10, height: 350 }]);
+    s.setGoal(500, 660);
+    s.step();
+    const hit = { heading: s.state.heading[0]!,
+      route: Math.atan2(s.state.intentY[0]!, s.state.intentX[0]!),
+      velocity: Math.atan2(s.state.vy[0]!, s.state.vx[0]!),
+      x: s.state.x[0]!, y: s.state.y[0]! };
+    s.step();
+    return { hit, turnSpeed: s.config.turnSpeed, y: s.state.y[0]!,
+      clearance: s.config.agentRadius + s.config.wallMargin, walls: s.metrics.wallOverlapCount };
+  });
+  expect(result.turnSpeed).toBe(0);
+  expect(result.hit.heading).toBeGreaterThan(1);
+  expect(result.hit.heading).toBeCloseTo(result.hit.route, 8);
+  expect(result.hit.velocity).toBeCloseTo(result.hit.route, 8);
+  expect(result.hit.x).toBeLessThanOrEqual(504 - result.clearance + 1e-8);
+  expect(result.y).toBeGreaterThan(result.hit.y);
+  expect(result.walls).toBe(0);
 });
 
 test('a pathological 1000-agent overlap remains bounded and keeps moving', async ({ page }) => {

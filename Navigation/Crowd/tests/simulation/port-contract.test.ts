@@ -10,6 +10,18 @@ type Fixture = CrowdRunInput & { expected: CrowdRunOutput; referenceHashes: Arra
 function fixture(name = 'open-goal.json'): Fixture { return JSON.parse(readFileSync(new URL(name, root), 'utf8')); }
 
 describe('native port contract against the pre-extraction solver', () => {
+  it('owns, exports and validates explicit physical push components', () => {
+    const run = fixture();
+    run.initial.agents[0]!.pushVx = 10;
+    run.initial.agents[0]!.pushVy = -4;
+    const kernel = new CrowdKernel({ ...run.config }, run.initial.agents.length);
+    kernel.initialize(run.initial);
+    expect(snapshotCrowd(kernel).agents[0]).toMatchObject({ pushVx: 10, pushVy: -4 });
+    run.initial.agents[0]!.pushVx = 100;
+    expect(kernel.state.pushVx[0]).toBe(10);
+    run.initial.agents[0]!.pushVy = NaN;
+    expect(() => parseCrowdRun(run)).toThrow(/pushVy/);
+  });
   it('accepts optional TinyDead settings without requiring changes to frozen inputs', () => {
     const run = fixture();
     run.config.preserveBlockedGoal = true;
@@ -60,7 +72,10 @@ describe('native port contract against the pre-extraction solver', () => {
     kernel.initialize(fixture().initial);
     expect(kernel.external.generation).toBe(2);
     expect(kernel.external.record()).toEqual([]);
-    expect(snapshotCrowd(kernel)).toEqual(fixture().expected.frames[0]);
+    // The frozen frame predates explicit push components; initial omission is 0.
+    const initial = fixture().expected.frames[0]!;
+    expect(snapshotCrowd(kernel)).toEqual({ ...initial,
+      agents: initial.agents.map(agent => ({ ...agent, pushVx: 0, pushVy: 0 })) });
     expect(() => kernel.enqueueExternal({kind:'impulse', id:'stale', tick:0, generation:1, target:{agent:0}, dvx:5, dvy:0})).toThrow(/Stale/);
   });
 

@@ -130,7 +130,7 @@ export class CrowdSimulation extends CrowdKernel {
     }
     this.individualGoals.clear();
     for (const [agent, goal] of proposed) this.individualGoals.set(agent, goal);
-    for (const { agent } of commands) { this.state.active[agent] = 1; this.state.stalledFor[agent] = 0; this.state.vx[agent] = 0; this.state.vy[agent] = 0; }
+    for (const { agent } of commands) { this.state.active[agent] = 1; this.state.stalledFor[agent] = 0; this.state.vx[agent] = 0; this.state.vy[agent] = 0; this.state.pushVx[agent] = 0; this.state.pushVy[agent] = 0; }
     this.rebuildPipeline(true);
     this.previousState.copyFrom(this.state); this.nextState.copyFrom(this.state);
     this.clearWorkingState();

@@ -28,6 +28,7 @@ export interface CrowdConfig {
   crowdFieldCellSize: number;
   contactCellSize: number;
   maxSpeed: number;
+  /** Walking speed change per second; physical push recovery also uses this limit. Does not limit body rotation. */
   maxAcceleration: number;
   /** Half-life of speed above maxSpeed, before new external input; omitted/0 disables damping. */
   excessSpeedHalfLife?: number;

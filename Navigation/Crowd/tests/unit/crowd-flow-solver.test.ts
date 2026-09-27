@@ -34,6 +34,7 @@ describe('directional grid transport', () => {
     expect(sum(solver.desiredX)).toBeCloseTo(30,12);
     expect(sum(solver.desiredY)).toBeCloseTo(20,12);
     expect(sum(solver.pressure)).toBe(0);
+    expect([...solver.pressureVelocityX, ...solver.pressureVelocityY].every(v => v === 0)).toBe(true);
   });
 
   it('keeps opposing velocities distinct even when net grid momentum is zero', () => {
@@ -72,6 +73,11 @@ describe('directional grid transport', () => {
     // Pressure reaches cells behind the compression front through fixed passes.
     expect(solver.pressure[2*9+2]).toBeGreaterThan(0);
     expect(Array.from(solver.pressure).every(v=>v>=0 && Number.isFinite(v))).toBe(true);
+    expect(solver.pressureVelocityX.some(v => Math.abs(v) > 1e-6)).toBe(true);
+    expect([...solver.pressureVelocityX, ...solver.pressureVelocityY].every(Number.isFinite)).toBe(true);
+    // Turning pressure off must not leave last tick's force on the bodies.
+    solver.solve(state,x,y,{...options,targetDensity:1,pressureIterations:0});
+    expect([...solver.pressureVelocityX, ...solver.pressureVelocityY].every(v => v === 0)).toBe(true);
   });
 
   it('masks thin static walls between unblocked cell centers', () => {
