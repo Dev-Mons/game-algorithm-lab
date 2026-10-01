@@ -12,6 +12,7 @@ import {
 import type { Rect } from './types';
 import { StaticObstacleIndex } from './static-obstacle-index';
 import { StaticFreeSpace } from './static-free-space';
+import { turnRateMultiplier } from './adaptive-turning';
 
 const EPSILON = 1e-9;
 const REPORTABLE_PENETRATION = 0.01;
@@ -37,6 +38,7 @@ export interface CrowdMovementInput {
   maxSpeed: number;
   maxAcceleration: number;
   turnSpeed: number;
+  adaptiveTurning?: boolean;
   fixedDelta: number;
   contactCompliance: number;
   contactFriction: number;
@@ -228,7 +230,8 @@ export class CrowdMovementSolver {
       const targetY = routeY;
       if (targetX * targetX + targetY * targetY > EPSILON) {
         const delta = angleDelta(previous, Math.atan2(targetY, targetX));
-        this.headings[agent] = angleDelta(0, previous + clamp(delta, -maximumTurn, maximumTurn));
+        const turnLimit = maximumTurn * (input.adaptiveTurning ? turnRateMultiplier(delta) : 1);
+        this.headings[agent] = angleDelta(0, previous + clamp(delta, -turnLimit, turnLimit));
       }
       const forwardX = Math.cos(this.headings[agent]!), forwardY = Math.sin(this.headings[agent]!);
       // One motor law for every body, with or without physical pushing.

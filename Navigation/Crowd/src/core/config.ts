@@ -10,6 +10,7 @@ export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
   maxAcceleration: 210,
   excessSpeedHalfLife: 0,
   turnSpeed: 360,
+  adaptiveTurning: false,
   agentRadius: 3.2,
   agentGap: 0.4,
   wallMargin: 0.35,
@@ -27,6 +28,7 @@ export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
   contactFriction: 0.08,
   maximumContactCorrection: 1.25,
   dynamicRouting: false,
+  corridorRouting: false,
   preserveBlockedGoal: false,
   dynamicFlowRebuildInterval: 8,
   // Keep moderate density cheap, with a steep cost only once a route is crowded.

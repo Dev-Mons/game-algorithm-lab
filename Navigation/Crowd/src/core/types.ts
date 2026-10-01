@@ -32,8 +32,10 @@ export interface CrowdConfig {
   maxAcceleration: number;
   /** Half-life of speed above maxSpeed, before new external input; omitted/0 disables damping. */
   excessSpeedHalfLife?: number;
-  /** Maximum commanded movement heading change in degrees per simulation second. */
+  /** Base heading rate in degrees per second; the fixed maximum when adaptiveTurning is off. */
   turnSpeed: number;
+  /** Boost large heading errors up to 4x turnSpeed, returning to the base rate near alignment. */
+  adaptiveTurning?: boolean;
   agentRadius: number;
   agentGap: number;
   wallMargin: number;
@@ -50,6 +52,8 @@ export interface CrowdConfig {
   maximumContactCorrection: number;
   /** Opt-in legacy congestion routing; the interactive app uses a fixed field. */
   dynamicRouting: boolean;
+  /** Preserve a stable lateral lane through wide portals. Omitted/false retains legacy navigation. */
+  corridorRouting?: boolean;
   /** Keep an obstacle-covered goal cell blocked. Omitted means false for legacy replays. */
   preserveBlockedGoal?: boolean;
   dynamicFlowRebuildInterval: number;

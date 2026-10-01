@@ -49,7 +49,8 @@ export function parseCrowdRun(value: unknown): CrowdRunInput {
   for (const [key, defaultValue] of Object.entries(DEFAULT_CROWD_CONFIG)) {
     const field = value.config[key];
     // Additive TinyDead options: frozen v1 inputs retain false/0 defaults.
-    if ((key === 'preserveBlockedGoal' || key === 'excessSpeedHalfLife') && field === undefined) continue;
+    if ((key === 'preserveBlockedGoal' || key === 'excessSpeedHalfLife' || key === 'corridorRouting'
+      || key === 'adaptiveTurning') && field === undefined) continue;
     if (typeof field !== typeof defaultValue || (typeof field === 'number' && !Number.isFinite(field))) {
       throw new TypeError(`Missing or invalid config.${key}`);
     }

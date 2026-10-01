@@ -106,9 +106,13 @@ export function appTemplate(): string {
         </section>
         <section class="control-section">
           <h2>이동 파라미터</h2>
+          ${toggle('통로 폭 유지', 'corridor-routing', true)}
+          <p class="description">통로에서 좌우 위치를 유지하며 이동합니다. 끄면 기존 최단 경로 안내로 비교합니다. 변경하면 다시 배치됩니다.</p>
           ${rangeControl('최대 속도', 'max-speed', 20, 180, 1, 86)}
           ${rangeControl('최대 가속도', 'max-acceleration', 40, 500, 5, 210)}
-          ${rangeControl('이동 회전 속도 (°/초)', 'turn-speed', 0, 720, 30, 360)}
+          ${rangeControl('기본 회전 속도 (°/초)', 'turn-speed', 0, 720, 30, 360)}
+          ${toggle('큰 각도에서 빠르게 회전', 'adaptive-turning', true)}
+          <p class="description">방향 차이가 120° 이상이면 설정 회전 속도의 4배로 돌고, 30° 이하에서는 설정 속도로 돌아옵니다. 이동 속도는 줄이지 않으며 실행 중 켜고 끌 수 있습니다.</p>
           ${rangeControl('객체 반지름', 'agent-radius', 1.5, 8, 0.1, 3.2)}
           ${rangeControl('큰 객체 비율 (%)', 'large-agent-percent', 0, 100, 1, 0)}
           ${rangeControl('큰 객체 크기 배율 (×)', 'large-agent-scale', 1, 4, 0.1, 2)}

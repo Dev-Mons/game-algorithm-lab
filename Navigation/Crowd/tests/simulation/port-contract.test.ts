@@ -26,12 +26,16 @@ describe('native port contract against the pre-extraction solver', () => {
     const run = fixture();
     run.config.preserveBlockedGoal = true;
     run.config.excessSpeedHalfLife = .15;
+    run.config.corridorRouting = true;
     expect(parseCrowdRun(run)).toBe(run);
     run.config.excessSpeedHalfLife = -1;
     expect(() => parseCrowdRun(run)).toThrow(/excessSpeedHalfLife/);
     const invalid = fixture() as unknown as { config: Record<string, unknown> };
     invalid.config.preserveBlockedGoal = 'true';
     expect(() => parseCrowdRun(invalid)).toThrow(/preserveBlockedGoal/);
+    delete invalid.config.preserveBlockedGoal;
+    invalid.config.corridorRouting = 1;
+    expect(() => parseCrowdRun(invalid)).toThrow(/corridorRouting/);
   });
   it('preserves the frozen evidence bytes', () => {
     const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8')) as { files: Record<string, string> };

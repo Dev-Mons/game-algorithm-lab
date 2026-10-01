@@ -109,6 +109,8 @@ export class CrowdKernel {
   private readonly obstacleIndex = new StaticObstacleIndex();
   private readonly movement = new CrowdMovementSolver(this.obstacleIndex);
   private readonly direction = { x: 1, y: 0 };
+  private readonly navigationLane: Float64Array;
+  private readonly navigationRoute: { room: number }[];
   private readonly dynamicFlowOptions: DynamicFlowFieldOptions = {
     densityScale: 1,
     targetDensity: 1,
@@ -135,6 +137,8 @@ export class CrowdKernel {
     this.previousState = new AgentBuffer(capacity);
     this.nextState = new AgentBuffer(capacity);
     this.navigator = new FlowField(config.width, config.height, config.navCellSize);
+    this.navigationLane = new Float64Array(capacity).fill(NaN);
+    this.navigationRoute = Array.from({ length: capacity }, () => ({ room: -1 }));
     this.crowdField = new CrowdField(
       config.width,
       config.height,
@@ -213,6 +217,7 @@ export class CrowdKernel {
       this.state.pushVy[agent] = input.pushVy ?? 0;
       this.state.active[agent] = input.active ?? 1;
       this.state.stalledFor[agent] = input.stalledFor ?? 0;
+      if (this.config.corridorRouting) this.navigationLane[agent] = this.navigatorForAgent(agent).sampleLane(input.x, input.y);
       this.sampleNavigationDirection(agent, input.x, input.y, this.direction);
       this.state.intentX[agent] = input.intentX ?? this.direction.x;
       this.state.intentY[agent] = input.intentY ?? this.direction.y;
@@ -415,6 +420,7 @@ export class CrowdKernel {
       maxSpeed: this.config.maxSpeed,
       maxAcceleration: this.config.maxAcceleration,
       turnSpeed: Number.isFinite(this.config.turnSpeed) ? this.config.turnSpeed : 360,
+      adaptiveTurning: this.config.adaptiveTurning,
       fixedDelta: this.config.fixedDelta,
       contactCompliance: this.config.contactCompliance,
       contactFriction: this.config.contactFriction,
@@ -478,7 +484,9 @@ export class CrowdKernel {
   sampleNavigationDirection(agent: number, x: number, y: number, out: Vec2): boolean {
     // FlowField alone decides whether a direct-goal contribution is safe.
     // A failed sample must never turn into an unchecked direction through a wall.
-    return this.navigatorForAgent(agent).sampleDirection(x, y, out);
+    const navigator = this.navigatorForAgent(agent);
+    if (!this.config.corridorRouting) return navigator.sampleDirection(x, y, out);
+    return navigator.sampleDirection(x, y, out, this.navigationLane[agent], this.navigationRoute[agent]);
   }
 
   stateHash(): string {
@@ -514,6 +522,8 @@ export class CrowdKernel {
       mix(Math.round(this.state.heading[agent]! * 1_000_000));
       mix(Math.round(this.state.pushVx[agent]! * 1_000_000));
       mix(Math.round(this.state.pushVy[agent]! * 1_000_000));
+      if (this.config.corridorRouting) mix(Math.round((Number.isFinite(this.navigationLane[agent]) ? this.navigationLane[agent]! : -1) * 1_000_000));
+      if (this.config.corridorRouting) mix(this.navigationRoute[agent]!.room);
     }
     const external = this.external.fingerprint();
     for (let i = 0; i < external.length; i++) mix(external.charCodeAt(i));
@@ -550,6 +560,8 @@ export class CrowdKernel {
   }
 
   private configureNavigators(): void {
+    this.navigationLane.fill(NaN);
+    for (const route of this.navigationRoute) route.room = -1;
     if (this.usesCustomNavigation) {
       this.flowNavigators = []; this.largeFlowNavigators = [];
       this.uniqueFlowNavigators = []; this.uniqueNavigators = [];
@@ -566,6 +578,8 @@ export class CrowdKernel {
           navigator = goals.size === 0 && primary ? primary
             : new FlowField(this.config.width, this.config.height, this.config.navCellSize);
           navigator.preserveBlockedGoal = this.config.preserveBlockedGoal ?? false;
+          navigator.corridorRouting = this.config.corridorRouting ?? false;
+          navigator.corridorArrivalDistance = Math.max(this.config.arrivalSlowRadius, this.config.goalRadius + this.config.navCellSize);
           navigator.rebuild(goal, this.obstacles, clearance, this.destinationRegions);
           goals.set(key, navigator);
         }
@@ -577,6 +591,11 @@ export class CrowdKernel {
       ? build(this.maxAgentRadius + this.config.wallMargin) : [];
     this.uniqueFlowNavigators = [...new Set(this.flowNavigators)];
     this.uniqueNavigators = [...new Set([...this.flowNavigators, ...this.largeFlowNavigators])];
+    if (this.config.corridorRouting) {
+      for (let agent = 0; agent < this.state.count; agent++) {
+        this.navigationLane[agent] = this.navigatorForAgent(agent).sampleLane(this.state.x[agent]!, this.state.y[agent]!);
+      }
+    }
   }
 
   private planDesiredVelocities(current: AgentBuffer): void {
@@ -590,7 +609,8 @@ export class CrowdKernel {
       }
       let goal = this.flowGoals[this.agentFlow[agent]!]!;
       if (this.destinationRegions.length) {
-        this.navigatorForAgent(agent).sampleGoal(current.x[agent]!, current.y[agent]!, this.regionGoal);
+        this.navigatorForAgent(agent).sampleGoal(current.x[agent]!, current.y[agent]!, this.regionGoal,
+          this.config.corridorRouting ? this.navigationRoute[agent] : undefined);
         goal = this.regionGoal;
       }
       this.sampleNavigationDirection(agent, current.x[agent]!, current.y[agent]!, this.direction);
@@ -621,7 +641,9 @@ export class CrowdKernel {
   }
 
   private deactivateArrivals(state: AgentBuffer): void {
-    const arrivalRadiusSquared = this.config.goalRadius * this.config.goalRadius;
+    // Portal routes can approach the arrival circle asymptotically. Tolerate
+    // roundoff only; keep frozen legacy replay arithmetic unchanged.
+    const arrivalRadiusSquared = this.config.goalRadius * this.config.goalRadius + (this.config.corridorRouting ? EPSILON : 0);
     for (let agent = 0; agent < state.count; agent += 1) {
       if (state.active[agent] !== 1) continue;
       const goal = this.flowGoals[this.agentFlow[agent]!]!;

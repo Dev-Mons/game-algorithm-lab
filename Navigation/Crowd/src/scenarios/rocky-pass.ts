@@ -1,79 +1,154 @@
-import type { Rect, ScenarioDefinition } from '../core/types';
+import type { ScenarioDefinition } from '../core/types';
 
-type Point = readonly [number, number];
-
-// Outlines traced in the reference image's coordinates (the terrain starts at x=38).
-// Fit the sketch to the existing 1200 × 720 world, using 12px rectangular steps
-// so collision, navigation, scaling and the map editor all use the same geometry.
-const outlines: readonly (readonly Point[])[] = [
-  [[38, 0], [276, 0], [266, 20], [248, 30], [38, 30]],
-  [[126, 126], [150, 94], [190, 94], [210, 76], [236, 76], [262, 98], [262, 112], [236, 134], [178, 134], [168, 146], [168, 252], [180, 264], [198, 264], [219, 294], [219, 324], [205, 339], [176, 339], [164, 311], [146, 296], [126, 280]],
-  [[126, 513], [145, 496], [164, 491], [171, 461], [188, 450], [207, 456], [228, 478], [201, 522], [178, 529], [168, 541], [168, 645], [182, 657], [236, 657], [263, 678], [263, 699], [242, 715], [209, 715], [185, 697], [158, 697], [126, 666]],
-  [[38, 758], [252, 758], [279, 781], [38, 781]],
-  [[305, 72], [334, 64], [379, 24], [406, 24], [416, 35], [407, 49], [407, 81], [390, 99], [313, 99], [305, 91]],
-  [[237, 177], [249, 168], [331, 168], [356, 193], [356, 243], [347, 253], [306, 253], [297, 245], [297, 211], [285, 201], [249, 201], [237, 188]],
-  [[297, 298], [309, 288], [373, 288], [383, 278], [383, 263], [393, 256], [407, 274], [416, 291], [416, 312], [425, 324], [425, 365], [407, 381], [391, 365], [306, 365], [297, 354]],
-  [[321, 393], [331, 383], [372, 383], [383, 394], [373, 407], [331, 407]],
-  [[297, 437], [309, 425], [394, 425], [406, 410], [425, 427], [425, 468], [416, 480], [416, 510], [393, 534], [383, 525], [383, 510], [374, 500], [311, 500], [297, 488]],
-  [[237, 604], [251, 588], [279, 588], [297, 571], [297, 545], [310, 537], [343, 537], [356, 546], [356, 597], [331, 621], [247, 621], [237, 615]],
-  [[305, 699], [318, 690], [381, 690], [407, 708], [408, 733], [416, 744], [416, 763], [392, 770], [354, 739], [341, 724], [313, 724], [305, 715]],
-  [[476, 50], [487, 41], [496, 43], [508, 57], [498, 73], [482, 73], [476, 66]],
-  [[425, 119], [436, 110], [446, 113], [467, 135], [467, 158], [477, 170], [477, 192], [486, 203], [486, 245], [494, 257], [494, 322], [484, 330], [475, 321], [475, 297], [466, 287], [466, 257], [453, 239], [451, 187], [442, 177], [442, 152], [425, 134]],
-  [[426, 658], [442, 637], [442, 618], [451, 608], [451, 563], [467, 536], [467, 513], [476, 502], [476, 468], [486, 460], [494, 468], [494, 543], [486, 554], [486, 598], [476, 611], [476, 635], [447, 674], [436, 681], [426, 675]],
-  [[476, 725], [486, 716], [495, 718], [509, 733], [497, 748], [482, 747], [476, 740]],
-  [[536, 77], [553, 58], [572, 58], [586, 78], [586, 237], [596, 249], [596, 356], [586, 366], [575, 362], [562, 349], [579, 331], [579, 263], [536, 222]],
-  [[528, 257], [537, 247], [562, 271], [562, 315], [546, 334], [546, 367], [570, 389], [570, 401], [546, 427], [546, 456], [562, 473], [562, 518], [537, 543], [528, 535]],
-  [[536, 577], [580, 530], [580, 461], [562, 443], [575, 427], [586, 425], [596, 435], [596, 712], [580, 733], [553, 733], [536, 716]],
-  [[630, 0], [663, 0], [663, 46], [682, 67], [682, 82], [698, 103], [698, 158], [707, 171], [707, 184], [688, 202], [675, 198], [663, 184], [663, 126], [655, 116], [655, 100], [630, 76]],
-  [[621, 291], [634, 279], [650, 279], [664, 264], [691, 264], [707, 279], [686, 297], [677, 298], [664, 313], [630, 313], [621, 306]],
-  [[621, 367], [632, 357], [657, 357], [678, 340], [697, 340], [707, 349], [693, 362], [688, 380], [630, 380]],
-  [[621, 419], [633, 408], [668, 408], [680, 420], [692, 421], [706, 440], [692, 450], [673, 445], [656, 434], [630, 434]],
-  [[621, 488], [635, 476], [665, 476], [690, 495], [706, 512], [687, 528], [673, 519], [656, 519], [643, 510], [626, 509], [621, 502]],
-  [[630, 716], [649, 695], [649, 680], [663, 663], [663, 608], [674, 592], [687, 587], [706, 606], [706, 619], [696, 632], [696, 673], [688, 687], [688, 713], [667, 740], [667, 781], [630, 781]],
-  [[742, 171], [751, 158], [751, 143], [758, 128], [758, 289], [742, 274]],
-  [[742, 520], [758, 503], [758, 664], [749, 648], [749, 632], [742, 623]],
-];
-
-function contains(polygon: readonly Point[], x: number, y: number): boolean {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [ax, ay] = polygon[i]!;
-    const [bx, by] = polygon[j]!;
-    if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside;
-  }
-  return inside;
-}
-
-function steppedObstacles(): Rect[] {
-  const rectangles: Rect[] = [];
-  let previous = new Map<string, Rect>();
-  for (let row = 0; row < 60; row++) {
-    const current = new Map<string, Rect>();
-    let start = -1;
-    for (let column = 0; column <= 100; column++) {
-      const occupied = column < 100 && outlines.some(polygon =>
-        contains(polygon, 38 + (column + 0.5) * 720 / 100, (row + 0.5) * 781 / 60));
-      if (occupied && start < 0) start = column;
-      if (!occupied && start >= 0) {
-        const key = `${start}:${column}`;
-        const existing = previous.get(key);
-        const rect = existing ?? { x: start * 12, y: row * 12, width: (column - start) * 12, height: 0 };
-        rect.height += 12;
-        if (!existing) rectangles.push(rect);
-        current.set(key, rect);
-        start = -1;
-      }
-    }
-    previous = current;
-  }
-  return rectangles;
-}
-
+// Canonical edited geometry from 바위 협곡 복사본.json; preserve rectangle order.
 export const ROCKY_PASS: ScenarioDefinition = {
   id: 'rocky-pass',
   name: '바위 협곡',
-  description: '이미지 기반 지형: 왼쪽의 긴 생성 영역에서 출발해 바위섬과 꺾인 장벽 사이를 지나 오른쪽 중앙 목적지로 이동합니다.',
+  description: '왼쪽의 긴 생성 영역에서 출발해 바위섬과 꺾인 장벽 사이를 지나 오른쪽 중앙 목적지로 이동합니다.',
   spawn: { x: 12, y: 72, width: 96, height: 552 },
   goal: { x: 1134, y: 366 },
-  obstacles: steppedObstacles(),
+  obstacles: [
+    { x: 0, y: 0, width: 396, height: 12 },
+    { x: 984, y: 0, width: 60, height: 48 },
+    { x: 0, y: 12, width: 384, height: 12 },
+    { x: 528, y: 36, width: 96, height: 12 },
+    { x: 744, y: 36, width: 24, height: 12 },
+    { x: 504, y: 48, width: 108, height: 12 },
+    { x: 732, y: 48, width: 48, height: 12 },
+    { x: 852, y: 48, width: 36, height: 12 },
+    { x: 984, y: 48, width: 72, height: 12 },
+    { x: 444, y: 60, width: 168, height: 24 },
+    { x: 732, y: 60, width: 36, height: 12 },
+    { x: 840, y: 60, width: 60, height: 12 },
+    { x: 984, y: 60, width: 84, height: 12 },
+    { x: 276, y: 72, width: 72, height: 12 },
+    { x: 828, y: 72, width: 84, height: 132 },
+    { x: 996, y: 72, width: 84, height: 12 },
+    { x: 180, y: 84, width: 192, height: 12 },
+    { x: 456, y: 84, width: 132, height: 12 },
+    { x: 1020, y: 84, width: 72, height: 12 },
+    { x: 168, y: 96, width: 204, height: 12 },
+    { x: 660, y: 96, width: 12, height: 12 },
+    { x: 1032, y: 96, width: 72, height: 12 },
+    { x: 144, y: 108, width: 204, height: 12 },
+    { x: 648, y: 108, width: 48, height: 12 },
+    { x: 1044, y: 108, width: 60, height: 48 },
+    { x: 144, y: 120, width: 84, height: 12 },
+    { x: 648, y: 120, width: 72, height: 12 },
+    { x: 1188, y: 120, width: 12, height: 36 },
+    { x: 144, y: 132, width: 72, height: 108 },
+    { x: 672, y: 132, width: 48, height: 24 },
+    { x: 336, y: 156, width: 168, height: 12 },
+    { x: 672, y: 156, width: 60, height: 12 },
+    { x: 1044, y: 156, width: 72, height: 12 },
+    { x: 1176, y: 156, width: 24, height: 96 },
+    { x: 336, y: 168, width: 192, height: 12 },
+    { x: 684, y: 168, width: 48, height: 12 },
+    { x: 1044, y: 168, width: 60, height: 12 },
+    { x: 408, y: 180, width: 120, height: 12 },
+    { x: 684, y: 180, width: 60, height: 12 },
+    { x: 432, y: 192, width: 96, height: 36 },
+    { x: 696, y: 192, width: 48, height: 36 },
+    { x: 840, y: 204, width: 72, height: 12 },
+    { x: 864, y: 216, width: 60, height: 12 },
+    { x: 708, y: 228, width: 48, height: 36 },
+    { x: 888, y: 228, width: 36, height: 12 },
+    { x: 144, y: 240, width: 120, height: 12 },
+    { x: 576, y: 240, width: 24, height: 12 },
+    { x: 900, y: 240, width: 24, height: 72 },
+    { x: 1044, y: 240, width: 48, height: 12 },
+    { x: 144, y: 252, width: 144, height: 12 },
+    { x: 576, y: 252, width: 48, height: 12 },
+    { x: 804, y: 252, width: 48, height: 36 },
+    { x: 996, y: 252, width: 120, height: 12 },
+    { x: 1188, y: 252, width: 12, height: 12 },
+    { x: 168, y: 264, width: 132, height: 12 },
+    { x: 444, y: 264, width: 180, height: 12 },
+    { x: 720, y: 264, width: 36, height: 12 },
+    { x: 972, y: 264, width: 120, height: 12 },
+    { x: 204, y: 276, width: 96, height: 12 },
+    { x: 432, y: 276, width: 192, height: 12 },
+    { x: 732, y: 276, width: 24, height: 24 },
+    { x: 972, y: 276, width: 84, height: 12 },
+    { x: 216, y: 288, width: 84, height: 12 },
+    { x: 432, y: 288, width: 204, height: 12 },
+    { x: 804, y: 288, width: 48, height: 12 },
+    { x: 228, y: 300, width: 60, height: 12 },
+    { x: 432, y: 300, width: 216, height: 36 },
+    { x: 804, y: 300, width: 36, height: 48 },
+    { x: 888, y: 312, width: 36, height: 24 },
+    { x: 984, y: 324, width: 120, height: 12 },
+    { x: 600, y: 336, width: 36, height: 12 },
+    { x: 972, y: 336, width: 120, height: 12 },
+    { x: 804, y: 348, width: 48, height: 36 },
+    { x: 600, y: 384, width: 36, height: 12 },
+    { x: 804, y: 384, width: 36, height: 48 },
+    { x: 972, y: 384, width: 120, height: 12 },
+    { x: 432, y: 396, width: 216, height: 36 },
+    { x: 888, y: 396, width: 36, height: 24 },
+    { x: 1032, y: 396, width: 72, height: 12 },
+    { x: 216, y: 420, width: 72, height: 12 },
+    { x: 744, y: 420, width: 12, height: 12 },
+    { x: 900, y: 420, width: 24, height: 72 },
+    { x: 216, y: 432, width: 96, height: 24 },
+    { x: 432, y: 432, width: 204, height: 12 },
+    { x: 732, y: 432, width: 24, height: 36 },
+    { x: 804, y: 432, width: 48, height: 24 },
+    { x: 432, y: 444, width: 192, height: 12 },
+    { x: 972, y: 444, width: 96, height: 12 },
+    { x: 168, y: 456, width: 120, height: 12 },
+    { x: 564, y: 456, width: 60, height: 12 },
+    { x: 972, y: 456, width: 120, height: 12 },
+    { x: 144, y: 468, width: 132, height: 12 },
+    { x: 576, y: 468, width: 48, height: 12 },
+    { x: 720, y: 468, width: 36, height: 24 },
+    { x: 1020, y: 468, width: 84, height: 12 },
+    { x: 1188, y: 468, width: 12, height: 12 },
+    { x: 144, y: 480, width: 96, height: 12 },
+    { x: 576, y: 480, width: 24, height: 12 },
+    { x: 1176, y: 480, width: 24, height: 96 },
+    { x: 144, y: 492, width: 72, height: 108 },
+    { x: 708, y: 492, width: 48, height: 12 },
+    { x: 888, y: 492, width: 36, height: 12 },
+    { x: 432, y: 492, width: 96, height: 36 },
+    { x: 696, y: 504, width: 48, height: 12 },
+    { x: 864, y: 504, width: 60, height: 12 },
+    { x: 684, y: 516, width: 60, height: 36 },
+    { x: 852, y: 516, width: 72, height: 12 },
+    { x: 420, y: 528, width: 108, height: 12 },
+    { x: 828, y: 528, width: 96, height: 132 },
+    { x: 348, y: 540, width: 180, height: 12 },
+    { x: 1056, y: 540, width: 36, height: 12 },
+    { x: 336, y: 552, width: 180, height: 12 },
+    { x: 684, y: 552, width: 48, height: 12 },
+    { x: 1044, y: 552, width: 72, height: 24 },
+    { x: 336, y: 564, width: 156, height: 12 },
+    { x: 672, y: 564, width: 60, height: 24 },
+    { x: 1044, y: 576, width: 48, height: 36 },
+    { x: 1188, y: 576, width: 12, height: 36 },
+    { x: 660, y: 588, width: 60, height: 12 },
+    { x: 144, y: 600, width: 144, height: 12 },
+    { x: 648, y: 600, width: 60, height: 12 },
+    { x: 156, y: 612, width: 156, height: 12 },
+    { x: 648, y: 612, width: 36, height: 12 },
+    { x: 1032, y: 612, width: 60, height: 12 },
+    { x: 180, y: 624, width: 192, height: 12 },
+    { x: 1020, y: 624, width: 72, height: 12 },
+    { x: 204, y: 636, width: 168, height: 12 },
+    { x: 456, y: 636, width: 132, height: 12 },
+    { x: 1020, y: 636, width: 60, height: 12 },
+    { x: 276, y: 648, width: 72, height: 12 },
+    { x: 444, y: 648, width: 168, height: 12 },
+    { x: 996, y: 648, width: 84, height: 12 },
+    { x: 456, y: 660, width: 156, height: 12 },
+    { x: 732, y: 660, width: 36, height: 12 },
+    { x: 840, y: 660, width: 72, height: 12 },
+    { x: 984, y: 660, width: 84, height: 12 },
+    { x: 516, y: 672, width: 108, height: 12 },
+    { x: 732, y: 672, width: 48, height: 12 },
+    { x: 984, y: 672, width: 72, height: 12 },
+    { x: 984, y: 684, width: 60, height: 36 },
+    { x: 0, y: 696, width: 360, height: 12 },
+    { x: 0, y: 708, width: 384, height: 12 },
+  ],
 };

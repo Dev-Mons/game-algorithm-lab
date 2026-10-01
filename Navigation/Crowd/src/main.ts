@@ -55,6 +55,8 @@ const targetStep = parseInteger(params.get('step'), 0, 0, 1_000_000);
 const requestedPaused = params.get('paused') === 'true';
 const config: SimulationConfig = {
   ...DEFAULT_CONFIG,
+  corridorRouting: params.get('corridor') !== 'false',
+  adaptiveTurning: params.get('adaptiveTurning') !== 'false',
   preset: PRESETS.some(p => p.id === params.get('preset')) ? params.get('preset') as PresetId : 'legacy',
   agentCount: requestedAgents,
   seed: requestedSeed,
@@ -273,6 +275,17 @@ function initializeControls(): void {
   bindRange('agent-gap', 'agentGap', true);
   bindRange('pressure-relaxation', 'crowdPressureRelaxationTime');
   bindRange('goal-radius', 'goalRadius', true);
+  const corridorToggle = element<HTMLInputElement>('corridor-routing');
+  const adaptiveTurnToggle = element<HTMLInputElement>('adaptive-turning');
+  adaptiveTurnToggle.checked = config.adaptiveTurning ?? false;
+  adaptiveTurnToggle.addEventListener('change', () => {
+    config.adaptiveTurning = adaptiveTurnToggle.checked;
+  });
+  corridorToggle.checked = config.corridorRouting ?? false;
+  corridorToggle.addEventListener('change', () => {
+    config.corridorRouting = corridorToggle.checked;
+    resetSimulation();
+  });
   bindToggle('debug-flow', 'flowField');
   bindToggle('debug-grid', 'spatialGrid');
   bindToggle('debug-velocity', 'velocity');
@@ -413,7 +426,7 @@ function updateMetrics(): void {
   element<HTMLElement>('metric-dynamic-rebuild').textContent = simulation.resolvedExperiment.preset.id !== 'legacy'
     ? `${simulation.resolvedExperiment.preset.name} · 생성 ${simulation.experimentStats.fieldBuilds}`
     : !simulation.config.dynamicRouting
-    ? `고정 · ${simulation.navigators.length}개`
+    ? `${simulation.config.corridorRouting ? '통로 폭 유지' : '고정'} · ${simulation.navigators.length}개`
     : metrics.dynamicRebuildCount > 0
       ? `${metrics.dynamicRebuildMs.toFixed(2)} ms / ${metrics.dynamicRebuildCount} flow`
       : `age ${metrics.dynamicRebuildAgeSteps} / ${metrics.dynamicRebuildIntervalSteps} step`;

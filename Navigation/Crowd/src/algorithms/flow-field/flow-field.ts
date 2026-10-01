@@ -4,6 +4,7 @@ import { distanceSquaredToRect, segmentDistanceSquaredToRect } from '../../core/
 import type { GlobalNavigator, Rect, Vec2 } from '../../core/types';
 import { StaticObstacleIndex } from '../../core/static-obstacle-index';
 import { containsPoint, validateGoalRegions } from '../../core/goal-regions';
+import { CorridorField, type CorridorRoute } from './corridor-field';
 
 const EPSILON = 1e-9;
 const DIRECT_GOAL_DENSITY_FALLOFF = 0.1;
@@ -139,6 +140,14 @@ export class FlowField implements GlobalNavigator {
   readonly costs: Float64Array;
   goalCell = -1;
   preserveBlockedGoal = false;
+  corridorRouting = false;
+  corridorArrivalDistance: number;
+  private corridor: CorridorField | null = null;
+  private readonly corridorTarget = { x: 0, y: 0 };
+  private corridorPreview: { x: Float64Array; y: Float64Array } | null = null;
+  /** Position-local lane preview. Agent intent additionally retains its lane across turns. */
+  get displayDirectionX(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.x : this.directionX; }
+  get displayDirectionY(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.y : this.directionY; }
   private goalRegions: readonly Rect[] = [];
   /** Valid seed count per region, for authoring diagnostics (overlap is allowed). */
   readonly regionSeedCounts: number[] = [];
@@ -172,6 +181,7 @@ export class FlowField implements GlobalNavigator {
   private readonly minimumDynamicStaticDrop: Float64Array;
 
   constructor(public readonly width: number, public readonly height: number, public readonly cellSize: number) {
+    this.corridorArrivalDistance = cellSize * 3;
     this.columns = Math.ceil(width / cellSize);
     this.rows = Math.ceil(height / cellSize);
     this.cellCount = this.columns * this.rows;
@@ -238,6 +248,7 @@ export class FlowField implements GlobalNavigator {
     this.computeDirections(this.staticPotential, this.staticDirectionX, this.staticDirectionY, 0, false);
     this.computeProgressReferences();
     this.resetDynamicToStatic();
+    this.rebuildCorridor();
     this.staticRebuildCount += 1;
   }
 
@@ -321,11 +332,13 @@ export class FlowField implements GlobalNavigator {
     this.dynamicRebuildCount += 1;
   }
 
-  sampleDirection(x: number, y: number, out: Vec2): boolean {
+  sampleLane(x: number, y: number): number { return this.corridor?.laneAt(x, y) ?? 0.5; }
+
+  sampleDirection(x: number, y: number, out: Vec2, lane = this.sampleLane(x, y), route?: CorridorRoute): boolean {
     let goalX = this.goalX, goalY = this.goalY, region = -1;
     if (this.goalRegions.length) {
       if (this.containsGoal(x, y)) { out.x = 0; out.y = 0; return false; }
-      const seed = this.selectRegionSeed(x, y);
+      const seed = this.selectRegionSeed(x, y, route);
       if (seed < 0) { out.x = 0; out.y = 0; return false; }
       region = this.seedRegion[seed]!;
       const target = this.goalRegions[region]!;
@@ -335,6 +348,31 @@ export class FlowField implements GlobalNavigator {
       goalX = clamp(x, target.x + insetX, target.x + target.width - insetX);
       goalY = clamp(y, target.y + insetY, target.y + target.height - insetY);
       if (!this.isSegmentSafe(x, y, goalX, goalY)) { goalX = this.seedX[seed]!; goalY = this.seedY[seed]!; }
+    }
+    const hasDirectRoute = this.hasLineOfSight(x, y, goalX, goalY);
+    // Portal cuts extend past the obstacles into open space. Following every
+    // cut there creates artificial turns and remaps inlet lanes across an entire
+    // room. Release those cuts only in a certified clear room-to-goal area (or
+    // near arrival), as point LOS alone cuts corners and collapses the lanes.
+    const directApproach = hasDirectRoute && this.corridor && (
+      this.corridor.canApproachDirectly(x, y)
+      || Math.hypot(goalX - x, goalY - y) <= this.corridorArrivalDistance
+    );
+    if (this.corridor && !this.hasDynamicSample && !directApproach) {
+      // Try a smooth lane shortcut, then shorten it at tight/occluded corners.
+      // The last attempt retains the original safe portal target.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const horizon = attempt < 3 ? this.cellSize * 3 / (1 << attempt) : 0;
+        if (!this.corridor.sampleTarget(x, y, lane, this.corridorTarget, horizon, goalX, goalY, route)) break;
+        if (!this.isSegmentSafe(x, y, this.corridorTarget.x, this.corridorTarget.y)) continue;
+        const dx = this.corridorTarget.x - x, dy = this.corridorTarget.y - y;
+        const length = Math.hypot(dx, dy);
+        const lookAhead = this.cellSize * 0.8;
+        if (length > EPSILON && this.isSegmentSafe(x, y, x + dx / length * lookAhead, y + dy / length * lookAhead)) {
+          out.x = dx / length; out.y = dy / length;
+          return true;
+        }
+      }
     }
     const gx = clamp(x / this.cellSize - 0.5, 0, this.columns - 1);
     const gy = clamp(y / this.cellSize - 0.5, 0, this.rows - 1);
@@ -371,7 +409,7 @@ export class FlowField implements GlobalNavigator {
       out.y = 0;
     }
 
-    if (this.hasLineOfSight(x, y, goalX, goalY)) {
+    if (hasDirectRoute) {
       const directX = goalX - x;
       const directY = goalY - y;
       const directLength = Math.sqrt(directX * directX + directY * directY);
@@ -432,9 +470,9 @@ export class FlowField implements GlobalNavigator {
   }
 
   /** Route-owned region, rather than the geometrically nearest unreachable exit. */
-  sampleGoal(x: number, y: number, out: Vec2): boolean {
+  sampleGoal(x: number, y: number, out: Vec2, route?: CorridorRoute): boolean {
     if (!this.goalRegions.length) { out.x = this.goalX; out.y = this.goalY; return true; }
-    const seed = this.selectRegionSeed(x, y);
+    const seed = this.selectRegionSeed(x, y, route);
     if (seed < 0) { out.x = x; out.y = y; return false; }
     const region = this.goalRegions[this.seedRegion[seed]!]!;
     out.x = clamp(x, region.x, region.x + region.width);
@@ -442,7 +480,11 @@ export class FlowField implements GlobalNavigator {
     return true;
   }
 
-  private selectRegionSeed(x: number, y: number): number {
+  private selectRegionSeed(x: number, y: number, route?: CorridorRoute): number {
+    if (this.corridor && !this.hasDynamicSample) {
+      const seed = this.corridor.targetSeed(x, y, route);
+      if (seed >= 0) return seed;
+    }
     const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
     const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
     let best = Infinity, seed = -1;
@@ -532,6 +574,47 @@ export class FlowField implements GlobalNavigator {
     this.directionY.set(this.staticDirectionY);
     this.minimumDynamicStaticDrop.fill(0);
     this.hasDynamicSample = false;
+  }
+
+  private rebuildCorridor(): void {
+    this.corridor = null;
+    this.corridorPreview = null;
+    if (!this.corridorRouting) return;
+    // Whole rectangles must be free, not merely their grid centers. Conservative
+    // square clearance makes the portal graph safe for each body-size class;
+    // sub-cell passages continue to use the original exact checked grid sampler.
+    const blocked = new Uint8Array(this.blocked);
+    for (let row = 0; row < this.rows; row++) for (let column = 0; column < this.columns; column++) {
+      const i = row * this.columns + column;
+      if (blocked[i]) continue;
+      const left = Math.max(this.clearance, column * this.cellSize);
+      const top = Math.max(this.clearance, row * this.cellSize);
+      const right = Math.min(this.width - this.clearance, (column + 1) * this.cellSize);
+      const bottom = Math.min(this.height - this.clearance, (row + 1) * this.cellSize);
+      if (right <= left || bottom <= top || this.obstacles.some(obstacle =>
+        left < obstacle.x + obstacle.width + this.clearance && right > obstacle.x - this.clearance
+        && top < obstacle.y + obstacle.height + this.clearance && bottom > obstacle.y - this.clearance)) blocked[i] = 1;
+    }
+    const seeds: { cell: number; x: number; y: number; seed: number }[] = [];
+    if (this.goalRegions.length) {
+      for (let cell = 0; cell < this.cellCount; cell++) {
+        if (this.seedRegion[cell]! >= 0) seeds.push({ cell, x: this.seedX[cell]!, y: this.seedY[cell]!, seed: cell });
+      }
+    } else if (this.goalCell >= 0 && !this.blocked[this.goalCell]) {
+      seeds.push({ cell: this.goalCell, x: this.goalX, y: this.goalY, seed: this.goalCell });
+    }
+    this.corridor = new CorridorField(this.columns, this.rows, this.cellSize,
+      this.width, this.height, this.clearance, blocked, seeds, this.obstacles, this.staticPotential,
+      (x, y, endX, endY) => this.isSegmentSafe(x, y, endX, endY));
+    const preview = { x: new Float64Array(this.cellCount), y: new Float64Array(this.cellCount) };
+    const direction = { x: 0, y: 0 };
+    for (let row = 0; row < this.rows; row++) for (let column = 0; column < this.columns; column++) {
+      const cell = row * this.columns + column;
+      if (this.blocked[cell] || !Number.isFinite(this.staticPotential[cell])) continue;
+      this.sampleDirection((column + 0.5) * this.cellSize, (row + 0.5) * this.cellSize, direction);
+      preview.x[cell] = direction.x; preview.y[cell] = direction.y;
+    }
+    this.corridorPreview = preview;
   }
 
   private hasLineOfSight(startX: number, startY: number, endX: number, endY: number): boolean {

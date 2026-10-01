@@ -83,6 +83,12 @@ frame의 `goals`는 flow의 점 목표 메타데이터이며 `goalRegions`가 �
 tick n은 n번 계산한 직후이자 tick n 명령 적용 전입니다. tick 0과 모든 checkpoint에서
 비활성 유닛까지 초기 순서대로 모든 필드를 출력합니다. 벽시계·실험실 통계·해시는 포함하지 않습니다.
 관측 frame만으로 외력의 대기 입력·wave hit mask와 내부 필드 상태를 복원할 수는 없습니다.
+`config.corridorRouting`은 선택 boolean이며 생략/false는 기존 v1 수치를 보존합니다.
+true에서는 [통로 안내](architecture.md#경로-안내)의 공유 영역 그래프·동률 선택 규칙과 객체별 좌우 위치·마지막 안내 영역도 재구현해야 합니다.
+좌우 위치는 초기 배치와 목표·지형 변경 시 실제 위치에서 결정되고 안내 영역 기억은 초기화됩니다.
+관측 frame만으로 그 이력을 복원하지 않습니다. 통로 모드의 상태 해시에는 좌우 위치와 안내 영역 ID가 포함됩니다.
+`config.adaptiveTurning`도 선택 boolean입니다. true이면 [보행과 접촉](architecture.md#보행과-접촉)의
+각도별 회전 배율을 적용하며, 생략/false는 기존 고정 회전 상한을 유지합니다. 추가 누적 상태는 없습니다.
 
 ## 외력 입력
 

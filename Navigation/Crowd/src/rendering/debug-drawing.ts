@@ -116,6 +116,7 @@ function drawSpatialGrid(context: CanvasRenderingContext2D, simulation: CrowdSim
 
 function drawFlowField(context: CanvasRenderingContext2D, simulation: CrowdSimulation): void {
   const field = simulation.navigator;
+  const directionX = field.displayDirectionX, directionY = field.displayDirectionY;
   const half = field.cellSize * 0.5;
   const arrow = field.cellSize * 0.28;
   context.save();
@@ -125,8 +126,8 @@ function drawFlowField(context: CanvasRenderingContext2D, simulation: CrowdSimul
   for (let row = 0; row < field.rows; row += 1) {
     for (let column = 0; column < field.columns; column += 1) {
       const index = row * field.columns + column;
-      const dx = field.directionX[index]!;
-      const dy = field.directionY[index]!;
+      const dx = directionX[index]!;
+      const dy = directionY[index]!;
       if (dx === 0 && dy === 0) continue;
       const x = column * field.cellSize + half;
       const y = row * field.cellSize + half;

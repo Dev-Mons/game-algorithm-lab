@@ -41,6 +41,10 @@ if (![0, 1, 10].includes(quality)) throw new RangeError('--quality must be 0, 1 
 const seed = numberArg('seed', 42);
 const walltimeSeconds = numberArg('timeout', 90, 1);
 const scaled = arg('scale') !== 'false';
+const corridorRouting = arg('corridor') === 'true';
+const adaptiveTurning = arg('adaptive-turning') === 'true';
+if (arg('adaptive-turning') !== undefined && !['true', 'false'].includes(arg('adaptive-turning')!)) throw new RangeError('--adaptive-turning must be true or false');
+if (arg('corridor') !== undefined && !['true', 'false'].includes(arg('corridor')!)) throw new RangeError('--corridor must be true or false');
 const scenarios = [...SCENARIOS, ...LAB_SCENARIOS];
 const selectedPresets = (arg('presets') ?? PRESETS.map(preset => preset.id).join(',')).split(',');
 const selectedScenarios = (arg('scenario') ?? 'open-field').split(',');
@@ -80,7 +84,7 @@ async function runWorker(item: Case): Promise<void> {
   try {
     const scale = scaled ? Math.sqrt(item.agents / 1000) : 1;
     const scenario = scaleScenario(scenarios.find(candidate => candidate.id === item.scenario)!, scale);
-    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, preset: item.preset, seed, agentCount: item.agents,
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, corridorRouting, adaptiveTurning, preset: item.preset, seed, agentCount: item.agents,
       width: DEFAULT_CONFIG.width * scale, height: DEFAULT_CONFIG.height * scale }, scenario);
     let commandMs = 0;
     const setupCommands: NonNullable<Measurement['setupCommands']> = [];

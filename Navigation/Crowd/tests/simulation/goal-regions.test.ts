@@ -5,8 +5,6 @@ import { containsPoint } from '../../src/core/goal-regions';
 import type { CrowdAgentInput, CrowdInitialState } from '../../src/core/kernel-input';
 import type { Rect } from '../../src/core/types';
 
-const config = { ...DEFAULT_CROWD_CONFIG, width: 400, height: 240, navCellSize: 10,
-  maxSpeed: 60, maxAcceleration: 120, goalRadius: 5, arrivalSlowRadius: 15 };
 const regions: Rect[] = [{ x: 30, y: 170, width: 60, height: 40 }, { x: 310, y: 170, width: 60, height: 40 }];
 const barrier = { x: 180, y: 0, width: 20, height: 240 };
 const initial = (agents: CrowdAgentInput[], goalRegions = regions, obstacles: Rect[] = []): CrowdInitialState => ({
@@ -14,7 +12,9 @@ const initial = (agents: CrowdAgentInput[], goalRegions = regions, obstacles: Re
   agents, goalRegions, obstacles, maxAgentRadius: 6.4,
 });
 
-describe('multiple destination regions', () => {
+describe.each([false, true])('multiple destination regions (corridor=%s)', corridorRouting => {
+  const config = { ...DEFAULT_CROWD_CONFIG, width: 400, height: 240, navCellSize: 10,
+    maxSpeed: 60, maxAcceleration: 120, goalRadius: 5, arrivalSlowRadius: 15, corridorRouting };
   it.each([false, true])('routes disconnected populations to their reachable region (dynamic=%s)', dynamicRouting => {
     const kernel = new CrowdKernel({ ...config, dynamicRouting }, 4);
     kernel.initialize(initial([
@@ -36,6 +36,7 @@ describe('multiple destination regions', () => {
 
   it('uses route cost instead of the nearest region across a wall', () => {
     const field = new FlowField(400, 240, 10);
+    field.corridorRouting = corridorRouting;
     field.rebuild({ x: 350, y: 120 }, [barrier], 3.55,
       [{ x: 205, y: 50, width: 20, height: 20 }, { x: 20, y: 190, width: 30, height: 30 }]);
     const goal = { x: 0, y: 0 }, direction = { x: 0, y: 0 };
@@ -48,6 +49,7 @@ describe('multiple destination regions', () => {
 
   it('has seeds across a wide region and handles regions smaller than a navigation cell', () => {
     const field = new FlowField(400, 240, 24);
+    field.corridorRouting = corridorRouting;
     field.rebuild({ x: 1, y: 1 }, [], 3.55, [{ x: 100, y: 190, width: 200, height: 20 }]);
     expect(field.regionSeedCounts[0]).toBeGreaterThan(5);
     const direction = { x: 0, y: 0 };

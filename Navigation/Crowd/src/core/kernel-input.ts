@@ -30,6 +30,12 @@ export interface CrowdInitialState {
 }
 
 export function validateCrowdConfig(config: CrowdConfig): void {
+  if (config.adaptiveTurning !== undefined && typeof config.adaptiveTurning !== 'boolean') {
+    throw new TypeError('config.adaptiveTurning must be boolean.');
+  }
+  if (config.corridorRouting !== undefined && typeof config.corridorRouting !== 'boolean') {
+    throw new TypeError('config.corridorRouting must be boolean.');
+  }
   if (config.excessSpeedHalfLife !== undefined
     && (!Number.isFinite(config.excessSpeedHalfLife) || config.excessSpeedHalfLife < 0)) {
     throw new RangeError('config.excessSpeedHalfLife must be finite and nonnegative.');
