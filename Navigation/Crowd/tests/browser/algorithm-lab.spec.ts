@@ -1,33 +1,29 @@
 import { expect, test } from '@playwright/test';
 import { PRESETS } from '../../src/algorithms/lab/registry';
 
-test('corridor guidance is enabled, draws its directions, and resets reproducibly when toggled', async ({ page }, info) => {
+test('shared parallel routing runs without stored lanes or extra per-agent steering', async ({ page }, info) => {
+  test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/?agents=1000&scenario=winding-corners&paused=true');
-  await expect(page.locator('#corridor-routing')).toBeChecked();
-  await page.locator('label:has(#debug-flow)').click();
-  const initial = await page.evaluate(() => window.crowdDebug.getSnapshot().hash);
-  const changed = await page.evaluate(() => {
-    const field = window.crowdDebug.simulation().navigator;
-    return field.displayDirectionX.some((x, i) => Math.abs(x - field.directionX[i]!) > 0.1);
-  });
-  expect(changed).toBe(true);
-  for (const enabled of [true, false]) {
-    if (await page.locator('#corridor-routing').isChecked() !== enabled) await page.locator('label:has(#corridor-routing)').click();
+  for (const scenario of ['winding-corners', 'rocky-pass']) {
+    await page.goto(`/?agents=1000&scenario=${scenario}&paused=true&radius=1.5&largePercent=5&largeScale=4&corridor=true`);
+    await expect(page.locator('#corridor-routing')).toHaveCount(0);
+    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.corridorRouting)).toBe(false);
+    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.parallelRouting)).toBe(true);
+    await page.locator('label:has(#debug-flow)').click();
+    const initial = await page.evaluate(() => window.crowdDebug.getSnapshot().hash);
     await page.evaluate(() => {
       const simulation = window.crowdDebug.simulation();
-      for (let tick = 0; tick < 480; tick++) simulation.step();
+      for (let tick = 0; tick < 720; tick++) simulation.step();
     });
-    await expect(page.locator('body')).toHaveAttribute('data-step', '480');
+    await expect(page.locator('body')).toHaveAttribute('data-step', '720');
     expect(await page.evaluate(() => window.crowdDebug.simulation().metrics.wallOverlapCount)).toBe(0);
-    await page.locator('#crowd-canvas').screenshot({ path: info.outputPath(`corridor-${enabled}.png`) });
+    await page.locator('#crowd-canvas').screenshot({ path: info.outputPath(`shared-routing-${scenario}.png`) });
+    await page.locator('label:has(#debug-desired)').click();
+    await page.locator('#crowd-canvas').screenshot({ path: info.outputPath(`shared-intent-${scenario}.png`) });
+    await page.locator('#reset').click();
+    expect(await page.evaluate(() => window.crowdDebug.getSnapshot().hash)).toBe(initial);
   }
-  await page.locator('label:has(#corridor-routing)').click();
-  expect(await page.evaluate(() => window.crowdDebug.getSnapshot().hash)).toBe(initial);
-  await page.goto('/?agents=1000&scenario=winding-corners&paused=true&corridor=false');
-  await expect(page.locator('#corridor-routing')).not.toBeChecked();
-  expect(await page.evaluate(() => window.crowdDebug.simulation().config.corridorRouting)).toBe(false);
   expect(errors).toEqual([]);
 });
 

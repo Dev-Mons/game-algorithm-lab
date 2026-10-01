@@ -141,11 +141,13 @@ export class FlowField implements GlobalNavigator {
   goalCell = -1;
   preserveBlockedGoal = false;
   corridorRouting = false;
+  parallelRouting = false;
+  sampledDirectionPreview = false;
   corridorArrivalDistance: number;
   private corridor: CorridorField | null = null;
   private readonly corridorTarget = { x: 0, y: 0 };
   private corridorPreview: { x: Float64Array; y: Float64Array } | null = null;
-  /** Position-local lane preview. Agent intent additionally retains its lane across turns. */
+  /** Shared navigation preview; physical pushing and movement constraints are separate. */
   get displayDirectionX(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.x : this.directionX; }
   get displayDirectionY(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.y : this.directionY; }
   private goalRegions: readonly Rect[] = [];
@@ -334,7 +336,7 @@ export class FlowField implements GlobalNavigator {
 
   sampleLane(x: number, y: number): number { return this.corridor?.laneAt(x, y) ?? 0.5; }
 
-  sampleDirection(x: number, y: number, out: Vec2, lane = this.sampleLane(x, y), route?: CorridorRoute): boolean {
+  sampleDirection(x: number, y: number, out: Vec2, lane?: number, route?: CorridorRoute): boolean {
     let goalX = this.goalX, goalY = this.goalY, region = -1;
     if (this.goalRegions.length) {
       if (this.containsGoal(x, y)) { out.x = 0; out.y = 0; return false; }
@@ -358,12 +360,14 @@ export class FlowField implements GlobalNavigator {
       this.corridor.canApproachDirectly(x, y)
       || Math.hypot(goalX - x, goalY - y) <= this.corridorArrivalDistance
     );
-    if (this.corridor && !this.hasDynamicSample && !directApproach) {
-      // Try a smooth lane shortcut, then shorten it at tight/occluded corners.
-      // The last attempt retains the original safe portal target.
-      for (let attempt = 0; attempt < 4; attempt++) {
-        const horizon = attempt < 3 ? this.cellSize * 3 / (1 << attempt) : 0;
-        if (!this.corridor.sampleTarget(x, y, lane, this.corridorTarget, horizon, goalX, goalY, route)) break;
+    if (this.corridor && !this.hasDynamicSample && !directApproach
+      && (!this.parallelRouting || !this.corridorPreview)) {
+      // Anticipate the turn over six cells, then shorten at tight/occluded
+      // corners. Keep the shorter horizons and safe portal target as fallbacks.
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const horizon = attempt < 4 ? this.cellSize * 6 / (1 << attempt) : 0;
+        if (!this.corridor.sampleTarget(x, y, this.parallelRouting ? 0.5 : lane ?? this.sampleLane(x, y),
+          this.corridorTarget, horizon, goalX, goalY, this.parallelRouting ? undefined : route, this.parallelRouting)) break;
         if (!this.isSegmentSafe(x, y, this.corridorTarget.x, this.corridorTarget.y)) continue;
         const dx = this.corridorTarget.x - x, dy = this.corridorTarget.y - y;
         const length = Math.hypot(dx, dy);
@@ -390,13 +394,14 @@ export class FlowField implements GlobalNavigator {
     const index10 = row0 * this.columns + column1;
     const index01 = row1 * this.columns + column0;
     const index11 = row1 * this.columns + column1;
+    const shared = this.parallelRouting && !this.hasDynamicSample ? this.corridorPreview : null;
     const fieldX = this.sampleStencil(
-      this.directionX,
+      shared?.x ?? this.directionX,
       index00, index10, index01, index11,
       weight00, weight10, weight01, weight11, region,
     );
     const fieldY = this.sampleStencil(
-      this.directionY,
+      shared?.y ?? this.directionY,
       index00, index10, index01, index11,
       weight00, weight10, weight01, weight11, region,
     );
@@ -409,7 +414,7 @@ export class FlowField implements GlobalNavigator {
       out.y = 0;
     }
 
-    if (hasDirectRoute) {
+    if (hasDirectRoute && (!shared || directApproach)) {
       const directX = goalX - x;
       const directY = goalY - y;
       const directLength = Math.sqrt(directX * directX + directY * directY);
@@ -482,7 +487,7 @@ export class FlowField implements GlobalNavigator {
 
   private selectRegionSeed(x: number, y: number, route?: CorridorRoute): number {
     if (this.corridor && !this.hasDynamicSample) {
-      const seed = this.corridor.targetSeed(x, y, route);
+      const seed = this.corridor.targetSeed(x, y, this.parallelRouting ? undefined : route);
       if (seed >= 0) return seed;
     }
     const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
@@ -579,7 +584,10 @@ export class FlowField implements GlobalNavigator {
   private rebuildCorridor(): void {
     this.corridor = null;
     this.corridorPreview = null;
-    if (!this.corridorRouting) return;
+    if (!this.corridorRouting && !this.parallelRouting) {
+      if (this.sampledDirectionPreview) this.rebuildDirectionPreview();
+      return;
+    }
     // Whole rectangles must be free, not merely their grid centers. Conservative
     // square clearance makes the portal graph safe for each body-size class;
     // sub-cell passages continue to use the original exact checked grid sampler.
@@ -606,6 +614,10 @@ export class FlowField implements GlobalNavigator {
     this.corridor = new CorridorField(this.columns, this.rows, this.cellSize,
       this.width, this.height, this.clearance, blocked, seeds, this.obstacles, this.staticPotential,
       (x, y, endX, endY) => this.isSegmentSafe(x, y, endX, endY));
+    this.rebuildDirectionPreview();
+  }
+
+  private rebuildDirectionPreview(): void {
     const preview = { x: new Float64Array(this.cellCount), y: new Float64Array(this.cellCount) };
     const direction = { x: 0, y: 0 };
     for (let row = 0; row < this.rows; row++) for (let column = 0; column < this.columns; column++) {

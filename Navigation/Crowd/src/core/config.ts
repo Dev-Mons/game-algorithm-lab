@@ -29,6 +29,7 @@ export const DEFAULT_CROWD_CONFIG: CrowdConfig = {
   maximumContactCorrection: 1.25,
   dynamicRouting: false,
   corridorRouting: false,
+  parallelRouting: false,
   preserveBlockedGoal: false,
   dynamicFlowRebuildInterval: 8,
   // Keep moderate density cheap, with a steep cost only once a route is crowded.

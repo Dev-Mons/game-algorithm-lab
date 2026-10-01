@@ -196,10 +196,12 @@ function drawDesiredVelocity(
     if (simulation.state.active[agent] !== 1) continue;
     const x = renderX(simulation, agent, alpha);
     const y = renderY(simulation, agent, alpha);
+    const intentX = simulation.state.intentX[agent]!, intentY = simulation.state.intentY[agent]!;
+    const speed = Math.max(0, layers.desiredVelocityX[agent]! * intentX + layers.desiredVelocityY[agent]! * intentY);
     context.moveTo(x, y);
     context.lineTo(
-      x + layers.desiredVelocityX[agent]! * 0.18,
-      y + layers.desiredVelocityY[agent]! * 0.18,
+      x + intentX * speed * 0.18,
+      y + intentY * speed * 0.18,
     );
   }
   context.stroke();

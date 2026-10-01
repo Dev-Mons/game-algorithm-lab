@@ -32,6 +32,34 @@ function trajectories(corridorRouting: boolean, flipX = false, flipY = false) {
 }
 
 describe('corridor lane guidance', () => {
+  it('anticipates the first winding corner gradually while still upstream of the old turn range', () => {
+    const scenario = getScenario('winding-corners');
+    const field = new FlowField(1200, 720, 24);
+    field.corridorRouting = true;
+    field.rebuild(scenario.goal, scenario.obstacles, 3.55);
+    const direction = { x: 0, y: 0 };
+    for (const x of [84, 156, 228]) {
+      const lane = field.sampleLane(x, 300);
+      let previousAngle = 0;
+      // These points are 96..84px before the wall end: turning should
+      // already be visible here, without a sudden change between samples.
+      for (let y = 408; y <= 420; y += 6) {
+        expect(field.sampleDirection(x, y, direction, lane)).toBe(true);
+        const angle = Math.atan2(direction.x, direction.y);
+        expect(angle).toBeGreaterThan(0.01);
+        expect(angle).toBeGreaterThan(previousAngle);
+        expect(angle - previousAngle).toBeLessThan(0.1);
+        for (const obstacle of scenario.obstacles) {
+          expect(segmentDistanceSquaredToRect(x, y, x + direction.x * 19.2, y + direction.y * 19.2, obstacle))
+            .toBeGreaterThanOrEqual(3.55 ** 2 - 1e-8);
+        }
+        previousAngle = angle;
+      }
+      const cell = Math.floor(420 / 24) * field.columns + Math.floor(x / 24);
+      expect(field.displayDirectionX[cell]).toBeGreaterThan(0.01);
+    }
+  });
+
   it('turns gradually along a lane instead of snapping at a portal boundary', () => {
     const field = new FlowField(600, 400, 10);
     field.corridorRouting = true;

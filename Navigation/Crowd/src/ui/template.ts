@@ -106,8 +106,7 @@ export function appTemplate(): string {
         </section>
         <section class="control-section">
           <h2>이동 파라미터</h2>
-          ${toggle('통로 폭 유지', 'corridor-routing', true)}
-          <p class="description">통로에서 좌우 위치를 유지하며 이동합니다. 끄면 기존 최단 경로 안내로 비교합니다. 변경하면 다시 배치됩니다.</p>
+          <p class="description">공유 경로를 따라 이동하며 밀도·충돌에 반응합니다. 통로별 고정 위치는 사용하지 않습니다.</p>
           ${rangeControl('최대 속도', 'max-speed', 20, 180, 1, 86)}
           ${rangeControl('최대 가속도', 'max-acceleration', 40, 500, 5, 210)}
           ${rangeControl('기본 회전 속도 (°/초)', 'turn-speed', 0, 720, 30, 360)}
@@ -118,7 +117,7 @@ export function appTemplate(): string {
           ${rangeControl('큰 객체 크기 배율 (×)', 'large-agent-scale', 1, 4, 0.1, 2)}
           <p class="description">예: 5% · 2× → 일부 객체만 두 배 크기로 섞입니다. 노란색이 큰 객체이며, 조절을 마치면 다시 배치됩니다.</p>
           <p id="agent-size-summary" class="editor-status" role="status" aria-live="polite"></p>
-          ${rangeControl('회피 탐색 거리', 'neighbor-radius', 8, 60, 1, 28)}
+          ${rangeControl('이웃 표시 반경', 'neighbor-radius', 8, 60, 1, 28)}
           ${rangeControl('객체 간 여유', 'agent-gap', 0, 3, 0.1, 0.4)}
           ${rangeControl('밀도 압축 완화 시간', 'pressure-relaxation', 0.1, 0.5, 0.05, 0.25)}
           ${rangeControl('목표 반경', 'goal-radius', 20, 130, 1, 58)}
@@ -126,13 +125,13 @@ export function appTemplate(): string {
         <section class="control-section">
           <h2>디버그 표시</h2>
           <div class="toggle-grid">
-            ${toggle('Flow Field 방향', 'debug-flow', false)}
+            ${toggle('공유 경로 방향', 'debug-flow', false)}
             ${toggle('Spatial Hash 셀', 'debug-grid', false)}
-            ${toggle('Desired 속도', 'debug-desired', false)}
+            ${toggle('개체 이동 의도', 'debug-desired', false)}
             ${toggle('실제 속도', 'debug-velocity', false)}
             ${toggle('국소 밀도', 'debug-density', false)}
             ${toggle('겹침 복구', 'debug-recovery', true)}
-            ${toggle('이웃 탐색 반경', 'debug-neighbors', false)}
+            ${toggle('이웃 참고 반경', 'debug-neighbors', false)}
             ${toggle('겹친 객체', 'debug-overlaps', false)}
             ${toggle('정체 객체', 'debug-stalled', true)}
           </div>

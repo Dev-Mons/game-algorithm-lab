@@ -380,19 +380,25 @@ export class CrowdKernel {
       areaWeights: this.agentAreaWeights,
     });
     this.onPass('contact');
-    // Lateral pressure is a real crowd push, not a change to the facing target.
-    // Its route-parallel part is already represented by the walking speed.
+    // Apply the complete pressure correction once, on the same tick in both
+    // axes. Sending only the parallel part through the slower walking motor
+    // while immediately accumulating the lateral part tears converging fronts.
+    // Gather excludes this delta from the motor target to avoid double use.
     for (let agent = 0; agent < current.count; agent++) {
       if (!current.active[agent]) continue;
       const x = current.intentX[agent]!, y = current.intentY[agent]!;
       const lengthSquared = x * x + y * y;
       if (lengthSquared <= EPSILON) continue;
-      const px = this.crowdFlow.pressureVelocityX[agent]!, py = this.crowdFlow.pressureVelocityY[agent]!;
-      const along = (px * x + py * y) / lengthSquared;
-      const lateralX = px - x * along;
-      const lateralY = py - y * along;
+      let px = this.crowdFlow.pressureVelocityX[agent]!, py = this.crowdFlow.pressureVelocityY[agent]!;
+      // Retain the projection's no-reverse rule at the actual velocity boundary.
+      // Pressure may stop forward travel, but cannot create more backward
+      // transport. Existing backward motion from an external push is preserved.
+      const before = current.vx[agent]! * x + current.vy[agent]! * y;
+      const after = before + px * x + py * y;
+      const excess = Math.min(0, after - Math.min(0, before)) / lengthSquared;
+      px -= x * excess; py -= y * excess;
       const oldPushX = current.pushVx[agent]!, oldPushY = current.pushVy[agent]!;
-      const candidateX = oldPushX + lateralX, candidateY = oldPushY + lateralY;
+      const candidateX = oldPushX + px, candidateY = oldPushY + py;
       // Bound the pressure contribution without rescaling the independent
       // walking motor or erasing an existing stronger external push.
       const limit = Math.max(this.config.maxSpeed, Math.hypot(oldPushX, oldPushY));
@@ -485,7 +491,7 @@ export class CrowdKernel {
     // FlowField alone decides whether a direct-goal contribution is safe.
     // A failed sample must never turn into an unchecked direction through a wall.
     const navigator = this.navigatorForAgent(agent);
-    if (!this.config.corridorRouting) return navigator.sampleDirection(x, y, out);
+    if (!this.config.corridorRouting || this.config.parallelRouting) return navigator.sampleDirection(x, y, out);
     return navigator.sampleDirection(x, y, out, this.navigationLane[agent], this.navigationRoute[agent]);
   }
 
@@ -578,7 +584,9 @@ export class CrowdKernel {
           navigator = goals.size === 0 && primary ? primary
             : new FlowField(this.config.width, this.config.height, this.config.navCellSize);
           navigator.preserveBlockedGoal = this.config.preserveBlockedGoal ?? false;
-          navigator.corridorRouting = this.config.corridorRouting ?? false;
+          navigator.corridorRouting = this.config.parallelRouting ? false : this.config.corridorRouting ?? false;
+          navigator.parallelRouting = this.config.parallelRouting ?? false;
+          navigator.sampledDirectionPreview = true;
           navigator.corridorArrivalDistance = Math.max(this.config.arrivalSlowRadius, this.config.goalRadius + this.config.navCellSize);
           navigator.rebuild(goal, this.obstacles, clearance, this.destinationRegions);
           goals.set(key, navigator);
@@ -643,7 +651,8 @@ export class CrowdKernel {
   private deactivateArrivals(state: AgentBuffer): void {
     // Portal routes can approach the arrival circle asymptotically. Tolerate
     // roundoff only; keep frozen legacy replay arithmetic unchanged.
-    const arrivalRadiusSquared = this.config.goalRadius * this.config.goalRadius + (this.config.corridorRouting ? EPSILON : 0);
+    const arrivalRadiusSquared = this.config.goalRadius * this.config.goalRadius
+      + (this.config.corridorRouting || this.config.parallelRouting ? EPSILON * Math.max(1, 2 * this.config.goalRadius) : 0);
     for (let agent = 0; agent < state.count; agent += 1) {
       if (state.active[agent] !== 1) continue;
       const goal = this.flowGoals[this.agentFlow[agent]!]!;

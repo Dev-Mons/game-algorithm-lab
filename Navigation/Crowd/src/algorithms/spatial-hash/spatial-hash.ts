@@ -1,42 +1,73 @@
 import type { NeighborIndex } from '../../core/types';
 
+const INLINE_CAPACITY = 4;
+
 export class SpatialHash implements NeighborIndex {
   readonly columns: number;
   readonly rows: number;
-  readonly cellStart: Int32Array;
-  readonly agentIndices: Int32Array;
-  private readonly cursor: Int32Array;
+  private readonly inlineIndices: Int32Array;
+  private readonly tails: Int32Array;
+  private readonly overflowNext: Int32Array;
+  private packedStarts?: Int32Array;
+  private packedIndices?: Int32Array;
   readonly populations: Int32Array;
 
   constructor(width: number, height: number, public readonly cellSize: number, capacity: number) {
     this.columns = Math.ceil(width / cellSize);
     this.rows = Math.ceil(height / cellSize);
-    this.cellStart = new Int32Array(this.columns * this.rows + 1);
-    this.cursor = new Int32Array(this.columns * this.rows);
     this.populations = new Int32Array(this.columns * this.rows);
-    this.agentIndices = new Int32Array(capacity);
+    this.inlineIndices = new Int32Array(this.populations.length * INLINE_CAPACITY);
+    this.tails = new Int32Array(this.populations.length);
+    this.overflowNext = new Int32Array(capacity);
   }
 
   rebuild(x: Float64Array, y: Float64Array, active: Uint8Array): void {
     this.populations.fill(0);
-    for (let i = 0; i < x.length; i++) {
-      if (active[i] !== 1) continue;
-      const cell = this.cellIndex(x[i]!, y[i]!);
-      this.populations[cell] = this.populations[cell]! + 1;
-    }
-    this.cellStart[0] = 0;
-    for (let cell = 0; cell < this.populations.length; cell++) {
-      this.cellStart[cell + 1] = this.cellStart[cell]! + this.populations[cell]!;
-      this.cursor[cell] = this.cellStart[cell]!;
-    }
-    // Stable descending IDs preserve the existing deterministic query order.
-    // GPU mapping: count, exclusive scan, stable scatter / radix sort.
+    // TinyDead's inline cells avoid a prefix scan and second position pass.
+    // Append overflow in descending ID order: bounded contact selection must
+    // remain identical even when a cell contains more than the query budget.
     for (let i = x.length - 1; i >= 0; i--) {
       if (active[i] !== 1) continue;
       const cell = this.cellIndex(x[i]!, y[i]!);
-      this.agentIndices[this.cursor[cell]!] = i;
-      this.cursor[cell] = this.cursor[cell]! + 1;
+      const slot = this.populations[cell]!;
+      this.populations[cell] = slot + 1;
+      if (slot < INLINE_CAPACITY) {
+        this.inlineIndices[cell * INLINE_CAPACITY + slot] = i;
+      } else {
+        this.overflowNext[this.tails[cell]!] = i;
+      }
+      this.tails[cell] = i;
+      this.overflowNext[i] = -1;
     }
+    if (this.packedStarts) this.updatePackedView();
+  }
+
+  // Preserve the diagnostic packed-array API, including retained array views.
+  // Runtime queries never request it and therefore pay no scan/scatter cost.
+  get cellStart(): Int32Array {
+    this.ensurePackedView();
+    return this.packedStarts!;
+  }
+
+  get agentIndices(): Int32Array {
+    this.ensurePackedView();
+    return this.packedIndices!;
+  }
+
+  private ensurePackedView(): void {
+    if (this.packedStarts) return;
+    this.packedStarts = new Int32Array(this.populations.length + 1);
+    this.packedIndices = new Int32Array(this.overflowNext.length);
+    this.updatePackedView();
+  }
+
+  private updatePackedView(): void {
+    let count = 0;
+    for (let cell = 0; cell < this.populations.length; cell++) {
+      this.packedStarts![cell] = count;
+      count = this.writeCell(cell, this.packedIndices!, count, this.packedIndices!.length);
+    }
+    this.packedStarts![this.populations.length] = count;
   }
 
   populationAt(x: number, y: number): number {
@@ -70,12 +101,10 @@ export class SpatialHash implements NeighborIndex {
     const maxColumn = Math.min(this.columns - 1, Math.floor((x + radius) / this.cellSize));
     const minRow = Math.max(0, Math.floor((y - radius) / this.cellSize));
     const maxRow = Math.min(this.rows - 1, Math.floor((y + radius) / this.cellSize));
+    const visitAll = (index: number): boolean => { visit(index); return true; };
     for (let row = minRow; row <= maxRow; row += 1) {
       for (let column = minColumn; column <= maxColumn; column += 1) {
-        const cell = row * this.columns + column;
-        for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-          visit(this.agentIndices[slot]!);
-        }
+        this.visitCellUntil(column, row, visitAll);
       }
     }
   }
@@ -158,35 +187,27 @@ export class SpatialHash implements NeighborIndex {
       if (top >= minRow) {
         for (let column = Math.max(left, minColumn); column <= Math.min(right, maxColumn); column += 1) {
           const cell = top * this.columns + column;
-          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-            output[count++] = this.agentIndices[slot]!;
-            if (count === limit) return count;
-          }
+          count = this.writeCell(cell, output, count, limit);
+          if (count === limit) return count;
         }
       }
       if (bottom !== top && bottom <= maxRow) {
         for (let column = Math.max(left, minColumn); column <= Math.min(right, maxColumn); column += 1) {
           const cell = bottom * this.columns + column;
-          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-            output[count++] = this.agentIndices[slot]!;
-            if (count === limit) return count;
-          }
+          count = this.writeCell(cell, output, count, limit);
+          if (count === limit) return count;
         }
       }
       for (let row = Math.max(top + 1, minRow); row <= Math.min(bottom - 1, maxRow); row += 1) {
         if (left >= minColumn) {
           const cell = row * this.columns + left;
-          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-            output[count++] = this.agentIndices[slot]!;
-            if (count === limit) return count;
-          }
+          count = this.writeCell(cell, output, count, limit);
+          if (count === limit) return count;
         }
         if (right !== left && right <= maxColumn) {
           const cell = row * this.columns + right;
-          for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-            output[count++] = this.agentIndices[slot]!;
-            if (count === limit) return count;
-          }
+          count = this.writeCell(cell, output, count, limit);
+          if (count === limit) return count;
         }
       }
     }
@@ -199,10 +220,30 @@ export class SpatialHash implements NeighborIndex {
     visit: (index: number) => boolean,
   ): boolean {
     const cell = row * this.columns + column;
-    for (let slot = this.cellStart[cell]!; slot < this.cellStart[cell + 1]!; slot++) {
-      if (!visit(this.agentIndices[slot]!)) return false;
+    const population = this.populations[cell]!;
+    const base = cell * INLINE_CAPACITY;
+    for (let slot = 0; slot < Math.min(population, INLINE_CAPACITY); slot++) {
+      if (!visit(this.inlineIndices[base + slot]!)) return false;
+    }
+    if (population > INLINE_CAPACITY) {
+      for (let agent = this.overflowNext[this.inlineIndices[base + INLINE_CAPACITY - 1]!]!;
+        agent >= 0; agent = this.overflowNext[agent]!) {
+        if (!visit(agent)) return false;
+      }
     }
     return true;
+  }
+
+  private writeCell(cell: number, output: Int32Array, count: number, limit: number): number {
+    const population = this.populations[cell]!;
+    const base = cell * INLINE_CAPACITY;
+    const end = Math.min(population, INLINE_CAPACITY, limit - count);
+    for (let slot = 0; slot < end; slot++) output[count++] = this.inlineIndices[base + slot]!;
+    if (population > INLINE_CAPACITY && count < limit) {
+      for (let agent = this.overflowNext[this.inlineIndices[base + INLINE_CAPACITY - 1]!]!;
+        agent >= 0 && count < limit; agent = this.overflowNext[agent]!) output[count++] = agent;
+    }
+    return count;
   }
 
   private cellIndex(x: number, y: number): number {

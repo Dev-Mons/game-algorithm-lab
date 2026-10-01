@@ -54,6 +54,8 @@ export interface CrowdConfig {
   dynamicRouting: boolean;
   /** Preserve a stable lateral lane through wide portals. Omitted/false retains legacy navigation. */
   corridorRouting?: boolean;
+  /** Shared parallel directions cached from geometry; no persistent per-agent lane. */
+  parallelRouting?: boolean;
   /** Keep an obstacle-covered goal cell blocked. Omitted means false for legacy replays. */
   preserveBlockedGoal?: boolean;
   dynamicFlowRebuildInterval: number;

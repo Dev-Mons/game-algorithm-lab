@@ -237,11 +237,18 @@ export class CorridorField {
    * At a plane the downstream contribution is exactly one, so switching rooms
    * does not switch directions. The caller shortens unsafe turn horizons.
    */
-  sampleTarget(x: number, y: number, lane: number, out: Vec2, lookAhead = 0, goalX = NaN, goalY = NaN, route?: CorridorRoute): boolean {
+  sampleTarget(x: number, y: number, lane: number, out: Vec2, lookAhead = 0, goalX = NaN, goalY = NaN, route?: CorridorRoute, parallel = false): boolean {
     const startRoom = this.routeRoom(x, y, route);
     if (!startRoom || startRoom.next < 0) return false;
     let room: Room = startRoom;
-    if (lookAhead <= 0) { this.portalTarget(room, lane, out, true); return true; }
+    if (lookAhead <= 0) {
+      if (parallel) {
+        const next = this.rooms[room.next]!;
+        out.x = x + (next.left >= room.right ? 1 : next.right <= room.left ? -1 : 0) * this.cellSize * 0.15;
+        out.y = y + (next.top >= room.bottom ? 1 : next.bottom <= room.top ? -1 : 0) * this.cellSize * 0.15;
+      } else this.portalTarget(room, lane, out, true);
+      return true;
+    }
     let count = 0, directionX = 0, directionY = 0;
     for (; count < 8; count++) {
       if (room.next < 0 || room.directGoal) {
@@ -250,10 +257,17 @@ export class CorridorField {
         break;
       }
       const next = this.rooms[room.next]!;
-      this.portalTarget(room, lane, out, false);
-      const dx = out.x - x, dy = out.y - y, length = Math.hypot(dx, dy);
-      directionX = length > 1e-9 ? dx / length : 0;
-      directionY = length > 1e-9 ? dy / length : 0;
+      if (parallel) {
+        // A shared travel axis, never a body-specific position along a portal.
+        // Straight sections stay parallel even when geometry creates extra cuts.
+        directionX = next.left >= room.right ? 1 : next.right <= room.left ? -1 : 0;
+        directionY = next.top >= room.bottom ? 1 : next.bottom <= room.top ? -1 : 0;
+      } else {
+        this.portalTarget(room, lane, out, false);
+        const dx = out.x - x, dy = out.y - y, length = Math.hypot(dx, dy);
+        directionX = length > 1e-9 ? dx / length : 0;
+        directionY = length > 1e-9 ? dy / length : 0;
+      }
       this.turnDirections[count * 2] = directionX;
       this.turnDirections[count * 2 + 1] = directionY;
       // Normal distance, not distance to a waypoint: lateral movement during

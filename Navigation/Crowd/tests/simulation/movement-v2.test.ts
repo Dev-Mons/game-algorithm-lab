@@ -255,10 +255,27 @@ describe('single crowd movement pipeline', () => {
     expect(boundedWork).toBe(true);
     expect(maximumWallOverlaps).toBe(0);
     expect(maximumStaticProjectionCorrections).toBeGreaterThan(0);
-    expect(simulation.metrics.stalledCount).toBe(0);
     expect(simulation.metrics.averageSpeed).toBeGreaterThan(40);
     expect(crossings).toBeGreaterThan(1_000);
-  }, 15_000);
+    // Bounded pressure permits a temporary queue at a gate. Require recovery
+    // of those exact bodies instead of requiring zero low-speed bodies at one
+    // arbitrarily selected tick (360).
+    const waiting = [...simulation.state.stalledFor].flatMap((time, agent) => time > simulation.config.stallSeconds
+      ? [{ agent, x: simulation.state.x[agent]!, y: simulation.state.y[agent]! }] : []);
+    if (waiting.length) {
+      for (let tick = 0; tick < 240; tick++) {
+        simulation.step();
+        expect(simulation.metrics.wallOverlapCount).toBe(0);
+        expect(simulation.metrics.contactConstraints).toBeLessThanOrEqual(simulation.metrics.activeCount
+          * simulation.metrics.maxContacts * simulation.metrics.constraintIterations);
+      }
+      expect(simulation.metrics.stalledCount).toBe(0);
+      for (const { agent, x, y } of waiting) {
+        expect(Math.hypot(simulation.state.x[agent]! - x, simulation.state.y[agent]! - y))
+          .toBeGreaterThan(simulation.agentRadii[agent]!);
+      }
+    }
+  }, 30_000);
 
   it('keeps the 4990/5000/5010 boundary on one continuous contact model', () => {
     const counts = [4_990, 5_000, 5_010] as const;

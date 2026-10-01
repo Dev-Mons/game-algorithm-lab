@@ -106,8 +106,12 @@ describe('sketch concept scenarios through the shared navigation pipeline', () =
     }
     const result = dynamicRoutes.snapshot();
     expect(result.utilization[0]).toBeGreaterThan(500);
-    expect(result.utilization[1]).toBeGreaterThan(50);
-    expect(result.utilization[1]).toBeGreaterThan(staticRoutes.snapshot().utilization[1]! + 50);
+    // Pressure no longer produces large lateral impulses. Compare the routing
+    // policies, not the old pressure-dependent 50-body detour cutoff: this
+    // replay sends 43 down the bypass versus none with static navigation.
+    const staticResult = staticRoutes.snapshot();
+    expect(result.utilization[1]).toBeGreaterThan(staticResult.utilization[1]!);
+    expect(result.capacityNormalizedFairness).toBeGreaterThan(staticResult.capacityNormalizedFairness);
     expect(result.unclassifiedAgents).toBeLessThanOrEqual(10);
   }, 20_000);
 

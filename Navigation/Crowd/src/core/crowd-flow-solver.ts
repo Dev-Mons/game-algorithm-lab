@@ -244,7 +244,11 @@ export class CrowdFlowSolver {
       const swap=pressure;pressure=nextPressure;nextPressure=swap;
     }
     if(pressure!==this.pressure)this.pressure.set(pressure);
-    const limit = options.maximumAcceleration * horizon;
+    // The relaxation horizon sets the capacity target, not the impulse budget.
+    // This velocity correction is applied every tick as physical pushing.
+    // Using the horizon here permits 15 ticks of impulse
+    // in one 60 Hz step at the default settings, splitting converging streams.
+    const limit = options.maximumAcceleration * options.fixedDelta;
     this.pressureGradientCells=0;
     for (let i = 0; i < cellCount; i++) {
       const left = i % columns > 0 ? i - 1 : i;
@@ -267,7 +271,7 @@ export class CrowdFlowSolver {
       x *= scale;
       y *= scale;
       // Publish corrected transport velocities. Gather also exposes the pure
-      // pressure delta so the kernel can split walking and lateral pushing.
+      // pressure delta so the kernel can apply it once as physical pushing.
       for (let channel = 0; channel < FLOW_CHANNELS; channel++) {
         const slot = channel * cellCount + i;
         this.velocityX[slot] = this.velocityX[slot]! + x;
@@ -340,13 +344,15 @@ export class CrowdFlowSolver {
       if (weightSum > EPSILON) {
         this.pressureVelocityX[a] = (x - baseX) / weightSum;
         this.pressureVelocityY[a] = (y - baseY) / weightSum;
-        // Preserve sub-grid navigation detail in dilute cells while taking
-        // the grid's entire velocity change. Dense cells use pure PIC gather.
-        x = x / weightSum + (desiredX[a]! - baseX / weightSum) * (1 - blend);
-        y = y / weightSum + (desiredY[a]! - baseY / weightSum) * (1 - blend);
+        // Keep the motor target separate from the pressure delta. The kernel
+        // applies both components of pressure as one impulse; including it in
+        // this target as well would also command the motor to apply it again.
+        // Preserve sub-grid navigation detail in dilute cells.
+        x = baseX / weightSum + (desiredX[a]! - baseX / weightSum) * (1 - blend);
+        y = baseY / weightSum + (desiredY[a]! - baseY / weightSum) * (1 - blend);
       } else { x = desiredX[a]!; y = desiredY[a]!; }
-      // Pressure may stop a stream, but cannot replace its route with reverse
-      // transport. Static sweeps remain the geometric safety authority.
+      // Blended crowd momentum cannot command reverse walking. Physical
+      // pressure/pushing is applied separately and retains static sweep safety.
       const forward = x * state.intentX[a]! + y * state.intentY[a]!;
       if (forward < 0) {
         x -= forward * state.intentX[a]!;

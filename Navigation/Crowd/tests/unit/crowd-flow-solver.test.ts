@@ -8,6 +8,28 @@ const options: CrowdFlowOptions = {targetDensity: 8, pressureIterations: 8,
   maximumSpeed: 86, fixedDelta: 1/60};
 
 describe('directional grid transport', () => {
+  it('bounds pressure acceleration per elapsed tick, independently of the density relaxation horizon', () => {
+    const field = new CrowdField(96, 96, 16), solver = new CrowdFlowSolver(field), state = new AgentBuffer(1);
+    state.active[0] = 1; state.x[0] = 40; state.y[0] = 40; state.intentX[0] = 1;
+    // A steep, asymmetric capacity excess guarantees active pressure clipping.
+    // No body integration is needed to isolate the correction's physical units.
+    field.density.fill(1); field.density[2 * field.columns + 1] = 1000;
+    for (const fixedDelta of [1 / 30, 1 / 60, 1 / 120]) {
+      for (const pressureRelaxationTime of [0.1, 0.25, 0.5]) {
+        const motorX = new Float64Array([40]), motorY = new Float64Array(1);
+        const baselineX = motorX.slice(), baselineY = motorY.slice();
+        solver.solve(state, baselineX, baselineY, { ...options, targetDensity: 1, pressureIterations: 0 });
+        solver.solve(state, motorX, motorY,
+          { ...options, targetDensity: 1, fixedDelta, pressureRelaxationTime });
+        const delta = Math.hypot(solver.pressureVelocityX[0]!, solver.pressureVelocityY[0]!);
+        expect(delta).toBeGreaterThan(0);
+        expect(delta / fixedDelta).toBeLessThanOrEqual(options.maximumAcceleration + 1e-8);
+        expect(motorX).toEqual(baselineX);
+        expect(motorY).toEqual(baselineY);
+      }
+    }
+  });
+
   it('observes pushed physical velocity through the ordinary grid transport', () => {
     const field = new CrowdField(96,96,16), solver = new CrowdFlowSolver(field), state = new AgentBuffer(1);
     state.active[0]=1;state.x[0]=48;state.y[0]=48;state.intentX[0]=1;state.vx[0]=-500;

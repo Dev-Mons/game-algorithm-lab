@@ -76,9 +76,9 @@ npm run measure:lab -- --presets=legacy --agents=1000 --scenario=open-field --st
 npm run measure:fluid -- --scenario=winding-corners --agents=1000 --steps=900 --output=test-results/crowd-continuity.json
 ```
 
-웹과 같은 통로 폭 유지 안내를 CLI에서 측정하려면 `measure:lab`에 `--corridor=true`를 추가합니다.
+웹과 같은 공유 평행 방향장을 CLI에서 측정하려면 `measure:lab`에 `--parallel=true --corridor=false`를 지정합니다.
 웹 기본 각도별 회전 가속도 포함하려면 `--adaptive-turning=true`를 함께 지정합니다. 생략/false는 기존 고정 회전 속도 방식입니다.
-기존 안내와 비교할 때는 같은 seed·맵·인원·step에 `--corridor=false`를 사용합니다. CLI의 기본값은 기존 재생을 위한 false입니다.
+과거 통로 안내와 비교할 때는 같은 seed·맵·인원·step에 `--parallel=false --corridor=true`를 사용합니다. 두 CLI 옵션의 기본값은 false입니다.
 
 CLI 목록은 프리셋 등록을 따릅니다. `measure:lab`은 조합별 별도 Node 프로세스에서 실행하며 steps에
 warmup이 포함됩니다. quality=0/1/10은 감사 없음/매 tick/10tick마다입니다. 초기 접촉 검사는 warmup=0을 씁니다.
@@ -129,8 +129,8 @@ npx vite-node scripts/measure-local-push.ts --output=test-results/crowd-local-pu
 - 큰 객체 비율 0~100%, 배율 1~4를 설정하면 초기 배치를 다시 만듭니다. 같은 seed는 같은 배치를 재현합니다.
   공간 부족 시 크기 비율을 유지하며 실제 인원을 줄입니다. 예: `/?agents=1000&largePercent=5&largeScale=2&seed=42`.
 - URL은 `preset`, `scenario`, `agents`, `seed`, `radius`, `gap`, `step`, `paused`, `scale` 등을 받습니다.
-  **이동 파라미터 → 통로 폭 유지**는 기본 활성화되며, 변경하면 같은 seed로 다시 배치됩니다.
-  URL의 `corridor=false`로 기존 안내를 열 수 있습니다. 알고리즘과 표시의 차이는 [경로 안내](architecture.md#경로-안내)를 참고하세요.
+  공유 경로와 기존 밀도·충돌 계산을 모든 맵에 적용하며 과거 `corridor` URL은 사용하지 않습니다.
+  알고리즘과 공유 경로·개체 이동 의도 표시의 차이는 [경로 안내](architecture.md#경로-안내)를 참고하세요.
   **큰 각도에서 빠르게 회전**도 기본 활성화됩니다. 실행 중 객체나 목표를 초기화하지 않고 켜고 끌 수 있으며,
   URL의 `adaptiveTurning=false`로 비활성 상태를 열 수 있습니다. 슬라이더는 정렬에 가까울 때 복귀할 기본 회전 속도입니다.
   바위 협곡은 12px 사각형으로 지형을 근사합니다. 10k 동일 밀도 확장에서는 맵 편집을 지원하지 않습니다.

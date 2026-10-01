@@ -89,6 +89,9 @@ true에서는 [통로 안내](architecture.md#경로-안내)의 공유 영역 �
 관측 frame만으로 그 이력을 복원하지 않습니다. 통로 모드의 상태 해시에는 좌우 위치와 안내 영역 ID가 포함됩니다.
 `config.adaptiveTurning`도 선택 boolean입니다. true이면 [보행과 접촉](architecture.md#보행과-접촉)의
 각도별 회전 배율을 적용하며, 생략/false는 기존 고정 회전 상한을 유지합니다. 추가 누적 상태는 없습니다.
+`config.parallelRouting`은 선택 boolean이며 웹은 true를 사용합니다. 생략/false는 기존 계산을 보존합니다.
+true에서는 [공유 평행 방향장](architecture.md#경로-안내)을 반경별로 캐시하고 현재 위치에서 샘플합니다.
+`corridorRouting`보다 우선하며 객체별 좌우 위치·분기 기억을 사용하지 않습니다. 동적 비용 안내는 계속 우선합니다.
 
 ## 외력 입력
 
