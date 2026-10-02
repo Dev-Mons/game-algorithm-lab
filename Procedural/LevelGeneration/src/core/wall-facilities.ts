@@ -5,18 +5,19 @@ import type {ObjectInput,ScenePlacement} from './scene-inputs';
 import type {VerticalPlan} from './vertical-design';
 import {faceBounds16,cellBox16,containedInUnion,scenePlacementBounds16} from './placement-bounds';
 import {ReservationBook} from './reservations';
-import {WALL_FACILITY_ASSETS,type FacilityPart} from './wall-facility-assets';
+import {WALL_FACILITY_ASSETS,type FacilityKind,type FacilityPart} from './wall-facility-assets';
 import {SupportIndex} from './scene-relations';
 export interface WallFacilityPlan {
   placements:ScenePlacement[];reservations:Reservation[];traces:DecisionTrace[];
   changes:{faceId:string;moduleId:'wall';objectId:string}[];
   groups:{objectId:string;faceIds:string[];assetKeys:string[];zoneIds:string[];accepted:boolean;reason:string}[];
 }
-export function automaticFacilityKind(input: ObjectInput): 'balcony'|'fire-escape'|'elevator' {
+export function automaticFacilityKind(input: ObjectInput): 'balcony'|'fire-escape'|'elevator'|'awning' {
   const ys = input.cells.map(c => c[1]);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
-  return minY === maxY ? 'balcony' : minY === 0 ? 'elevator' : 'fire-escape';
+  return minY === maxY ? (minY === 0 ? 'awning' : 'balcony') : minY === 0 ? 'elevator' : 'fire-escape';
 }
+const FACILITY_COLORS:Record<FacilityKind,string>={balcony:'#b8b0a0','fire-escape':'#b8b0a0',elevator:'#8fabb5',awning:'#b8623f'};
 const part=(n:number,min:number,max:number):FacilityPart=>min===max?'single':n===min?'start':n===max?'end':'repeat';
 /** Raw support → protected-space approval → atomic wall/assembly output. No generated mesh input. */
 export function planWallFacilities(document:GenerationDocument,surfaces:readonly Surface[],vertical:VerticalPlan[],portals:ReadonlySet<string>,book:ReservationBook,support=new SupportIndex(document,{surfaces:[...surfaces]},vertical)):WallFacilityPlan {
@@ -38,7 +39,7 @@ export function planWallFacilities(document:GenerationDocument,surfaces:readonly
       const horizontalPart:FacilityPart=left?(right?'repeat':'end'):(right?'start':'single');
       const asset=`wall-facility.${facilityKind}.${horizontalPart}.${part(ys[i],minY,maxY)}`,descriptor=WALL_FACILITY_ASSETS[asset];assetKeys.push(asset);
       const heading=({PZ:0,PX:1,NZ:2,NX:3} as Record<string,Heading>)[input.direction],id=`facility:${input.id}:${face.faceId}`;
-      const p:ScenePlacement={id,input,kind:'object',asset,center,size:[1,1,1],color:facilityKind==='elevator'?'#8fabb5':'#b8b0a0',context:'decorative-service-unverified',planId:`facility:${input.id}`,sourceRefs:[{kind:'object',id:input.id},{kind:'building',id:face.componentId}],yawQuarterTurns:heading};
+      const p:ScenePlacement={id,input,kind:'object',asset,center,size:[1,1,1],color:FACILITY_COLORS[facilityKind],context:'decorative-service-unverified',planId:`facility:${input.id}`,sourceRefs:[{kind:'object',id:input.id},{kind:'building',id:face.componentId}],yawQuarterTurns:heading};
       const bounds=scenePlacementBounds16(p);
       if(!containedInUnion(bounds,intent)){reason='BODY_OUTSIDE_INTENT';break;}
       p.worldBounds16=bounds;placements.push(p);

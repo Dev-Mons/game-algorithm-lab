@@ -391,8 +391,10 @@ export class Viewer {
     for(const p of result.scenePlacements??[]){const key=`${p.asset}|${p.color}|${p.kind}`,batch=sceneBatches.get(key)??[];batch.push(p);sceneBatches.set(key,batch);}
     const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
     for(const placements of sceneBatches.values()){
-      const p=placements[0];let material=this.sceneMaterials.get(p.color);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8});this.sceneMaterials.set(p.color,material);}
+      const p=placements[0];
       const vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=vegetationGeometry??this.wallFacilities.get(p.asset)??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):p.asset==='parking.island'?(this.parkingIsland??=createParkingIslandGeometry()):this.cube);
+      const vertexColors=!vegetationGeometry&&geometry.hasAttribute('color'),materialKey=`${p.color}${vertexColors?'|vertex':''}`;
+      let material=this.sceneMaterials.get(materialKey);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8,vertexColors});this.sceneMaterials.set(materialKey,material);}
       const mesh=new THREE.InstancedMesh(geometry,vegetationGeometry?this.vegetation.material:material,placements.length);
       placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
       mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.scenePlacement=p;mesh.userData.scenePlacements=placements;mesh.computeBoundingSphere();this.scenePlacements.add(mesh);

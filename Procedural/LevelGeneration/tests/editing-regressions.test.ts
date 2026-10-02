@@ -97,3 +97,14 @@ it('corner tile settings apply even on walls shorter than the concept corner pat
   expect(traces.length).toBeGreaterThan(0);
   expect(traces.every(t=>t.facade!.reason==='custom corner tile: D')).toBe(true);
 });
+
+it('a ground-floor wall row becomes a canopy and changes to an elevator once it grows upward',()=>{
+  const base=createDocument(box(5,6,3),42,'shop');
+  let doc=editObjects(base,{direction:'NZ',cells:[[1,0,0],[2,0,0],[3,0,0]]},'facility','add').document;
+  const assets=()=>generateDocument(doc).environment!.wallFacilities!.placements.map(p=>p.asset);
+  expect(assets()).toEqual(expect.arrayContaining(['wall-facility.awning.start.single','wall-facility.awning.repeat.single','wall-facility.awning.end.single']));
+  expect(assets()).toHaveLength(3);
+  doc=editObjects(doc,{direction:'NZ',cells:[[3,1,0],[3,2,0]]},'facility','add').document;
+  expect(assets().filter(a=>a.includes('.elevator.'))).toHaveLength(3);
+  expect(assets().filter(a=>a.includes('.awning.'))).toHaveLength(2);
+});

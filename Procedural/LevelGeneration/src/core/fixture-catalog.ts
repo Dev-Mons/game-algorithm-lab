@@ -1,12 +1,16 @@
 import type {Box16,Heading} from './environment-contract';
 import type {Vec3} from './analysis';
-export type FixturePrototypeId='bench'|'bin'|'hydrant'|'safety-bollard'|'pay-station'|'raised-barrier-post'|'lamp-16'|'lamp-32'|'lamp-64'|'utility-cabinet'|'air-conditioner'|'water-tank'|'wall-lamp';
+export type FixturePrototypeId='bench'|'bin'|'hydrant'|'safety-bollard'|'pay-station'|'raised-barrier-post'|'lamp-16'|'lamp-32'|'lamp-64'|'utility-cabinet'|'air-conditioner'|'water-tank'|'wall-lamp'|'bike-rack'|'planter'|'roof-vent'|'lattice-tower'|'antenna-mast';
 export interface FixturePrototype {id:FixturePrototypeId;size16:Vec3;bodyBoxes16:Box16[];priority:500|400|300;family:string;color:string}
 const specifications:[FixturePrototypeId,Vec3,500|400|300,string,string][]=[
   ['bench',[12,8,4],300,'bench','#c5a27b'],['bin',[4,10,4],300,'bin','#658d86'],['hydrant',[4,8,4],500,'hydrant','#c97159'],
   ['safety-bollard',[4,12,4],500,'safety-bollard','#e4c869'],['pay-station',[6,12,4],300,'pay-station','#708a9e'],['raised-barrier-post',[4,16,4],500,'barrier','#e5d5b6'],
   ['lamp-16',[4,16,4],400,'lamp','#b9cbd0'],['lamp-32',[4,32,4],400,'lamp','#b9cbd0'],['lamp-64',[4,64,4],400,'lamp','#b9cbd0'],
   ['utility-cabinet',[12,12,12],300,'utility','#93a5a0'],['air-conditioner',[12,8,12],300,'utility','#afbbb9'],['water-tank',[12,24,12],300,'utility','#a7b5c0'],['wall-lamp',[4,6,2],400,'lamp','#ffe2a1'],
+  // Planter vertex colors carry the rim and foliage, so its material stays white.
+  ['bike-rack',[12,8,4],300,'bike-rack','#7d8b96'],['planter',[12,12,12],300,'planter','#ffffff'],
+  // Roof columns: 1 equipment (vent beside a taller wall), 2 tank, 3 lattice tower, 4+ striped telecom mast.
+  ['roof-vent',[12,10,12],300,'utility','#9aa7ab'],['lattice-tower',[12,48,12],300,'tower','#8e979c'],['antenna-mast',[12,64,12],300,'tower','#ffffff'],
 ];
 export const FIXTURE_CATALOG=Object.fromEntries(specifications.map(([id,size16,priority,family,color])=>[id,{id,size16,priority,family,color,bodyBoxes16:[{min:[-size16[0]/2,0,-size16[2]/2],max:[size16[0]/2,size16[1],size16[2]/2]}]}])) as Record<FixturePrototypeId,FixturePrototype>;
 export function transformFixtureBox(box:Box16,center16:Vec3,heading:Heading):Box16 {

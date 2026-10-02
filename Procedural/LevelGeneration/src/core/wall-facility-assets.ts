@@ -1,5 +1,5 @@
 import type {Box16} from './environment-contract';
-export const FACILITY_KINDS=['balcony','fire-escape','elevator'] as const;
+export const FACILITY_KINDS=['balcony','fire-escape','elevator','awning'] as const;
 export type FacilityKind=typeof FACILITY_KINDS[number];
 export type FacilityPart='single'|'start'|'repeat'|'end';
 export interface WallFacilityAsset {boxes16:Box16[];bounds16:Box16;ports:{left:string;right:string;bottom:string;top:string}}
@@ -14,6 +14,10 @@ for(const kind of FACILITY_KINDS)for(const u of parts)for(const v of parts){
     for(const x of [-8,7])box([x,-8,-5],[x+1,8,-4]);
     for(const x of [-6,-2,2,6])box([x,-6,4],[x+1,4,5]);
     if(left)box([-8,-6,-5],[-7,4,5]);if(right)box([7,-6,-5],[8,4,5]);
+  }else if(kind==='awning'){
+    // Ground-floor canopy: wall rail, a three-step slope falling outward and a front valance.
+    box([-8,4,-5],[8,6,-4]);box([-8,5,-4],[8,6,-1]);box([-8,4,-1],[8,5,2]);box([-8,3,2],[8,4,5]);box([-8,1,4],[8,3,5]);
+    if(left)box([-8,2,-5],[-7,4,3]);if(right)box([7,2,-5],[8,4,3]);
   }else if(kind==='fire-escape'){
     for(let i=0;i<8;i++)box([-6,-8+i*2,-5+i],[6,-7+i*2,-3+i]);
     for(const x of [-8,7])box([x,-8,-5],[x+1,8,-4]);

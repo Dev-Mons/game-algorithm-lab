@@ -103,9 +103,10 @@ export class SupportIndex {
     return [...new Set(this.objects.get(id)?.cells.map(c=>this.at(c)!)??[])];
   }
   validCells(input:ObjectInput):Vec3[] { return input.cells.filter(c=>this.at(c)?.accepted); }
-  automaticWallKind(cell:Vec3):'balcony'|'fire-escape'|'elevator' {
+  automaticWallKind(cell:Vec3):'balcony'|'fire-escape'|'elevator'|'awning' {
     const column=this.columnAt(cell)!;
-    return column.height===1?'balcony':column.minY===0?'elevator':'fire-escape';
+    // One row: ground-floor canopy or upper balcony. Several rows: elevator when grounded, otherwise stairs.
+    return column.height===1?(column.minY===0?'awning':'balcony'):column.minY===0?'elevator':'fire-escape';
   }
 }
 

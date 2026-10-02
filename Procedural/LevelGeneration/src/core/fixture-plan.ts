@@ -16,7 +16,7 @@ import type {ParkingAreaPlan} from './parking-contract';
 
 export interface FixtureContext {
   support:'ground'|'roof'|'wall';parkingAreaId?:string;parkingZone?:'gate'|'row-end'|'edge'|'interior';gateId?:string;
-  roadDistanceCells?:number;roadHeading?:Heading;vegetationDistanceCells?:number;vegetationDirection?:Heading;
+  gateDistanceCells?:number;roadDistanceCells?:number;roadHeading?:Heading;vegetationDistanceCells?:number;vegetationDirection?:Heading;wallHeading?:Heading;
   median:boolean;accessMode:'public'|'local-only'|'service-unverified';
 }
 export interface FixtureCandidate {
@@ -26,9 +26,16 @@ export interface FixtureCandidate {
 export interface FixturePlan {placements:ScenePlacement[];reservations:Reservation[];traces:DecisionTrace[];counters:{slots:number;emptySlots:number;candidates:number;accepted:number;maxVariantsPerAnchor:number;companionCandidates:number;neighborChecks:number}}
 interface Column {cell:Vec3;height:number}
 interface Patch {category:'facility'|'lighting';direction:Direction;support:FixtureContext['support'];footY:number;columns:Column[];inputs:ObjectInput[];volume:Set<string>}
-interface Slot {id:string;columns:Column[];patch:Patch;family:string;prototype:FixturePrototypeId|'lamp'|'empty';center2:Vec3}
+interface Slot {id:string;columns:Column[];patch:Patch;family:string;prototype:FixturePrototypeId|'lamp';center2:Vec3}
 interface Cluster {id:string;items:FixtureCandidate[];main:FixtureCandidate;trace:CandidateTrace}
 const ascii=(a:string,b:string)=>a<b?-1:a>b?1:0;
+// Rhythms are indexed by absolute coordinates along a frontage, never by the
+// painted strip's own extent, so cropping or splitting an input keeps every
+// surviving cell's model. Each painted cell always owns a model.
+const STREET_RHYTHM=['bench','bench','bin','bike-rack'] as const;
+const REST_RHYTHM=['bench','bench','bin','bench'] as const;
+const PLAZA_LATTICE=['planter','bench','planter','bin'] as const;
+const SERVICE_RHYTHM=['utility-cabinet','air-conditioner'] as const;
 const manhattan=(a:Vec3,b:Vec3)=>a.reduce((n,v,i)=>n+Math.abs(v-b[i]),0);
 const sameHeightDistance=(a:Vec3,b:Vec3)=>a[1]===b[1]?Math.abs(a[0]-b[0])+Math.abs(a[2]-b[2]):Infinity;
 const intersects=(a:Box16[],b:Box16[])=>a.some(x=>b.some(y=>boxesOverlap(x,y)));
@@ -53,7 +60,7 @@ function makePatches(support:SupportIndex):Patch[]{
 }
 export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis,spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,parking:ParkingAreaPlan[],wallMounts:Map<string,{outset16:number;ownerId:string}>=new Map(),relations=new SceneRelationIndex(new SupportIndex(document,analysis),document,spatial)):FixturePlan {
   const counters:FixturePlan['counters']={slots:0,emptySlots:0,candidates:0,accepted:0,maxVariantsPerAnchor:0,companionCandidates:0,neighborChecks:0},placements:ScenePlacement[]=[],reservations:Reservation[]=[],traces:DecisionTrace[]=[];
-  const settings=ENVIRONMENT.fixtures,search=new AccessSearch(spatial,document,book,solid),fixed=book.snapshot(),protectedWalk=new Set(fixed.filter(r=>r.kind==='walk'&&(r.priority===900||r.priority===700)).flatMap(r=>r.cells.map(cellId))),roadSet=new Set(document.sceneInputs.roads.map(cellId));
+  const settings=ENVIRONMENT.fixtures,search=new AccessSearch(spatial,document,book,solid),fixed=book.snapshot(),protectedWalk=new Set(fixed.filter(r=>r.kind==='walk'&&(r.priority===900||r.priority===700)).flatMap(r=>r.cells.map(cellId))),roadSet=new Set(document.sceneInputs.roads.map(cellId)),buildingCells=new Set(document.grid.map(cellId)),rhythmPhase=hash33(document.seed,'fixtures-v2|rhythm');
   const trees=relations.support.records.filter(r=>r.category==='vegetation'&&r.accepted).map(r=>({cell:r.cell,id:relations.support.ownerAt(r.cell)!.id}));
   const areas=document.sceneInputs.parkingAreas.map(a=>({...a,mask:new Set(a.cells.map(cellId)),plans:parking.find(p=>p.areaId===a.id)?.plans??[]}));
   const vegetationSources=new Map<string,string>();
@@ -64,13 +71,16 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     const context:FixtureContext={support:patch.support,median:false,accessMode:'service-unverified'};
     const area=areas.find(a=>a.mask.has(cellId(cell)));
     if(area){context.parkingAreaId=area.id;const gates=area.plans.flatMap(p=>p.circulation.gates).map(g=>({gate:g,distance:Math.min(...g.openingCells.map(c=>sameHeightDistance(c,cell)))})).sort((a,b)=>a.distance-b.distance||ascii(a.gate.id,b.gate.id));
-      if(gates[0]?.distance<=2){context.parkingZone='gate';context.gateId=gates[0].gate.id;}
+      if(gates[0]?.distance<=2){context.parkingZone='gate';context.gateId=gates[0].gate.id;context.gateDistanceCells=gates[0].distance;}
       else if(area.plans.some(p=>p.rowEnds.some(e=>sameHeightDistance(e.cell,cell)<=2)))context.parkingZone='row-end';
       else if(HEADING_VECTORS.some(d=>!area.mask.has(cellId(add(cell,d)))))context.parkingZone='edge';else context.parkingZone='interior';
     }
     const road=relations.roadAt(cell,settings.intersectionKeepoutCells);
     if(road.distanceCells!==undefined){context.roadDistanceCells=road.distanceCells;context.roadHeading=road.heading;}
     const adjacent=HEADING_VECTORS.map(d=>roadSet.has(cellId(add(cell,d))));context.median=adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3];
+    // A ground or roof cell beside a building wall serves that wall; its front faces away from it.
+    const wall=patch.support!=='wall'?HEADING_VECTORS.findIndex(d=>buildingCells.has(cellId(add(cell,d)))):-1;
+    if(wall>=0)context.wallHeading=(wall+2)%4 as Heading;
     const nearby=trees.map(t=>({...t,distance:sameHeightDistance(cell,t.cell)})).filter(t=>t.distance<=settings.vegetationRadiusCells).sort((a,b)=>a.distance-b.distance||compareCells(a.cell,b.cell));
     const tree=nearby.find(t=>!segmentOccluded(cell,t.cell,solid,ENVIRONMENT.access.pedestrianWidth16,ENVIRONMENT.access.pedestrianHeight16,new Set([`solid:object:${t.id}`])));
     if(tree){context.vegetationDistanceCells=tree.distance;context.vegetationDirection=horizontalHeading(cell,tree.cell);vegetationSources.set(cellId(cell),tree.id);}
@@ -78,16 +88,32 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   };
   const contextCache=new Map<string,FixtureContext>();
   const getContext=(column:Column,patch:Patch)=>{const key=`${patch.support}:${cellId(column.cell)}`;let c=contextCache.get(key);if(!c){c=contextAt(column.cell,patch);contextCache.set(key,c);}return c;};
-  const familyAt=(context:FixtureContext,patch:Patch)=>patch.support==='wall'?'wall':patch.category==='lighting'?'lamp':context.parkingAreaId?`parking-${context.parkingZone}${context.gateId?`:${context.gateId}`:''}`:patch.support==='roof'?'roof-utility':context.vegetationDistanceCells!==undefined?'rest':(context.roadDistanceCells??Infinity)<=settings.roadsideRadiusCells?'street':'utility';
-  const choose=(family:string,index:number,columns:Column[]):{prototype:Slot['prototype']}=>{
-    if(family==='wall')return {prototype:'wall-lamp'};
-    if(family==='lamp'||family.startsWith('parking-edge')||family.startsWith('parking-interior'))return {prototype:'lamp'};
-    if(family.startsWith('parking-gate'))return {prototype:'raised-barrier-post'};
-    if(family.startsWith('parking-row-end'))return {prototype:'safety-bollard'};
-    if(family==='roof-utility')return {prototype:columns.some(c=>c.height>=2)?'water-tank':'air-conditioner'};
-    if(family==='utility')return {prototype:'utility-cabinet'};
-    if(family==='rest'){const i=positiveMod(index,4);return i===1||i===3?{prototype:'empty'}:{prototype:i===2?'bin':'bench'};}
-    return {prototype:(['bench','empty','bin','empty','hydrant','empty'] as const)[positiveMod(index,6)]};
+  const familyAt=(context:FixtureContext,patch:Patch)=>{
+    if(patch.support==='wall')return 'wall';if(patch.category==='lighting')return 'lamp';
+    if(context.parkingAreaId)return `parking-${context.parkingZone}${context.gateId?`:${context.gateId}`:''}`;
+    if(patch.support==='roof')return 'roof-utility';if(context.median)return 'median';
+    if(context.vegetationDistanceCells!==undefined)return 'rest';
+    const road=context.roadDistanceCells??Infinity;
+    return road<=settings.roadsideRadiusCells?'street':road<=settings.plazaRadiusCells?'plaza':context.wallHeading!==undefined?'service':'utility';
+  };
+  // The frontage axis is perpendicular to the context heading.
+  const along=(cell:Vec3,heading:Heading|undefined)=>(heading===undefined||heading%2===0?cell[0]:cell[2])+rhythmPhase;
+  const choose=(family:string,column:Column,context:FixtureContext):Slot['prototype']=>{
+    const c=column.cell;
+    if(family==='wall')return 'wall-lamp';
+    if(family==='lamp'||family.startsWith('parking-edge')||family.startsWith('parking-interior'))return 'lamp';
+    // Barrier posts flank the opening; the approach cell beyond them takes payment.
+    if(family.startsWith('parking-gate'))return (context.gateDistanceCells??0)<=1?'raised-barrier-post':'pay-station';
+    if(family.startsWith('parking-row-end')||family==='median')return 'safety-bollard';
+    // The painted column height picks the roof structure; a one-cell unit beside a taller mass is its exhaust vent.
+    if(family==='roof-utility')return column.height>=4?'antenna-mast':column.height>=3?'lattice-tower':column.height>=2?'water-tank':context.wallHeading!==undefined?'roof-vent':'air-conditioner';
+    if(family==='utility')return 'utility-cabinet';
+    if(family==='service')return SERVICE_RHYTHM[positiveMod(along(c,context.wallHeading),SERVICE_RHYTHM.length)];
+    if(family==='rest')return REST_RHYTHM[positiveMod(along(c,context.vegetationDirection),settings.restIntervalCells)];
+    if(family==='plaza')return PLAZA_LATTICE[positiveMod(c[0]+3*c[2]+rhythmPhase,PLAZA_LATTICE.length)];
+    // Curb rows repeat the street rhythm; one hydrant per hydrant interval stands at the curb.
+    const row=(context.roadDistanceCells??1)-1,index=positiveMod(along(c,context.roadHeading)+2*row,settings.hydrantIntervalCells);
+    return row===0&&index===settings.hydrantIntervalCells-1?'hydrant':STREET_RHYTHM[positiveMod(index,settings.streetIntervalCells)];
   };
   const slots:Slot[]=[];
   for(const patch of makePatches(relations.support)){
@@ -98,11 +124,8 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     }
     for (const column of patch.columns) {
       const context=getContext(column,patch),family=familyAt(context,patch);
-      const index=hash33(document.seed,`painted-facility:${cellId(column.cell)}`);
-      const choice=choose(family,index,[column]);
-      const prototype=choice.prototype==='empty'?'bench':choice.prototype;
       slots.push({id:`cell:facility:${cellId(column.cell)}`,columns:[column],patch,family,
-        center2:column.cell.map(n=>2*n) as Vec3,prototype});
+        center2:column.cell.map(n=>2*n) as Vec3,prototype:choose(family,column,context)});
     }
   }
 
@@ -138,7 +161,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     const bodies=descriptor.bodyBoxes16.map(b=>transformFixtureBox(b,center16,heading));
     if(bodies.some(b=>occupiedCells(b).some(cell=>!slot.patch.volume.has(cellId(cell)))))return {reason:'BODY_OUTSIDE_INTENT'};
     if(relations.roadAt(c,settings.intersectionKeepoutCells).junctionIds.length)return {reason:'INTERSECTION_KEEPOUT'};
-    if(context.median&&['bench','bin','pay-station'].includes(prototype))return {reason:'MEDIAN_NOT_FOR_REST'};
+    if(context.median&&['bench','bin','pay-station','bike-rack'].includes(prototype))return {reason:'MEDIAN_NOT_FOR_REST'};
     const bodyReservation:Reservation={id:'fixture-query',ownerId:'fixture-query',sourceRefs:[],kind:descriptor.priority===500?'safety':descriptor.priority===400?'lighting':'fixture',priority:descriptor.priority,cells:[c],boxes16:bodies};
     const conflicts=book.conflicts(bodyReservation);
     if(conflicts.length){const kind=fixed.find(r=>r.id===conflicts[0])?.kind;return {reason:kind==='entrance'?'ENTRANCE_KEEPOUT':kind==='vehicle-aisle'?'PARKING_AISLE_CONFLICT':kind==='stall'?'STALL_CONFLICT':'BODY_RESERVATION_CONFLICT',conflicts};}
@@ -159,18 +182,17 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
   const clusters:Cluster[]=[];
   for(const slot of slots){
     const support=relations.support.at(slot.columns[0].cell)!,road=relations.roadAt(slot.columns[0].cell,settings.intersectionKeepoutCells);
-    counters.slots++;const trace:DecisionTrace={id:`slot:${slot.id}`,ownerId:relations.support.ownerAt(slot.columns[0].cell)!.id,ruleId:'contextual-fixtures',ruleVersion:'1.0.0',sourceRefs:[...support.sourceRefs],selectedIds:[],candidates:[]};traces.push(trace);
+    counters.slots++;const trace:DecisionTrace={id:`slot:${slot.id}`,ownerId:relations.support.ownerAt(slot.columns[0].cell)!.id,ruleId:'contextual-fixtures',ruleVersion:'2.0.0',sourceRefs:[...support.sourceRefs],selectedIds:[],candidates:[]};traces.push(trace);
     trace.relationIds=[support.id,...(road.moduleId?[road.moduleId]:[]),...road.frontageIds,...road.junctionIds];
     trace.readDependencies=[...support.readDependencies,'scene:objects','spatial:roadFrontages','spatial:roadArrivals','reservations:prior-stages','parking:plans'];
     const tree=vegetationSources.get(cellId(slot.columns[0].cell)),area=getContext(slot.columns[0],slot.patch).parkingAreaId;
     for(const ref of [...(road.moduleId?[{kind:'road' as const,id:'roads'}]:[]),...(tree?[{kind:'object' as const,id:tree}]:[]),...(area?[{kind:'parking' as const,id:area}]:[])])if(!trace.sourceRefs.some(r=>r.kind===ref.kind&&r.id===ref.id))trace.sourceRefs.push(ref);
-    if(slot.prototype==='empty'){counters.emptySlots++;trace.candidates.push({candidateId:slot.id,accepted:false,reasonCodes:['EMPTY_PATTERN_SLOT'],metrics:{family:slot.family},conflictIds:[]});continue;}
     const columns=[...slot.columns].sort((a,b)=>manhattan(a.cell.map(n=>2*n) as Vec3,slot.center2)-manhattan(b.cell.map(n=>2*n) as Vec3,slot.center2)||hash33(document.seed,`fixtures-v1|${cellId(a.cell)}|${slot.prototype}`)-hash33(document.seed,`fixtures-v1|${cellId(b.cell)}|${slot.prototype}`)||compareCells(a.cell,b.cell));
     let main:FixtureCandidate|undefined;
     for(const column of columns){
       const prototype=slot.prototype==='lamp'?(column.height>=4?'lamp-64':column.height>=2?'lamp-32':'lamp-16'):slot.prototype;
       const paintedFacility=slot.patch.category==='facility',context=getContext(column,slot.patch);
-      const headings:Heading[]=paintedFacility?[context.roadHeading??(context.vegetationDirection===undefined?0:(context.vegetationDirection+2)%4 as Heading)]:slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[context.roadHeading??0];
+      const headings:Heading[]=paintedFacility?[context.wallHeading!==undefined&&(slot.family==='service'||slot.family==='roof-utility')?context.wallHeading:context.roadHeading??(context.vegetationDirection===undefined?0:(context.vegetationDirection+2)%4 as Heading)]:slot.patch.support==='wall'?[({'PZ':0,'PX':1,'NZ':2,'NX':3} as Record<string,Heading>)[slot.patch.direction]]:[context.roadHeading??0];
       const poses:FixtureCandidate[]=[];let count=0;
       for(const h of headings)for(const offset of paintedFacility?[FIXTURE_CATALOG[prototype].size16[2]<=4?-6:0]:slot.patch.support==='wall'?[-6]:[0,-6]){
         count++;const result=attempt(slot,column,prototype,h,offset);if(result.candidate)poses.push(result.candidate);

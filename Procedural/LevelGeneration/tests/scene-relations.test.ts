@@ -104,7 +104,8 @@ it('T09: mixed-height wall fragments keep explicit kind, and automatic columns u
   const plan=planWallFacilities(doc,r.surfaces,r.environment!.vertical!,new Set(),new ReservationBook(r.environment!.spatial!.staticReservations));
   expect(plan.placements).toHaveLength(5);
   expect(plan.placements.filter(p=>Math.floor(p.center[0])===2).every(p=>p.asset.startsWith('wall-facility.elevator.'))).toBe(true);
-  expect(plan.placements.find(p=>Math.floor(p.center[0])===1)!.asset).toContain('balcony');
+  // A single ground-floor row is a canopy, not a balcony.
+  expect(plan.placements.find(p=>Math.floor(p.center[0])===1)!.asset).toContain('awning');
   expect(plan.placements.find(p=>Math.floor(p.center[0])===3)!.asset).toContain('fire-escape');
 });
 

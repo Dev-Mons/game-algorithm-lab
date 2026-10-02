@@ -73,3 +73,59 @@ it('painted facilities remain visible but do not invent usable access inside a b
  const cells=[[-1,0,0],[1,0,0],[-1,0,1],[1,0,1],[0,0,2]] as Vec3[],plan=generateDocument(createDocument(cells,42,'office',undefined,undefined,scene)).environment!.fixtures!;
  expect(plan.placements).toHaveLength(1);expect(JSON.parse(plan.placements[0].context).accessMode).toBe('service-unverified');expect(plan.reservations.every(r=>r.kind!=='walk')).toBe(true);
 });
+const facilityPlan=(grid:Vec3[],scene:ReturnType<typeof emptySceneInputs>)=>generateDocument(createDocument(grid,42,'office',undefined,undefined,scene)).environment!.fixtures!;
+const assetAt=(plan:ReturnType<typeof facilityPlan>)=>new Map(plan.placements.map(p=>[`${Math.floor(p.center[0])},${Math.floor(p.center[2])}`,p.asset.slice(8)]));
+it('gives a curb strip an absolute street rhythm with one hydrant per interval instead of a bench run',()=>{
+  const scene=emptySceneInputs();scene.roads=box(24,1,1).map(([x,y])=>[x-4,y,-1]);scene.objects=[input('curb','facility',box(16,1,1))];
+  const plan=facilityPlan([],scene),assets=assetAt(plan),row=Array.from({length:16},(_,x)=>assets.get(`${x},0`));
+  expect(plan.placements).toHaveLength(16);
+  expect(row.filter(a=>a==='hydrant')).toHaveLength(2);
+  for(const asset of ['bench','bin','bike-rack'])expect(row).toContain(asset);
+  expect(row.join(',')).not.toMatch(/bench,bench,bench/);
+  // Hydrants repeat exactly one interval apart along the frontage.
+  const hydrants=row.flatMap((a,x)=>a==='hydrant'?[x]:[]);expect(hydrants[1]-hydrants[0]).toBe(8);
+});
+it('fills painted median cells with safety bollards instead of rejecting rest furniture',()=>{
+  const scene=emptySceneInputs();scene.roads=[...box(10,1,1).map(([x,y])=>[x,y,-1] as Vec3),...box(10,1,1).map(([x,y])=>[x,y,1] as Vec3)];
+  scene.objects=[input('median','facility',box(10,1,1))];
+  const plan=facilityPlan([],scene);
+  expect(plan.placements).toHaveLength(10);
+  expect(plan.placements.every(p=>p.asset==='fixture.safety-bollard')).toBe(true);
+  expect(plan.traces.flatMap(t=>t.candidates).some(c=>c.reasonCodes.includes('MEDIAN_NOT_FOR_REST'))).toBe(false);
+});
+it('turns ground service equipment away from the building wall it serves',()=>{
+  const scene=emptySceneInputs();scene.objects=[input('service','facility',box(6,1,1))];
+  const plan=facilityPlan(box(6,2,3).map(([x,y,z])=>[x,y,z+1]),scene);
+  expect(plan.placements).toHaveLength(6);
+  expect(new Set(plan.placements.map(p=>p.asset))).toEqual(new Set(['fixture.utility-cabinet','fixture.air-conditioner']));
+  expect(plan.placements.every(p=>p.yawQuarterTurns===2)).toBe(true);
+  expect(plan.placements.every(p=>JSON.parse(p.context).wallHeading===2)).toBe(true);
+});
+it('reads open ground behind the street frontage as a plaza instead of a utility yard',()=>{
+  const scene=emptySceneInputs();scene.roads=box(12,1,1).map(([x,y])=>[x-4,y,-1]);scene.objects=[input('plaza','facility',box(4,1,4))];
+  const plan=facilityPlan([],scene),assets=assetAt(plan),rows=(test:(z:number)=>boolean)=>[...assets].filter(([key])=>test(Number(key.split(',')[1]))).map(([,a])=>a);
+  expect(plan.placements.length).toBeGreaterThanOrEqual(15);
+  // Rows within the roadside radius keep street furniture; deeper rows use the plaza lattice.
+  expect(rows(z=>z<=1).every(a=>['bench','bin','bike-rack','hydrant'].includes(a))).toBe(true);
+  const plaza=rows(z=>z>=2);
+  expect(plaza).toHaveLength(8);expect(plaza.filter(a=>a==='planter')).toHaveLength(4);
+  expect(plaza.every(a=>['planter','bench','bin'].includes(a))).toBe(true);
+  expect([...assets.values()]).not.toContain('utility-cabinet');
+});
+it('places pay stations behind the barrier posts of a parking gate',()=>{
+  const lot=parkingFixture('R12');lot.sceneInputs.objects=[input('facility','facility',box(12,1,1))];
+  const placements=generateDocument(lot).environment!.fixtures!.placements;
+  const gateAssets=placements.filter(p=>JSON.parse(p.context).parkingZone==='gate');
+  expect(gateAssets.some(p=>p.asset==='fixture.raised-barrier-post')).toBe(true);
+  expect(gateAssets.some(p=>p.asset==='fixture.pay-station')).toBe(true);
+  for(const p of gateAssets)expect(p.asset).toBe(JSON.parse(p.context).gateDistanceCells<=1?'fixture.raised-barrier-post':'fixture.pay-station');
+},30000);
+it('picks roof structures by painted column height and vents beside a taller mass',()=>{
+  const scene=emptySceneInputs(),roof=(id:string,x:number,height:number):ObjectInput=>input(id,'facility',box(1,height,1).map(([,y])=>[x,y+2,1]));
+  scene.objects=[roof('h1',0,1),roof('h2',2,2),roof('h3',4,3),roof('h4',6,4),roof('h5',8,5),input('vent','facility',[[1,2,3]])];
+  const plan=facilityPlan([...box(10,2,4),[1,2,4]],scene),assets=assetAt(plan);
+  expect([0,2,4,6,8].map(x=>assets.get(`${x},1`))).toEqual(['air-conditioner','water-tank','lattice-tower','antenna-mast','antenna-mast']);
+  const vent=plan.placements.find(p=>p.asset==='fixture.roof-vent')!;
+  expect(Math.floor(vent.center[0])).toBe(1);expect(vent.yawQuarterTurns).toBe(2);
+  expect(plan.traces.flatMap(t=>t.candidates).filter(c=>!c.accepted)).toEqual([]);
+});
