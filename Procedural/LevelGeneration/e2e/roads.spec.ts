@@ -34,3 +34,28 @@ test("road drag owns ground independently, object overwrite and road restoration
   expect(await canvas.getAttribute("data-scene-assets")).not.toBe(original);
   expect(errors).toEqual([]);
 });
+
+test("sidewalk mode paints the base ground layer and yields cells to a later road",async({page},info)=>{
+  const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));
+  await page.goto("/");
+  await page.locator("#file").setInputFiles({name:"sidewalk.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(createDocument([],42,"shop")))});
+  await page.locator('[data-camera="top"]').click();
+  await page.locator("#edit-mode").selectOption("sidewalk");
+  await expect(page.locator("#sidewalk-tools")).toBeVisible();
+  const canvas=page.locator("canvas"),b=(await canvas.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
+  const paving=async()=>((await canvas.getAttribute("data-scene-assets"))??"").split(",").filter(a=>a==="sidewalk.paving").length;
+  await page.mouse.move(x-120,y-120);await page.mouse.down();await page.mouse.move(x+120,y+120,{steps:8});await page.mouse.up();
+  await page.keyboard.press('e');
+  await expect(canvas).toHaveAttribute("data-scene-assets",/sidewalk\.paving/);
+  const painted=await paving();expect(painted).toBeGreaterThan(1);
+  await page.keyboard.press("Escape");await page.locator("#edit-mode").selectOption("road");
+  await page.mouse.click(x+3,y+3);await page.keyboard.press('e');
+  await expect(canvas).toHaveAttribute("data-scene-assets",/road\./);
+  expect(await paving()).toBe(painted-1);
+  await expect(canvas).toHaveAttribute("data-scene-assets",/sidewalk\.curb/);
+  await page.screenshot({path:info.outputPath("sidewalk-road.png")});
+  await canvas.focus();await page.keyboard.press("Control+z");
+  expect(await paving()).toBe(painted);
+  await expect(canvas).not.toHaveAttribute("data-scene-assets",/road\./);
+  expect(errors).toEqual([]);
+});

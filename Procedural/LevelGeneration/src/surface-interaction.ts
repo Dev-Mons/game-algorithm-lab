@@ -22,7 +22,7 @@ interface Gesture {
 }
 
 export class SurfaceInteraction {
-  mode: "building" | "object" | "road" | "parking" | "inspect" = "building";
+  mode: "building" | "object" | "road" | "sidewalk" | "parking" | "inspect" = "building";
   private selection?: SurfaceSelection;
   private gesture?: Gesture;
   private ray = new THREE.Raycaster();
@@ -187,7 +187,7 @@ export class SurfaceInteraction {
     const { result, origin, surfaces, objects } = this.context();
     if (!result) return;
     this.setRay(e);
-    if(this.mode==='road'||this.mode==='parking'){
+    if(this.mode==='road'||this.mode==='sidewalk'||this.mode==='parking'){
       const point=this.ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-origin.y),new THREE.Vector3());
       if(!point||this.ray.ray.direction.y>=0)return;point.sub(origin);
       return {direction:'PY',cells:[[Math.floor(point.x),-1,Math.floor(point.z)]]};
@@ -259,7 +259,7 @@ export class SurfaceInteraction {
       }
       const ground = start.direction === "PY" && start.cells[0][1] === -1 && !faces.has(cellId(start.cells[0]));
       // Dragging on a facade/roof selects only its exposed, coplanar cells.
-      if (!ground&&this.mode!=='road'&&this.mode!=='parking') selection.cells = selection.cells.filter(c => faces.has(cellId(c)));
+      if (!ground&&this.mode!=='road'&&this.mode!=='sidewalk'&&this.mode!=='parking') selection.cells = selection.cells.filter(c => faces.has(cellId(c)));
       if (!selection.cells.length) return;
       g.preview = selection;
       this.draw(selection);

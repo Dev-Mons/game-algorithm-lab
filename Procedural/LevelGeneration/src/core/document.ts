@@ -4,7 +4,7 @@ import {isCurtainBCornerV10} from './curtain-b-assets';
 import { emptySceneInputs } from "./scene-inputs";
 import { adapterReferenceFor } from "./rule-spatial-adapters";
 import { ruleReference, type RuleData } from "./building-rules";
-import { validateSceneInputs, type SceneInputs } from "./scene-inputs";
+import { validateSceneInputs, type SceneInputs, type SceneInputsInput } from "./scene-inputs";
 import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./buildings";
 import {
   SHOP_STYLE,
@@ -95,7 +95,7 @@ export function createDocument(
   profile: Profile = "office",
   definition?: BuildingStyle,
   buildings?: BuildingMetadata[],
-  sceneInputs?: SceneInputs,
+  sceneInputs?: SceneInputsInput,
 ) {
   const options = profileData(profile);
   const architecture = validateBuildingStyle(definition ?? options.architecture ?? OFFICE_STYLE);

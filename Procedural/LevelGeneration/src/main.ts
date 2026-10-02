@@ -130,7 +130,7 @@ let nextEditId=0;
 export let generationCount=0,viewerSyncCount=0,historyCommitCount=0;
 function refreshEnvironmentSelection(){
   const select=el<HTMLSelectElement>('source-select');
-  const sources:SourceRef[]=[...currentDocument.buildings.map(b=>({kind:'building' as const,id:b.componentId})),...currentDocument.sceneInputs.parkingAreas.map(p=>({kind:'parking' as const,id:p.id})),...currentDocument.sceneInputs.objects.map(o=>({kind:'object' as const,id:o.id})),...(currentDocument.sceneInputs.roads.length?[{kind:'road' as const,id:'roads'}]:[])];
+  const sources:SourceRef[]=[...currentDocument.buildings.map(b=>({kind:'building' as const,id:b.componentId})),...currentDocument.sceneInputs.parkingAreas.map(p=>({kind:'parking' as const,id:p.id})),...currentDocument.sceneInputs.objects.map(o=>({kind:'object' as const,id:o.id})),...(currentDocument.sceneInputs.roads.length?[{kind:'road' as const,id:'roads'}]:[]),...(currentDocument.sceneInputs.sidewalks.length?[{kind:'sidewalk' as const,id:'sidewalks'}]:[])];
   if(!sources.some(s=>s.kind===selectedSource?.kind&&s.id===selectedSource.id))selectedSource=undefined;
   select.replaceChildren(new Option('선택 없음',''),...sources.map(s=>new Option(`${s.kind} · ${s.id}`,JSON.stringify(s))));
   select.value=selectedSource?JSON.stringify(selectedSource):'';
@@ -453,7 +453,7 @@ viewer.setGroundVisible(el<HTMLInputElement>("ground-visible").checked);
 const styleOptions=Object.entries(BUILDING_PROFILES).map(([id,style])=>`<option value="${id}">${style.label}</option>`).join('');
 el("editor-slot").innerHTML = `
   <div class="editor-title"><span>직접 편집</span><button id="new" class="text-button">새 부피</button></div>
-  <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">왼쪽 드래그로 지면 영역 선택 후 정사각뿔 드래그 또는 E 추가 / Q 제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>왼쪽 드래그로 도로 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 연결과 차선은 자동으로 바뀝니다.</p>
+  <label for="edit-mode">입력 모드</label><select id="edit-mode"><option value="building">건물 편집</option><option value="object">오브젝트 설치</option><option value="sidewalk">인도 설치</option><option value="road">도로 설치</option><option value="parking">지상 주차 영역</option><option value="inspect">원본·생성물 선택</option></select><div id="parking-tools" hidden><label for="parking-area">편집 영역</label><select id="parking-area"></select><p class="edit-note">왼쪽 드래그로 지면 영역 선택 후 정사각뿔 드래그 또는 E 추가 / Q 제거. 건물·도로·객체는 보존합니다.</p></div><p id="road-tools" class="edit-note" hidden>왼쪽 드래그로 도로 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 연결과 차선은 자동으로 바뀝니다.</p><p id="sidewalk-tools" class="edit-note" hidden>왼쪽 드래그로 지면 영역을 선택한 뒤 정사각뿔 드래그 또는 E 설치 / Q 제거. 인도는 기본 지면이라 건물·오브젝트·주차를 위에 둘 수 있고, 도로와는 나중에 칠한 쪽이 칸을 차지합니다. 건물 없는 인도가 도로에 둘러싸이거나 도로 사이에 좁게 끼면 교통섬이 됩니다.</p>
   <div id="object-tools" hidden><label for="object-category">오브젝트 카테고리</label><select id="object-category"><option value="lighting">조명</option><option value="vegetation">식생</option><option value="facility">시설</option></select><p class="edit-note">왼쪽 드래그로 영역을 선택한 뒤 정사각뿔 드래그 또는 E / Q로 한 층씩 추가·제거합니다. 시설은 각 칸에 배치됩니다. 외벽의 한 줄은 발코니(1층은 차양), 여러 높이는 비상계단, 지면까지 이어지면 엘리베이터가 됩니다. 옥상 시설은 높이 1칸 설비, 2칸 물탱크, 3칸 철탑, 4칸 이상 통신 안테나가 됩니다.</p></div>
   <div id="building-guide" class="interaction-guide"><p><b>왼쪽 드래그</b><span>영역 선택 · 마지막 블록 중앙에 정사각뿔 표시</span></p><p><b>정사각뿔 드래그</b><span>면 바깥쪽으로 추가 · 안쪽으로 제거</span></p><p><b>E / Q</b><span>선택 영역 한 층 추가 / 제거</span></p><p><b>상부 시점</b><span>핸들을 위로 추가 · 아래로 제거</span></p><p><b>Esc</b><span>선택 해제</span></p></div>
   <div id="building-selection" hidden><p id="building-id"></p><label for="building-theme">선택 건물 테마</label><select id="building-theme"><option value="" disabled>전역 스타일 사용</option>${styleOptions}</select><details id="facade-tiles"><summary>외벽 타일 설정</summary><p class="edit-note">선택 건물에 적용 · 코너 설정 우선 · 출입구와 옥상 경계는 유지</p>${Object.entries(FACADE_TILE_ROLES).map(([role,label])=>`<label for="tile-${role}">${label}</label><select id="tile-${role}"><option value="">컨셉 기본값</option>${Object.entries(FACADE_TILE_SETS).map(([id,name])=>`<option value="${id}">${name}</option>`).join('')}</select>`).join('')}<button id="tile-reset" class="text-button">타일 기본값 복원</button></details></div>
@@ -464,13 +464,14 @@ el("editor-slot").innerHTML = `
 el("benchmark-slot").innerHTML =
   '<button id="measure" class="wide-button">생성 성능 측정 ↗</button><p id="measure-status" role="status" class="edit-note"></p><button id="save-measure" class="wide-button" hidden>측정 JSON 저장</button><pre id="measure-report" hidden></pre>';
 el("edit-mode").addEventListener("change", () => {
-  const mode = el<HTMLSelectElement>("edit-mode").value as "building" | "object" | "road" | "parking" | "inspect";
+  const mode = el<HTMLSelectElement>("edit-mode").value as "building" | "object" | "road" | "sidewalk" | "parking" | "inspect";
   viewer.setEditMode(mode);
   selectedBuilding = undefined; refreshBuildingSelection();
   el("object-tools").hidden = mode !== "object";
   el("road-tools").hidden = mode !== "road";
+  el("sidewalk-tools").hidden = mode !== "sidewalk";
   el("parking-tools").hidden=mode!=="parking";
-  el("building-guide").hidden = mode === "road"||mode==="parking"||mode==="inspect";
+  el("building-guide").hidden = mode === "road"||mode==="sidewalk"||mode==="parking"||mode==="inspect";
 });
 el("building-theme").addEventListener("change", () => {
   if (!selectedBuilding) return;
@@ -525,7 +526,7 @@ function editSelection(selection: SurfaceSelection, mode: "add" | "remove") {
   if (busy || !valid) return undefined;
   try {
     const inputMode=el<HTMLSelectElement>('edit-mode').value;
-    if(inputMode==='parking'||inputMode==='road'){
+    if(inputMode==='parking'||inputMode==='road'||inputMode==='sidewalk'){
       if(selection.direction!=='PY'||selection.cells.some(c=>c[1]!==-1))throw new Error('GROUND_ONLY');
       const cells=selection.cells.map(([x,,z])=>[x,0,z] as Vec3);
       const command:EnvironmentEditCommand={kind:`${inputMode}-${mode}` as EnvironmentEditCommand['kind'],cells,...(inputMode==='parking'&&el<HTMLSelectElement>('parking-area').value?{targetId:el<HTMLSelectElement>('parking-area').value}:{})};

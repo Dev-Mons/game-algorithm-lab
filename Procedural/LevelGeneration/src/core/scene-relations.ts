@@ -7,6 +7,7 @@ import type { ObjectContext, ObjectInput } from './scene-inputs';
 import type { VerticalPlan } from './vertical-design';
 import { analyzeRoads, isRoadJunction, type RoadModule } from './roads';
 import type { SpatialAnalysis } from './spatial-analysis';
+import { isIslandCell } from './sidewalks';
 
 const ascii = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 const columnKey = (c: Vec3) => `${c[0]},${c[2]}`;
@@ -79,7 +80,7 @@ export class SupportIndex {
         const hostId=`${cellId(add(root,behind))}|${input.direction}`, host=this.faces.get(hostId);
         const support=input.direction==='PY'?(root[1]===0?'ground':'roof'):'wall';
         const adjacent=horizontal.map(d=>roads.has(cellId(add(root,d))));
-        const context:ObjectContext=support==='ground'?(adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3]?'median':adjacent.some(Boolean)?'roadside':'ground'):support;
+        const context:ObjectContext=support==='ground'?(adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3]||isIslandCell(document,root)?'median':adjacent.some(Boolean)?'roadside':'ground'):support;
         const reason=input.direction==='NY'?'UNSUPPORTED_MOUNT_DIRECTION':run.some(c=>occupied.has(cellId(c)))?'OBJECT_BUILDING_OVERLAP':support==='wall'&&input.category==='vegetation'?'UNSUPPORTED_WALL_CATEGORY':support!=='ground'&&!host?(support==='wall'?'NO_WALL_SUPPORT':'NO_SUPPORTED_SURFACE'):undefined;
         const cover=overhead.get(columnKey(root))?.find(c=>c[1]>=root[1]), underside=cover?this.faces.get(`${cellId(cover)}|NY`):undefined;
         const sources=refs([...run.map(c=>({kind:'object' as const,id:this.owners.get(cellId(c))!.id})),...(host?[{kind:'building' as const,id:host.componentId}]:[]),...(underside?[{kind:'building' as const,id:underside.componentId}]:[])]);

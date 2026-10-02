@@ -5,9 +5,15 @@ import {FACILITY_KINDS,type FacilityKind} from './wall-facility-assets';
 import type {SupportIndex} from './scene-relations';
 export type ObjectCategory = "lighting" | "vegetation" | "facility";
 export interface ObjectInput { id: string; category: ObjectCategory; cells: Vec3[]; direction: Direction; facilityKind?:FacilityKind|'auto';facadeRequest?:'solid' }
-export interface SceneInputs { version: 2; roads: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
-export const emptySceneInputs = (): SceneInputs => ({version:2,roads:[],objects:[],parkingAreas:[]});
-export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building" | "parking"; asset: string; center: Vec3; size: Vec3; color: string; context: string; planId?: string; sourceRefs?: SourceRef[]; yawQuarterTurns?: Heading; worldBounds16?: Box16 }
+/** Version 3 adds the ground sidewalk mask. Roads and sidewalks never share a cell; buildings, objects and parking may stand on a sidewalk. */
+export interface SceneInputs { version: 3; roads: Vec3[]; sidewalks: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
+/** Accepted on load and upgraded with an empty sidewalk mask. */
+export interface SceneInputsV2 { version: 2; roads: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
+export type SceneInputsInput = SceneInputs | SceneInputsV2;
+export const emptySceneInputs = (): SceneInputs => ({version:3,roads:[],sidewalks:[],objects:[],parkingAreas:[]});
+export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building" | "parking" | "sidewalk"; asset: string; center: Vec3; size: Vec3; color: string; context: string; planId?: string; sourceRefs?: SourceRef[]; yawQuarterTurns?: Heading; worldBounds16?: Box16;
+  /** Presentation-only lift in cells for a ground object standing on pavement; center, bounds and reservations keep Y=0. */
+  surfaceOffset?: number }
 export type ObjectContext = "ground" | "roof" | "wall" | "roadside" | "median";
 const horizontal: Vec3[] = [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]];
 export function objectContext(input: ObjectInput, grid: Vec3[], roads: Vec3[],analysis?:{surfaces:Surface[]}): ObjectContext {
@@ -28,12 +34,16 @@ export function objectContext(input: ObjectInput, grid: Vec3[], roads: Vec3[],an
   if (bases.some(c => (road.has(cellId(add(c,[1,0,0]))) && road.has(cellId(add(c,[-1,0,0])))) || (road.has(cellId(add(c,[0,0,1]))) && road.has(cellId(add(c,[0,0,-1])))))) return "median";
   return bases.some(c => horizontal.some(d => road.has(cellId(add(c,d))))) ? "roadside" : "ground";
 }
-export function validateSceneInputs(grid: Vec3[], inputs: SceneInputs): SceneInputs {
-  if (!inputs || inputs.version !== 2) throw new Error("UNSUPPORTED_SCENE_INPUT_VERSION");
-  exactKeys(inputs,["version","roads","objects","parkingAreas"]);
-  if (!Array.isArray(inputs.objects) || !Array.isArray(inputs.roads) || !Array.isArray(inputs.parkingAreas)) throw new Error("INVALID_SCENE_INPUTS");
+export function validateSceneInputs(grid: Vec3[], inputs: SceneInputsInput): SceneInputs {
+  if (!inputs || (inputs.version !== 2 && inputs.version !== 3)) throw new Error("UNSUPPORTED_SCENE_INPUT_VERSION");
+  exactKeys(inputs,inputs.version===3?["version","roads","sidewalks","objects","parkingAreas"]:["version","roads","objects","parkingAreas"]);
+  const sidewalkInput = inputs.version===3 ? inputs.sidewalks : [];
+  if (!Array.isArray(inputs.objects) || !Array.isArray(inputs.roads) || !Array.isArray(sidewalkInput) || !Array.isArray(inputs.parkingAreas)) throw new Error("INVALID_SCENE_INPUTS");
   const roads = normalizeGrid(inputs.roads), occupied = new Set(grid.map(cellId)), used = new Set(roads.map(cellId)), ids = new Set<string>();
   if (roads.some(c => c[1] !== 0 || occupied.has(cellId(c)))) throw new Error("도로는 비어 있는 지면에만 설치할 수 있습니다.");
+  const sidewalks = normalizeGrid(sidewalkInput);
+  if (sidewalks.some(c => c[1] !== 0)) throw new Error("인도는 지면 Y=0에만 설치할 수 있습니다.");
+  if (sidewalks.some(c => used.has(cellId(c)))) throw new Error("인도와 도로는 같은 칸에 둘 수 없습니다.");
   const objects = inputs.objects.map(input => {
     if (!input || !["lighting","vegetation","facility"].includes(input.category) || !DIRECTIONS.includes(input.direction) || typeof input.id !== "string" || !input.id.length || ids.has(input.id) || Object.keys(input).some(k => !["id","category","cells","direction","facilityKind","facadeRequest"].includes(k))) throw new Error("Invalid object input.");
     if(input.facilityKind!==undefined&&(input.category!=='facility'||input.facilityKind!=='auto'&&!FACILITY_KINDS.includes(input.facilityKind)||!['PX','NX','PZ','NZ'].includes(input.direction))||input.facadeRequest!==undefined&&(input.facadeRequest!=='solid'||!input.facilityKind))throw new Error('INVALID_WALL_FACILITY_INTENT');
@@ -56,8 +66,8 @@ export function validateSceneInputs(grid: Vec3[], inputs: SceneInputs): SceneInp
     cells.forEach(c => parkingUsed.add(cellId(c)));
     return {id:input.id,cells,anchor};
   }).sort((a,b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-  validateGrid([...grid, ...roads, ...objects.flatMap(o => o.cells), ...parkingAreas.flatMap(p => p.cells)]);
-  return { version: 2, roads, objects, parkingAreas };
+  validateGrid([...grid, ...roads, ...sidewalks, ...objects.flatMap(o => o.cells), ...parkingAreas.flatMap(p => p.cells)]);
+  return { version: 3, roads, sidewalks, objects, parkingAreas };
 }
 export interface ObjectCategoryRule {
   category: ObjectCategory;

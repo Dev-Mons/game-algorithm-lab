@@ -1,11 +1,11 @@
 import {cellId,normalizeGrid,compareCells,type Vec3} from './core/analysis';
 import {createDocument,type GenerationDocument} from './core/document';
 import {cloneJSON,canonicalJSON} from './core/canonical';
-import {editRoads} from './scene-editor';
+import {editRoads,editSidewalks} from './scene-editor';
 import type {InputDelta,SourceRef} from './core/environment-contract';
 import {hash33} from './core/selection';
 export interface EnvironmentEditCommand {
-  kind:'parking-add'|'parking-remove'|'road-add'|'road-remove';
+  kind:'parking-add'|'parking-remove'|'road-add'|'road-remove'|'sidewalk-add'|'sidewalk-remove';
   targetId?:string;cells?:Vec3[];
 }
 export interface EnvironmentEditRecord {editId:number;command:EnvironmentEditCommand;beforeSignature:string;afterSignature:string;outcome:'accepted'|'rejected';changed:boolean}
@@ -16,6 +16,9 @@ export function applyEnvironmentEdit(document:GenerationDocument,command:Environ
   if(command.kind==='road-add'||command.kind==='road-remove'){
     const cells=normalizeGrid(command.cells);if(cells.some(c=>c[1]!==0))throw new Error('ROAD_GROUND_ONLY');
     next=editRoads(document,{direction:'PY',cells:cells.map(([x,,z])=>[x,-1,z])},command.kind==='road-add'?'add':'remove');
+  }else if(command.kind==='sidewalk-add'||command.kind==='sidewalk-remove'){
+    const cells=normalizeGrid(command.cells);if(cells.some(c=>c[1]!==0))throw new Error('SIDEWALK_GROUND_ONLY');
+    next=editSidewalks(document,{direction:'PY',cells:cells.map(([x,,z])=>[x,-1,z])},command.kind==='sidewalk-add'?'add':'remove');
   }else if(command.kind==='parking-add'||command.kind==='parking-remove'){
     const cells=normalizeGrid(command.cells);if(cells.some(c=>c[1]!==0))throw new Error('PARKING_GROUND_ONLY');
     let area=next.sceneInputs.parkingAreas.find(p=>p.id===command.targetId);
@@ -32,7 +35,7 @@ export function applyEnvironmentEdit(document:GenerationDocument,command:Environ
   const after=canonicalJSON(next);
   const difference=(a:Vec3[],b:Vec3[])=>{const aa=new Set(a.map(cellId)),bb=new Set(b.map(cellId));return [...a.filter(c=>!bb.has(cellId(c))),...b.filter(c=>!aa.has(cellId(c)))].sort(compareCells);};
   const changedIds=(a:{id:string}[],b:{id:string}[])=>[...new Set([...a.map(x=>x.id),...b.map(x=>x.id)])].filter(id=>canonicalJSON(a.find(x=>x.id===id)??null)!==canonicalJSON(b.find(x=>x.id===id)??null)).sort();
-  const delta:InputDelta={buildingCells:difference(document.grid,next.grid),roadCells:difference(document.sceneInputs.roads,next.sceneInputs.roads),objectIds:changedIds(document.sceneInputs.objects,next.sceneInputs.objects),parkingIds:changedIds(document.sceneInputs.parkingAreas,next.sceneInputs.parkingAreas)};
+  const delta:InputDelta={buildingCells:difference(document.grid,next.grid),roadCells:difference(document.sceneInputs.roads,next.sceneInputs.roads),sidewalkCells:difference(document.sceneInputs.sidewalks,next.sceneInputs.sidewalks),objectIds:changedIds(document.sceneInputs.objects,next.sceneInputs.objects),parkingIds:changedIds(document.sceneInputs.parkingAreas,next.sceneInputs.parkingAreas)};
   return {document:next,changed:before!==after,beforeSignature:inputSignature(before),afterSignature:inputSignature(after),delta};
 }
 export interface SourceHit {source:SourceRef;distance:number;anchor:Vec3}

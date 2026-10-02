@@ -9,6 +9,7 @@ import type { FacadeTrimPlan } from './facade-trims';
 import { environmentOverlays, type AccessProbe } from './environment-presentation';
 import { parkingPlacements } from './parking-placement';
 import { roadPlacements } from './roads';
+import { analyzeSidewalks, sidewalkPlacements, sidewalkSurfaceOffset, sidewalkTraces } from './sidewalks';
 import { vegetationPlacements } from './scene-inputs';
 import { sceneBounds16 } from './placement-bounds';
 import type { SupportIndex } from './scene-relations';
@@ -24,6 +25,10 @@ interface EnvironmentOutputInput {
   faceLookup: ReadonlyMap<string, Surface>;
   support?: SupportIndex;
 }
+const withSurfaceOffset = (document: GenerationDocument, center: readonly number[]) => {
+  const offset = sidewalkSurfaceOffset(document, [Math.floor(center[0]), 0, Math.floor(center[2])]);
+  return offset && Math.floor(center[1]) === 0 ? { surfaceOffset: offset } : {};
+};
 /** Publish accepted plans; this step makes no rule or reservation decisions. */
 export function assembleEnvironmentResult(input: EnvironmentOutputInput): GenerationResult {
   const { document, analysis, generated, plans, trims, probes, tileLookup, faceLookup } = input;
@@ -50,6 +55,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
       ...parkingPlacements(parking ?? []),
       ...generated.flatMap((r) => r.scenePlacements ?? []),
       ...roadPlacements(document.sceneInputs.roads,plans.relations?.roads.map(r=>r.module)),
+      ...sidewalkPlacements(document),
       ...(spatial
         ? vegetationPlacements(
             document.grid,
@@ -65,6 +71,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
             sourceRefs: [{ kind: 'object' as const, id: p.input!.id }],
             yawQuarterTurns: 0 as const,
             worldBounds16: sceneBounds16(p.center, p.size),
+            ...withSurfaceOffset(document, p.center),
           }))
         : []),
     ],
@@ -79,6 +86,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
     },
     environment: {
       ...plans,
+      ...(document.sceneInputs.sidewalks.length ? { sidewalks: analyzeSidewalks(document) } : {}),
       overlays: environmentOverlays(entrances, circulation ?? [], vertical, faceLookup, probes),
       traces: [
         ...(input.support?.records??[]).map(r=>({
@@ -88,6 +96,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
             metrics:{support:r.support,context:r.context,cells:r.cells.length,covered:!!r.coveredBy,proof:'installation-only'},conflictIds:[]}],
         })),
         ...(wallFacilities?.traces ?? []),
+        ...sidewalkTraces(document),
         ...(fixtures?.traces ?? []),
         ...(trims?.traces ?? []),
         ...(parking ?? []).flatMap((a) => a.plans.flatMap((p) => p.traces)),

@@ -39,6 +39,7 @@ export class EnvironmentPreview {
       const sources:{cells:Vec3[];ref:SourceRef;color:string}[]=[
         ...(result.environment?.reservations.filter(r=>r.kind==='solid'&&r.sourceRefs.some(s=>s.kind==='building'))??[]).map(r=>({cells:r.cells,ref:{kind:'building' as const,id:r.ownerId},color:'#8fa8b9'})),
         {cells:document.sceneInputs.roads,ref:{kind:'road' as const,id:'roads'},color:'#80bbc9'},
+        {cells:document.sceneInputs.sidewalks,ref:{kind:'sidewalk' as const,id:'sidewalks'},color:'#d6cfa8'},
         ...document.sceneInputs.objects.map(o=>({cells:o.cells,ref:{kind:'object' as const,id:o.id},color:'#a5cf8a'})),
         ...document.sceneInputs.parkingAreas.map(p=>({cells:p.cells,ref:{kind:'parking' as const,id:p.id},color:'#edb760'})),
       ];

@@ -13,6 +13,7 @@ import {hash33} from './selection';
 import {positiveMod} from './vertical-design';
 import {SceneRelationIndex,SupportIndex} from './scene-relations';
 import type {ParkingAreaPlan} from './parking-contract';
+import {isIslandCell,sidewalkSurfaceOffset} from './sidewalks';
 
 export interface FixtureContext {
   support:'ground'|'roof'|'wall';parkingAreaId?:string;parkingZone?:'gate'|'row-end'|'edge'|'interior';gateId?:string;
@@ -77,7 +78,7 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     }
     const road=relations.roadAt(cell,settings.intersectionKeepoutCells);
     if(road.distanceCells!==undefined){context.roadDistanceCells=road.distanceCells;context.roadHeading=road.heading;}
-    const adjacent=HEADING_VECTORS.map(d=>roadSet.has(cellId(add(cell,d))));context.median=adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3];
+    const adjacent=HEADING_VECTORS.map(d=>roadSet.has(cellId(add(cell,d))));context.median=adjacent[0]&&adjacent[2]||adjacent[1]&&adjacent[3]||patch.support==='ground'&&isIslandCell(document,cell);
     // A ground or roof cell beside a building wall serves that wall; its front faces away from it.
     const wall=patch.support!=='wall'?HEADING_VECTORS.findIndex(d=>buildingCells.has(cellId(add(cell,d)))):-1;
     if(wall>=0)context.wallHeading=(wall+2)%4 as Heading;
@@ -160,7 +161,9 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     }
     const bodies=descriptor.bodyBoxes16.map(b=>transformFixtureBox(b,center16,heading));
     if(bodies.some(b=>occupiedCells(b).some(cell=>!slot.patch.volume.has(cellId(cell)))))return {reason:'BODY_OUTSIDE_INTENT'};
-    if(relations.roadAt(c,settings.intersectionKeepoutCells).junctionIds.length)return {reason:'INTERSECTION_KEEPOUT'};
+    // Islands sit at junctions by nature; their low safety bollards mark the island instead of blocking the junction.
+    const islandBollard=prototype==='safety-bollard'&&slot.patch.support==='ground'&&isIslandCell(document,c);
+    if(!islandBollard&&relations.roadAt(c,settings.intersectionKeepoutCells).junctionIds.length)return {reason:'INTERSECTION_KEEPOUT'};
     if(context.median&&['bench','bin','pay-station','bike-rack'].includes(prototype))return {reason:'MEDIAN_NOT_FOR_REST'};
     const bodyReservation:Reservation={id:'fixture-query',ownerId:'fixture-query',sourceRefs:[],kind:descriptor.priority===500?'safety':descriptor.priority===400?'lighting':'fixture',priority:descriptor.priority,cells:[c],boxes16:bodies};
     const conflicts=book.conflicts(bodyReservation);
@@ -230,7 +233,8 @@ export function planFixtures(document:GenerationDocument,analysis:VolumeAnalysis
     cluster.trace.accepted=true;cluster.trace.reasonCodes=cluster.main.context.accessMode==='local-only'?['LOCAL_ACCESS_ONLY']:cluster.main.context.accessMode==='service-unverified'?['MAINTENANCE_ROUTE_UNVERIFIED']:[];
     reservations.push(...proposals);
     for(const item of cluster.items){const d=FIXTURE_CATALOG[item.prototypeId],center:Vec3=[item.center16[0]/16,(item.center16[1]+d.size16[1]/2)/16,item.center16[2]/16],size=d.size16.map(n=>n/16) as Vec3;
-      placements.push({id:item.id,kind:'object',asset:`fixture.${item.prototypeId}`,center,size,color:d.color,context:JSON.stringify(item.context),sourceRefs:item.sourceRefs,planId:cluster.id,yawQuarterTurns:item.heading,worldBounds16:sceneBounds16(center,size,item.heading)});counters.accepted++;
+      const lift=item.context.support==='ground'?sidewalkSurfaceOffset(document,item.anchorCell):0;
+      placements.push({id:item.id,kind:'object',asset:`fixture.${item.prototypeId}`,center,size,color:d.color,context:JSON.stringify(item.context),sourceRefs:item.sourceRefs,planId:cluster.id,yawQuarterTurns:item.heading,worldBounds16:sceneBounds16(center,size,item.heading),...(lift?{surfaceOffset:lift}:{})});counters.accepted++;
     }
   }
   const allBodies=new BoundsIndex<string>();

@@ -3,7 +3,7 @@
 다른 언어·엔진으로의 기본 이식은 대상 언어로의 재구현이다. 실행 브리지 금지 범위,
 순수 JSON/메시 자료와 독립 비교 절차는 [네이티브 이식 진입점](NATIVE_PORTING.md)을 따른다.
 
-현재 문서 실행 기준은 schema6 / environment-plans-v1 / SceneInputs2 / catalog13입니다. 언어를 바꿀 때 원본 입력과 파생 계획을 분리하고 동일한 공통 실행 순서를 유지합니다. schema5 읽기 호환은 `document.ts`에 남아 있습니다.
+현재 문서 실행 기준은 schema6 / environment-plans-v1 / SceneInputs3 / catalog13입니다. 언어를 바꿀 때 원본 입력과 파생 계획을 분리하고 동일한 공통 실행 순서를 유지합니다. schema5 읽기 호환은 `document.ts`에 남아 있습니다.
 
 A~D의 최소 입력·출력, 높이별 배분, 가로 반복, 코너·출입구·옥상 우선순위와 계산 예제는 [건물 규칙 이식 문서](BUILDING_RULES_PORTING.md)를 먼저 참고하세요. 기존 리팩터링의 [결과 보존 증거](BUILDING_REFACTOR_PRESERVATION.md)와 [실제 편집 성능](BUILDING_EDIT_PERFORMANCE.md)은 측정 당시 조건과 함께 참고하세요.
 
@@ -35,6 +35,7 @@ A~D의 최소 입력·출력, 높이별 배분, 가로 반복, 코너·출입구
 - 일반 시설은 절대 칸을 유지합니다. 지상 시설 종류(`contextual-fixtures` 2.0.0)는 외부 문맥(주차 구역·옥상·중앙분리대·식생·도로 거리·인접 건물 벽)과 절대 좌표만 읽고, 칠한 이웃 칸이나 입력 범위는 읽지 않습니다. 리듬 위상은 도로/식생/벽 방향의 접선 좌표 + `h33(seed,'fixtures-v2|rhythm')`이며 `fixtures.streetIntervalCells`·`hydrantIntervalCells`·`restIntervalCells`·`plazaRadiusCells`를 사용합니다. 빈 패턴 칸은 없습니다. 조명은 같은 높이의 도로 방향(없으면 0)과 고정 후보 순서를 사용하며, 본체·보호 예약 때문에 불가능할 때만 다음 후보를 선택합니다. 접근 검증은 배치 후 계속 수행합니다.
 - 옥상 시설은 칠한 열 높이로 정합니다: 1 `air-conditioner`(같은 높이에 건물 셀이 이웃하면 그 벽 반대 방향의 `roof-vent`), 2 `water-tank`, 3 `lattice-tower`, 4 이상 `antenna-mast`.
 - 외벽 시설의 자동 종류는 호환되는 연속 열로 정하되(높이1: Y=0이면 `awning`, 아니면 `balcony`; 높이2 이상: 지면 도달 `elevator`, 아니면 `fire-escape`) JSON의 명시 종류가 우선합니다. 예약 승인·거절은 원본 fragment별로 원자적입니다. 계단·엘리베이터 외형은 실제 수직 이동을 증명하지 않습니다.
+- 인도(`sidewalks.ts`): SceneInputs3의 `sidewalks`는 Y=0 셀 마스크이며 도로와 겹칠 수 없습니다. v2 입력은 `sidewalks: []`로 승격합니다. 4방향 연결 성분마다 `roadEdges`/`openEdges`/도로 방향을 세고, 건물(Y=0)·주차 마스크가 덮은 성분은 `COVERED_BY_BUILDING_OR_PARKING` 일반 인도입니다. 그 외 open 변 0이고 `islandMaxEnclosedCells` 이하면 `ENCLOSED_BY_ROADS`, ±X(또는 ±Z) 양쪽에 도로가 있고 그 축의 최장 연속 길이가 `islandMaxRunCells` 이하면 `BETWEEN_ROADS` 교통섬입니다. 섬 셀의 지상 오브젝트는 median 문맥을 쓰고, 섬 위 `safety-bollard`는 교차부 keepout에서 제외합니다. 표시 전용 `surfaceOffset`(= `surfaceTop16/16`)은 덮이지 않은 인도 셀의 지상 오브젝트에만 붙고 center·bounds·예약은 바꾸지 않습니다. 인도는 접근 그래프·출입구·주차 증명을 바꾸지 않습니다.
 - 도로 근접성으로 접근 성공을 추정하지 않습니다. 실제 경로 결과의 도착 셀을 관계에 연결하고, 시설·주차의 교차부 보호는 [도로 규칙](ROAD_RULES.md)의 공통 판정을 사용합니다.
 - 설치 지지는 하중 증명과 다릅니다. 실제 수직 이동·상층 주차 연결·지형·하중 해석은 지원 범위 밖이며 서비스 접근 미검증을 성공으로 승격하지 않습니다.
 

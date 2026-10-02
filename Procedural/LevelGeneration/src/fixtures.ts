@@ -48,7 +48,7 @@ function cityConceptFixtures(){
     if(profile==='tower11-d'){
       const roads:Vec3[]=[];
       for(let x=-3;x<13;x++)for(let z=-3;z<13;z++)if(x< -1||x>10||z< -1||z>10)roads.push([x,0,z]);
-      const sceneInputs:SceneInputs={version:2,roads,parkingAreas:[],objects:[{id:'roof-plant',category:'facility',direction:'PY',cells:[[6,29,3],[6,29,4],[6,29,5]]}]};
+      const sceneInputs:SceneInputs={version:3,roads,sidewalks:[],parkingAreas:[],objects:[{id:'roof-plant',category:'facility',direction:'PY',cells:[[6,29,3],[6,29,4],[6,29,5]]}]};
       return ['cityD',{label:`D · 도시 컨셉 — ${name}`,cells:REFERENCE_D_CELLS,profile:profile as Profile,sceneInputs}];
     }
     const height=6+index%4*2;
@@ -56,14 +56,34 @@ function cityConceptFixtures(){
     const roads:Vec3[]=[];
     for(let x=-4;x<10;x++)for(let z=-4;z<9;z++)
       if((x>=-3&&x<=-2)||(x>=7&&x<=8)||(z>=-3&&z<=-2)||(z>=6&&z<=7))roads.push([x,0,z]);
-    const sceneInputs:SceneInputs={version:2,roads,parkingAreas:[],objects:[
+    const sceneInputs:SceneInputs={version:3,roads,sidewalks:[],parkingAreas:[],objects:[
       {id:'roof-plant',category:'facility',direction:'PY',cells:[[4,height,1],[4,height,2],[4,height,3]]},
     ]};
     return [`city${String.fromCharCode(65+index)}`,{label:`${String.fromCharCode(65+index)} · 도시 컨셉 — ${name}`,cells,profile:profile as Profile,sceneInputs}];
   }));
 }
+// Sidewalk base layer: a block sidewalk under a building, a median between two parallel roads
+// and an island enclosed by a road loop. Islands are derived, never painted as a separate kind.
+function sidewalkLandscapeFixture(){
+  const roads:Vec3[]=[],sidewalks:Vec3[]=[],keyOf=(x:number,z:number)=>`${x},${z}`,road=new Set<string>();
+  const addRoad=(x:number,z:number)=>{if(!road.has(keyOf(x,z))){road.add(keyOf(x,z));roads.push([x,0,z]);}};
+  for(let x=-6;x<=19;x++)for(const z of [-5,-4,-2,-1])addRoad(x,z);
+  for(let z=-5;z<=12;z++)for(const x of [12,13])addRoad(x,z);
+  for(let x=14;x<=17;x++)for(let z=2;z<=5;z++)if(x===14||x===17||z===2||z===5)addRoad(x,z);
+  for(let x=0;x<=10;x++)sidewalks.push([x,0,-3]);
+  for(let x=-6;x<=11;x++)for(let z=0;z<=9;z++)sidewalks.push([x,0,z]);
+  for(const [x,z] of [[15,3],[15,4],[16,3],[16,4]])sidewalks.push([x,0,z]);
+  const objects:SceneInputs['objects']=[
+    ...[1,5,9].map(x=>({id:`median-tree-${x}`,category:'vegetation' as const,direction:'PY' as const,cells:[[x,0,-3],[x,1,-3]] as Vec3[]})),
+    {id:'island-bollards',category:'facility',direction:'PY',cells:[[15,0,3],[16,0,3]]},
+    ...[-4,10].map(x=>({id:`curb-light-${x}`,category:'lighting' as const,direction:'PY' as const,cells:[[x,0,0]] as Vec3[]})),
+    {id:'street-furniture',category:'facility',direction:'PY',cells:[[-3,0,0],[-2,0,0],[-1,0,0]]},
+  ];
+  return {label:'인도 · 도로 사이 교통섬과 보도 위 건물',cells:shift(box(8,4,6),1,0,2),profile:'shop' as Profile,sceneInputs:{version:3 as const,roads,sidewalks,parkingAreas:[],objects}};
+}
 export const FIXTURES: Record<string, { label: string; cells: Vec3[];profile?:Profile;sceneInputs?:SceneInputs }> = {
   ...cityConceptFixtures(),
+  sidewalkLandscape:sidewalkLandscapeFixture(),
   referenceCLow:{label:'C · 저층 수평 띠와 옥탑',cells:[...box(10,4,6),...shift(box(5,2,3),2,4,1)],profile:'urban-shop'},
   referenceCHigh:{label:'C · 고층 수평 띠와 옥탑',cells:[...box(10,10,6),...shift(box(5,3,3),2,10,1)],profile:'urban-shop'},
   referenceCPortal:{label:'C · 계단형 매스와 높은 개구부',cells:box(11,13,6).filter(([x,y,z])=>

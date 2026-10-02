@@ -261,7 +261,7 @@ export class Viewer {
       const sources=[...buildingComponents(doc.grid).map(b=>({source:{kind:'building' as const,id:b.id},cells:b.cells,anchor:doc.buildings.find(x=>x.componentId===b.id)!.design.anchor})),
         ...doc.sceneInputs.objects.map(o=>({source:{kind:'object' as const,id:o.id},cells:o.cells,anchor:o.cells[0]})),
         ...doc.sceneInputs.parkingAreas.map(p=>({source:{kind:'parking' as const,id:p.id},cells:p.cells,anchor:p.anchor})),
-        ...(doc.sceneInputs.roads.length?[{source:{kind:'road' as const,id:'roads'},cells:doc.sceneInputs.roads,anchor:doc.sceneInputs.roads[0]}]:[])];
+        ...(doc.sceneInputs.roads.length?[{source:{kind:'road' as const,id:'roads'},cells:doc.sceneInputs.roads,anchor:doc.sceneInputs.roads[0]}]:[]),...(doc.sceneInputs.sidewalks.length?[{source:{kind:'sidewalk' as const,id:'sidewalks'},cells:doc.sceneInputs.sidewalks,anchor:doc.sceneInputs.sidewalks[0]}]:[])];
       for(const source of sources){let distance=Infinity;
         for(const c of source.cells){const box=new THREE.Box3(new THREE.Vector3(...c).add(this.displayOrigin),new THREE.Vector3(c[0]+1,c[1]+(source.source.kind==='parking'?.05:1),c[2]+1).add(this.displayOrigin)),point=this.raycaster.ray.intersectBox(box,new THREE.Vector3());if(point)distance=Math.min(distance,point.distanceTo(this.raycaster.ray.origin));}
         if(Number.isFinite(distance))sourceHits.push({source:source.source,anchor:source.anchor,distance});
@@ -315,7 +315,7 @@ export class Viewer {
       this.onSelect(first?.kind==='building'?this.result?.surfaces.find(s=>s.componentId===first.id)?.faceId??'':'');
     }
   }
-  setEditMode(mode: "building" | "object" | "road" | "parking" | "inspect") {
+  setEditMode(mode: "building" | "object" | "road" | "sidewalk" | "parking" | "inspect") {
     this.interaction.clear();
     this.interaction.mode = mode;
   }
@@ -396,7 +396,7 @@ export class Viewer {
       const vertexColors=!vegetationGeometry&&geometry.hasAttribute('color'),materialKey=`${p.color}${vertexColors?'|vertex':''}`;
       let material=this.sceneMaterials.get(materialKey);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8,vertexColors});this.sceneMaterials.set(materialKey,material);}
       const mesh=new THREE.InstancedMesh(geometry,vegetationGeometry?this.vegetation.material:material,placements.length);
-      placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
+      placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);scenePosition.y+=p.surfaceOffset??0;sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
       mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.scenePlacement=p;mesh.userData.scenePlacements=placements;mesh.computeBoundingSphere();this.scenePlacements.add(mesh);
     }
     this.renderer.domElement.dataset.sceneAssets = (result.scenePlacements ?? []).map(p => p.asset).join(",");

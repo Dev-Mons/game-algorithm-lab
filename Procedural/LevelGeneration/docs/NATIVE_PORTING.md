@@ -89,7 +89,7 @@ python check.py compare . native-results --case C-low-reference --section vertic
 `materialize`는 생성기를 실행하지 않고 JSON 참조만 확장한다. 새 출력 디렉터리만 받는다.
 대상은 각 입력의 `grid`, `seed`, `buildingDefinition`, `buildings`, `sceneInputs`,
 `catalog`, `ruleSet`, `style`, `settings`를 처리하고 다음 `semantic-v1` 객체를 출력한다.
-버전은 document6 / SceneInputs2 / catalog13 / environment-plans-v1이다.
+버전은 document6 / SceneInputs3 / catalog13 / environment-plans-v1이다.
 
 | 출력 필드 | 핵심 내용 |
 | --- | --- |

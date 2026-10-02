@@ -1,6 +1,6 @@
 import { add, BASES, cellId, normalizeGrid, type Vec3 } from "./core/analysis";
 import { replaceSceneInputs, type GenerationDocument } from "./core/document";
-import type { ObjectInput, ObjectCategory } from "./core/scene-inputs";
+import { emptySceneInputs, type ObjectInput, type ObjectCategory } from "./core/scene-inputs";
 import type { SurfaceSelection } from "./surface-edit";
 // Keep each fragment rectangular and supported along its original installation
 // direction. Splitting along vertical runs allows partial roof-height edits.
@@ -89,12 +89,7 @@ export function editObjects(
   mode: "add" | "remove",
   options:Pick<ObjectInput,'facilityKind'|'facadeRequest'>={},
 ) {
-  const inputs = document.sceneInputs ?? {
-    version: 2 as const,
-    roads: [],
-    objects: [],
-    parkingAreas: [],
-  };
+  const inputs = document.sceneInputs ?? emptySceneInputs();
   // Automatic wall intent follows the original mount when extending a side/top.
   const selectedOwner = inputs.objects.find(o => selection.cells.some(c => o.cells.some(b => cellId(b) === cellId(c))));
   const mount = selectedOwner?.direction ?? selection.direction;
@@ -243,19 +238,37 @@ export function editRoads(
     throw new Error("도로는 지면 Y=0에서만 설치/제거할 수 있습니다.");
   const cells = normalizeGrid(selection.cells.map((c) => add(c, [0, 1, 0])));
   const ids = new Set(cells.map(cellId));
-  const inputs = document.sceneInputs ?? {
-    version: 2 as const,
-    roads: [],
-    objects: [],
-    parkingAreas: [],
-  };
+  const inputs = document.sceneInputs ?? emptySceneInputs();
   return replaceSceneInputs(document, {
     ...inputs,
     roads:
       mode === "add"
         ? normalizeGrid([...inputs.roads, ...cells])
         : inputs.roads.filter((c) => !ids.has(cellId(c))),
+    // The last painted ground surface owns the cell.
+    sidewalks:
+      mode === "add" ? inputs.sidewalks.filter((c) => !ids.has(cellId(c))) : inputs.sidewalks,
     objects:
       mode === "add" ? carveObjects(inputs.objects, ids) : inputs.objects,
+  });
+}
+/** Sidewalk is the base ground layer: it replaces road cells, and buildings, objects and parking may stand on it. */
+export function editSidewalks(
+  document: GenerationDocument,
+  selection: SurfaceSelection,
+  mode: "add" | "remove",
+) {
+  if (selection.direction !== "PY" || selection.cells.some((c) => c[1] !== -1))
+    throw new Error("인도는 지면 Y=0에서만 설치/제거할 수 있습니다.");
+  const cells = normalizeGrid(selection.cells.map((c) => add(c, [0, 1, 0])));
+  const ids = new Set(cells.map(cellId)),
+    inputs = document.sceneInputs ?? emptySceneInputs();
+  return replaceSceneInputs(document, {
+    ...inputs,
+    sidewalks:
+      mode === "add"
+        ? normalizeGrid([...inputs.sidewalks, ...cells])
+        : inputs.sidewalks.filter((c) => !ids.has(cellId(c))),
+    roads: mode === "add" ? inputs.roads.filter((c) => !ids.has(cellId(c))) : inputs.roads,
   });
 }

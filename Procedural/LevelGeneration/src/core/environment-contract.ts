@@ -6,7 +6,7 @@ export const HEADING_VECTORS: readonly Vec3[] = [[0,0,1],[1,0,0],[0,0,-1],[-1,0,
 export interface BuildingDesignV1 { version: 1; anchor: Vec3 }
 export interface ParkingAreaInput { id: string; cells: Vec3[]; anchor: Vec3 }
 export interface Box16 { min: Vec3; max: Vec3 }
-export interface SourceRef { kind: "building" | "object" | "road" | "parking"; id: string }
+export interface SourceRef { kind: "building" | "object" | "road" | "parking" | "sidewalk"; id: string }
 export interface Reservation {
   id: string; ownerId: string; sourceRefs: SourceRef[];
   kind: "solid" | "public-vehicle" | "walk" | "vehicle-aisle" | "entrance" | "stall" | "safety" | "lighting" | "fixture" | "attachment";
@@ -32,7 +32,7 @@ export interface ParkingBudgetLedger {
   allocations: ParkingBudgetAllocation[];
 }
 export interface InputDelta {
-  buildingCells: Vec3[]; roadCells: Vec3[]; objectIds: string[];
+  buildingCells: Vec3[]; roadCells: Vec3[]; sidewalkCells: Vec3[]; objectIds: string[];
   parkingIds: string[];
 }
 /** Plans are added by their owning stages. Missing is distinct from an empty plan. */
@@ -58,6 +58,7 @@ export interface EnvironmentResult {
   counters: {preflightCalls:number;generationCalls:number};
   overlays?: {id:string;sourceRefs:SourceRef[];boxes16?:Box16[];path?:Vec3[];color?:string}[];
   spatial?: import("./spatial-analysis").SpatialAnalysis;
+  sidewalks?: import('./sidewalks').SidewalkAnalysis;
   vertical?: import("./vertical-design").VerticalPlan[];
   facades?:import('./facade-plan').FacadePlan[];
   wallFacilities?:import('./wall-facilities').WallFacilityPlan;
