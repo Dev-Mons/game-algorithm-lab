@@ -6,6 +6,7 @@ This repository is a collection of game algorithm experiments and R&D projects.
 
 - `Navigation/Crowd` — crowd navigation and movement algorithms.
 - `Physics/Vehicle` — vehicle physics algorithms.
+- `Physics/PlinkoPusher` — plinko + coin pusher processing device prototype (custom vs engine physics comparison).
 - `Procedural/LevelGeneration` — procedural level generation algorithms.
 
 ## Working guidance

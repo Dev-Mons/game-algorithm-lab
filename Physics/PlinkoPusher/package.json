@@ -1,0 +1,32 @@
+{
+  "name": "plinko-pusher-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4190",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "build": "tsc --noEmit && vite build",
+    "verify": "npm run typecheck && npm run test:run && npm run build",
+    "test:e2e": "playwright test",
+    "measure": "tsx scripts/measure.ts",
+    "measure:browser": "tsx scripts/measure-browser.ts",
+    "measure:feel": "tsx scripts/measure-feel.ts"
+  },
+  "dependencies": {
+    "@dimforge/rapier2d-compat": "^0.21.0",
+    "@dimforge/rapier3d-compat": "^0.21.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.19.1",
+    "@types/three": "^0.186.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.6",
+    "vitest": "^3.2.7"
+  }
+}
