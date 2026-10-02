@@ -14,9 +14,9 @@ const SLIDERS: Slider[] = [
   { key: 'level', label: '페그 레벨', min: 1, max: MAX_PEG_LEVEL, step: 1, get: s => s.pegs.level, set: (s, v) => { s.pegs.level = v; } },
   { key: 'mainBase', label: '본 가치(기본)', min: 1, max: 50, step: 1, get: s => s.economy.mainBase, set: (s, v) => { s.economy.mainBase = v; } },
   { key: 'byCoef', label: '부산물 계수', min: 0, max: 5, step: 0.1, get: s => s.economy.byproductCoef, set: (s, v) => { s.economy.byproductCoef = v; } },
-  { key: 'bundle', label: '토큰 묶음 상한', min: 1, max: 6, step: 1, get: s => s.economy.tokenBundleMax, set: (s, v) => { s.economy.tokenBundleMax = v; } },
+  { key: 'bundle', label: '한 번에 압축할 개수', min: 1, max: 24, step: 1, get: s => s.economy.tokenBundleMax, set: (s, v) => { s.economy.tokenBundleMax = v; } },
   { key: 'period', label: '푸셔 왕복 주기', unit: 's', min: 0.8, max: 6, step: 0.1, get: s => s.tray.period, set: (s, v) => { s.tray.period = v; } },
-  { key: 'stroke', label: '푸셔 스트로크', min: 0.4, max: 4, step: 0.1, get: s => s.tray.stroke, set: (s, v) => { s.tray.stroke = v; } },
+  { key: 'stroke', label: '푸셔 스트로크', min: 0.4, max: 4, step: 0.1, get: s => s.tray.stroke, set: (s, v) => { s.tray.stroke = v; }, restart: true },
   { key: 'trayMax', label: '트레이 토큰 상한', min: 50, max: 3000, step: 10, get: s => s.flow.trayMaxTokens, set: (s, v) => { s.flow.trayMaxTokens = v; }, restart: true },
   { key: 'seedTokens', label: '초기 적재 토큰', min: 0, max: 2400, step: 10, get: s => s.initialTokens, set: (s, v) => { s.initialTokens = v; }, restart: true },
 ];
@@ -55,7 +55,7 @@ export function bindControls(runner: Runner, view: DeviceView, afterPlacement: (
 
   document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach(b => b.addEventListener('click', () => { runner.demo.on = false; void runner.loadPreset(b.dataset.preset as PresetId, Number($<HTMLInputElement>('#seed').value) || 1234); }));
   $('#demo').addEventListener('click', async () => { await runner.loadPreset('basic'); runner.demo.on = true; runner.demo.t = 0; syncControls(); });
-  $('#pause').addEventListener('click', () => { runner.setPaused(!runner.paused); $('#pause').textContent = runner.paused ? '재개' : '일시정지'; });
+  $('#pause').addEventListener('click', () => { runner.setPaused(!runner.paused); $('#pause').textContent = $('#presentation-pause').textContent = runner.paused ? '재개' : '일시정지'; });
   $('#reset').addEventListener('click', () => void runner.restart());
   $<HTMLSelectElement>('#speed').addEventListener('change', e => runner.setSpeed(Number((e.target as HTMLSelectElement).value)));
   $<HTMLInputElement>('#seed').addEventListener('change', e => void runner.configure(s => { s.seed = Math.max(1, Math.floor(Number((e.target as HTMLInputElement).value) || 1)); }, true));

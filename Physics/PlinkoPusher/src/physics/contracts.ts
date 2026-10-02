@@ -23,8 +23,8 @@ export type PlinkoEvent =
   | { type: 'arrive'; id: number; u: number }
   | { type: 'lost'; id: number };
 
-export interface TokenSpawn { id: number; x: number; y: number; z: number; radius: number; halfHeight: number }
-export type PusherEvent = { type: 'exit'; id: number; x: number; y: number; z: number } | { type: 'lost'; id: number };
+export interface TokenSpawn { id: number; x: number; y: number; z: number; radius: number; halfHeight: number; vx?: number; vy?: number; vz?: number }
+export type PusherEvent = { type: 'exit'; id: number; x: number; y: number; z: number; vx?: number; vy?: number; vz?: number; rotation?: [number, number, number, number] } | { type: 'lost'; id: number };
 
 export interface BackendStats {
   label: string;

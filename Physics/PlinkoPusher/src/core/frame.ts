@@ -87,7 +87,7 @@ export type PlacementId = 'default' | 'yaw' | 'tilt' | 'roll' | 'compound';
 export interface PlacementSpec { label: string; description: string; parent: { position: Vec3; yaw: number; pitch: number; roll: number }; child: { yaw: number; pitch: number; roll: number } }
 
 export const PLACEMENTS: Record<PlacementId, PlacementSpec> = {
-  default: { label: '기본', description: '보드가 정면(+Z)을 향해 수직으로 선다.', parent: { position: vec3(), yaw: 0, pitch: 0, roll: 0 }, child: { yaw: 0, pitch: 0, roll: 0 } },
+  default: { label: '기본 · 30°', description: '보드 위쪽을 뒤로 30° 눕힌 기본 공정 배치.', parent: { position: vec3(), yaw: 0, pitch: 0, roll: 0 }, child: { yaw: 0, pitch: -30, roll: 0 } },
   yaw: { label: 'Y축 35°', description: '월드 Y축으로 35° 회전. 보드 법선이 오른쪽 앞을 향한다.', parent: { position: vec3(), yaw: 0, pitch: 0, roll: 0 }, child: { yaw: 35, pitch: 0, roll: 0 } },
   tilt: { label: 'X축 −25°', description: '보드 위쪽이 뒤로 넘어간 경사 배치(로컬 중력은 그대로 +v).', parent: { position: vec3(), yaw: 0, pitch: 0, roll: 0 }, child: { yaw: 0, pitch: -25, roll: 0 } },
   roll: { label: '법선축 12°', description: '보드 면 안에서 12° 회전. 장치 중력이 +v이므로 원석은 보드 기준 아래로 떨어진다.', parent: { position: vec3(), yaw: 0, pitch: 0, roll: 0 }, child: { yaw: 0, pitch: 0, roll: 12 } },

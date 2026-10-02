@@ -6,13 +6,13 @@ import { Rng } from '../core/rng';
 import { BodySnapshot, type PlinkoBackend, type PlinkoEvent, type PusherBackend, type PusherEvent } from '../physics/contracts';
 import { createPlinko, createPusher } from '../physics/registry';
 import { pusherMotion, trayGeometry } from '../physics/tray-geometry';
-import { deviceLayout, type DeviceLayout } from './device-layout';
+import { deviceLayout, cargoOffset, RAW_ENTRY_V, PLANAR_LOWER_SECONDS, type DeviceLayout } from './device-layout';
 import type { Scenario } from './scenario';
 
 const now = () => globalThis.performance.now();
 
 export interface StepTiming { plinkoMs: number; pusherMs: number; coreMs: number }
-export interface ExitVisual { id: number; x: number; y: number; z: number; value: number; origin: 'produced' | 'seed' }
+export interface ExitVisual { id: number; x: number; y: number; z: number; vx?: number; vy?: number; vz?: number; rotation?: [number, number, number, number]; value: number; origin: 'produced' | 'seed' }
 
 /**
  * 한 실험의 공통 고정 스텝 파이프라인. 렌더링과 무관하며 브라우저와 Node 측정 스크립트가 같이 쓴다.
@@ -36,16 +36,17 @@ export class Simulation {
   private releases: ReleaseOrder[] = [];
   private plinkoEvents: PlinkoEvent[] = [];
   private pusherEvents: PusherEvent[] = [];
-  private readonly feedRng: Rng;
-  private recentSpawns: Array<{ x: number; z: number; tick: number }> = [];
+  readonly discharge = { progress: 0, blocked: false, releaseAt: -Infinity, lastCount: 0 };
+  readonly batchStats = { dumps: 0, largestDump: 0 };
+  readonly handovers: Array<{ id: number; x: number; y: number; z: number; vy: number; tick: number }> = [];
+  readonly pegFlashes = new Map<number, number>();
   private disposed = false;
 
   private constructor(readonly scenario: Scenario, readonly plinko: PlinkoBackend, readonly pusher: PusherBackend) {
     this.layout = buildBoardLayout(scenario.board, scenario.pegs);
     this.core = new GameCore(scenario.economy, scenario.flow, this.layout, scenario.seed);
     for (const peg of scenario.pegOverrides) this.core.setPeg(peg.index, peg.kind, peg.level);
-    this.device = deviceLayout(scenario.board, scenario.tray);
-    this.feedRng = new Rng(scenario.seed * 7919 + 17);
+    this.device = deviceLayout(scenario.board, scenario.tray, pusher.mode === 'stacked');
     this.setPlacement(scenario.placement);
   }
 
@@ -134,7 +135,7 @@ export class Simulation {
     for (const entry of s.schedule) if (entry.tick === this.tick) core.addRaw(entry.count);
     this.releases.length = 0;
     core.takeReleases(dt, this.releases);
-    for (const r of this.releases) this.plinko.spawn({ ...r, radius: s.board.itemRadius });
+    for (const r of this.releases) this.plinko.spawn({ ...r, v: RAW_ENTRY_V, vu: 0, radius: s.board.itemRadius });
     let coreMs = now() - t0;
 
     t0 = now();
@@ -145,14 +146,14 @@ export class Simulation {
     this.plinkoEvents.length = 0;
     this.plinko.drainEvents(this.plinkoEvents);
     for (const e of this.plinkoEvents) {
-      if (e.type === 'peg') core.onPegContact(e.id, e.peg);
+      if (e.type === 'peg') { core.onPegContact(e.id, e.peg); this.pegFlashes.set(e.peg, core.time); }
       else if (e.type === 'arrive') core.onArrive(e.id, e.u);
       else core.onItemLost(e.id);
     }
     const motion = pusherMotion(s.tray, (this.tick + 1) * dt);
     this.pusherFace = motion.face;
     this.pusher.setPusher(motion.face, motion.velocity);
-    this.feedTray(motion.face);
+    this.feedTray(dt);
     coreMs += now() - t0;
 
     t0 = now();
@@ -165,58 +166,68 @@ export class Simulation {
     for (const e of this.pusherEvents) {
       if (e.type === 'exit') {
         const token = core.tray.get(e.id);
-        if (core.onTokenExit(e.id) !== null && token && this.exitVisuals.length < 256) this.exitVisuals.push({ id: e.id, x: e.x, y: e.y, z: e.z, value: token.value, origin: token.origin });
+        if (core.onTokenExit(e.id) !== null && token && this.exitVisuals.length < 256) this.exitVisuals.push({ ...e, value: token.value, origin: token.origin });
       } else core.onTokenLost(e.id);
     }
-    core.stepByproduct(dt);
+    core.stepByproduct(dt, { canPress: this.discharge.progress === 0, maxBatchSize: this.device.cargoColumns * this.device.cargoRows });
     this.timing.coreMs = coreMs + now() - t0;
     this.tick++;
   }
 
-  /** 트레이 공급 게이트: 투입 지점이 비어 있어야 토큰을 놓는다. 막히면 대기열이 늘어난다(적체). */
-  private feedTray(face: number) {
-    const core = this.core, d = this.scenario.tray, r = d.tokenRadius, stacked = this.pusher.mode === 'stacked';
-    if (!core.canFeed()) return;
-    this.pusher.snapshot(this.feedSnapshot);
-    if (stacked) { this.dropOnHeap(face); return; }
-    this.recentSpawns = this.recentSpawns.filter(p => this.tick - p.tick < 20);
-    const lanes = Math.max(3, Math.floor((d.width - 1) / (r * 2.2)));
-    const z = face + r + 0.06, clear2 = (r * 1.9) ** 2;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const lane = this.feedRng.int(lanes);
-      const x = -d.width / 2 + 0.5 + r + (lane + 0.5) * ((d.width - 1 - 2 * r) / lanes);
-      if (this.isOccupied(x, z, clear2)) continue;
-      const token = core.commitFeed()!;
-      this.pusher.spawn({ id: token.id, x, y: d.tokenHalfHeight, z, radius: r, halfHeight: d.tokenHalfHeight });
-      this.recentSpawns.push({ x, z, tick: this.tick });
-      this.gateStats.fed++;
-      return;
+  /** The flat comparison adapters use a short vertical lowering guide; stacked coins fall directly. */
+  get dischargeY() {
+    const d = this.device;
+    return d.die.y + (d.dropY - d.die.y) * this.discharge.progress;
+  }
+  diePosition(index: number) {
+    const o = cargoOffset(this.device, index);
+    return { x: this.device.die.x + o.x, y: this.dischargeY + o.y, z: this.device.die.z + o.z };
+  }
+
+  private feedTray(dt: number) {
+    const core = this.core, d = this.scenario.tray, dev = this.device, stacked = this.pusher.mode === 'stacked';
+    this.discharge.blocked = false;
+    if (core.pressPhase !== 'ready') return;
+    const count = Math.min(core.feedQueue.length, dev.cargoColumns * dev.cargoRows);
+    if (!count) return;
+    if (!core.canFeedBatch(count) || !this.inletClear(count)) { this.discharge.blocked = true; this.gateStats.blocked++; return; }
+    if (!stacked) {
+      if (this.discharge.progress === 0) {
+        for (let time = 0; time <= PLANAR_LOWER_SECONDS * 2; time += dt) {
+          if (pusherMotion(d, core.time + time).face > dev.feedZ - d.tokenRadius - 0.03) { this.discharge.blocked = true; this.gateStats.blocked++; return; }
+        }
+      }
+      this.discharge.progress = Math.min(1, this.discharge.progress + dt / PLANAR_LOWER_SECONDS);
+      if (this.discharge.progress < 1) return;
     }
-    this.gateStats.blocked++;
+    if (stacked) {
+      this.discharge.progress = Math.min(1, this.discharge.progress + dt / 0.12);
+      if (this.discharge.progress < 1) return;
+    }
+    const tokens = core.commitFeedBatch(count);
+    for (let i = 0; i < tokens.length; i++) {
+      const p = this.diePosition(i);
+      const handover = { id: tokens[i].id, x: p.x, y: p.y, z: p.z - dev.trayZ0, vy: 0, tick: this.tick };
+      this.pusher.spawn({ ...handover, radius: d.tokenRadius, halfHeight: d.tokenHalfHeight });
+      this.handovers.push(handover); if (this.handovers.length > 96) this.handovers.shift();
+    }
+    this.gateStats.fed += tokens.length; this.batchStats.dumps++; this.batchStats.largestDump = Math.max(this.batchStats.largestDump, tokens.length);
+    this.discharge.releaseAt = core.time; this.discharge.lastCount = tokens.length; this.discharge.progress = 0;
   }
 
-  /**
-   * 적층 조건: 판 윗면 선반 뒤쪽 절반부터 판 앞 1.2까지의 더미 위로 떨어뜨린다(점유 검사 없음).
-   * 선반에 떨어진 토큰은 판이 물러날 때 립에 긁혀 판 앞 빈자리로 떨어진다(밀린 자리를 채우는 실제 공급 경로).
-   */
-  private dropOnHeap(face: number) {
-    const core = this.core, d = this.scenario.tray, r = d.tokenRadius, h = d.tokenHalfHeight, snap = this.feedSnapshot;
-    this.recentSpawns = this.recentSpawns.filter(p => this.tick - p.tick < 20);
-    const x = this.feedRng.range(-d.width / 2 + r + 0.3, d.width / 2 - r - 0.3), z = this.feedRng.range(Math.max(d.faceMin + r, face - d.pusherDepth * 0.5), face + 1.2);
-    let top = trayGeometry(d).plateHeight;
-    for (let k = 0; k < snap.count; k++) { const dx = snap.a[k] - x, dz = snap.b[k] - z; if (dx * dx + dz * dz < 4 * r * r && snap.c[k] + h > top) top = snap.c[k] + h; }
-    for (const p of this.recentSpawns) { const dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < 4 * r * r) top += 2 * h; }
-    const token = core.commitFeed()!;
-    this.pusher.spawn({ id: token.id, x, y: top + h + 0.35, z, radius: r, halfHeight: h });
-    this.recentSpawns.push({ x, z, tick: this.tick });
-    this.gateStats.fed++;
-  }
-
-  private isOccupied(x: number, z: number, clear2: number) {
-    const snap = this.feedSnapshot;
-    for (let k = 0; k < snap.count; k++) { const dx = snap.a[k] - x, dz = snap.b[k] - z; if (dx * dx + dz * dz < clear2) return true; }
-    for (const p of this.recentSpawns) { const dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < clear2) return true; }
-    return false;
+  private inletClear(count: number): boolean {
+    const d = this.scenario.tray, dev = this.device, stacked = this.pusher.mode === 'stacked';
+    this.pusher.snapshot(this.feedSnapshot);
+    const snap = this.feedSnapshot, radius = Math.hypot(d.tokenRadius, d.tokenHalfHeight);
+    if (!stacked && this.pusherFace > dev.feedZ - d.tokenRadius - 0.015) return false;
+    for (let i = 0; i < Math.min(count, dev.cargoColumns); i++) {
+      const x = dev.die.x + cargoOffset(dev, i).x;
+      for (let k = 0; k < snap.count; k++) {
+        if (Math.hypot(snap.a[k] - x, snap.b[k] - dev.feedZ) > (stacked ? 2 * radius + 0.15 : 2 * d.tokenRadius + 0.015)) continue;
+        if (!stacked || snap.c[k] + radius > dev.dropY - d.tokenHalfHeight - 0.25) return false;
+      }
+    }
+    return true;
   }
 
   /** 표시·측정용 상태 전달. 호출 주기는 물리 결과에 영향을 주지 않는다. */
@@ -227,7 +238,17 @@ export class Simulation {
     return now() - t0;
   }
 
-  setOffscreen(on: boolean) { this.core.setOffscreen(on); }
+  setOffscreen(on: boolean) {
+    this.core.setOffscreen(on);
+    if (on) this.resetDischarge();
+  }
+  /** Hidden-tab settlement can pay/reorder output; restart the planar descent guide from the die. */
+  settleElapsed(seconds: number) {
+    const result = this.core.settleElapsed(seconds);
+    if (result.settled > 0) this.resetDischarge();
+    return result;
+  }
+  private resetDischarge() { this.discharge.progress = 0; this.discharge.blocked = false; }
   advanceOffscreen(dt: number) { this.core.advanceOffscreen(dt); }
 
   dispose() {

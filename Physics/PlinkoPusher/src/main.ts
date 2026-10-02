@@ -16,9 +16,10 @@ const opts = (rec: Record<string, { label: string }>) => Object.entries(rec).map
 document.querySelector('#app')!.innerHTML = `
 <div id="scene"></div>
 <header class="topbar">
-  <div class="brand"><b>PLINKO</b><span>→</span><b>PUSHER</b><small>가공 장치 실험</small></div>
+  <div class="brand"><b>Tiny<span>Dead</span></b><small>RESOURCE WORKS / 01</small></div>
   <div class="flow" id="flow"></div>
 </header>
+<nav class="workbench-tools"><button id="lab-toggle" aria-expanded="false">실험 설정</button><button id="stats-toggle" aria-expanded="false">생산 · 검증</button><button id="presentation-add">원재료 +10</button><button id="presentation-pause">일시정지</button><button data-cam="all">전체</button><button data-cam="transfer">연결부</button><button data-cam="pusher">푸셔</button></nav>
 <aside class="panel left" id="left">
   <section><h3>실행</h3>
     <div class="grid3" id="presets">${(Object.keys(PRESETS) as PresetId[]).map(id => `<button data-preset="${id}" title="${PRESETS[id].description}">${PRESETS[id].label}</button>`).join('')}<button id="demo" title="카메라 순회 + 주기적 묶음 투입">자동 데모</button></div>
@@ -39,8 +40,8 @@ document.querySelector('#app')!.innerHTML = `
     <p class="hint" id="placement-desc"></p>
   </section>
   <section><h3>카메라</h3>
-    <div class="row"><button data-cam="all">전체</button><button data-cam="plinko">플링코</button><button data-cam="pusher">푸셔</button><button data-cam="reset">초기화</button></div>
-    <div class="row"><label><input type="checkbox" id="labels" checked> 공정 라벨</label>
+    <div class="row"><button data-cam="all">전체</button><button data-cam="plinko">플링코</button><button data-cam="pusher">푸셔</button><button data-cam="transfer">연결부</button><button data-cam="side">측면</button><button data-cam="rear">후면</button><button data-cam="reset">초기화</button></div>
+    <div class="row"><label><input type="checkbox" id="labels"> 공정 라벨</label>
       <label class="field inline">품질 <select id="quality"><option value="low">낮음</option><option value="medium">보통</option><option value="high">높음</option></select></label></div>
   </section>
   <details><summary>설정</summary><div id="sliders"></div>
@@ -77,6 +78,11 @@ function toast(msg: string) {
 }
 runner.onToast = toast;
 
+for (const [id, cls] of [['lab-toggle', 'controls-open'], ['stats-toggle', 'stats-open']]) {
+  $(`#${id}`).addEventListener('click', () => { const open = document.body.classList.toggle(cls); $(`#${id}`).setAttribute('aria-expanded', String(open)); });
+}
+$('#presentation-add').addEventListener('click', () => runner.addRaw(10));
+$('#presentation-pause').addEventListener('click', () => { runner.setPaused(!runner.paused); $('#presentation-pause').textContent = $('#pause').textContent = runner.paused ? '재개' : '일시정지'; });
 const syncControls = bindControls(runner, view, () => view.showSelection(selected));
 
 // 페그 선택: 클릭(드래그 아님) 위치를 보드 로컬 좌표로 바꿔 판정한다.
@@ -121,7 +127,7 @@ const init = async () => {
   if (disposed) return;
   view.setCamera((params.get('camera') as CameraPreset) ?? 'all', false);
   runner.paused = params.get('paused') === '1';
-  $('#pause').textContent = runner.paused ? '재개' : '일시정지';
+  $('#pause').textContent = $('#presentation-pause').textContent = runner.paused ? '재개' : '일시정지';
   runner.start();
   statsTimer = window.setInterval(() => renderStats(runner, benchPanel.lastResult), 250);
   renderStats(runner, benchPanel.lastResult);

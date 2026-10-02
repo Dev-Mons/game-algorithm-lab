@@ -54,7 +54,7 @@ export class CustomPusher implements PusherBackend {
     if (this.slot.has(t.id)) return;
     if (this.n >= this.cap) this.grow(this.cap * 2);
     const k = this.n++;
-    this.ids[k] = t.id; this.x[k] = this.px[k] = t.x; this.z[k] = this.pz[k] = t.z; this.vx[k] = this.vz[k] = 0;
+    this.ids[k] = t.id; this.x[k] = this.px[k] = t.x; this.z[k] = this.pz[k] = t.z; this.vx[k] = t.vx ?? 0; this.vz[k] = t.vz ?? 0;
     this.r[k] = t.radius; this.hh[k] = t.halfHeight; this.lift[k] = this.liftTarget[k] = 0; this.sleepT[k] = 0; this.asleep[k] = 0; this.pinned[k] = 0;
     this.slot.set(t.id, k);
   }

@@ -17,7 +17,7 @@ for (const pusher of pushers) for (const seed of seeds) {
   const s = createScenario(preset, seed); s.backends = { plinko: 'rapier2d', pusher };
   Object.assign(s.pusher, overrides);
   // 고유입: 공급·처리·압축을 크게 올려 트레이가 상한에 닿는 조건(더미가 계속 커질 때의 거동)
-  if (highInflow) { s.flow.supplyPerSec = 20; s.flow.plinkoReleasePerSec = 20; s.flow.compressCycleSec = 0.1; s.flow.conveyorCapacity = 40; s.economy.byproductCoef = 3; }
+  if (highInflow) { s.flow.supplyPerSec = 20; s.flow.plinkoReleasePerSec = 20; s.flow.compressCycleSec = 0.1; s.economy.byproductCoef = 3; }
   const sim = await Simulation.create(s);
   const cycle = Math.round(s.tray.period / s.fixedDt), h = s.tray.tokenHalfHeight;
   const per: number[] = [], trays: number[] = [];

@@ -107,7 +107,7 @@ export class CustomPlinko implements PlinkoBackend {
         this.prevA[k] = curA; this.prevB[k] = curB;
         if (this.u[k] < r) { this.u[k] = r; if (this.vu[k] < 0) this.vu[k] = -this.vu[k] * e; }
         else if (this.u[k] > s.width - r) { this.u[k] = s.width - r; if (this.vu[k] > 0) this.vu[k] = -this.vu[k] * e; }
-        if (this.v[k] < r) { this.v[k] = r; if (this.vv[k] < 0) this.vv[k] = -this.vv[k] * e; }
+        if (this.v[k] < -1.95) { this.v[k] = -1.95; if (this.vv[k] < 0) this.vv[k] = -this.vv[k] * e; }
       }
       this.collectExits();
     }

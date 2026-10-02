@@ -63,6 +63,7 @@ export class RapierPusher implements PusherBackend {
     if (this.tokens.has(t.id)) return;
     let desc = RAPIER.RigidBodyDesc.dynamic().setTranslation(t.x, planar ? t.halfHeight : t.y, t.z).setAngularDamping(planar ? 2 : 0.5).setLinearDamping(0.05);
     if (planar) desc = desc.enabledTranslations(true, false, true).enabledRotations(false, true, false);
+    desc = desc.setLinvel(t.vx ?? 0, planar ? 0 : t.vy ?? 0, t.vz ?? 0);
     const body = world.createRigidBody(desc);
     world.createCollider(RAPIER.ColliderDesc.cylinder(t.halfHeight, t.radius).setDensity(1).setFriction(p.friction).setRestitution(p.restitution)
       .setCollisionGroups(groups(G_TOKEN, planar ? G_WALL | G_PUSHER | G_TOKEN : G_FLOOR | G_WALL | G_PUSHER | G_TOKEN)), body);
@@ -108,8 +109,8 @@ export class RapierPusher implements PusherBackend {
     });
     this.activeLast = active;
     for (const id of this.exits) {
-      const t = this.tokens.get(id)!.translation();
-      this.events.push({ type: 'exit', id, x: t.x, y: t.y, z: t.z }); this.remove(id);
+      const body = this.tokens.get(id)!, t = body.translation(), v = body.linvel(), q = body.rotation();
+      this.events.push({ type: 'exit', id, x: t.x, y: t.y, z: t.z, vx: v.x, vy: v.y, vz: v.z, rotation: [q.x, q.y, q.z, q.w] }); this.remove(id);
     }
     for (const id of this.losses) { this.events.push({ type: 'lost', id }); this.corrections.lost++; this.remove(id); }
     this.adapterMs = performance.now() - t0;

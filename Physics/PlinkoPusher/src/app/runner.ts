@@ -261,7 +261,7 @@ export class Runner {
     this.hiddenAt = null; this.acc = 0; this.last = performance.now();
     if (this.bench) { this.cancelBench('탭이 숨겨져 측정 조건이 깨졌습니다.'); return; }
     if (!this.sim || this.paused || elapsed < 0.5) return;
-    const r = this.sim.core.settleElapsed(elapsed * this.speed);
+    const r = this.sim.settleElapsed(elapsed * this.speed);
     this.onToast(`숨김 ${elapsed.toFixed(1)}초 → 화면 밖 근사로 ${r.settled.toFixed(1)}초 정산(${r.chunks}회)${r.clipped > 0 ? `, ${r.clipped.toFixed(0)}초는 상한 초과로 제외` : ''}`);
   }
 

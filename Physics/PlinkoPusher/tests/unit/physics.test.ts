@@ -138,7 +138,7 @@ describe('Custom 적층 회귀', () => {
   it('고유입에서도 더미가 내려앉아 공중으로 솟은 토큰 덩어리가 생기지 않는다', async () => {
     const s = createScenario('growth', 1234);
     s.backends = { plinko: 'rapier2d', pusher: 'custom-stack' };
-    s.flow.supplyPerSec = 20; s.flow.plinkoReleasePerSec = 20; s.flow.compressCycleSec = 0.1; s.flow.conveyorCapacity = 40; s.economy.byproductCoef = 3;
+    s.flow.supplyPerSec = 20; s.flow.plinkoReleasePerSec = 20; s.flow.compressCycleSec = 0.1; s.economy.byproductCoef = 3;
     const sim = await Simulation.create(s);
     for (let i = 0; i < 30 * 60; i++) { sim.step(); sim.sync(); }
     const snap = sim.pusherSnap, plateTop = 0.9;

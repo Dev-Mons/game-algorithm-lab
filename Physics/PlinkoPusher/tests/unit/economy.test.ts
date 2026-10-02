@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { byproductValue, defaultBoard, defaultEconomy, defaultFlow, mainPayout, pegGain } from '../../src/core/config';
-import { GameCore, type ReleaseOrder } from '../../src/core/game-core';
+import { GameCore, type TokenRecord, type ReleaseOrder } from '../../src/core/game-core';
 import { buildBoardLayout } from '../../src/core/layout';
 import { Rng } from '../../src/core/rng';
 
@@ -64,8 +64,8 @@ describe('GameCore 경제 규칙', () => {
     expectConserved(core);
   });
 
-  it('트레이·컨베이어 적체가 본 재화 지급을 막지 않는다', () => {
-    const core = makeCore(c => { c.flow.trayMaxTokens = 0; c.flow.conveyorCapacity = 1; c.flow.compressCycleSec = 5; });
+  it('트레이·프레스 적체가 본 재화 지급을 막지 않는다', () => {
+    const core = makeCore(c => { c.flow.trayMaxTokens = 0; c.flow.compressCycleSec = 5; });
     const orders = release(core, 40);
     let paid = 0;
     for (const o of orders) { core.items.get(o.id)!.byproductPoints = 30; paid += core.onArrive(o.id)!.main; }
@@ -75,19 +75,43 @@ describe('GameCore 경제 규칙', () => {
     expect(core.commitFeed()).toBeNull();
     const a = core.account();
     expect(a.compressorBuffer + a.chuteValue).toBeGreaterThan(0);
-    expect(a.feedCount + a.beltCount).toBeGreaterThan(0);
+    expect(a.feedCount).toBeGreaterThan(0);
     expectConserved(core);
   });
 
-  it('압축 묶음은 가치를 보존하고 대표 토큰은 묶인 단위 수만큼의 가치를 가진다', () => {
-    const core = makeCore(c => { c.economy.tokenBundleMax = 4; c.flow.compressCycleSec = 1; });
+  it('부산물 가치 1마다 독립된 코인 1개를 배치 압축하며 총 가치는 보존한다', () => {
+    const core = makeCore(c => { c.economy.tokenBundleMax = 12; });
     const [o] = release(core, 1);
-    core.items.get(o.id)!.byproductPoints = 1000; // 상한 40 → 토큰 가치 8 × 5단위
+    core.items.get(o.id)!.byproductPoints = 1000; // emission capped at 40 value units
     core.onArrive(o.id);
-    tick(core, 8);
-    let units = 0;
-    core.feedQueue.forEach(t => { expect(t.value).toBe(t.units * core.economy.tokenValue); expect(t.units).toBeLessThanOrEqual(4); units += t.units; });
-    expect(units * core.economy.tokenValue + core.compressorBuffer).toBe(core.economy.byproductCap);
+    tick(core, 3);
+    core.flow.trayMaxTokens = 11;
+    expect(core.commitFeedBatch(12)).toEqual([]); expect(core.feedQueue.length).toBe(12);
+    core.flow.trayMaxTokens = 40;
+    const tokens: TokenRecord[] = [];
+    for (let i = 0; i < 1000; i++) {
+      core.beginTick(DT); core.stepByproduct(DT);
+      if (core.canFeed()) tokens.push(...core.commitFeedBatch(core.feedQueue.length));
+    }
+    expect(tokens).toHaveLength(40);
+    expect(new Set(tokens.map(t => t.id)).size).toBe(40);
+    for (const t of tokens) { expect(t.value).toBe(1); expect(t.units).toBe(1); }
+    expect(tokens.filter(t => t.batchId === tokens[0].batchId)).toHaveLength(12);
+    expect(core.compressorBuffer).toBe(0); expectConserved(core);
+    tokens.forEach(t => { core.onTokenExit(t.id); core.onTokenExit(t.id); });
+    expect(core.ledger.bonusProduced).toBe(40);
+    expect(core.stats.duplicateExits).toBe(40); expectConserved(core);
+  });
+
+  it('가압 중 새 부산물이 들어와도 현재 배치 크기가 바뀌지 않는다', () => {
+    const core = makeCore();
+    const orders = release(core, 2);
+    core.items.get(orders[0].id)!.byproductPoints = 3; core.onArrive(orders[0].id);
+    tick(core, core.flow.chuteSeconds + 0.1);
+    const count = core.compressionCount; expect(count).toBe(5);
+    core.items.get(orders[1].id)!.byproductPoints = 38; core.onArrive(orders[1].id);
+    tick(core, core.flow.pressLoadSec + core.flow.compressCycleSec);
+    expect(core.stats.tokensMade).toBe(count);
     expectConserved(core);
   });
 

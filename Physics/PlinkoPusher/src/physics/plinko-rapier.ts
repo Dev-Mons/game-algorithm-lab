@@ -44,7 +44,8 @@ export class RapierPlinko implements PlinkoBackend {
       this.pegByCollider.set(c.handle, index);
     });
     const h = spec.height / 2 + 2, wall = (x: number, y: number, hx: number, hy: number) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy).setTranslation(x, y).setRestitution(params.restitution).setFriction(params.friction).setCollisionGroups(statics), fixed);
-    wall(-0.5, spec.height / 2, 0.5, h); wall(spec.width + 0.5, spec.height / 2, 0.5, h); wall(spec.width / 2, -0.5, spec.width / 2 + 1, 0.5);
+    wall(-0.5, spec.height / 2, 0.5, h); wall(spec.width + 0.5, spec.height / 2, 0.5, h);
+    // The board top is an open inlet; raw bodies start in the hopper above v=0.
   }
 
   spawn(b: PlinkoSpawn) {

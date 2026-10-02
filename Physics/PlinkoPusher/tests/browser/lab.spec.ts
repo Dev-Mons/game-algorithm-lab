@@ -8,6 +8,8 @@ async function open(page: Page, query = '') {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(`/${query}`);
   await page.waitForSelector('body[data-ready="1"]');
+  await page.click('#lab-toggle');
+  await page.click('#stats-toggle');
   return errors;
 }
 const state = (page: Page) => lab(page, l => {
@@ -15,22 +17,26 @@ const state = (page: Page) => lab(page, l => {
   return { main: c.ledger.main, bonus: c.ledger.bonusProduced + c.ledger.bonusSeed, bonusProduced: c.ledger.bonusProduced, completed: c.stats.completed, paid: c.stats.tokensPaid, cons, dup: c.stats.duplicateArrivals + c.stats.duplicateExits, live: { ...l.liveBackends }, plinko: l.runner.sim.plinko.id, pusher: l.runner.sim.pusher.id, renderer: (() => { const g = l.view.renderer.getContext(); const e = g.getExtension('WEBGL_debug_renderer_info'); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : '?'; })() };
 });
 
-test('전체 공정: 원재료 → 본 재화 → 부산물 → 토큰 → 보너스 (Custom, Rapier)', async ({ page }) => {
-  // 생산된 토큰이 더미를 지나 회수될 때까지 확인하려고 초기 적재를 줄인다(기본 650개면 약 150초 걸림).
-  for (const [plinko, pusher] of [['custom', 'custom-stack'], ['rapier2d', 'rapier3d-stacked'], ['rapier2d', 'rapier3d-planar']]) {
-    const errors = await open(page, `?preset=basic&seedTokens=120&plinko=${plinko}&pusher=${pusher}`);
+for (const [plinko, pusher] of [['custom', 'custom-stack'], ['rapier2d', 'rapier3d-stacked'], ['rapier2d', 'rapier3d-planar']]) {
+  test(`빈 상태의 전체 공정: ${plinko} / ${pusher} 생산 토큰 회수`, async ({ page }) => {
+    // Separate budgets per backend: the physical carrier adds real transit/backpressure time.
+    test.setTimeout(180000);
+    const errors = await open(page, `?preset=basic&seedTokens=0&plinko=${plinko}&pusher=${pusher}`);
     await page.selectOption('#speed', '4');
-    await expect.poll(async () => (await state(page)).bonusProduced, { timeout: 100000, intervals: [1000] }).toBeGreaterThan(0);
+    await expect.poll(async () => (await state(page)).bonusProduced, { timeout: 165000, intervals: [1000] }).toBeGreaterThan(0);
     const s = await state(page);
     console.log(plinko, pusher, JSON.stringify(s));
     expect(s.plinko).toBe(plinko); expect(s.pusher).toBe(pusher);
-    expect(s.main).toBeGreaterThan(0); expect(s.bonus).toBeGreaterThan(0);
+    expect(s.main).toBeGreaterThan(0); expect(s.bonusProduced).toBeGreaterThan(0);
     expect(s.cons).toEqual({ produced: 0, seed: 0, raw: 0 });
+    expect(s.dup).toBe(0);
+    expect(await lab(page, l => l.runner.sim.core.stats.seedPlaced)).toBe(0);
+    expect(await lab(page, l => l.runner.sim.core.stats.lostTokens)).toBe(0);
     expect(s.live.plinko).toBe(1); expect(s.live.pusher).toBe(1);
     await page.screenshot({ path: `test-results/flow-${plinko}-${pusher}.png` });
     expect(errors).toEqual([]);
-  }
-});
+  });
+}
 
 test('백엔드 교체 시 이전 월드가 남지 않고 같은 초기 상태로 재시작한다', async ({ page }) => {
   const errors = await open(page, '?preset=basic&paused=1');
@@ -50,7 +56,7 @@ test('회전 배치: 변환 일치, 화면 클릭 페그 선택, 실제 화면 �
   const errors = await open(page, '?preset=structure');
   for (const placement of ['default', 'yaw', 'tilt', 'roll', 'compound']) {
     await page.click(`[data-placement="${placement}"]`);
-    await page.click('[data-cam="plinko"]');
+    await page.click('#left [data-cam="plinko"]');
     await page.waitForTimeout(900);
     expect(await lab(page, l => l.view.placementError())).toBeLessThan(1e-5);
     const target = await lab(page, l => { const p = l.runner.sim.layout.pegs[37]; return { index: p.index, ...l.view.projectLocal(p.u, p.v) }; });
@@ -58,7 +64,7 @@ test('회전 배치: 변환 일치, 화면 클릭 페그 선택, 실제 화면 �
     await expect(page.locator('#peg-info')).toContainText(`#${target.index} `);
     await page.screenshot({ path: `test-results/placement-${placement}.png` });
   }
-  await page.click('[data-cam="all"]');
+  await page.click('#left [data-cam="all"]');
   await page.waitForTimeout(900);
   await page.screenshot({ path: 'test-results/placement-compound-all.png' });
   expect(errors).toEqual([]);
@@ -112,13 +118,14 @@ test('품질 변경은 새 메시 설정에 즉시 반영되고 이전 인스턴
   expect(await segments()).toBe(10);
   await lab(page, l => {
     (window as any).__disposedInstances = 0;
+    (window as any).__instanceCount = l.view.scene.getObjectsByProperty('isInstancedMesh', true).length;
     l.view.scene.traverse((object: any) => {
       if (object.isInstancedMesh) object.addEventListener('dispose', () => (window as any).__disposedInstances++);
     });
   });
   await page.selectOption('#quality', 'high');
   await expect.poll(segments).toBe(16);
-  expect(await page.evaluate(() => (window as any).__disposedInstances)).toBe(9);
+  expect(await page.evaluate(() => (window as any).__disposedInstances)).toBe(await page.evaluate(() => (window as any).__instanceCount));
   await page.selectOption('#quality', 'low');
   await expect.poll(segments).toBe(10);
   expect(errors).toEqual([]);

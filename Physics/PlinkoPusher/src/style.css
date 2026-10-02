@@ -34,3 +34,14 @@ summary{cursor:pointer;font-weight:600;color:#f1d7bd;font-size:11.5px}
 body.benching .panel.left{opacity:.55;pointer-events:none}
 .error{color:#ff9a9a;padding:80px;text-align:center}
 @media(max-width:1100px){.panel{width:230px}.panel.right{width:250px}.bench{left:250px;right:270px}.flow .chip:nth-child(n+9){display:none}}
+
+/* The machine is the default view; experiment and diagnostic controls remain one click away. */
+.topbar{height:62px;padding:0 24px;background:linear-gradient(#0c131bf2,#0c131b00)}
+.brand{font-size:24px;letter-spacing:-1px}.brand span{color:#be5345}.brand small{font-size:9px;letter-spacing:2px;color:#c6b895;max-width:110px;line-height:1.5}
+.panel{top:70px;bottom:110px;border-radius:3px;border-color:#5c5543;background:#101820f2}
+.panel.left,.panel.right{display:none}.controls-open .panel.left,.stats-open .panel.right{display:block}
+.bench{display:none;left:24px;right:24px;bottom:62px;border-radius:3px}.controls-open .bench{display:block}
+.workbench-tools{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:7px;background:#101820ed;border:1px solid #5c5543;border-radius:4px;max-width:96vw;overflow-x:auto}
+.workbench-tools button{padding:9px 12px;background:#26303a;border-radius:2px}.workbench-tools button:nth-child(3){background:#c19847;color:#151d25;border-color:#d8b565}
+.flow .chip{background:#111a23bc;border-color:#3d4549;border-radius:2px}.flow .chip:nth-child(n+9){display:none}
+@media(max-width:900px){.brand small{display:none}.topbar{padding:0 12px}.flow .chip:nth-child(n+5){display:none}.workbench-tools button{padding:8px}.panel{width:250px;max-width:70vw}.panel.right{width:280px;max-width:70vw}}

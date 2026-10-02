@@ -75,7 +75,7 @@ export class CustomStackPusher implements PusherBackend {
     if (this.n >= this.cap) this.grow(this.cap * 2);
     const k = this.n++;
     this.ids[k] = t.id; this.x[k] = this.px[k] = t.x; this.y[k] = this.py[k] = t.y; this.z[k] = this.pz[k] = t.z;
-    this.vx[k] = this.vy[k] = this.vz[k] = 0; this.r[k] = t.radius; this.hh[k] = t.halfHeight; this.tx[k] = this.tz[k] = 0;
+    this.vx[k] = t.vx ?? 0; this.vy[k] = t.vy ?? 0; this.vz[k] = t.vz ?? 0; this.r[k] = t.radius; this.hh[k] = t.halfHeight; this.tx[k] = this.tz[k] = 0;
     this.sleepT[k] = 0; this.asleep[k] = 0; this.pinned[k] = 0; this.support[k] = Support.None; this.nSup[k] = 0; this.loaded[k] = 0;
     this.slot.set(t.id, k);
   }
@@ -228,7 +228,7 @@ export class CustomStackPusher implements PusherBackend {
       const r = this.r[k], h = this.hh[k];
       if (!Number.isFinite(this.x[k] + this.y[k] + this.z[k]) || this.y[k] < -8 || Math.abs(this.x[k]) > halfW + 1.5) { this.events.push({ type: 'lost', id: this.ids[k] }); this.corrections.lost++; this.removeList.push(this.ids[k]); continue; }
       if (this.y[k] < -h * 3) {
-        if (this.z[k] > d.depth - r) this.events.push({ type: 'exit', id: this.ids[k], x: this.x[k], y: this.y[k], z: this.z[k] });
+        if (this.z[k] > d.depth - r) this.events.push({ type: 'exit', id: this.ids[k], x: this.x[k], y: this.y[k], z: this.z[k], vx: this.vx[k], vy: this.vy[k], vz: this.vz[k] });
         else { this.events.push({ type: 'lost', id: this.ids[k] }); this.corrections.lost++; }
         this.removeList.push(this.ids[k]); continue;
       }

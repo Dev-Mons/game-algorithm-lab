@@ -54,20 +54,20 @@ export function createScenario(preset: PresetId, seed = 1234): Scenario {
       s.flow.supplyPerSec = 6; s.initialRaw = 20; s.initialTokens = 620;
       break;
     case 'byproductSurplus':
-      s.pegs.pattern = 'byproduct'; s.economy.byproductCoef = 2.5; s.economy.byproductCap = 60; s.economy.tokenBundleMax = 2;
-      s.flow.supplyPerSec = 4; s.flow.plinkoReleasePerSec = 4; s.flow.conveyorCapacity = 10; s.flow.trayMaxTokens = 1100;
+      s.pegs.pattern = 'byproduct'; s.economy.byproductCoef = 2.5; s.economy.byproductCap = 60; s.economy.tokenBundleMax = 18;
+      s.flow.supplyPerSec = 4; s.flow.plinkoReleasePerSec = 4; s.flow.trayMaxTokens = 1100;
       s.initialTokens = 650;
       break;
     case 'growth':
       s.pegs.level = 3; s.flow.supplyPerSec = 6; s.flow.plinkoReleasePerSec = 6; s.flow.plinkoMaxActive = 60;
-      s.flow.compressCycleSec = 0.25; s.flow.conveyorCapacity = 24; s.tray.period = 2.2; s.tray.stroke = 2.6;
+      s.flow.compressCycleSec = 0.25; s.tray.period = 2.2; s.tray.stroke = 2.6;
       s.initialRaw = 30; s.initialTokens = 700;
       break;
     case 'stress':
       s.board = { ...s.board, width: 22, height: 26, rows: 18, cols: 16, itemRadius: 0.26, pegRadius: 0.16, hopperSpread: 7 };
       s.tray = { ...s.tray, width: 22, depth: 16 };
       s.flow.supplyPerSec = 40; s.flow.plinkoReleasePerSec = 60; s.flow.plinkoMaxActive = 200; s.flow.trayMaxTokens = 3200;
-      s.flow.compressCycleSec = 0.12; s.flow.conveyorCapacity = 40;
+      s.flow.compressCycleSec = 0.12;
       s.initialRaw = 260; s.initialTokens = 2000; s.quality = 'low';
       s.measure = { warmupSec: 20, measureSec: 10, repeats: 3 };
       break;

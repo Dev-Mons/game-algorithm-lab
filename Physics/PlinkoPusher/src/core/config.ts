@@ -17,7 +17,7 @@ export interface EconomyConfig {
   byproductBase: number; byproductCoef: number; byproductCap: number;
   /** 원재료 1개가 점수를 얻는 서로 다른 페그 수 상한 */
   maxScoredHits: number;
-  /** 압축: 부산물 가치 tokenValue마다 토큰 1단위. 토큰 1개는 최대 tokenBundleMax 단위를 묶는다. */
+  /** 부산물 가치 1당 코인 1개. tokenBundleMax는 한 번에 압축할 코인 수 상한. tokenValue는 초기 적재 가치(8)로 유지한다. */
   tokenValue: number; tokenBundleMax: number;
   /** 회수 보너스 = floor(토큰 가치 × bonusRate) */
   bonusRate: number;
@@ -33,8 +33,8 @@ export interface FlowConfig {
   chuteSeconds: number;
   /** 압축기 1회 가압 주기 */
   compressCycleSec: number;
-  /** 컨베이어 이동 시간과 동시 적재 수 */
-  conveyorSeconds: number; conveyorCapacity: number;
+  /** 중앙 프레스의 투입·복귀·배출 게이트 시간 */
+  pressLoadSec: number; pressRetractSec: number; pressOpenSec: number;
   /** 트레이에 동시에 존재할 수 있는 물리 토큰 수(토큰 수 설정) */
   trayMaxTokens: number;
   /** 화면 밖 처리: 측정값이 부족할 때 쓰는 기본 추정치 */
@@ -83,12 +83,12 @@ export interface PusherParams {
 export const defaultEconomy = (): EconomyConfig => ({
   mainBase: 10, mainPerProcess: 1, processCap: 60,
   byproductBase: 2, byproductCoef: 1, byproductCap: 40,
-  maxScoredHits: 24, tokenValue: 8, tokenBundleMax: 3, bonusRate: 1,
+  maxScoredHits: 24, tokenValue: 8, tokenBundleMax: 12, bonusRate: 1,
 });
 
 export const defaultFlow = (): FlowConfig => ({
   autoSupply: true, supplyPerSec: 2.5, plinkoReleasePerSec: 3, plinkoMaxActive: 40,
-  chuteSeconds: 1.2, compressCycleSec: 0.4, conveyorSeconds: 3, conveyorCapacity: 16,
+  chuteSeconds: 1.2, compressCycleSec: 0.4, pressLoadSec: 0.3, pressRetractSec: 0.2, pressOpenSec: 0.35,
   trayMaxTokens: 1500,
   offscreenFallbackProcess: 10, offscreenFallbackByproduct: 10, offscreenFallbackRecoveryPerSec: 12,
   hiddenSettleCapSec: 1800,

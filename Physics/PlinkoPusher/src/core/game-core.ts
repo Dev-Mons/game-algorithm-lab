@@ -11,9 +11,11 @@ import { Rng } from './rng';
 export interface ReleaseOrder { id: number; u: number; v: number; vu: number; vv: number }
 export interface RawItem { id: number; processPoints: number; byproductPoints: number; scoredHits: number; touched: Set<number>; releasedAt: number }
 export type TokenOrigin = 'produced' | 'seed';
-export interface TokenRecord { id: number; units: number; value: number; origin: TokenOrigin; createdAt: number }
+export interface TokenRecord { id: number; units: number; value: number; origin: TokenOrigin; createdAt: number; batchId?: number; batchIndex?: number; batchSize?: number }
 export interface ChutePacket { value: number; leftAt: number; arriveAt: number }
-export interface BeltToken { token: TokenRecord; enterAt: number; arriveAt: number }
+/** Physical line backpressure is supplied by the lab, without exposing any engine to the core. */
+export interface ProcessGate { canPress: boolean; maxBatchSize?: number }
+export type PressPhase = 'idle' | 'loading' | 'pressing' | 'retracting' | 'ready' | 'releasing';
 export interface OffscreenEstimate { process: number; byproduct: number; recoveryPerSec: number; source: 'measured' | 'fallback' }
 
 export type CoreEvent =
@@ -40,9 +42,10 @@ export class GameCore {
   readonly items = new Map<number, RawItem>();
   readonly chute = new Fifo<ChutePacket>();
   compressorBuffer = 0;
-  /** 마지막 가압 이후 경과 시간. 주기에 도달했는데 재료나 컨베이어 여유가 없으면 주기 값에서 대기한다. */
-  compressPhase = 0;
-  readonly belt = new Fifo<BeltToken>();
+  /** 실제 가압 사이클 경과 시간. 재료·다이 출구 여유가 없으면 새 사이클을 시작하지 않는다. */
+  pressPhase: PressPhase = 'idle';
+  pressTime = 0;
+  compressionCount = 0;
   readonly feedQueue = new Fifo<TokenRecord>();
   readonly tray = new Map<number, TokenRecord>();
   readonly offscreenTray = new Fifo<TokenRecord>();
@@ -146,34 +149,70 @@ export class GameCore {
     this.stats.lostItems++; this.rawQueue++;
   }
 
-  // ---------- 부산물 → 압축 → 컨베이어 ----------
-  stepByproduct(dt: number) {
+  // ---------- Inline press: load → stamp → retract → release directly below ----------
+  stepByproduct(dt: number, gate?: ProcessGate) {
     while (this.chute.length && this.chute.peek()!.arriveAt <= this.time + 1e-9) this.compressorBuffer += this.chute.shift()!.value;
-    const e = this.economy, f = this.flow;
-    this.compressPhase += dt;
-    while (this.compressPhase >= f.compressCycleSec) {
-      if (this.compressorBuffer < e.tokenValue || this.belt.length >= f.conveyorCapacity) { this.compressPhase = f.compressCycleSec; break; }
-      const units = Math.min(Math.floor(this.compressorBuffer / e.tokenValue), Math.max(1, e.tokenBundleMax));
-      const value = units * e.tokenValue;
-      this.compressorBuffer -= value;
-      const token: TokenRecord = { id: this.nextTokenId++, units, value, origin: 'produced', createdAt: this.time };
-      this.belt.push({ token, enterAt: this.time, arriveAt: this.time + f.conveyorSeconds });
-      this.stats.tokensMade++; this.stats.unitsMade += units;
-      this.compressPhase -= f.compressCycleSec;
-      this.emit({ type: 'press', tokenId: token.id, units });
+    const f = this.flow;
+    this.pressTime += dt;
+    switch (this.pressPhase) {
+      case 'idle':
+        if (this.feedQueue.length) { this.setPressPhase('ready'); break; } // exceptional returned inventory
+        if (this.compressorBuffer > 0 && (!gate || gate.canPress)) {
+          this.compressionCount = Math.min(this.compressorBuffer, Math.min(24, Math.max(1, Math.floor(this.economy.tokenBundleMax))), gate?.maxBatchSize ?? 24);
+          this.setPressPhase('loading');
+        }
+        break;
+      case 'loading':
+        if (this.pressTime + 1e-9 >= f.pressLoadSec) this.setPressPhase('pressing');
+        break;
+      case 'pressing':
+        if (this.pressTime + 1e-9 < f.compressCycleSec) break;
+        {
+          const count = this.compressionCount, batchId = this.nextTokenId;
+          this.compressorBuffer -= count;
+          for (let i = 0; i < count; i++) this.feedQueue.push({ id: this.nextTokenId++, units: 1, value: 1, origin: 'produced', createdAt: this.time, batchId, batchIndex: i, batchSize: count });
+          this.stats.tokensMade += count; this.stats.unitsMade += count;
+          this.compressionCount = 0;
+          this.emit({ type: 'press', tokenId: batchId, units: count });
+          this.setPressPhase('retracting');
+        }
+        break;
+      case 'retracting':
+        if (this.pressTime + 1e-9 >= f.pressRetractSec) this.setPressPhase('ready');
+        break;
+      case 'ready':
+        if (!this.feedQueue.length) this.setPressPhase('releasing');
+        break;
+      case 'releasing':
+        if (this.pressTime + 1e-9 >= f.pressOpenSec) this.setPressPhase(this.feedQueue.length ? 'ready' : 'idle');
+        break;
     }
-    while (this.belt.length && this.belt.peek()!.arriveAt <= this.time + 1e-9) this.feedQueue.push(this.belt.shift()!.token);
-    if (this.offscreen) while (this.feedQueue.length) this.offscreenTray.push(this.feedQueue.shift()!);
+    if (this.offscreen && this.pressPhase === 'ready') {
+      while (this.feedQueue.length) this.offscreenTray.push(this.feedQueue.shift()!);
+      this.setPressPhase('releasing');
+    }
   }
 
+  private setPressPhase(phase: PressPhase) { this.pressPhase = phase; this.pressTime = 0; }
+
   // ---------- 트레이 ----------
-  canFeed() { return !this.offscreen && this.feedQueue.length > 0 && this.tray.size < this.flow.trayMaxTokens; }
+  canFeed() { return (this.pressPhase === 'ready' || this.pressPhase === 'idle') && !this.offscreen && this.feedQueue.length > 0 && this.tray.size < this.flow.trayMaxTokens; }
   /** 투입구 대기열 맨 앞 토큰을 트레이(물리)로 옮긴다. */
   commitFeed(): TokenRecord | null {
     if (!this.canFeed()) return null;
     const token = this.feedQueue.shift()!;
     this.tray.set(token.id, token); this.stats.tokensFed++;
     return token;
+  }
+
+  canFeedBatch(count: number) { return count > 0 && this.canFeed() && this.feedQueue.length >= count && this.tray.size + count <= this.flow.trayMaxTokens; }
+  /** Commit the whole gate load atomically: no partial capacity overflow or duplicated cargo. */
+  commitFeedBatch(count: number): TokenRecord[] {
+    if (!this.canFeedBatch(count)) return [];
+    const tokens: TokenRecord[] = [];
+    for (let i = 0; i < count; i++) tokens.push(this.commitFeed()!);
+    this.setPressPhase('releasing');
+    return tokens;
   }
 
   /** 초기 적재 토큰. 생산된 부산물과 별도로 기록한다. */
@@ -309,26 +348,25 @@ export class GameCore {
   }
 
   account() {
-    let inBoardMain = 0, inBoardByproduct = 0, beltValue = 0, feedValue = 0, trayProduced = 0, traySeed = 0, offProduced = 0, offSeed = 0, chuteValue = 0, feedSeed = 0;
+    let inBoardMain = 0, inBoardByproduct = 0, feedValue = 0, trayProduced = 0, traySeed = 0, offProduced = 0, offSeed = 0, chuteValue = 0, feedSeed = 0;
     for (const item of this.items.values()) { inBoardMain += mainPayout(this.economy, item.processPoints); inBoardByproduct += byproductValue(this.economy, item.byproductPoints); }
     this.chute.forEach(p => { chuteValue += p.value; });
-    this.belt.forEach(b => { beltValue += b.token.value; });
     this.feedQueue.forEach(t => { if (t.origin === 'seed') feedSeed += t.value; else feedValue += t.value; });
     for (const t of this.tray.values()) { if (t.origin === 'seed') traySeed += t.value; else trayProduced += t.value; }
     this.offscreenTray.forEach(t => { if (t.origin === 'seed') offSeed += t.value; else offProduced += t.value; });
     return {
       rawQueue: this.rawQueue, inBoard: this.items.size, inBoardMain, inBoardByproduct,
-      chuteValue, compressorBuffer: this.compressorBuffer, beltValue, beltCount: this.belt.length,
+      chuteValue, compressorBuffer: this.compressorBuffer,
       feedValue, feedSeed, feedCount: this.feedQueue.length,
       trayProduced, traySeed, trayCount: this.tray.size, offProduced, offSeed, offCount: this.offscreenTray.length,
-      byproductWaiting: chuteValue + this.compressorBuffer + beltValue + feedValue + offProduced,
+      byproductWaiting: chuteValue + this.compressorBuffer + feedValue + offProduced,
     };
   }
 
   /** 가치 보존 검사. 0이면 생성된 모든 부산물 가치와 초기 적재 가치가 정확히 한 곳에 있다. */
   conservationError() {
     const a = this.account(), s = this.stats;
-    const produced = s.byproductEmitted - (a.chuteValue + a.compressorBuffer + a.beltValue + a.feedValue + a.trayProduced + a.offProduced + s.producedValuePaid);
+    const produced = s.byproductEmitted - (a.chuteValue + a.compressorBuffer + a.feedValue + a.trayProduced + a.offProduced + s.producedValuePaid);
     const seed = s.seedValuePlaced - (a.traySeed + a.feedSeed + a.offSeed + s.seedValuePaid);
     const raw = s.supplied - (this.rawQueue + this.items.size + s.completed);
     return { produced, seed, raw };
