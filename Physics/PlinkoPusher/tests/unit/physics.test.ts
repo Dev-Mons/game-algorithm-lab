@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { defaultPusherParams, defaultTray } from '../../src/core/config';
 import { localToWorld, type PlacementId } from '../../src/core/frame';
 import { createScenario } from '../../src/lab/scenario';
 import { Simulation } from '../../src/lab/simulation';
 import { BodySnapshot, liveBackends, type PlinkoBackendId, type PusherBackend, type PusherBackendId, type PusherEvent } from '../../src/physics/contracts';
 import { createPusher } from '../../src/physics/registry';
+import { CustomStackPusher } from '../../src/physics/pusher-custom-stack';
 
 async function runLocal(plinko: PlinkoBackendId, placement: PlacementId, ticks = 240) {
   const s = createScenario('basic', 77);
@@ -33,6 +34,20 @@ describe('플링코 로컬 2D 계약', () => {
 });
 
 describe('백엔드 수명', () => {
+  it('두 번째 백엔드의 초기화가 중간에 실패해도 생성한 자원을 모두 해제한다', async () => {
+    const before = { ...liveBackends }, init = CustomStackPusher.prototype.init;
+    const failure = vi.spyOn(CustomStackPusher.prototype, 'init').mockImplementation(async function (this: CustomStackPusher, spec, params) {
+      await init.call(this, spec, params);
+      throw new Error('controlled initialization failure');
+    });
+    try {
+      const s = createScenario('empty');
+      s.backends = { plinko: 'rapier2d', pusher: 'custom-stack' };
+      await expect(Simulation.create(s)).rejects.toThrow('controlled initialization failure');
+      expect(liveBackends).toEqual(before);
+    } finally { failure.mockRestore(); }
+  });
+
   it('교체를 반복해도 이전 월드·백엔드가 남지 않는다', async () => {
     const before = { ...liveBackends };
     const combos: Array<[PlinkoBackendId, PusherBackendId]> = [['custom', 'custom-stack'], ['custom', 'custom'], ['rapier2d', 'rapier3d-planar'], ['custom', 'rapier3d-stacked'], ['rapier2d', 'custom']];
@@ -92,6 +107,34 @@ describe('푸셔 백엔드 공통 동작', () => {
 });
 
 describe('Custom 적층 회귀', () => {
+  it('표시 스냅숏 갱신 주기가 달라도 같은 투입·물리 상태·정산 결과가 나온다', async () => {
+    const run = async (syncEvery: number) => {
+      const s = createScenario('basic', 1234);
+      s.backends = { plinko: 'custom', pusher: 'custom-stack' };
+      const sim = await Simulation.create(s);
+      try {
+        for (let i = 1; i <= 1800; i++) {
+          sim.step();
+          if (i % syncEvery === 0) sim.sync();
+        }
+        sim.sync();
+        const snap = sim.pusherSnap;
+        return {
+          ids: Array.from(snap.ids.slice(0, snap.count)),
+          x: Array.from(snap.a.slice(0, snap.count)),
+          y: Array.from(snap.c.slice(0, snap.count)),
+          z: Array.from(snap.b.slice(0, snap.count)),
+          stats: { ...sim.core.stats }, ledger: { ...sim.core.ledger },
+          gate: { ...sim.gateStats }, conservation: sim.core.conservationError(),
+        };
+      } finally { sim.dispose(); }
+    };
+    const eachTick = await run(1), grouped = await run(4);
+    expect(eachTick.gate.fed).toBeGreaterThan(0);
+    expect(grouped).toEqual(eachTick);
+    expect(grouped.conservation).toEqual({ produced: 0, seed: 0, raw: 0 });
+  }, 60000);
+
   it('고유입에서도 더미가 내려앉아 공중으로 솟은 토큰 덩어리가 생기지 않는다', async () => {
     const s = createScenario('growth', 1234);
     s.backends = { plinko: 'rapier2d', pusher: 'custom-stack' };

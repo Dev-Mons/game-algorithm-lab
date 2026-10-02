@@ -39,7 +39,7 @@ export interface BackendStats {
   settings: Record<string, string | number | boolean>;
 }
 
-/** 미리 할당한 상태 버퍼. 렌더링·게이트 검사에 쓰는 상태 전달 형식이다. */
+/** 미리 할당한 상태 버퍼. 투입 판정과 표시에는 서로 독립된 버퍼를 쓴다. */
 export class BodySnapshot {
   count = 0;
   ids: Int32Array; a: Float32Array; b: Float32Array; c: Float32Array; quat: Float32Array; sleeping: Uint8Array;

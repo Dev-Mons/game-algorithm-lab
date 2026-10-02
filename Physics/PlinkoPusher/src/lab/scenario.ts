@@ -1,6 +1,6 @@
 import {
   defaultBoard, defaultEconomy, defaultFlow, defaultPegSetup, defaultPlinkoParams, defaultPusherParams, defaultTray,
-  type BoardDims, type EconomyConfig, type FlowConfig, type PegSetup, type PlinkoParams, type PusherParams, type TrayDims,
+  type BoardDims, type EconomyConfig, type FlowConfig, type PegKind, type PegSetup, type PlinkoParams, type PusherParams, type TrayDims,
 } from '../core/config';
 import type { PlacementId } from '../core/frame';
 import type { PlinkoBackendId, PusherBackendId } from '../physics/contracts';
@@ -13,6 +13,7 @@ export interface Scenario {
   preset: PresetId; label: string; description: string;
   seed: number; fixedDt: number;
   board: BoardDims; tray: TrayDims; economy: EconomyConfig; flow: FlowConfig; pegs: PegSetup;
+  pegOverrides: Array<{ index: number; kind: PegKind; level: number }>;
   plinko: PlinkoParams; pusher: PusherParams;
   initialRaw: number; initialTokens: number;
   /** 틱별 투입 일정 (tick, 개수) */
@@ -37,7 +38,7 @@ export function createScenario(preset: PresetId, seed = 1234): Scenario {
     preset, ...PRESETS[preset], seed, fixedDt: 1 / 60,
     board: defaultBoard(), tray: defaultTray(), economy: defaultEconomy(), flow: defaultFlow(), pegs: defaultPegSetup(),
     plinko: defaultPlinkoParams(), pusher: defaultPusherParams(),
-    initialRaw: 6, initialTokens: 650, schedule: [], placement: 'default', quality: 'medium',
+    initialRaw: 6, initialTokens: 650, schedule: [], pegOverrides: [], placement: 'default', quality: 'medium',
     // 측정 결과에 따른 권장 기본 구성(README 참고). UI·URL로 교체 가능.
     backends: { plinko: 'rapier2d', pusher: 'rapier3d-stacked' },
     measure: { warmupSec: 20, measureSec: 10, repeats: 3 },

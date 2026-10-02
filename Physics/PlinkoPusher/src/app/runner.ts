@@ -1,5 +1,8 @@
 import { applyPegSetup } from '../core/layout';
-import { BenchRecorder, benchMeta, type BenchResult } from '../lab/bench';
+import { MAX_PEG_LEVEL, type PegKind } from '../core/config';
+import type { PlacementId } from '../core/frame';
+import type { BenchResult } from '../lab/bench';
+import { BenchSession } from '../lab/bench-session';
 import { Ring } from '../lab/metrics';
 import { cloneScenario, createScenario, type PresetId, type Scenario } from '../lab/scenario';
 import { Simulation } from '../lab/simulation';
@@ -11,8 +14,7 @@ import type { CameraPreset, DeviceView } from '../view/device-view';
  * 버린 시간은 시뮬레이션이 실시간보다 느려진 것으로 처리하며, 큰 dt를 물리에 넘기지 않는다.
  */
 export const MAX_CATCH_UP = 6;
-
-type BenchState = { phase: 'warmup' | 'measure'; repeat: number; ticks: number; recorder: BenchRecorder | null; result: BenchResult; savedSpeed: number; target: { warm: number; span: number } };
+type RunnerView = Pick<DeviceView, 'build' | 'clear' | 'update' | 'setCamera' | 'updatePlacement' | 'refreshPegColors'>;
 
 export class Runner {
   sim: Simulation | null = null;
@@ -23,7 +25,7 @@ export class Runner {
   droppedMs = 0;
   readonly frameWork = new Ring(240); readonly frameInterval = new Ring(240);
   readonly plinkoMs = new Ring(240); readonly pusherMs = new Ring(240); readonly transferMs = new Ring(240);
-  bench: BenchState | null = null;
+  bench: BenchSession | null = null;
   readonly results: BenchResult[] = [];
   onBenchDone: (r: BenchResult) => void = () => {};
   onToast: (msg: string) => void = () => {};
@@ -35,10 +37,12 @@ export class Runner {
   private restartChain: Promise<void> = Promise.resolve();
   private pendingRestarts = 0;
   private frameId = 0;
+  private disposed = false;
+  private readonly visibilityHandler = () => this.onVisibility();
 
-  constructor(private readonly view: DeviceView) {
+  constructor(private readonly view: RunnerView) {
     this.scenario = createScenario('basic');
-    document.addEventListener('visibilitychange', () => this.onVisibility());
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
   /**
@@ -46,15 +50,31 @@ export class Runner {
    * 요청이 겹쳐도 순서대로 하나씩 실행해 두 월드가 동시에 만들어지지 않게 한다.
    */
   restart(next?: Scenario): Promise<void> {
+    this.cancelBench('실험 재시작');
+    return this.rebuild(next ?? this.scenario);
+  }
+
+  /** 측정 반복만 세션을 유지하며 재생성한다. 입력은 요청 시점에 복사한다. */
+  private rebuild(next: Scenario): Promise<void> {
+    if (this.disposed) return Promise.resolve();
+    const input = cloneScenario(next);
     const run = async () => {
-      if (next) this.scenario = next;
+      if (this.disposed) return;
+      this.scenario = cloneScenario(input);
       this.sim?.dispose();
       this.sim = null;
+      this.view.clear();
       const sim = await Simulation.create(cloneScenario(this.scenario));
+      if (this.disposed) { sim.dispose(); return; }
       if (this.offscreen) sim.setOffscreen(true);
+      try {
+        sim.sync();
+        this.view.build(sim);
+      } catch (error) {
+        sim.dispose(); this.view.clear();
+        throw error;
+      }
       this.sim = sim;
-      sim.sync();
-      this.view.build(sim);
       this.acc = 0; this.droppedMs = 0;
       for (const r of [this.frameWork, this.frameInterval, this.plinkoMs, this.pusherMs, this.transferMs]) r.clear();
       this.onRebuilt();
@@ -76,28 +96,65 @@ export class Runner {
   }
 
   /** 실행 중 바꿀 수 있는 설정(경제·공급·푸셔 운동·페그). 시뮬레이션 사본과 시나리오를 같이 갱신한다. */
-  live(mutate: (s: Scenario) => void) {
+  configure(mutate: (s: Scenario) => void, restart = false) {
+    this.cancelBench('설정 변경');
+    const before = { ...this.scenario.pegs };
     mutate(this.scenario);
-    if (!this.sim) return;
-    const before = JSON.stringify(this.sim.scenario.pegs);
+    const pegsChanged = before.level !== this.scenario.pegs.level || before.pattern !== this.scenario.pegs.pattern;
+    if (pegsChanged) this.scenario.pegOverrides = [];
+    if (restart || this.busy || !this.sim) return this.restart();
     mutate(this.sim.scenario);
     // 페그 패턴·레벨이 바뀐 경우에만 다시 적용한다(개별 페그 편집 보존).
-    if (JSON.stringify(this.sim.scenario.pegs) !== before) { applyPegSetup(this.sim.layout, this.sim.scenario.pegs); this.view.refreshPegColors(); }
+    if (pegsChanged) {
+      this.sim.scenario.pegOverrides = [];
+      applyPegSetup(this.sim.layout, this.sim.scenario.pegs);
+      this.view.refreshPegColors();
+    }
   }
 
+  editPeg(index: number, kind: PegKind, level: number) {
+    if (!this.sim || this.busy || !this.sim.layout.pegs[index]) return;
+    const peg = { index, kind, level: Math.max(1, Math.min(MAX_PEG_LEVEL, Math.round(level))) };
+    this.configure(s => { s.pegOverrides = [...s.pegOverrides.filter(p => p.index !== index), peg].sort((a, b) => a.index - b.index); });
+    this.sim.core.setPeg(index, kind, peg.level);
+    this.view.refreshPegColors();
+  }
+
+  setPlacement(id: PlacementId) {
+    if (this.scenario.plinko.gravityMode === 'world-projected' || this.busy) return this.configure(s => { s.placement = id; }, true);
+    this.configure(s => { s.placement = id; });
+    this.sim?.setPlacement(id);
+    this.view.updatePlacement();
+  }
+
+  addRaw(count: number) { this.cancelBench('수동 투입'); this.sim?.addRaw(count); }
+  setPaused(paused: boolean) { this.cancelBench('일시정지 변경'); this.paused = paused; }
+  setSpeed(speed: number) { this.cancelBench('배속 변경'); this.speed = speed; }
+
   start() {
+    if (this.disposed || this.frameId) return;
     this.last = performance.now();
     const loop = (now: number) => { this.frameId = requestAnimationFrame(loop); this.frame(now); };
     this.frameId = requestAnimationFrame(loop);
   }
-  stop() { cancelAnimationFrame(this.frameId); }
+  stop() { cancelAnimationFrame(this.frameId); this.frameId = 0; }
+
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.stop();
+    document.removeEventListener('visibilitychange', this.visibilityHandler);
+    this.cancelBench('실험 종료');
+    this.sim?.dispose(); this.sim = null;
+    this.view.clear();
+  }
 
   private frame(now: number) {
     const interval = now - this.last;
     this.last = now;
     const sim = this.sim;
     // 숨김 중에는 진행하지 않는다. 경과 시간은 복귀 시 한 번만 정산한다(이중 처리 방지).
-    if (!sim || this.restarting || document.hidden) return;
+    if (!sim || this.restarting || document.hidden || this.bench?.phase === 'preparing') return;
     const t0 = performance.now();
     const wallDt = Math.min(interval / 1000, 0.25);
     if (this.bench?.phase === 'warmup') this.fastForward(sim);
@@ -110,12 +167,19 @@ export class Runner {
       this.acc += wallDt * this.speed;
       const dt = sim.scenario.fixedDt;
       let steps = 0;
-      while (this.acc >= dt && steps < MAX_CATCH_UP) {
+      while (this.acc >= dt && steps < MAX_CATCH_UP && (!this.bench || this.bench.ticks < this.bench.target.span)) {
         sim.step(); steps++; this.acc -= dt;
         this.plinkoMs.push(sim.timing.plinkoMs); this.pusherMs.push(sim.timing.pusherMs);
         if (this.bench?.recorder) { this.bench.recorder.afterTick(); this.bench.ticks++; }
       }
-      if (this.acc >= dt) { const dropped = this.acc - (this.acc % dt); this.droppedMs += dropped * 1000; if (this.bench?.recorder) this.bench.recorder.droppedMs += dropped * 1000; this.acc %= dt; }
+      // 측정 목표에 도달해서 멈춘 프레임의 나머지는 따라잡기 실패가 아니다.
+      const measurementEnded = this.bench?.phase === 'measure' && this.bench.ticks >= this.bench.target.span;
+      if (!measurementEnded && steps === MAX_CATCH_UP && this.acc >= dt) {
+        const dropped = this.acc - (this.acc % dt);
+        this.droppedMs += dropped * 1000;
+        if (this.bench?.recorder) this.bench.recorder.droppedMs += dropped * 1000;
+        this.acc %= dt;
+      }
       if (steps > 0) { const ms = sim.sync(); this.transferMs.push(ms); this.bench?.recorder?.afterSync(ms); }
     }
     this.runDemo(wallDt);
@@ -129,16 +193,23 @@ export class Runner {
   // ---------- 측정 ----------
   /** 같은 시나리오로 반복 측정한다. 각 반복은 새 월드에서 시작하며, 워밍업은 렌더 없이 빠르게 진행한다. */
   async runBench() {
-    if (this.bench) return;
+    if (this.disposed || this.bench) return;
     if (this.offscreen) { this.onToast('화면 밖 처리 중에는 물리 측정을 하지 않습니다.'); return; }
-    await this.restart();
-    const s = this.sim!.scenario, env = `${navigator.userAgent.replace(/^Mozilla\/5.0 /, '')} · DPR ${window.devicePixelRatio} · ${innerWidth}×${innerHeight} · 품질 ${s.quality}`;
-    this.bench = {
-      phase: 'warmup', repeat: 0, ticks: 0, recorder: null, savedSpeed: this.speed,
-      result: { ...benchMeta(this.sim!, env, `${s.backends.plinko} + ${s.backends.pusher}`), repeats: [] },
-      target: { warm: Math.round(s.measure.warmupSec / s.fixedDt), span: Math.round(s.measure.measureSec / s.fixedDt) },
-    };
-    this.speed = 1; this.paused = false;
+    const session = new BenchSession(this.scenario, this.speed);
+    this.bench = session; // 비동기 초기화 중 중복 시작·설정 변경도 같은 세션 정책을 따른다.
+    await this.prepareRepeat(session);
+    if (this.bench === session) { this.speed = 1; this.paused = false; }
+  }
+
+  private async prepareRepeat(session: BenchSession) {
+    try {
+      await this.rebuild(session.scenario);
+      if (this.bench !== session) return;
+      const env = `${navigator.userAgent.replace(/^Mozilla\/5.0 /, '')} · DPR ${window.devicePixelRatio} · ${innerWidth}×${innerHeight} · 품질 ${this.sim!.scenario.quality}`;
+      session.attach(this.sim!, env);
+    } catch {
+      if (this.bench === session) this.cancelBench('초기화 실패');
+    }
   }
 
   cancelBench(reason: string) {
@@ -155,15 +226,12 @@ export class Runner {
   private advanceBench() {
     const b = this.bench!, sim = this.sim!;
     if (b.phase === 'warmup' && b.ticks >= b.target.warm) {
-      b.phase = 'measure'; b.ticks = 0; b.recorder = new BenchRecorder(sim); this.acc = 0;
+      b.beginMeasurement(sim); this.acc = 0;
     } else if (b.phase === 'measure' && b.ticks >= b.target.span) {
-      b.result.repeats.push(b.recorder!.finish());
-      b.result.settings = { plinko: sim.plinko.stats().settings, pusher: sim.pusher.stats().settings };
-      if (b.repeat + 1 < sim.scenario.measure.repeats) {
-        b.repeat++; b.phase = 'warmup'; b.ticks = 0; b.recorder = null;
-        void this.restart();
+      const result = b.finishRepeat(sim);
+      if (!result) {
+        void this.prepareRepeat(b);
       } else {
-        const result = b.result;
         this.speed = b.savedSpeed; this.bench = null;
         this.results.push(result);
         this.onBenchDone(result);
@@ -175,7 +243,7 @@ export class Runner {
     const b = this.bench;
     if (!b) return null;
     const total = b.phase === 'warmup' ? b.target.warm : b.target.span;
-    return { phase: b.phase, repeat: b.repeat + 1, repeats: this.scenario.measure.repeats, pct: Math.min(100, Math.round(b.ticks / Math.max(1, total) * 100)) };
+    return { phase: b.phase, repeat: b.repeat + 1, repeats: b.repeats, pct: Math.min(100, Math.round(b.ticks / Math.max(1, total) * 100)) };
   }
 
   // ---------- 화면 밖 / 숨김 탭 ----------
@@ -199,7 +267,7 @@ export class Runner {
 
   // ---------- 자동 데모 ----------
   private runDemo(dt: number) {
-    if (!this.demo.on || !this.sim) return;
+    if (!this.demo.on || !this.sim || this.bench) return;
     this.demo.t += dt;
     if (this.demo.t > 7) {
       this.demo.t = 0;

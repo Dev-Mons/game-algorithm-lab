@@ -102,3 +102,47 @@ test('숨김 탭 복귀 시 경과 시간을 한 번만 정산한다', async ({ 
   await expect(page.locator('#toast')).toContainText('정산');
   expect(errors).toEqual([]);
 });
+
+test('품질 변경은 새 메시 설정에 즉시 반영되고 이전 인스턴스 자원을 해제한다', async ({ page }) => {
+  const errors = await open(page, '?preset=empty&plinko=custom&pusher=custom-stack&quality=low&paused=1');
+  const segments = () => lab(page, l => {
+    const tokens = l.view.scene.getObjectsByProperty('isInstancedMesh', true).find((m: any) => m.instanceMatrix.count === l.runner.scenario.flow.trayMaxTokens + 64);
+    return tokens.geometry.parameters.radialSegments;
+  });
+  expect(await segments()).toBe(10);
+  await lab(page, l => {
+    (window as any).__disposedInstances = 0;
+    l.view.scene.traverse((object: any) => {
+      if (object.isInstancedMesh) object.addEventListener('dispose', () => (window as any).__disposedInstances++);
+    });
+  });
+  await page.selectOption('#quality', 'high');
+  await expect.poll(segments).toBe(16);
+  expect(await page.evaluate(() => (window as any).__disposedInstances)).toBe(9);
+  await page.selectOption('#quality', 'low');
+  await expect.poll(segments).toBe(10);
+  expect(errors).toEqual([]);
+});
+
+test('측정 결과는 개별 페그 설정을 보존하고 데모 투입을 섞지 않는다', async ({ page }) => {
+  const errors = await open(page, '?preset=empty&plinko=custom&pusher=custom-stack&paused=1');
+  await lab(page, l => {
+    l.runner.editPeg(0, 'splitter', 4);
+    l.runner.configure((s: any) => { s.measure = { warmupSec: 0, measureSec: 0.1, repeats: 2 }; });
+    l.runner.demo = { on: true, t: 8, cam: 0 };
+    const done = l.runner.onBenchDone;
+    l.runner.onBenchDone = (result: any) => {
+      (window as any).__benchSupplied = l.runner.sim.core.stats.supplied;
+      done(result);
+    };
+  });
+  await page.click('#bench-run');
+  await expect.poll(() => lab(page, l => l.runner.results.length)).toBe(1);
+  const result = await lab(page, l => ({ result: l.runner.results[0], supplied: (window as any).__benchSupplied }));
+  expect(result.supplied).toBe(0);
+  expect(result.result.input.pegOverrides).toEqual([{ index: 0, kind: 'splitter', level: 4 }]);
+  expect(result.result.repeats.map((r: any) => r.plinkoStep.n)).toEqual([6, 6]);
+  await page.click('#save-a');
+  await expect(page.locator('#bench-body')).toContainText('A');
+  expect(errors).toEqual([]);
+});

@@ -26,9 +26,10 @@ for (const preset of presets) {
     const repeats = quick ? 1 : base.measure.repeats;
     for (let r = 0; r < repeats; r++) {
       const scenario = { ...createScenario(preset), backends };
+      if (quick) scenario.measure = { warmupSec: 2, measureSec: 4, repeats: 1 };
       const sim = await Simulation.create(scenario);
-      const warm = Math.round((quick ? 2 : scenario.measure.warmupSec) / scenario.fixedDt);
-      const span = Math.round((quick ? 4 : scenario.measure.measureSec) / scenario.fixedDt);
+      const warm = Math.round(scenario.measure.warmupSec / scenario.fixedDt);
+      const span = Math.round(scenario.measure.measureSec / scenario.fixedDt);
       for (let i = 0; i < warm; i++) { sim.step(); sim.sync(); }
       const rec = new BenchRecorder(sim);
       for (let i = 0; i < span; i++) { sim.step(); rec.afterTick(); rec.afterSync(sim.sync()); }

@@ -4,6 +4,7 @@ import { trayGeometry } from './tray-geometry';
 import { UniformGrid } from './uniform-grid';
 
 const MAX_SUP = 4;
+const Support = { None: 0, Floor: 1, Pusher: 2, Token: 3 } as const;
 const CONTACT_MARGIN = 0.012;
 /** 미끄러지는 토큰이 받침 속도를 따라가는 비율(운동 마찰) */
 const KINETIC_COUPLING = 0.1;
@@ -31,10 +32,11 @@ export class CustomStackPusher implements PusherBackend {
   private tx = new Float64Array(0); private tz = new Float64Array(0);
   private sleepT = new Float64Array(0);
   private asleep = new Uint8Array(0); private pinned = new Uint8Array(0);
-  /** 0 공중, 1 바닥, 2 판 윗면, 3 토큰 */
+  /** 이번 틱 끝에 재계산한 하중 수. 다음 틱의 가장자리 돌출 지지에 사용한다. */
   private loaded = new Uint8Array(0);
-  /** 이번 스텝에 미끄러지는 중(받침 밖 무게중심 또는 경사 붕괴) */
+  /** 활성 토큰의 속도 갱신 때 초기화하고 무게중심/경사 붕괴에서 설정한다. 같은 틱의 마찰 결합이 소비한다. */
   private slip = new Uint8Array(0);
+  /** 활성 토큰은 적분 때 받침 목록을 비우고 접촉 단계에서 재구성한다. 휴면 토큰은 깨울 때까지 유지한다. */
   private support = new Uint8Array(0); private nSup = new Uint8Array(0); private sup = new Int32Array(0);
   private readonly slot = new Map<number, number>();
   private events: PusherEvent[] = [];
@@ -74,7 +76,7 @@ export class CustomStackPusher implements PusherBackend {
     const k = this.n++;
     this.ids[k] = t.id; this.x[k] = this.px[k] = t.x; this.y[k] = this.py[k] = t.y; this.z[k] = this.pz[k] = t.z;
     this.vx[k] = this.vy[k] = this.vz[k] = 0; this.r[k] = t.radius; this.hh[k] = t.halfHeight; this.tx[k] = this.tz[k] = 0;
-    this.sleepT[k] = 0; this.asleep[k] = 0; this.pinned[k] = 0; this.support[k] = 0; this.nSup[k] = 0; this.loaded[k] = 0;
+    this.sleepT[k] = 0; this.asleep[k] = 0; this.pinned[k] = 0; this.support[k] = Support.None; this.nSup[k] = 0; this.loaded[k] = 0;
     this.slot.set(t.id, k);
   }
 
@@ -105,90 +107,120 @@ export class CustomStackPusher implements PusherBackend {
     const c = this.nSup[k];
     for (let s = 0; s < c; s++) if (this.sup[k * MAX_SUP + s] === j) return;
     if (c < MAX_SUP) { this.sup[k * MAX_SUP + c] = j; this.nSup[k] = c + 1; }
-    if (this.support[k] === 0) this.support[k] = 3;
+    if (this.support[k] === Support.None) this.support[k] = Support.Token;
   }
 
+  /**
+   * 단계 순서는 물리 계약이다. 적분 → 반복 접촉 → 속도/이탈 → 하중 → 경사 → 마찰 결합 → 제거.
+   * 각 단계는 같은 TypedArray를 갱신하며, 표시용 snapshot()은 이 상태를 읽기만 한다.
+   */
   step(dt: number) {
-    const p = this.params, d = this.spec.dims, g = this.geo, n = this.n;
-    const halfW = d.width / 2, plateTop = g.plateHeight, decel = p.friction * p.gravity * dt;
-    const stacked = 0.7; // 수평 침투가 수직 침투보다 이 비율 이상 깊을 때만 올라탄다(쉽게 타고 넘지 않게)
+    this.integrate(dt);
+    this.grid.build(this.n, this.x, this.z);
+    const iterations = Math.max(1, Math.min(16, Math.round(this.params.iterations)));
+    let contacts = 0;
+    for (let it = 0; it < iterations; it++) {
+      this.solveStaticContacts();
+      contacts += this.solveTokenContacts();
+    }
+    this.contactsLast = contacts;
+    let sliding = this.updateMotionAndCollectExits(dt);
+    this.updateLoads();
+    sliding += this.topple(dt);
+    this.coupleSupportVelocities();
+    this.slidingLast = sliding;
+    this.removeExitedTokens();
+  }
+
+  private integrate(dt: number) {
+    const p = this.params, n = this.n, decel = p.friction * p.gravity * dt;
     // 1) 적분: 중력, 받침이 있을 때만 쿨롱 마찰, 판 윗면 토큰은 판과 함께 이동
     for (let k = 0; k < n; k++) {
       this.pinned[k] = 0;
       if (this.asleep[k]) continue;
       this.px[k] = this.x[k]; this.py[k] = this.y[k]; this.pz[k] = this.z[k];
       let a = this.vx[k], b = this.vz[k];
-      if (this.support[k] !== 0) {
+      if (this.support[k] !== Support.None) {
         const s = Math.hypot(a, b);
         if (s > 0) { const f = s <= decel ? 0 : (s - decel) / s; a *= f; b *= f; }
       }
-      if (this.support[k] === 2) b = this.faceV;
+      if (this.support[k] === Support.Pusher) b = this.faceV;
       this.vy[k] -= p.gravity * dt;
       this.x[k] += a * dt; this.y[k] += this.vy[k] * dt; this.z[k] += b * dt;
       this.vx[k] = a; this.vz[k] = b;
-      this.support[k] = 0; this.nSup[k] = 0;
+      this.support[k] = Support.None; this.nSup[k] = 0;
     }
-    this.grid.build(n, this.x, this.z);
-    const iterations = Math.max(1, Math.min(16, Math.round(p.iterations)));
+  }
+
+  private solveStaticContacts() {
+    const p = this.params, d = this.spec.dims, g = this.geo, n = this.n;
+    const halfW = d.width / 2, plateTop = g.plateHeight;
+    // 2) 정적 형상: 바닥, 푸셔 판(앞면·윗면), 립, 측면·뒤 벽
+    for (let k = 0; k < n; k++) {
+      const r = this.r[k], h = this.hh[k];
+      if (this.asleep[k]) {
+        // 전진하는 판이 휴면 토큰에 닿으면 깨운다
+        if (this.y[k] - h < plateTop && this.z[k] - r < this.face && this.z[k] > this.face - d.pusherDepth) this.wake(k); else continue;
+      }
+      const overPlate = this.z[k] <= this.face && this.z[k] >= this.face - d.pusherDepth;
+      if (overPlate && this.py[k] - h >= plateTop - 0.03) {
+        if (this.y[k] - h < plateTop + CONTACT_MARGIN) { if (this.y[k] - h < plateTop) this.y[k] = plateTop + h; this.support[k] = Support.Pusher; }
+      } else if (this.y[k] - h < plateTop && this.z[k] - r < this.face) {
+        this.z[k] = this.face + r;
+        if (this.faceV > 0) this.pinned[k] = 1;
+      }
+      if (this.y[k] + h > g.lip.yBottom && this.z[k] - r < g.lip.zFront) this.z[k] = g.lip.zFront + r;
+      if (this.z[k] <= d.depth + (this.loaded[k] ? r * p.overhang : 0) && this.z[k] >= g.zBack && this.y[k] - h < CONTACT_MARGIN) { if (this.y[k] < h) this.y[k] = h; this.support[k] = Support.Floor; }
+      if (this.x[k] < -halfW + r) this.x[k] = -halfW + r; else if (this.x[k] > halfW - r) this.x[k] = halfW - r;
+    }
+  }
+
+  private solveTokenContacts(): number {
+    const p = this.params, n = this.n;
+    const stacked = 0.7; // 수평 침투가 수직 침투보다 충분히 깊을 때만 올라탄다.
     let contacts = 0;
-    for (let it = 0; it < iterations; it++) {
-      // 2) 정적 형상: 바닥, 푸셔 판(앞면·윗면), 립, 측면·뒤 벽
-      for (let k = 0; k < n; k++) {
-        const r = this.r[k], h = this.hh[k];
-        if (this.asleep[k]) {
-          // 전진하는 판이 휴면 토큰에 닿으면 깨운다
-          if (this.y[k] - h < plateTop && this.z[k] - r < this.face && this.z[k] > this.face - d.pusherDepth) this.wake(k); else continue;
+    // 3) 원판 쌍: 얕은 축으로 분리. 수직이면 위 토큰만 들어 올리고 받침을 기록한다.
+    for (let i = 0; i < n; i++) {
+      if (this.asleep[i]) continue;
+      const ri = this.r[i], cnt = this.grid.neighbors(this.x[i], this.z[i], ri * 2 + 0.05, this.scratch);
+      for (let q = 0; q < cnt; q++) {
+        const j = this.scratch[q];
+        if (j === i || (!this.asleep[j] && j < i)) continue;
+        const R = ri + this.r[j], dx = this.x[i] - this.x[j], dz = this.z[i] - this.z[j], d2 = dx * dx + dz * dz;
+        if (d2 >= R * R) continue;
+        const dy = this.y[i] - this.y[j], H = this.hh[i] + this.hh[j], ady = Math.abs(dy);
+        if (ady >= H + CONTACT_MARGIN) continue;
+        const upper = dy >= 0 ? i : j, lower = upper === i ? j : i;
+        if (ady >= H) { // 닿아 있는 받침(침투 없음)
+          if (this.asleep[upper] && !this.asleep[lower] && this.moved(lower)) this.wake(upper);
+          if (!this.asleep[upper]) this.addSupport(upper, lower);
+          continue;
         }
-        const overPlate = this.z[k] <= this.face && this.z[k] >= this.face - d.pusherDepth;
-        if (overPlate && this.py[k] - h >= plateTop - 0.03) {
-          if (this.y[k] - h < plateTop + CONTACT_MARGIN) { if (this.y[k] - h < plateTop) this.y[k] = plateTop + h; this.support[k] = 2; }
-        } else if (this.y[k] - h < plateTop && this.z[k] - r < this.face) {
-          this.z[k] = this.face + r;
-          if (this.faceV > 0) this.pinned[k] = 1;
+        const dist = Math.sqrt(d2), penH = R - dist, penV = H - ady;
+        if (penV < penH * stacked) {
+          if (this.asleep[upper]) this.wake(upper);
+          this.y[upper] += penV;
+          this.addSupport(upper, lower);
+          if (penH < R * 0.35) this.corrections.edgeRests++;
+        } else {
+          const nx = dist > 1e-9 ? dx / dist : ((this.ids[i] & 1) ? 1 : -1), nz = dist > 1e-9 ? dz / dist : 0;
+          const wi = this.pinned[i] ? 0 : 1, wj = this.pinned[j] ? 0 : 1;
+          if (wi + wj === 0) continue;
+          let c = penH;
+          const limit = p.maxCorrection * Math.min(ri, this.r[j]);
+          if (c > limit) { c = limit; this.corrections.correctionClamp++; }
+          if (this.asleep[j]) { if (c < 0.002) continue; this.wake(j); }
+          const si = c * wi / (wi + wj), sj = c * wj / (wi + wj);
+          this.x[i] += nx * si; this.z[i] += nz * si; this.x[j] -= nx * sj; this.z[j] -= nz * sj;
         }
-        if (this.y[k] + h > g.lip.yBottom && this.z[k] - r < g.lip.zFront) this.z[k] = g.lip.zFront + r;
-        if (this.z[k] <= d.depth + (this.loaded[k] ? r * p.overhang : 0) && this.z[k] >= g.zBack && this.y[k] - h < CONTACT_MARGIN) { if (this.y[k] < h) this.y[k] = h; this.support[k] = 1; }
-        if (this.x[k] < -halfW + r) this.x[k] = -halfW + r; else if (this.x[k] > halfW - r) this.x[k] = halfW - r;
-      }
-      // 3) 원판 쌍: 얕은 축으로 분리. 수직이면 위 토큰만 들어 올리고 받침을 기록한다.
-      for (let i = 0; i < n; i++) {
-        if (this.asleep[i]) continue;
-        const ri = this.r[i], cnt = this.grid.neighbors(this.x[i], this.z[i], ri * 2 + 0.05, this.scratch);
-        for (let q = 0; q < cnt; q++) {
-          const j = this.scratch[q];
-          if (j === i || (!this.asleep[j] && j < i)) continue;
-          const R = ri + this.r[j], dx = this.x[i] - this.x[j], dz = this.z[i] - this.z[j], d2 = dx * dx + dz * dz;
-          if (d2 >= R * R) continue;
-          const dy = this.y[i] - this.y[j], H = this.hh[i] + this.hh[j], ady = Math.abs(dy);
-          if (ady >= H + CONTACT_MARGIN) continue;
-          const upper = dy >= 0 ? i : j, lower = upper === i ? j : i;
-          if (ady >= H) { // 닿아 있는 받침(침투 없음)
-            if (this.asleep[upper] && !this.asleep[lower] && this.moved(lower)) this.wake(upper);
-            if (!this.asleep[upper]) this.addSupport(upper, lower);
-            continue;
-          }
-          const dist = Math.sqrt(d2), penH = R - dist, penV = H - ady;
-          if (penV < penH * stacked) {
-            if (this.asleep[upper]) this.wake(upper);
-            this.y[upper] += penV;
-            this.addSupport(upper, lower);
-            if (penH < R * 0.35) this.corrections.edgeRests++;
-          } else {
-            const nx = dist > 1e-9 ? dx / dist : ((this.ids[i] & 1) ? 1 : -1), nz = dist > 1e-9 ? dz / dist : 0;
-            const wi = this.pinned[i] ? 0 : 1, wj = this.pinned[j] ? 0 : 1;
-            if (wi + wj === 0) continue;
-            let c = penH;
-            const limit = p.maxCorrection * Math.min(ri, this.r[j]);
-            if (c > limit) { c = limit; this.corrections.correctionClamp++; }
-            if (this.asleep[j]) { if (c < 0.002) continue; this.wake(j); }
-            const si = c * wi / (wi + wj), sj = c * wj / (wi + wj);
-            this.x[i] += nx * si; this.z[i] += nz * si; this.x[j] -= nx * sj; this.z[j] -= nz * sj;
-          }
-          contacts++;
-        }
+        contacts++;
       }
     }
-    this.contactsLast = contacts;
+    return contacts;
+  }
+
+  private updateMotionAndCollectExits(dt: number): number {
+    const p = this.params, d = this.spec.dims, n = this.n, halfW = d.width / 2;
     // 4) 속도 갱신, 무너짐(받침 밖 무게중심 → 미끄러짐), 표시용 기울기, 휴면, 이탈
     let sliding = 0;
     this.removeList.length = 0;
@@ -202,12 +234,12 @@ export class CustomStackPusher implements PusherBackend {
       }
       if (this.asleep[k]) continue;
       let a = (this.x[k] - this.px[k]) / dt, b = (this.y[k] - this.py[k]) / dt, c = (this.z[k] - this.pz[k]) / dt;
-      if (this.support[k] !== 0 && b > 0) b = 0; // 받침에 얹힐 때 튀어 오르지 않는다(반발 0)
+      if (this.support[k] !== Support.None && b > 0) b = 0; // 받침에 얹힐 때 튀어 오르지 않는다(반발 0)
       const s = Math.hypot(a, b, c);
       if (s > p.maxSpeed) { a *= p.maxSpeed / s; b *= p.maxSpeed / s; c *= p.maxSpeed / s; this.corrections.speedClamp++; }
       let unstable = false, tnx = 0, tnz = 0;
       this.slip[k] = 0;
-      if (this.support[k] === 3) {
+      if (this.support[k] === Support.Token) {
         let cx = 0, cz = 0, cy = 0;
         const m = this.nSup[k];
         for (let q = 0; q < m; q++) { const j = this.sup[k * MAX_SUP + q]; cx += this.x[j]; cz += this.z[j]; cy += this.y[j]; }
@@ -226,26 +258,35 @@ export class CustomStackPusher implements PusherBackend {
       }
       this.tx[k] += (tnx - this.tx[k]) * 0.3; this.tz[k] += (tnz - this.tz[k]) * 0.3;
       this.vx[k] = a; this.vy[k] = b; this.vz[k] = c;
-      if (!unstable && !this.pinned[k] && this.support[k] !== 0 && this.support[k] !== 2 && s < p.sleepSpeed) {
+      if (!unstable && !this.pinned[k] && this.support[k] !== Support.None && this.support[k] !== Support.Pusher && s < p.sleepSpeed) {
         this.sleepT[k] += dt;
         if (this.sleepT[k] >= p.sleepSeconds) { this.asleep[k] = 1; this.vx[k] = this.vy[k] = this.vz[k] = 0; }
       } else this.sleepT[k] = 0;
     }
+    return sliding;
+  }
+
+  private updateLoads() {
+    const n = this.n;
     // 하중 표시(다음 스텝의 가장자리 돌출 지지에 사용): 누군가의 받침이면 하중이 있다
     this.loaded.fill(0, 0, n);
-    for (let k = 0; k < n; k++) if (this.support[k] === 3) for (let q = 0; q < this.nSup[k]; q++) { const j = this.sup[k * MAX_SUP + q]; if (this.loaded[j] < 255) this.loaded[j]++; }
-    // 5) 경사 붕괴: 높이 격자에서 이웃 칸보다 안식각 이상 높은 꼭대기 토큰을 낮은 쪽으로 미끄러뜨린다(휴면 토큰도 검사해 깨움).
-    sliding += this.topple(dt);
+    for (let k = 0; k < n; k++) if (this.support[k] === Support.Token) for (let q = 0; q < this.nSup[k]; q++) { const j = this.sup[k * MAX_SUP + q]; if (this.loaded[j] < 255) this.loaded[j]++; }
+  }
+
+  private coupleSupportVelocities() {
+    const n = this.n;
     // 6) 마찰 결합: 토큰 위 토큰은 받침의 수평 속도를 따라간다(밀린 더미가 덩어리로 움직임).
     //    미끄러지는 토큰은 운동 마찰(약한 결합)만 받는다. 강한 결합을 걸면 무너짐 속도가 매 스텝 지워져 더미가 솟은 채 버틴다.
     for (let k = 0; k < n; k++) {
-      if (this.asleep[k] || this.support[k] !== 3) continue;
+      if (this.asleep[k] || this.support[k] !== Support.Token) continue;
       const m = this.nSup[k], f = this.slip[k] ? KINETIC_COUPLING : this.params.coupling;
       let ax = 0, az = 0;
       for (let q = 0; q < m; q++) { const j = this.sup[k * MAX_SUP + q]; ax += this.vx[j]; az += this.vz[j]; }
       this.vx[k] += (ax / m - this.vx[k]) * f; this.vz[k] += (az / m - this.vz[k]) * f;
     }
-    this.slidingLast = sliding;
+  }
+
+  private removeExitedTokens() {
     // 제거된 토큰 위에 얹혀 있던 휴면 토큰을 깨운다(받침이 사라짐)
     for (const id of this.removeList) {
       const k = this.slot.get(id)!;
@@ -277,7 +318,7 @@ export class CustomStackPusher implements PusherBackend {
     for (let k = 0; k < n; k++) {
       // 하중이 사라진 돌출 토큰은 깨워서 떨어뜨린다
       if (this.asleep[k] && !this.loaded[k] && this.z[k] > d.depth) { this.wake(k); continue; }
-      if (this.support[k] === 0 && !this.asleep[k]) continue; // 공중에 있는 토큰은 중력이 처리
+      if (this.support[k] === Support.None && !this.asleep[k]) continue; // 공중에 있는 토큰은 중력이 처리
       const c = cellOf(this.x[k], this.z[k]);
       if (c < 0) continue;
       const top = this.y[k] + this.hh[k];

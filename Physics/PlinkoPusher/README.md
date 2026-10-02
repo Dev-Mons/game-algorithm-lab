@@ -41,7 +41,7 @@ URL 예: `/?preset=stress&plinko=rapier2d&pusher=rapier3d-planar&placement=compo
 | 보드 배치 | 기본 / Y축 35° / X축 −25° / 법선축 12° / 부모+복합. 실행 중 바로 적용(로컬 물리 상태 유지) |
 | 카메라 | 전체 / 플링코 / 푸셔 / 초기화. 드래그 회전·휠 확대, 회전각·거리 제한 |
 | 설정 | 공급량, 플링코 처리량, 페그 레벨, 페그 종류 배치, 본 가치, 부산물 계수, 토큰 묶음 상한, 푸셔 왕복 주기(속도)·스트로크, 트레이 토큰 상한·초기 적재 토큰(재시작), 품질 |
-| 페그 | 클릭(드래그 아님)해 선택 → 종류·레벨 개별 변경 |
+| 페그 | 클릭(드래그 아님)해 선택 → 종류·레벨 개별 변경. 개별 설정은 초기화·백엔드 교체·측정 반복에 유지되며, 프리셋 또는 전체 페그 패턴·레벨 변경 시 초기화 |
 | 순차 비교 | 측정 실행 → 결과를 A/B에 저장 → 백엔드 변경 → 측정 → 비교 표, JSON 저장 |
 
 오른쪽 패널은 원재료 대기·처리 중·완료, 본 재화, 부산물 대기(슈트·압축 버퍼·컨베이어·투입 대기), 트레이 잔존 가치, 낙하 수량, 보너스(생산/초기 적재 분리), 합계, 최근 처리량, 검증 지표(가치 보존 오차, 중복 무시, 유실 복구, 활성 월드 수)와 성능 통계를 표시합니다.
@@ -96,16 +96,20 @@ URL 예: `/?preset=stress&plinko=rapier2d&pusher=rapier3d-planar&placement=compo
 | --- | --- | --- |
 | GameCore | `src/core/game-core.ts`, `config.ts`, `layout.ts`, `frame.ts` | 공급·가공 점수·부산물·정산·중복 방지·상한·화면 밖 근사. 엔진·Three.js·브라우저 API 비의존 |
 | PlinkoPhysics | `src/physics/plinko-custom.ts`, `plinko-rapier.ts` | 보드 로컬 2D. 사실(페그 접촉, 하단 도착, 유실)만 보고 |
-| PusherPhysics | `src/physics/pusher-custom.ts`, `pusher-rapier.ts` | 트레이 로컬. 사실(가장자리 이탈, 유실)만 보고 |
+| PusherPhysics | `src/physics/pusher-custom-stack.ts`, `pusher-custom.ts`, `pusher-rapier.ts` | 트레이 로컬. 사실(가장자리 이탈, 유실)만 보고 |
 | 공통 계약 | `src/physics/contracts.ts`, `tray-geometry.ts` | 초기화·생성·제거·고정 스텝·상태 조회(미리 할당한 `BodySnapshot`)·이벤트·통계·초기화·해제. 푸셔 운동은 `pusherMotion`이 공통 계산 |
-| ExperimentRunner | `src/lab/simulation.ts`, `scenario.ts`, `bench.ts`, `src/app/runner.ts` | 시나리오·백엔드 선택·고정 스텝 파이프라인·측정·비교 |
-| Presentation | `src/view/device-view.ts`, `labels.ts` | 메시·인스턴싱·공정 연출. 스냅숏과 코어 상태만 읽음 |
+| ExperimentRunner | `src/lab/simulation.ts`, `scenario.ts`, `bench.ts`, `bench-session.ts`, `src/app/runner.ts` | 시나리오·백엔드 선택·고정 스텝 파이프라인·측정 세션. 설정·수동 투입·페그 편집은 Runner를 통해 적용 |
+| UI | `src/app/controls.ts`, `stats-panel.ts`, `bench-panel.ts`, `src/main.ts` | 설정 조작·실시간 통계·측정 결과 표시와 앱 조립 |
+| Presentation | `src/view/device-scene.ts`, `device-camera.ts`, `device-view.ts`, `labels.ts` | 정적 장치·카메라·동적 표시/공정 연출. 스냅숏과 코어 상태만 읽음 |
+| 표시 자원 수명 | `src/view/resources.ts`, `materials.ts` | 장면·배치·앱 수명에 맞춰 인스턴스 버퍼, Geometry, 재질, 텍스처 등을 해제 |
 
 코어와 렌더러는 엔진의 World·Body·Collider를 참조하지 않습니다. 엔진 접촉 콜백은 어댑터 안에서 `PlinkoEvent`로 정규화합니다. 백엔드는 영역을 벗어난 물체를 스스로 제거하고 한 번만 보고하며, 이후 `remove()`는 무시합니다. `liveBackends` 계수로 교체 후 이전 월드가 남지 않는지 검사합니다.
 
 ### 고정 스텝 파이프라인(틱 1회, 60 Hz)
 
 시간·공급 → 투입(처리량·동시 수용량) → 플링코 step → 플링코 사실 정산 → 공통 푸셔 운동 → 투입구 게이트 → 푸셔 step → 이탈 정산 → 부산물 공정(슈트·압축·컨베이어).
+
+투입구 게이트는 투입 가능한 틱마다 현재 푸셔 상태를 전용 버퍼로 읽습니다. `sync()`는 표시·측정용 스냅숏만 갱신하므로, 매 틱 호출하든 여러 틱마다 호출하든 같은 고정 스텝 입력의 물리·정산 결과가 같습니다. 판정용 상태 조회 비용은 `coreStep`, 표시용 조회 비용은 `transfer`에 포함됩니다.
 
 렌더링과 분리되어 있습니다. 한 프레임에 최대 6스텝만 따라잡고 남은 시간은 **버립니다**(시뮬레이션이 느려지며 `버린 시간`에 기록). 큰 dt를 물리에 넘기지 않습니다. 렌더 보간은 하지 않습니다.
 
@@ -152,11 +156,15 @@ URL 예: `/?preset=stress&plinko=rapier2d&pusher=rapier3d-planar&placement=compo
 - 공통 시나리오(`src/lab/scenario.ts`): 시드, 장치 치수, 초기 원재료·적재 토큰 수와 배치(시드 섞음 육각 격자), 틱별 투입 일정, 공급·처리량, 푸셔 주기·스트로크, 고정 dt 1/60, 워밍업 20초·측정 10초·3회, 렌더 품질.
 - `npm run measure:feel`: 푸셔 감각을 장시간(150초, 처음 45초 제외) 시드 3개로 측정합니다. 푸셔 왕복 1회당 낙하 수의 평균·변동계수·중앙값·p90·최대·0개 왕복 수(간헐적 붕괴 정도), 더미 최대·평균 층, 트레이 추이, 유실. `artifacts/feel.json`.
 - 각 반복은 새 월드에서 시작합니다. 워밍업은 렌더 없이 빠르게 진행해 트레이가 정상 상태(푸셔 압력이 가장자리까지 전달)에 도달한 뒤 측정합니다. 측정 중 개수·품질을 자동으로 바꾸지 않습니다.
+- 브라우저 측정은 시작 시 전체 입력 사본을 보관하고 매 반복에 복원합니다. 측정 중 자동 데모의 카메라 순회·추가 투입은 쉬며, 설정·개별 페그·수동 투입·배속·일시정지·초기화를 변경하면 측정을 취소합니다. 초기화 중 중복 측정 시작도 무시합니다.
+- 결과 JSON의 `schemaVersion: 2`, `input`에는 공급·경제·장치·물리 계수·일정·개별 페그 설정을 포함한 전체 `Scenario`가 들어갑니다. `Simulation.create(cloneScenario(result.input))`으로 동일 입력을 복원할 수 있습니다. 기존 `scenario`는 표시용 요약으로 유지합니다. A/B 비교 경고는 백엔드 선택을 제외한 전체 입력 차이를 검사합니다. Node `--quick`도 실제 워밍업·측정 기간·반복 수를 입력에 기록합니다.
 - 기록: 플링코·푸셔 step 중앙값·p95, 엔진 밖 어댑터 시간, 상태 전달(스냅숏) 비용, 프레임 CPU 시간·간격(브라우저), 활성·휴면 수, 초기화 시간, JS 힙 변화(Chrome만), 실제 원석·토큰 수, 겹침·튀어오름·유실·끼임 보정, 완료·회수 수, 버린 시간, 백엔드 설정. 지원하지 않는 값은 `측정 불가`로 표시합니다(Rapier 내부 WASM 메모리, 적층 형상의 겹침).
 - 궤적·수익의 완전 일치는 요구하지 않습니다. 같은 엔진·같은 브라우저에서 입력은 재현되지만 엔진·브라우저 간 비트 단위 결정성은 보장하지 않습니다.
 - 브라우저 측정은 개발 서버의 교차 출처 격리(COOP/COEP) 헤더로 `performance.now()` 해상도를 높입니다. 격리가 없으면 해상도가 0.1ms로 떨어져 basic 규모 step 값이 거칠어집니다.
 
 ## 측정 결과 (2026-10-02, 적층 더미 기준)
+
+아래는 투입 판정과 표시 스냅숏을 분리하기 전의 측정 기록입니다. 현재 리팩토링의 성능 수치로 재측정하거나 기존 결과 파일을 갱신하지 않았습니다.
 
 환경: AMD Ryzen 9 7950X(32 스레드) · Windows 11 · Node 22.19 · Chromium 153 새 헤드리스 + NVIDIA RTX 4080(ANGLE D3D11), 1440×900, DPR 1, 품질 보통, 교차 출처 격리 켬. 고정 dt 1/60, 워밍업 20초 후 10초 × 3회의 중앙값. 토큰 반지름 0.5·두께 0.17, 트레이 14×11(스트레스 22×16), 초기 적재 650(스트레스 2,000). 설정: Custom 적층 6회 반복·reposeSlope 0.9·coupling 0.9(미끄러질 때 0.1)·overhang 0.5, Custom 플링코 4 서브스텝, Rapier solver 4회·CCD 끔·기본 휴면, 마찰 0.5·반발 0.05(푸셔). 원본: `artifacts/measurements-<조합>.json`, `artifacts/browser-measurements-<조합>.json`(`--combos=` 측정), `feel.json`, `feel-high.json`. 단층 행 Node 값은 같은 조건 재측정과 ±3% 안에서 일치했습니다.
 

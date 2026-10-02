@@ -1,6 +1,6 @@
 import { PUSHER_BACKENDS } from '../physics/registry';
 import { summarize, trayQuality, type Dist } from './metrics';
-import type { Scenario } from './scenario';
+import { cloneScenario, type Scenario } from './scenario';
 import type { Simulation } from './simulation';
 
 /**
@@ -22,6 +22,9 @@ export interface RepeatResult {
 }
 
 export interface BenchResult {
+  schemaVersion: 2;
+  /** Simulation.create에 그대로 전달할 수 있는 전체 입력. 표시용 요약과 별도로 보존한다. */
+  input: Scenario;
   id: string; at: string; label: string;
   backends: Scenario['backends']; condition: 'planar' | 'stacked';
   scenario: { preset: string; seed: number; fixedDt: number; quality: string; warmupSec: number; measureSec: number; repeats: number; initialTokens: number; trayMaxTokens: number; plinkoMaxActive: number };
@@ -106,12 +109,18 @@ export class BenchRecorder {
 export function benchMeta(sim: Simulation, env: string, label: string): Omit<BenchResult, 'repeats'> {
   const s = sim.scenario;
   return {
+    schemaVersion: 2, input: cloneScenario(s),
     id: `${s.backends.plinko}+${s.backends.pusher}@${s.preset}#${Date.now().toString(36)}`, at: new Date().toISOString(), label,
     backends: { ...s.backends }, condition: PUSHER_BACKENDS[s.backends.pusher].condition,
     scenario: { preset: s.preset, seed: s.seed, fixedDt: s.fixedDt, quality: s.quality, ...s.measure, initialTokens: s.initialTokens, trayMaxTokens: s.flow.trayMaxTokens, plinkoMaxActive: s.flow.plinkoMaxActive },
     settings: { plinko: sim.plinko.stats().settings, pusher: sim.pusher.stats().settings },
     env,
   };
+}
+
+/** 백엔드 선택을 제외한 모든 실험 입력이 같은지 확인한다. */
+export function sameBenchInput(a: BenchResult, b: BenchResult): boolean {
+  return JSON.stringify({ ...a.input, backends: undefined }) === JSON.stringify({ ...b.input, backends: undefined });
 }
 
 /** 반복 결과의 중앙값 요약(표시용). */

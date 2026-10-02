@@ -26,6 +26,8 @@ export class Simulation {
   tick = 0;
   readonly plinkoSnap = new BodySnapshot(64);
   readonly pusherSnap = new BodySnapshot(256);
+  /** 투입 판정은 렌더링 sync 주기와 무관하게 현재 물리 상태를 읽는다. */
+  private readonly feedSnapshot = new BodySnapshot(256);
   readonly timing: StepTiming = { plinkoMs: 0, pusherMs: 0, coreMs: 0 };
   initMs = { plinko: 0, pusher: 0 };
   pusherFace = 0;
@@ -41,6 +43,7 @@ export class Simulation {
   private constructor(readonly scenario: Scenario, readonly plinko: PlinkoBackend, readonly pusher: PusherBackend) {
     this.layout = buildBoardLayout(scenario.board, scenario.pegs);
     this.core = new GameCore(scenario.economy, scenario.flow, this.layout, scenario.seed);
+    for (const peg of scenario.pegOverrides) this.core.setPeg(peg.index, peg.kind, peg.level);
     this.device = deviceLayout(scenario.board, scenario.tray);
     this.feedRng = new Rng(scenario.seed * 7919 + 17);
     this.setPlacement(scenario.placement);
@@ -48,19 +51,24 @@ export class Simulation {
 
   static async create(scenario: Scenario): Promise<Simulation> {
     const sim = new Simulation(scenario, createPlinko(scenario.backends.plinko), createPusher(scenario.backends.pusher));
-    const s = scenario;
-    const gravity = s.plinko.gravityMode === 'world-projected' ? projectedGravity(sim.frame, vec3(0, -s.plinko.gravity, 0)) : { u: 0, v: s.plinko.gravity };
-    let t = now();
-    await sim.plinko.init({ width: s.board.width, height: s.board.height, pegs: sim.layout.pegs, pegRadius: s.board.pegRadius, gravity }, s.plinko);
-    sim.initMs.plinko = now() - t;
-    t = now();
-    await sim.pusher.init({ dims: s.tray, wallHeight: trayGeometry(s.tray).wallHeight }, s.pusher);
-    sim.initMs.pusher = now() - t;
-    sim.core.addRaw(s.initialRaw);
-    sim.seedTray(s.initialTokens);
-    sim.pusherFace = s.tray.faceMin;
-    sim.pusher.setPusher(s.tray.faceMin, 0);
-    return sim;
+    try {
+      const s = scenario;
+      const gravity = s.plinko.gravityMode === 'world-projected' ? projectedGravity(sim.frame, vec3(0, -s.plinko.gravity, 0)) : { u: 0, v: s.plinko.gravity };
+      let t = now();
+      await sim.plinko.init({ width: s.board.width, height: s.board.height, pegs: sim.layout.pegs, pegRadius: s.board.pegRadius, gravity }, s.plinko);
+      sim.initMs.plinko = now() - t;
+      t = now();
+      await sim.pusher.init({ dims: s.tray, wallHeight: trayGeometry(s.tray).wallHeight }, s.pusher);
+      sim.initMs.pusher = now() - t;
+      sim.core.addRaw(s.initialRaw);
+      sim.seedTray(s.initialTokens);
+      sim.pusherFace = s.tray.faceMin;
+      sim.pusher.setPusher(s.tray.faceMin, 0);
+      return sim;
+    } catch (error) {
+      sim.dispose();
+      throw error;
+    }
   }
 
   /** 보드 배치만 바꾼다. 로컬 물리 상태는 그대로이며 표시·선택 변환만 달라진다. */
@@ -73,7 +81,7 @@ export class Simulation {
   private seedTray(count: number) {
     if (count <= 0) return;
     if (this.pusher.mode === 'stacked') { this.seedHeap(count); return; }
-    const d = this.scenario.tray, r = d.tokenRadius, stacked = false;
+    const d = this.scenario.tray, r = d.tokenRadius;
     const spacing = r * 2 * 1.02, rowStep = spacing * Math.sqrt(3) / 2;
     const z0 = d.faceMin + d.stroke + r - 0.12, z1 = d.depth - r - 0.3, x0 = -d.width / 2 + r + 0.02, x1 = d.width / 2 - r - 0.02;
     const slots: Array<[number, number]> = [];
@@ -87,7 +95,6 @@ export class Simulation {
       this.pusher.spawn({ id: token.id, x, y: d.tokenHalfHeight, z, radius: r, halfHeight: d.tokenHalfHeight });
     });
     if (count > onTray) this.core.queueSeed(count - onTray);
-    void stacked;
   }
 
   /**
@@ -170,6 +177,7 @@ export class Simulation {
   private feedTray(face: number) {
     const core = this.core, d = this.scenario.tray, r = d.tokenRadius, stacked = this.pusher.mode === 'stacked';
     if (!core.canFeed()) return;
+    this.pusher.snapshot(this.feedSnapshot);
     if (stacked) { this.dropOnHeap(face); return; }
     this.recentSpawns = this.recentSpawns.filter(p => this.tick - p.tick < 20);
     const lanes = Math.max(3, Math.floor((d.width - 1) / (r * 2.2)));
@@ -179,7 +187,7 @@ export class Simulation {
       const x = -d.width / 2 + 0.5 + r + (lane + 0.5) * ((d.width - 1 - 2 * r) / lanes);
       if (this.isOccupied(x, z, clear2)) continue;
       const token = core.commitFeed()!;
-      this.pusher.spawn({ id: token.id, x, y: stacked ? d.tokenHalfHeight + 0.35 : d.tokenHalfHeight, z, radius: r, halfHeight: d.tokenHalfHeight });
+      this.pusher.spawn({ id: token.id, x, y: d.tokenHalfHeight, z, radius: r, halfHeight: d.tokenHalfHeight });
       this.recentSpawns.push({ x, z, tick: this.tick });
       this.gateStats.fed++;
       return;
@@ -192,7 +200,7 @@ export class Simulation {
    * 선반에 떨어진 토큰은 판이 물러날 때 립에 긁혀 판 앞 빈자리로 떨어진다(밀린 자리를 채우는 실제 공급 경로).
    */
   private dropOnHeap(face: number) {
-    const core = this.core, d = this.scenario.tray, r = d.tokenRadius, h = d.tokenHalfHeight, snap = this.pusherSnap;
+    const core = this.core, d = this.scenario.tray, r = d.tokenRadius, h = d.tokenHalfHeight, snap = this.feedSnapshot;
     this.recentSpawns = this.recentSpawns.filter(p => this.tick - p.tick < 20);
     const x = this.feedRng.range(-d.width / 2 + r + 0.3, d.width / 2 - r - 0.3), z = this.feedRng.range(Math.max(d.faceMin + r, face - d.pusherDepth * 0.5), face + 1.2);
     let top = trayGeometry(d).plateHeight;
@@ -205,13 +213,13 @@ export class Simulation {
   }
 
   private isOccupied(x: number, z: number, clear2: number) {
-    const snap = this.pusherSnap;
+    const snap = this.feedSnapshot;
     for (let k = 0; k < snap.count; k++) { const dx = snap.a[k] - x, dz = snap.b[k] - z; if (dx * dx + dz * dz < clear2) return true; }
     for (const p of this.recentSpawns) { const dx = p.x - x, dz = p.z - z; if (dx * dx + dz * dz < clear2) return true; }
     return false;
   }
 
-  /** 렌더링·게이트용 상태 전달. 걸린 시간(ms)을 돌려준다. */
+  /** 표시·측정용 상태 전달. 호출 주기는 물리 결과에 영향을 주지 않는다. */
   sync(): number {
     const t0 = now();
     this.plinko.snapshot(this.plinkoSnap);
@@ -225,7 +233,7 @@ export class Simulation {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
-    this.plinko.dispose(); this.pusher.dispose();
+    try { this.plinko.dispose(); } finally { this.pusher.dispose(); }
   }
   get isDisposed() { return this.disposed; }
 }
