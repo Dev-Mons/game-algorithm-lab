@@ -60,7 +60,7 @@ describe('보드 로컬 ↔ 월드 좌표 계약', () => {
     const g = vec3(0, -30, 0);
     const up = frameFromTransform(boardTransformFor(PLACEMENTS.default, anchor, dims.width, dims.height).world);
     const rolled = frameFromTransform(boardTransformFor(PLACEMENTS.roll, anchor, dims.width, dims.height).world);
-    expect(projectedGravity(up, g).u).toBeCloseTo(0, 9); expect(projectedGravity(up, g).v).toBeCloseTo(30 * Math.cos(Math.PI / 6), 9);
+    expect(projectedGravity(up, g).u).toBeCloseTo(0, 9); expect(projectedGravity(up, g).v).toBeCloseTo(30 * Math.cos(40 * Math.PI / 180), 9);
     const r = projectedGravity(rolled, g);
     expect(Math.abs(r.u)).toBeGreaterThan(5); // 법선축 회전 시 투영 중력은 u 성분을 가진다
   });

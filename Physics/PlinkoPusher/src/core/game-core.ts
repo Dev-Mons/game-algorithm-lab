@@ -1,7 +1,8 @@
 import { bonusFor, byproductValue, mainPayout, pegGain, type EconomyConfig, type FlowConfig, type PegKind } from './config';
+import type { Vec3 } from './math';
 import { Fifo } from './fifo';
 import type { BoardLayout } from './layout';
-import { Rng } from './rng';
+import { rawFeedLanes, RAW_ENTRY_V, RAW_EXIT_SPEED } from './raw-feed';
 
 /**
  * GameCore: 공급, 가공 점수, 부산물 가치, 재화 정산.
@@ -9,12 +10,13 @@ import { Rng } from './rng';
  * 모든 가치는 정수이며 생성된 가치는 대기·이동·트레이·지급 중 정확히 한 곳에 존재한다.
  */
 export interface ReleaseOrder { id: number; u: number; v: number; vu: number; vv: number }
+export interface RawTransfer { order: ReleaseOrder; leftAt: number; arriveAt: number; source?: Vec3 }
 export interface RawItem { id: number; processPoints: number; byproductPoints: number; scoredHits: number; touched: Set<number>; releasedAt: number }
 export type TokenOrigin = 'produced' | 'seed';
 export interface TokenRecord { id: number; units: number; value: number; origin: TokenOrigin; createdAt: number; batchId?: number; batchIndex?: number; batchSize?: number }
-export interface ChutePacket { value: number; leftAt: number; arriveAt: number }
+export interface ChutePacket { value: number; leftAt: number; arriveAt: number; u: number; v: number; vu: number; vv: number }
 /** Physical line backpressure is supplied by the lab, without exposing any engine to the core. */
-export interface ProcessGate { canPress: boolean; maxBatchSize?: number }
+export interface ProcessGate { canPress: boolean; maxBatchSize?: number; loaded?: boolean; processed?: boolean; preparedBatchSize?: number }
 export type PressPhase = 'idle' | 'loading' | 'pressing' | 'retracting' | 'ready' | 'releasing';
 export interface OffscreenEstimate { process: number; byproduct: number; recoveryPerSec: number; source: 'measured' | 'fallback' }
 
@@ -40,6 +42,7 @@ export class GameCore {
   time = 0;
   rawQueue = 0;
   readonly items = new Map<number, RawItem>();
+  readonly rawTransit = new Map<number, RawTransfer>();
   readonly chute = new Fifo<ChutePacket>();
   compressorBuffer = 0;
   /** 실제 가압 사이클 경과 시간. 재료·다이 출구 여유가 없으면 새 사이클을 시작하지 않는다. */
@@ -62,7 +65,6 @@ export class GameCore {
   private releaseAcc = 0;
   private nextItemId = 1;
   private nextTokenId = 1;
-  private readonly rng: Rng;
   private readonly recentDone = new Fifo<number>();
   private readonly recentBonus = new Fifo<{ t: number; value: number; amount: number }>();
   private onscreenTime = 0;
@@ -70,9 +72,7 @@ export class GameCore {
   private procAcc = 0; private byAcc = 0; private recoveryCredit = 0;
   private presentation: CoreEvent[] = [];
 
-  constructor(readonly economy: EconomyConfig, readonly flow: FlowConfig, readonly layout: BoardLayout, seed: number) {
-    this.rng = new Rng(seed ^ 0x51ed270b);
-  }
+  constructor(readonly economy: EconomyConfig, readonly flow: FlowConfig, readonly layout: BoardLayout, _seed: number) {}
 
   get total() { return this.ledger.main + this.ledger.bonusProduced + this.ledger.bonusSeed; }
 
@@ -96,16 +96,29 @@ export class GameCore {
   }
 
   /** 플링코 처리량과 동시 수용량에 따라 투입할 원재료를 꺼낸다. */
-  takeReleases(dt: number, out: ReleaseOrder[]) {
-    const f = this.flow, d = this.layout.dims;
+  takeReleases(dt: number, out: ReleaseOrder[], transitTime?: (u: number) => number, takeFromStock?: () => Vec3 | null) {
+    const f = this.flow, lanes = rawFeedLanes(this.layout.dims);
+    for (const [id, transfer] of this.rawTransit) {
+      if (transfer.arriveAt > this.time + 1e-9) continue;
+      this.rawTransit.delete(id); this.activateRaw(transfer.order, out);
+    }
     this.releaseAcc = Math.min(this.releaseAcc + f.plinkoReleasePerSec * dt, 1 + f.plinkoReleasePerSec * dt);
-    while (this.releaseAcc >= 1 && this.rawQueue > 0 && this.items.size < f.plinkoMaxActive) {
-      this.releaseAcc -= 1; this.rawQueue--; this.stats.released++;
-      const id = this.nextItemId++;
-      this.items.set(id, { id, processPoints: 0, byproductPoints: 0, scoredHits: 0, touched: new Set(), releasedAt: this.time });
-      out.push({ id, u: d.width / 2 + this.rng.range(-d.hopperSpread, d.hopperSpread), v: d.itemRadius + 0.25, vu: this.rng.range(-0.6, 0.6), vv: 0.5 });
+    while (this.releaseAcc >= 1 && this.rawQueue > 0 && this.items.size + this.rawTransit.size < f.plinkoMaxActive) {
+      const source = takeFromStock?.();
+      if (takeFromStock && !source) break;
+      this.releaseAcc -= 1; this.rawQueue--;
+      const u = lanes[this.stats.released % lanes.length], id = this.nextItemId++;
+      this.stats.released++;
+      const order = { id, u, v: RAW_ENTRY_V, vu: 0, vv: RAW_EXIT_SPEED };
+      if (transitTime) this.rawTransit.set(id, { order, leftAt: this.time, arriveAt: this.time + transitTime(u), source: source ?? undefined });
+      else this.activateRaw(order, out);
     }
     if (this.rawQueue === 0) this.releaseAcc = Math.min(this.releaseAcc, 1);
+  }
+
+  private activateRaw(order: ReleaseOrder, out: ReleaseOrder[]) {
+    this.items.set(order.id, { id: order.id, processPoints: 0, byproductPoints: 0, scoredHits: 0, touched: new Set(), releasedAt: this.time });
+    out.push(order);
   }
 
   // ---------- 플링코 사실 처리 ----------
@@ -122,22 +135,23 @@ export class GameCore {
   }
 
   /** 하단 처리기 도착: 본 재화 즉시 1회 지급 + 부산물 배출. 하류 적체와 무관하다. */
-  onArrive(itemId: number, u = 0): { main: number; byproduct: number } | null {
+  onArrive(itemId: number, u = 0, arrival?: { v: number; vu: number; vv: number }, transferSeconds?:number): { main: number; byproduct: number } | null {
     const item = this.items.get(itemId);
     if (!item) { this.stats.duplicateArrivals++; return null; }
     this.items.delete(itemId);
-    return this.complete(item.processPoints, item.byproductPoints, itemId, u, true);
+    return this.complete(item.processPoints, item.byproductPoints, itemId, u, true, arrival,transferSeconds);
   }
 
-  private complete(processPoints: number, byproductPoints: number, itemId: number, u: number, sampled: boolean) {
+  private complete(processPoints: number, byproductPoints: number, itemId: number, u: number, sampled: boolean, arrival?: { v: number; vu: number; vv: number },transferSeconds=this.flow.chuteSeconds) {
     const main = mainPayout(this.economy, processPoints), by = byproductValue(this.economy, byproductPoints);
     this.ledger.main += main; this.stats.completed++;
     this.recentDone.push(this.time);
     if (sampled) { this.sumProcess += processPoints; this.sumByproduct += byproductPoints; this.sampled++; }
     if (by > 0) {
       this.stats.byproductEmitted += by;
-      this.chute.push({ value: by, leftAt: this.time, arriveAt: this.time + this.flow.chuteSeconds });
+
     }
+    this.chute.push({ value: by, leftAt: this.time, arriveAt: this.time + transferSeconds, u, v: arrival?.v ?? this.layout.dims.height, vu: arrival?.vu ?? 0, vv: arrival?.vv ?? 3 });
     this.emit({ type: 'main', itemId, amount: main, u });
     if (by > 0) this.emit({ type: 'byproduct', value: by });
     return { main, byproduct: by };
@@ -149,7 +163,7 @@ export class GameCore {
     this.stats.lostItems++; this.rawQueue++;
   }
 
-  // ---------- Inline press: load → stamp → retract → release directly below ----------
+  // ---------- Batch press: load → stamp → retract → route to four outlets ----------
   stepByproduct(dt: number, gate?: ProcessGate) {
     while (this.chute.length && this.chute.peek()!.arriveAt <= this.time + 1e-9) this.compressorBuffer += this.chute.shift()!.value;
     const f = this.flow;
@@ -158,15 +172,16 @@ export class GameCore {
       case 'idle':
         if (this.feedQueue.length) { this.setPressPhase('ready'); break; } // exceptional returned inventory
         if (this.compressorBuffer > 0 && (!gate || gate.canPress)) {
-          this.compressionCount = Math.min(this.compressorBuffer, Math.min(24, Math.max(1, Math.floor(this.economy.tokenBundleMax))), gate?.maxBatchSize ?? 24);
+          // A physical chamber reserves its size when loading begins; setting edits apply to the next fill.
+          this.compressionCount = Math.min(this.compressorBuffer, Math.min(24, Math.max(1, Math.floor(gate?.preparedBatchSize ?? this.economy.tokenBundleMax))), gate?.maxBatchSize ?? 24);
           this.setPressPhase('loading');
         }
         break;
       case 'loading':
-        if (this.pressTime + 1e-9 >= f.pressLoadSec) this.setPressPhase('pressing');
+        if (this.pressTime + 1e-9 >= f.pressLoadSec && gate?.loaded !== false) this.setPressPhase('pressing');
         break;
       case 'pressing':
-        if (this.pressTime + 1e-9 < f.compressCycleSec) break;
+        if (this.pressTime + 1e-9 < f.compressCycleSec || gate?.processed === false) break;
         {
           const count = this.compressionCount, batchId = this.nextTokenId;
           this.compressorBuffer -= count;
@@ -209,11 +224,23 @@ export class GameCore {
   /** Commit the whole gate load atomically: no partial capacity overflow or duplicated cargo. */
   commitFeedBatch(count: number): TokenRecord[] {
     if (!this.canFeedBatch(count)) return [];
-    const tokens: TokenRecord[] = [];
-    for (let i = 0; i < count; i++) tokens.push(this.commitFeed()!);
-    this.setPressPhase('releasing');
-    return tokens;
+    const ids=Array.from({length:count},(_,i)=>this.feedQueue.at(i)!.id);
+    const tokens=this.commitFeedGroup(ids);this.finishFeedBatch();return tokens;
   }
+
+  /** One physical outlet group. Remaining IDs keep their queue order and fixed transport seats. */
+  commitFeedGroup(ids: readonly number[]): TokenRecord[] {
+    const wanted=new Set(ids);
+    if(wanted.size!==ids.length || !this.canFeedBatch(ids.length))return [];
+    const found:TokenRecord[]=[];this.feedQueue.forEach(t=>{if(wanted.has(t.id))found.push(t);});
+    if(found.length!==wanted.size)return [];
+    for(const token of this.feedQueue.drainAll()) {
+      if(wanted.has(token.id)){this.tray.set(token.id,token);this.stats.tokensFed++;}
+      else this.feedQueue.push(token);
+    }
+    return found;
+  }
+  finishFeedBatch() { this.setPressPhase('releasing'); }
 
   /** 초기 적재 토큰. 생산된 부산물과 별도로 기록한다. */
   placeSeed(count: number): TokenRecord[] {
@@ -296,6 +323,8 @@ export class GameCore {
     if (!this.offscreen) throw new Error('advanceOffscreen은 화면 밖 모드에서만 호출합니다.');
     const est = this.estimate!, f = this.flow;
     this.time += dt;
+    // Existing physical inventory, including its in-flight feed, stays frozen during approximation.
+    for (const transfer of this.rawTransit.values()) { transfer.leftAt += dt; transfer.arriveAt += dt; }
     this.supply(dt);
     this.releaseAcc = Math.min(this.releaseAcc + f.plinkoReleasePerSec * dt, 1 + f.plinkoReleasePerSec * dt);
     while (this.releaseAcc >= 1 && this.rawQueue > 0) {
@@ -355,7 +384,7 @@ export class GameCore {
     for (const t of this.tray.values()) { if (t.origin === 'seed') traySeed += t.value; else trayProduced += t.value; }
     this.offscreenTray.forEach(t => { if (t.origin === 'seed') offSeed += t.value; else offProduced += t.value; });
     return {
-      rawQueue: this.rawQueue, inBoard: this.items.size, inBoardMain, inBoardByproduct,
+      rawQueue: this.rawQueue, rawInTransit: this.rawTransit.size, inBoard: this.items.size, inBoardMain, inBoardByproduct,
       chuteValue, compressorBuffer: this.compressorBuffer,
       feedValue, feedSeed, feedCount: this.feedQueue.length,
       trayProduced, traySeed, trayCount: this.tray.size, offProduced, offSeed, offCount: this.offscreenTray.length,
@@ -368,7 +397,7 @@ export class GameCore {
     const a = this.account(), s = this.stats;
     const produced = s.byproductEmitted - (a.chuteValue + a.compressorBuffer + a.feedValue + a.trayProduced + a.offProduced + s.producedValuePaid);
     const seed = s.seedValuePlaced - (a.traySeed + a.feedSeed + a.offSeed + s.seedValuePaid);
-    const raw = s.supplied - (this.rawQueue + this.items.size + s.completed);
+    const raw = s.supplied - (this.rawQueue + this.rawTransit.size + this.items.size + s.completed);
     return { produced, seed, raw };
   }
 

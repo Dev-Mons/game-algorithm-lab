@@ -31,7 +31,7 @@ export function createDeviceMaterials() {
     board: m(0x4c4942, 0.6, 0.62),
     pegGlow: new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }),
     metal: m(C.metal), metalLight: m(C.metalLight, 0.6, 0.35), dark: m(C.dark, 0.5, 0.6), darker: m(C.darker, 0.4, 0.7),
-    yellow: m(C.yellow, 0.3, 0.5), floor: m(C.floor, 0.1, 0.9),
+    yellow: m(C.yellow, 0.3, 0.5), floor: m(C.floor, 0, 0.95, { envMapIntensity: 0.15 }),
     orangeGlow: m(0x5a2a08, 0.2, 0.5, { emissive: C.orange, emissiveIntensity: 1.6 }),
     greenGlow: m(0x0f3a20, 0.2, 0.5, { emissive: C.green, emissiveIntensity: 1.3 }),
     amberEdge: m(0x5a3a05, 0.2, 0.4, { emissive: 0xffb020, emissiveIntensity: 1.4 }),
@@ -39,7 +39,7 @@ export function createDeviceMaterials() {
     greenChute: m(0x53694a, 0.45, 0.6),
     orangeChute: m(0xa37a2e, 0.45, 0.6),
     peg: m(0xffffff, 0.6, 0.3), item: m(0xffffff, 0.15, 0.75, { flatShading: true }),
-    token: m(0xffffff, 0.88, 0.3, { map: coinStamp() }), chunk: m(C.byproduct, 0.2, 0.6, { flatShading: true }),
+    token: m(0xffffff, 0.88, 0.3, { map: coinStamp() }), chunk: m(0xffffff, 0.55, 0.65, { flatShading: true }),
     glint: m(0x95b886, 0.7, 0.3, { emissive: 0x2f5030, emissiveIntensity: 0.15 }),
     selected: m(0xffffff, 0, 0.3, { emissive: 0xffffff, emissiveIntensity: 1.2 }),
   };

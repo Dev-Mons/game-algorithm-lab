@@ -8,15 +8,18 @@ export function renderStats(runner: Runner, lastResult: BenchResult | null) {
   if (!sim) return;
   const c = sim.core, a = c.account(), st = c.stats, rate = c.recentRates(), led = c.ledger;
   $('#flow').innerHTML = [
-    ['원재료 대기', n0(a.rawQueue)], ['처리 중', n0(a.inBoard)], ['완료', n0(st.completed)],
+    ['저장 / 이송', `${n0(a.rawQueue)} / ${n0(a.rawInTransit)}`], ['처리 중', n0(a.inBoard)], ['완료', n0(st.completed)],
     ['본 재화', n0(led.main), 'green'], ['부산물 대기', n0(a.byproductWaiting), 'orange'], ['트레이', `${n0(a.trayCount)}개`],
     ['보너스', n0(led.bonusProduced + led.bonusSeed), 'orange'], ['합계', n0(c.total), 'total'],
   ].map(([k, v, cls]) => `<div class="chip ${cls ?? ''}"><span>${k}</span><b>${v}</b></div>`).join('<i>›</i>');
   $('#economy').innerHTML =
-    row('원재료 대기 / 처리 중 / 완료', `${n0(a.rawQueue)} / ${n0(a.inBoard)} / ${n0(st.completed)}`)
+    row('원재료 저장 / 내부 이송', `${n0(a.rawQueue)} / ${n0(a.rawInTransit)}`)
+    + row('저장통 내부 / 상부 유입 대기', `${sim.silo.bodies.length} / ${sim.silo.pending}`)
+    + row('보드 처리 중 / 완료', `${n0(a.inBoard)} / ${n0(st.completed)}`)
     + row('처리 중 예상 본 재화', n0(a.inBoardMain))
     + row('본 재화 (가공)', n0(led.main), 'green')
     + row('생성 부산물 / 압축 코인 (가치 1)', `${n0(st.byproductEmitted)} / ${n0(st.tokensMade)}`)
+    + row('부산물 물리 / 유입 대기 / 압축부 도착', `${sim.scrap.bodies.length} / ${sim.scrap.pending} / ${sim.scrapLoaded}`)
     + row('압축 중 / 바닥 배출 대기', `${c.compressionCount} / ${a.feedCount}`)
     + row('일괄 배출 횟수 / 최대 개수', `${sim.batchStats.dumps} / ${sim.batchStats.largestDump}`)
     + row('부산물: 슈트 · 압축 버퍼', `${n0(a.chuteValue)} · ${n0(a.compressorBuffer)}`)

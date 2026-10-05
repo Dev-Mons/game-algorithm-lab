@@ -1,0 +1,207 @@
+import * as ui from './ui';
+import { expect, test, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { demoProject } from '../../src/model';
+const demoCount = demoProject().nodes.length;
+const rootEdges = demoProject().nodes.filter(node => node.Prerequisites.includes('ArcaneRoot')).length;
+
+async function emptyProject(page: Page) {
+  await page.goto('/');
+  await ui.fileAction(page, 'new');
+}
+async function create(page: Page, id: string, name: string) {
+  await ui.newPreset(page);
+  await page.locator('[name=Name]').fill(id);
+  await page.locator('[name=DisplayName]').fill(name);
+  await page.locator('#apply').click();
+  await ui.place(page, id);
+}
+
+test('author, connect, drag, export and reopen a real JSON download', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await emptyProject(page);
+  await create(page, 'Root', '마력 시작');
+  await page.locator('[name=X]').fill('0');
+  await page.locator('[name=Y]').fill('0');
+  await page.locator('#apply').click();
+  await page.locator('#edit-preset').click();
+  await page.locator('[name=Description]').fill('한글 "설명"\n두 번째 줄');
+  await page.locator('#apply').click();
+  await create(page, 'Fire', '화염구');
+  await page.locator('[name=X]').fill('240');
+  await page.locator('[name=Y]').fill('240');
+  await page.locator('#apply').click();
+  await page.locator('#edit-preset').click();
+  await page.locator('[name=CustomData]').fill('{"Damage": 25}');
+  await page.locator('#apply').click();
+  await ui.closeSettings(page);
+  await page.locator('#fit').click();
+  await page.locator('[data-connect-node=Root]').dragTo(page.locator('[data-node=Fire]'));
+  await expect(page.locator('.edge')).toHaveCount(1);
+  await expect(page.locator('.prerequisite')).toContainText('마력 시작');
+  const node = page.locator('[data-node=Fire]');
+  const bounds = (await node.boundingBox())!;
+  const oldX = Number(await page.locator('[name=X]').inputValue());
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2 + 50, bounds.y + bounds.height / 2 + 30, { steps: 8 });
+  await page.mouse.up();
+  expect(Number(await page.locator('[name=X]').inputValue())).toBeGreaterThan(oldX);
+  const x = Number(await page.locator('[name=X]').inputValue());
+  expect(x % 24).toBe(0);
+  await ui.exportProject(page);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'JSON 다운로드', exact: true }).click();
+  const download = await downloadPromise;
+  const text = await readFile((await download.path())!, 'utf8');
+  const rows = JSON.parse(text);
+  expect(rows).toHaveLength(2);
+  expect(rows[0].Name).toBe('Root');
+  expect(rows[0].Description).toBe('한글 "설명"\n두 번째 줄');
+  expect(rows[1].Prerequisites).toEqual(['Root']);
+  expect(rows[1].X).toBe(x);
+  expect(JSON.parse(rows[1].CustomData)).toEqual({ Damage: 25 });
+  expect(rows[1]).not.toHaveProperty('version');
+  await page.getByRole('button', { name: '닫기', exact: true }).click();
+  await page.locator('#file').setInputFiles({ name: 'skills.datatable.json', mimeType: 'application/json', buffer: Buffer.from(text) });
+  await expect(page.locator('[data-node]')).toHaveCount(2);
+  await expect(page.locator('.edge')).toHaveCount(1);
+  await page.reload();
+  await expect(page.locator('[data-node=Fire]')).toHaveCount(1);
+  await expect(page.locator('.edge')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+test('rename preserves references; cycles and bad imports preserve current work; delete can be undone', async ({ page }) => {
+  await page.goto('/');
+  await ui.fileAction(page, 'demo');
+  await page.locator('[name=Name]').fill('RootRenamed');
+  // Selecting the same list entry commits a pending rename before focusing it.
+  await ui.selectNode(page, 'ArcaneRoot');
+  await expect(page.locator('.edge[data-from=RootRenamed]')).toHaveCount(rootEdges);
+  await page.locator('#parent-select').selectOption('Tempest');
+  await page.getByRole('button', { name: '선행 연결 추가', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('순환');
+  await expect(page.locator('.edge[data-to=RootRenamed]')).toHaveCount(0);
+  await page.locator('#file').setInputFiles({ name: 'broken.json', mimeType: 'application/json', buffer: Buffer.from('[{"Name":"Broken"}]') });
+  await expect(page.getByRole('status')).toContainText('문자열');
+  await expect(page.locator('[data-node]')).toHaveCount(demoCount);
+  await page.getByRole('button', { name: '배치 삭제', exact: true }).click();
+  await expect(page.locator('[data-node]')).toHaveCount(demoCount - 1);
+  await expect(page.locator('.edge[data-from=RootRenamed]')).toHaveCount(0);
+  await page.getByRole('button', { name: '실행 취소', exact: true }).click();
+  await expect(page.locator('[data-node=RootRenamed]')).toHaveCount(1);
+  await expect(page.locator('.edge[data-from=RootRenamed]')).toHaveCount(rootEdges);
+  await page.getByRole('button', { name: '다시 실행', exact: true }).click();
+  await expect(page.locator('[data-node=RootRenamed]')).toHaveCount(0);
+});
+
+test('pending properties are applied before export; invalid drafts block export', async ({ page }) => {
+  await page.goto('/');
+  await ui.fileAction(page, 'demo');
+  await page.locator('#edit-preset').click();
+  await page.locator('[name=CustomData]').fill('{broken');
+  await ui.exportProject(page);
+  await expect(page.locator('#export-dialog')).not.toBeVisible();
+  await expect(page.locator('#settings-message')).toContainText('JSON 객체');
+  await page.locator('[name=CustomData]').fill('{"Health": 50}');
+  await page.locator('[name=DisplayName]').fill('변경된 스킬');
+  await ui.exportProject(page);
+  const rows = JSON.parse(await page.locator('#json-preview').innerText());
+  expect(rows[0].DisplayName).toBe('변경된 스킬');
+  expect(rows[0].CustomData).toBe('{"Health": 50}');
+});
+
+test('project save round-trips metadata; search, zoom and viewport layout are usable', async ({ page }) => {
+  await page.goto('/');
+  await ui.fileAction(page, 'demo');
+  await page.locator('#project-title').fill('테스트 트리');
+  await page.locator('#project-title').press('Tab');
+  const downloadPromise = page.waitForEvent('download');
+  await ui.saveProject(page);
+  const download = await downloadPromise;
+  const data = await readFile((await download.path())!, 'utf8');
+  expect(JSON.parse(data).title).toBe('테스트 트리');
+  await ui.fileAction(page, 'new');
+  await page.locator('#file').setInputFiles({ name: 'saved.skilltree.json', mimeType: 'application/json', buffer: Buffer.from(data) });
+  await expect(page.locator('#project-title')).toHaveValue('테스트 트리');
+  await expect(page.locator('[data-node]')).toHaveCount(demoCount);
+  await page.locator('#search').fill('화염구');
+  await expect(page.locator('.list-node')).toHaveCount(1);
+  await ui.placedList(page);
+  await page.locator('.list-node').click();
+  await expect(page.locator('[name=Name]')).toHaveValue('Flame');
+  const before = await page.locator('#zoom-label').innerText();
+  await page.getByRole('button', { name: '확대', exact: true }).click();
+  expect(await page.locator('#zoom-label').innerText()).not.toBe(before);
+  await page.locator('#search').fill('');
+  await ui.closeSettings(page);
+  await page.locator('#fit').click();
+  await page.screenshot({ path: 'artifacts/skill-tree-studio.png', fullPage: true });
+  await page.setViewportSize({ width: 800, height: 900 });
+  await expect(page.getByRole('button', { name: 'JSON 내보내기', exact: true })).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test('mode-free editing supports pin dragging and edge deletion is reversible', async ({ page }) => {
+  await emptyProject(page);
+  await create(page, 'Parent', '선행');
+  await page.locator('[name=X]').fill('0');
+  await page.locator('[name=Y]').fill('0');
+  await page.locator('#apply').click();
+  await create(page, 'Child', '후행');
+  await page.locator('[name=X]').fill('0');
+  await page.locator('[name=Y]').fill('300');
+  await page.locator('#apply').click();
+  await ui.closeSettings(page);
+  await page.locator('#fit').click();
+  await page.locator('[data-connect-node=Parent]').dragTo(page.locator('[data-node=Child]'));
+  await expect(page.locator('.edge')).toHaveCount(1);
+  // A vertical SVG path has a zero-width geometry box; click its visible stroke.
+  const parent = (await page.locator('[data-node=Parent]').boundingBox())!;
+  const child = (await page.locator('[data-node=Child]').boundingBox())!;
+  await page.mouse.click(parent.x + parent.width / 2, (parent.y + parent.height + child.y) / 2);
+  await page.getByRole('button', { name: '연결 삭제', exact: true }).click();
+  await expect(page.locator('.edge')).toHaveCount(0);
+  await page.getByRole('button', { name: '실행 취소', exact: true }).click();
+  await expect(page.locator('.edge')).toHaveCount(1);
+});
+
+test('icon tile appearance exports and restores while view controls leave row data unchanged', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  await ui.fileAction(page, 'demo');
+  await page.locator('#edit-preset').click();
+  await page.getByRole('combobox', { name: '모양', exact: true }).selectOption('Diamond');
+  await page.getByRole('spinbutton', { name: '크기', exact: true }).fill('64');
+  await page.getByRole('button', { name: '탄창 아이콘', exact: true }).click();
+  await expect(page.locator('.symbol-picker button')).toHaveCount(4);
+  await page.locator('[name=NodeColor]').fill('#aabbcc');
+  await page.locator('#apply').click();
+  const node = page.locator('[data-node=ArcaneRoot]');
+  await expect(node).toHaveClass(/shape-diamond/);
+  await expect(node).toHaveCSS('width', '64px');
+  await ui.closeSettings(page);
+  await page.getByRole('combobox', { name: '캔버스 테마', exact: true }).selectOption('neon');
+  await page.getByRole('checkbox', { name: '이름 표시', exact: true }).check();
+  await expect(page.locator('#canvas')).toHaveAttribute('data-palette', 'neon');
+  await expect(node.locator('.node-label')).toHaveCSS('opacity', '1');
+  await page.getByRole('button', { name: '캔버스 넓게 보기', exact: true }).click();
+  await expect(page.locator('.inspector')).not.toBeVisible();
+  await page.getByRole('button', { name: '캔버스 넓게 보기', exact: true }).click();
+  await expect(page.locator('.inspector')).toBeVisible();
+  await ui.exportProject(page);
+  const rows = JSON.parse(await page.locator('#json-preview').innerText());
+  expect(rows[0]).toMatchObject({ IconSymbol: 'machine-gun-magazine', NodeShape: 'Diamond', NodeSize: 64, NodeColor: '#aabbcc' });
+  expect(rows[0]).not.toHaveProperty('palette');
+  await page.getByRole('button', { name: '닫기', exact: true }).click();
+  await page.locator('#file').setInputFiles({ name: 'styled.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(rows)) });
+  await page.locator('#edit-preset').click();
+  await expect(page.locator('[name=NodeShape]')).toHaveValue('Diamond');
+  await expect(page.locator('[name=NodeSize]')).toHaveValue('64');
+  await expect(page.locator('[name=IconSymbol]')).toHaveValue('machine-gun-magazine');
+  await expect(page.locator('[name=NodeColor]')).toHaveValue('#aabbcc');
+  expect(errors).toEqual([]);
+});

@@ -105,6 +105,20 @@ export class CustomPlinko implements PlinkoBackend {
           if (curA < 0) curA = g; else if (curB < 0 && g !== curA) curB = g;
         }
         this.prevA[k] = curA; this.prevB[k] = curB;
+        if (s.receiving && this.v[k] > s.receiving.start-r) {
+          const bins=s.receiving;
+          for(let i=1;i<bins.count;i++) {
+            const x=i*s.width/bins.count;
+            const dx=this.u[k]-Math.max(x-bins.halfThickness,Math.min(x+bins.halfThickness,this.u[k]));
+            const dy=this.v[k]-Math.max(bins.start,Math.min(s.height,this.v[k]));
+            const distance=Math.hypot(dx,dy);
+            if(distance>=r)continue;
+            const nx=distance>1e-8?dx/distance:(this.u[k]<x?-1:1),ny=distance>1e-8?dy/distance:0;
+            this.u[k]+=nx*(r-distance);this.v[k]+=ny*(r-distance);
+            const vn=this.vu[k]*nx+this.vv[k]*ny;
+            if(vn<0){this.vu[k]-=(1+e)*vn*nx;this.vv[k]-=(1+e)*vn*ny;}
+          }
+        }
         if (this.u[k] < r) { this.u[k] = r; if (this.vu[k] < 0) this.vu[k] = -this.vu[k] * e; }
         else if (this.u[k] > s.width - r) { this.u[k] = s.width - r; if (this.vu[k] > 0) this.vu[k] = -this.vu[k] * e; }
         if (this.v[k] < -1.95) { this.v[k] = -1.95; if (this.vv[k] < 0) this.vv[k] = -this.vv[k] * e; }
@@ -148,7 +162,7 @@ export class CustomPlinko implements PlinkoBackend {
     for (let k = 0; k < this.n; k++) {
       const u = this.u[k], v = this.v[k];
       if (!Number.isFinite(u) || !Number.isFinite(v) || u < -1 || u > s.width + 1 || v < -2) { this.events.push({ type: 'lost', id: this.ids[k] }); this.corrections.lost++; this.removeList.push(this.ids[k]); }
-      else if (v >= s.height) { this.events.push({ type: 'arrive', id: this.ids[k], u }); this.removeList.push(this.ids[k]); }
+      else if (v >= s.height) { this.events.push({ type: 'arrive', id: this.ids[k], u, v, vu: this.vu[k], vv: this.vv[k] }); this.removeList.push(this.ids[k]); }
     }
     for (const id of this.removeList) this.remove(id);
   }

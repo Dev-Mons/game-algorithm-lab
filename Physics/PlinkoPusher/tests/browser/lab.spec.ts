@@ -59,7 +59,7 @@ test('회전 배치: 변환 일치, 화면 클릭 페그 선택, 실제 화면 �
     await page.click('#left [data-cam="plinko"]');
     await page.waitForTimeout(900);
     expect(await lab(page, l => l.view.placementError())).toBeLessThan(1e-5);
-    const target = await lab(page, l => { const p = l.runner.sim.layout.pegs[37]; return { index: p.index, ...l.view.projectLocal(p.u, p.v) }; });
+    const target = await lab(page, l => { const s = l.runner.sim, b = s.scenario.board; const p = s.layout.pegs.reduce((best: any, peg: any) => Math.hypot(peg.u-b.width/2,peg.v-b.height/2) < Math.hypot(best.u-b.width/2,best.v-b.height/2) ? peg : best); return { index: p.index, ...l.view.projectLocal(p.u, p.v) }; });
     await page.mouse.click(target.x, target.y);
     await expect(page.locator('#peg-info')).toContainText(`#${target.index} `);
     await page.screenshot({ path: `test-results/placement-${placement}.png` });

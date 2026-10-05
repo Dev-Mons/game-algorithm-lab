@@ -8,6 +8,7 @@ This repository is a collection of game algorithm experiments and R&D projects.
 - `Physics/Vehicle` — vehicle physics algorithms.
 - `Physics/PlinkoPusher` — plinko + coin pusher processing device prototype (custom vs engine physics comparison).
 - `Procedural/LevelGeneration` — procedural level generation algorithms.
+- `Tools/SkillTree` — visual skill tree authoring and Unreal DataTable JSON export.
 
 ## Working guidance
 

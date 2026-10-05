@@ -95,12 +95,15 @@ export const defaultFlow = (): FlowConfig => ({
 });
 
 export const defaultBoard = (): BoardDims => ({
-  width: 12, height: 16, rows: 12, cols: 9, pegRadius: 0.18, itemRadius: 0.3,
-  topMargin: 2.2, bottomMargin: 1.4, hopperSpread: 1.2,
+  width: 28, height: 10, rows: 9, cols: 21, pegRadius: 0.18, itemRadius: 0.3,
+  topMargin: 1.6, bottomMargin: 1.0, hopperSpread: 13.2,
 });
 
+/** Shared presentation scale and default tray span keep the two working surfaces aligned. */
+export const BOARD_DISPLAY_SCALE = 0.8;
+
 export const defaultTray = (): TrayDims => ({
-  width: 14, depth: 11, tokenRadius: 0.5, tokenHalfHeight: 0.085,
+  width: defaultBoard().width * BOARD_DISPLAY_SCALE, depth: 11, tokenRadius: 0.5, tokenHalfHeight: 0.085,
   pusherDepth: 2.4, faceMin: 1.2, stroke: 2.2, period: 2.8,
 });
 

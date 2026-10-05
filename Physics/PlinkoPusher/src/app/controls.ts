@@ -61,6 +61,7 @@ export function bindControls(runner: Runner, view: DeviceView, afterPlacement: (
   $<HTMLInputElement>('#seed').addEventListener('change', e => void runner.configure(s => { s.seed = Math.max(1, Math.floor(Number((e.target as HTMLInputElement).value) || 1)); }, true));
   $('#add1').addEventListener('click', () => runner.addRaw(1));
   $('#add10').addEventListener('click', () => runner.addRaw(10));
+  $('#stock-add').addEventListener('click', () => runner.addRaw(100));
   $<HTMLInputElement>('#auto').addEventListener('change', e => void runner.configure(s => { s.flow.autoSupply = (e.target as HTMLInputElement).checked; }));
   $<HTMLSelectElement>('#plinko-backend').addEventListener('change', e => void runner.configure(s => { s.backends.plinko = (e.target as HTMLSelectElement).value as PlinkoBackendId; }, true));
   $<HTMLSelectElement>('#pusher-backend').addEventListener('change', e => void runner.configure(s => { s.backends.pusher = (e.target as HTMLSelectElement).value as PusherBackendId; }, true));

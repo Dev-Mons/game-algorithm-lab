@@ -45,6 +45,7 @@ export class RapierPlinko implements PlinkoBackend {
     });
     const h = spec.height / 2 + 2, wall = (x: number, y: number, hx: number, hy: number) => world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy).setTranslation(x, y).setRestitution(params.restitution).setFriction(params.friction).setCollisionGroups(statics), fixed);
     wall(-0.5, spec.height / 2, 0.5, h); wall(spec.width + 0.5, spec.height / 2, 0.5, h);
+    if(spec.receiving)for(let i=1;i<spec.receiving.count;i++)wall(i*spec.width/spec.receiving.count,(spec.height+spec.receiving.start)/2,spec.receiving.halfThickness,(spec.height-spec.receiving.start)/2);
     // The board top is an open inlet; raw bodies start in the hopper above v=0.
   }
 
@@ -84,7 +85,7 @@ export class RapierPlinko implements PlinkoBackend {
     for (const item of this.items.values()) {
       const t = item.body.translation();
       if (!Number.isFinite(t.x) || !Number.isFinite(t.y) || t.x < -1 || t.x > s.width + 1 || t.y < -2) { this.events.push({ type: 'lost', id: item.id }); this.corrections.lost++; this.removeList.push(item.id); continue; }
-      if (t.y >= s.height) { this.events.push({ type: 'arrive', id: item.id, u: t.x }); this.removeList.push(item.id); continue; }
+      if (t.y >= s.height) { const v=item.body.linvel(); this.events.push({ type: 'arrive', id: item.id, u: t.x, v: t.y, vu: v.x, vv: v.y }); this.removeList.push(item.id); continue; }
       const v = item.body.linvel(), c = clampSpeed2(v.x, v.y, p.maxSpeed);
       if (c < 1) { item.body.setLinvel({ x: v.x * c, y: v.y * c }, true); this.corrections.speedClamp++; }
       if (Math.hypot(v.x, v.y) < p.stuckSpeed) item.still += dt; else item.still = 0;

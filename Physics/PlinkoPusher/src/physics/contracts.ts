@@ -13,6 +13,8 @@ export type PusherBackendId = 'custom-stack' | 'custom' | 'rapier3d-planar' | 'r
 
 export interface PlinkoBoardSpec {
   width: number; height: number;
+  /** Optional physical receiving partitions below the peg field. */
+  receiving?: { start: number; count: number; halfThickness: number };
   pegs: ReadonlyArray<{ u: number; v: number }>; pegRadius: number;
   /** 로컬 중력(u, v). 기본 모드는 (0, gravity). */
   gravity: { u: number; v: number };
@@ -20,7 +22,7 @@ export interface PlinkoBoardSpec {
 export interface PlinkoSpawn { id: number; u: number; v: number; vu: number; vv: number; radius: number }
 export type PlinkoEvent =
   | { type: 'peg'; id: number; peg: number }
-  | { type: 'arrive'; id: number; u: number }
+  | { type: 'arrive'; id: number; u: number; v: number; vu: number; vv: number }
   | { type: 'lost'; id: number };
 
 export interface TokenSpawn { id: number; x: number; y: number; z: number; radius: number; halfHeight: number; vx?: number; vy?: number; vz?: number }

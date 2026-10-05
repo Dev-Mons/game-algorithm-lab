@@ -4,7 +4,7 @@ import { localToWorld, rayToLocal } from '../core/frame';
 import { pickPeg, type Peg } from '../core/layout';
 import type { Quality } from '../lab/scenario';
 import type { Simulation, ExitVisual } from '../lab/simulation';
-import { ITEM_DEPTH, PROCESS_FRACTION, cargoOffset, byproductPoint } from '../lab/device-layout';
+import { ITEM_DEPTH, PROCESS_FRACTION, RAMP_START, receiverPoint } from '../lab/device-layout';
 import { DeviceScene } from './device-scene';
 import { DeviceCamera, type CameraPreset } from './device-camera';
 import { C, createDeviceMaterials, type DeviceMaterials } from './materials';
@@ -16,7 +16,6 @@ import { ResourceScope } from './resources';
  */
 export type { CameraPreset } from './device-camera';
 interface Falling { active: boolean; x: number; y: number; z: number; vx: number; vy: number; vz: number; spin: number; t: number; color: THREE.Color; rotation: THREE.Quaternion }
-interface Glint { active: boolean; t: number }
 
 export class DeviceView {
   readonly renderer: THREE.WebGLRenderer;
@@ -32,8 +31,8 @@ export class DeviceView {
   private disposed = false;
   private sim: Simulation | null = null;
   private device: DeviceScene | null = null;
-  private falling: Falling[] = []; private glintPool: Glint[] = [];
-  private lastFlowTime = 0; private mainCollected = 0;
+  private falling: Falling[] = [];
+  private lastFlowTime = 0;
   private pressTimer = 0; private collectTimer = 0;
   private readonly m4 = new THREE.Matrix4(); private readonly q = new THREE.Quaternion(); private readonly v = new THREE.Vector3(); private readonly s = new THREE.Vector3(1, 1, 1);
   private readonly color = new THREE.Color(); private readonly ore = new THREE.Color(C.ore); private readonly done = new THREE.Color(C.processed);
@@ -94,7 +93,6 @@ export class DeviceView {
     cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r; cam.near = 1; cam.far = 140 * device.size; cam.updateProjectionMatrix();
     this.setQuality(sim.scenario.quality);
     this.falling = Array.from({ length: 96 }, () => ({ active: false, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, spin: 0, t: 0, color: new THREE.Color(), rotation: new THREE.Quaternion() }));
-    this.glintPool = Array.from({ length: 32 }, () => ({ active: false, t: 0 }));
     this.updateItems(sim); this.updateTokens(sim);
   }
 
@@ -102,8 +100,8 @@ export class DeviceView {
     this.sim = null;
     this.navigation.bind(null);
     this.device?.dispose(); this.device = null;
-    this.falling = []; this.glintPool = [];
-    this.pressTimer = 0; this.collectTimer = 0; this.lastFlowTime = 0; this.mainCollected = 0;
+    this.falling = [];
+    this.pressTimer = 0; this.collectTimer = 0; this.lastFlowTime = 0;
   }
 
   refreshPegColors() { this.device?.refreshPegColors(); }
@@ -161,7 +159,6 @@ export class DeviceView {
       this.device!.pusherMesh.position.z = sim.pusherFace - s.tray.pusherDepth / 2;
       for (const e of core.drainPresentationEvents()) {
         if (e.type === 'press') this.pressTimer = 0.28;
-        else if (e.type === 'main') this.spawnGlint();
         else if (e.type === 'bonus') this.collectTimer = 0.4;
       }
       for (const x of sim.exitVisuals.splice(0)) this.spawnFalling(x);
@@ -169,9 +166,9 @@ export class DeviceView {
     this.updateFlow(sim, frozen ? 0 : Math.max(0, core.time - this.lastFlowTime));
     this.lastFlowTime = core.time;
     const a = core.account();
-    this.device!.live.raw.set(`대기 ${a.rawQueue}`);
+    this.device!.live.raw.set(`저장 ${a.rawQueue} / 내부 이송 ${a.rawInTransit}`);
     this.device!.live.buffer.set(`압축 ${core.compressionCount} / 대기 ${a.compressorBuffer + a.chuteValue}`);
-    this.device!.live.feed.set(`배출 대기 ${a.feedCount} / 동시 낙하 ${sim.batchStats.largestDump}`);
+    this.device!.live.feed.set(`배출 대기 ${a.feedCount} / 묶음 배출 ${sim.batchStats.largestDump}`);
     this.device!.live.bonus.set(`+${core.ledger.bonusProduced + core.ledger.bonusSeed}`);
     this.device!.live.main.set(`+${core.ledger.main}`);
     this.renderer.render(this.scene, this.camera);
@@ -193,14 +190,7 @@ export class DeviceView {
     this.device!.items.count = n;
     this.device!.items.instanceMatrix.needsUpdate = true;
     if (this.device!.items.instanceColor) this.device!.items.instanceColor.needsUpdate = true;
-    // 호퍼 대기열 표시(표시 수 제한, 실제 수량은 라벨)
-    const shown = Math.min(sim.core.rawQueue, 30), W = sim.scenario.board.width;
-    for (let k = 0; k < shown; k++) {
-      this.m4.makeTranslation(W / 2 + ((k % 6) - 2.5) * Math.min(0.5, sim.scenario.board.hopperSpread / 2.5), 2.35 + Math.floor(k / 6) * 0.43, 0.35);
-      this.device!.rocks.setMatrixAt(k, this.m4); this.device!.rocks.setColorAt(k, this.ore);
-    }
-    this.device!.rocks.count = shown; this.device!.rocks.instanceMatrix.needsUpdate = true;
-    if (this.device!.rocks.instanceColor) this.device!.rocks.instanceColor.needsUpdate = true;
+    this.device!.supply.update();
   }
 
   private tokenColor(units: number, seed: boolean) { return seed ? this.tokenColors.seed : units >= 3 ? this.tokenColors[3] : units === 2 ? this.tokenColors[2] : this.tokenColors[1]; }
@@ -227,7 +217,7 @@ export class DeviceView {
     if (x.rotation) slot.rotation.fromArray(x.rotation); else slot.rotation.identity();
     slot.color.copy(this.tokenColor(Math.round(x.value / Math.max(1, this.sim!.scenario.economy.tokenValue)), x.origin === 'seed'));
   }
-  private spawnGlint() { const g = this.glintPool.find(p => !p.active); if (g) { g.active = true; g.t = 0; } }
+
 
   private updateFlow(sim: Simulation, dt: number) {
     const core = sim.core, time = core.time, t = sim.scenario.tray;
@@ -245,22 +235,20 @@ export class DeviceView {
       this.device!.fall.setMatrixAt(n, this.m4); this.device!.fall.setColorAt(n, f.color); n++;
     }
     this.device!.fall.count = n; this.device!.fall.instanceMatrix.needsUpdate = true; if (this.device!.fall.instanceColor) this.device!.fall.instanceColor.needsUpdate = true;
-    // Every byproduct value unit is a visible piece; the same unit becomes one coin.
-    n = 0;
-    core.chute.forEach(p => {
-      const elapsed = time - p.leftAt, duration = p.arriveAt - p.leftAt;
-      for (let i = 0; i < p.value && n < this.device!.chunks.instanceMatrix.count; i++) {
-        const delay = duration * (PROCESS_FRACTION + 0.12 * i / Math.max(1, p.value));
-        if (elapsed < delay) continue;
-        const u = Math.min(1, Math.max(0, (elapsed - delay) / Math.max(1e-6, duration - delay)));
-        const o = cargoOffset(sim.device, i % sim.device.cargoColumns);
-        const pt = byproductPoint(sim.scenario.board, sim.frame, sim.device, u * u, o.x, (i % 2 ? 0.12 : -0.12));
-        this.q.setFromEuler(new THREE.Euler(time * 3 + i, time * 2, i));
-        this.m4.compose(this.v.copy(pt), this.q, this.s.setScalar(1));
-        this.device!.chunks.setMatrixAt(n++, this.m4);
+    // Raw arrivals keep the last physical pose as they enter the eight receiving lanes.
+    n=0;let receiverCount=0;
+    core.chute.forEach(p=>{
+      const elapsed=time-p.leftAt,duration=p.arriveAt-p.leftAt;
+      if(elapsed<duration*PROCESS_FRACTION && receiverCount<this.device!.receiverItems.instanceMatrix.count) {
+        this.v.copy(receiverPoint(sim.scenario.board,sim.frame,p,elapsed));
+        this.m4.compose(this.v,this.device!.boardQuat,this.s.setScalar(sim.frame.scale));
+        this.device!.receiverItems.setMatrixAt(receiverCount++,this.m4);
       }
+
     });
-    this.device!.chunks.count = n; this.device!.chunks.instanceMatrix.needsUpdate = true;
+    this.device!.receiverItems.count=receiverCount;this.device!.receiverItems.instanceMatrix.needsUpdate=true;
+    this.device!.chunks.count=n;this.device!.chunks.instanceMatrix.needsUpdate=true;
+    if(this.device!.chunks.instanceColor)this.device!.chunks.instanceColor.needsUpdate=true;
     const dev = sim.device;
     sim.layout.pegs.forEach((p, i) => {
       const age = time - (sim.pegFlashes.get(i) ?? -100), hit = Math.max(0, 1 - age / 0.22);
@@ -268,59 +256,46 @@ export class DeviceView {
       this.device!.pegRings.setColorAt(i, this.color);
     });
     if (this.device!.pegRings.instanceColor) this.device!.pegRings.instanceColor.needsUpdate = true;
-    // 본 재화 반짝임
-    n = 0;
-    for (const g of this.glintPool) {
-      if (!g.active) continue;
-      g.t += dt / sim.scenario.flow.chuteSeconds;
-      if (g.t >= 1) { g.active = false; this.mainCollected++; continue; }
-      if (g.t < PROCESS_FRACTION) continue;
-      this.m4.compose(this.v.copy(this.device!.mainCurve.getPointAt((g.t - PROCESS_FRACTION) / (1 - PROCESS_FRACTION))), this.q.identity(), this.s.setScalar(1));
-      this.device!.glints.setMatrixAt(n++, this.m4);
-    }
-    this.device!.glints.count = n; this.device!.glints.instanceMatrix.needsUpdate = true;
+    // Main currency remains an immediate GameCore settlement; no separate physical left outlet.
+    this.device!.glints.count=0;
     // 압축기·수거함 연출
     this.pressTimer = Math.max(0, this.pressTimer - dt); this.collectTimer = Math.max(0, this.collectTimer - dt);
-    const phase = core.pressPhase, flow = sim.scenario.flow, intake = dev.pressIn, die = dev.die;
-    const load = Math.min(1, core.pressTime / flow.pressLoadSec);
-    const stamp = Math.min(1, core.pressTime / flow.compressCycleSec);
-    const retract = Math.min(1, core.pressTime / flow.pressRetractSec);
-    const press = phase === 'pressing' ? Math.max(0, (stamp - 0.3) / 0.7) : phase === 'retracting' ? 1 - Math.min(1, retract / 0.65) : 0;
-    const forward = phase === 'pressing' ? Math.min(1, stamp / 0.3) : phase === 'retracting' ? 1 - Math.max(0, (retract - 0.65) / 0.35) : 0;
-    const count = core.compressionCount;
-    this.device!.pressCharge.count = phase === 'loading' || phase === 'pressing' ? count : 0;
-    for (let i = 0; i < count; i++) {
-      const o = cargoOffset(dev, i), descent = phase === 'loading' ? load * load : 1;
-      this.v.set(die.x + o.x, intake.y + (die.y - intake.y) * descent + o.y * (1.5 - press * 0.5), die.z);
-      this.m4.compose(this.v, this.q.identity(), this.s.set(1, 1 - press * 0.55, 1));
-      this.device!.pressCharge.setMatrixAt(i, this.m4);
+    const bin=dev.scrap;
+    // Each physical scrap body is one value unit. Thin, irregular metal fragments share the same x/y plane.
+    const palette=[0x71818a,0x7b6558,0x48535f,0x948b78,0x5a696c];
+    this.device!.scrapPieces.count=sim.scrap.bodies.length;
+    sim.scrap.bodies.forEach((body,i)=>{
+      this.q.setFromAxisAngle(new THREE.Vector3(0,0,1),body.angle);
+      this.m4.compose(this.v.set(bin.x+body.x,body.y,bin.z),this.q,this.s.setScalar(body.radius));
+      this.device!.scrapPieces.setMatrixAt(i,this.m4);this.device!.scrapPieces.setColorAt(i,this.color.setHex(palette[body.id%palette.length]));
+    });
+    this.device!.scrapPieces.instanceMatrix.needsUpdate=true;
+    if(this.device!.scrapPieces.instanceColor)this.device!.scrapPieces.instanceColor.needsUpdate=true;
+    const visible=sim.outletDisplay();this.device!.pressBlank.count=visible.length;
+    visible.forEach((token,i)=>{
+      this.m4.compose(this.v.copy(sim.diePosition(token.slot)),this.q.identity(),this.s.setScalar(1));
+      this.device!.pressBlank.setMatrixAt(i,this.m4);this.device!.pressBlank.setColorAt(i,this.tokenColor(1,token.seed));
+    });
+    this.device!.pressBlank.instanceMatrix.needsUpdate=true;
+    if(this.device!.pressBlank.instanceColor)this.device!.pressBlank.instanceColor.needsUpdate=true;
+    this.device!.bufferChunks.count=0;
+    const press=sim.pressPose;
+    this.device!.piston.position.set(0,press.y,press.z);
+    this.device!.pressCradle.position.y=-press.floorDrop;
+    this.device!.scrapInletGate.position.z=bin.z-(sim.scrap.intakeOpen ? .95 : 0);
+    for(const rod of this.device!.pistonRods) {
+      const anchor=bin.top+.52,tip=press.y+.24;
+      rod.position.set(rod.position.x,(anchor+tip)/2,press.z);
+      rod.scale.y=Math.max(.02,anchor-tip);
     }
-    const blanks = Math.min(core.feedQueue.length, dev.cargoColumns * dev.cargoRows);
-    this.device!.pressBlank.count = blanks;
-    for (let i = 0; i < blanks; i++) {
-      this.m4.compose(this.v.copy(sim.diePosition(i)), this.q.identity(), this.s.setScalar(1));
-      this.device!.pressBlank.setMatrixAt(i, this.m4);
-      this.device!.pressBlank.setColorAt(i, this.tokenColor(1, core.feedQueue.at(i)?.origin === 'seed'));
-    }
-    const pending = Math.min(24, Math.max(0, core.compressorBuffer - count));
-    this.device!.bufferChunks.count = pending;
-    for (let i = 0; i < pending; i++) {
-      const o = cargoOffset(dev, i);
-      this.m4.compose(this.v.set(intake.x + o.x, intake.y + o.y, intake.z), this.q.identity(), this.s.setScalar(1));
-      this.device!.bufferChunks.setMatrixAt(i, this.m4);
-    }
-    this.device!.pressCharge.instanceMatrix.needsUpdate = this.device!.pressBlank.instanceMatrix.needsUpdate = this.device!.bufferChunks.instanceMatrix.needsUpdate = true;
-    if (this.device!.pressBlank.instanceColor) this.device!.pressBlank.instanceColor.needsUpdate = true;
-    this.device!.mainStock.visible = this.mainCollected > 0;
-    const rows = Math.max(1, Math.ceil((count || blanks) / dev.cargoColumns));
-    const raised = dev.pressTop - 0.5, pressed = die.y + (rows - 1) * dev.layerPitch + t.tokenHalfHeight + 0.25;
-    this.device!.piston.position.y = raised + (pressed - raised) * press;
-    this.device!.piston.position.z = dev.ramParkZ + (die.z - dev.ramParkZ) * forward;
-    this.device!.inletGate.position.z = intake.z + (phase === 'loading' ? 1.4 : 0);
-    const release = phase === 'releasing' ? Math.min(1, (1 - core.pressTime / flow.pressOpenSec) * 4) : sim.discharge.progress;
-    this.device!.outletGate.position.z = die.z + 1.6 * release;
-    this.device!.outletGate.position.y = sim.dischargeY - t.tokenHalfHeight - 0.06;
-    this.device!.processorRotor.rotation.x = core.stats.completed > 0 ? time * 3 : 0;
+    this.device!.pressGlow.scale.setScalar(.9+sim.actuatorStroke*.7);
+    this.device!.outletGates.forEach((gate,i)=>{
+      const port=sim.discharge.ports[i],age=time-port.releaseAt;
+      const open=port.progress>RAMP_START && !port.done?Math.max(0,Math.min(1,(port.progress-RAMP_START)/.06)):Math.max(0,Math.min(1,(.32-age)/.1));
+      gate.position.z=dev.outletZ-open*1.35;
+      const floorOpen=port.progress>0?Math.min(1,port.progress/.12):Math.max(0,Math.min(1,(.35-age)/.1));
+      this.device!.dieGates[i].position.y=dev.coinRail.y+.43+1.25*floorOpen;
+    });
     this.device!.collectorGlow.scale.x = 0.85 + Math.min(0.15, this.collectTimer);
   }
 

@@ -7,7 +7,7 @@ import { BodySnapshot, liveBackends, type PlinkoBackendId, type PusherBackend, t
 import { createPusher } from '../../src/physics/registry';
 import { CustomStackPusher } from '../../src/physics/pusher-custom-stack';
 
-async function runLocal(plinko: PlinkoBackendId, placement: PlacementId, ticks = 240) {
+async function runLocal(plinko: PlinkoBackendId, placement: PlacementId, ticks = 900) {
   const s = createScenario('basic', 77);
   s.backends = { plinko, pusher: 'custom' }; s.placement = placement; s.initialTokens = 0;
   const sim = await Simulation.create(s);

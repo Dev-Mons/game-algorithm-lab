@@ -19,7 +19,7 @@ document.querySelector('#app')!.innerHTML = `
   <div class="brand"><b>Tiny<span>Dead</span></b><small>RESOURCE WORKS / 01</small></div>
   <div class="flow" id="flow"></div>
 </header>
-<nav class="workbench-tools"><button id="lab-toggle" aria-expanded="false">실험 설정</button><button id="stats-toggle" aria-expanded="false">생산 · 검증</button><button id="presentation-add">원재료 +10</button><button id="presentation-pause">일시정지</button><button data-cam="all">전체</button><button data-cam="transfer">연결부</button><button data-cam="pusher">푸셔</button></nav>
+<nav class="workbench-tools"><button id="lab-toggle" aria-expanded="false">실험 설정</button><button id="stats-toggle" aria-expanded="false">생산 · 검증</button><button id="presentation-add">원재료 +10</button><button id="stock-add">저장통 +100</button><button id="presentation-pause">일시정지</button><button data-cam="all">전체</button><button data-cam="transfer">연결부</button><button data-cam="pusher">푸셔</button></nav>
 <aside class="panel left" id="left">
   <section><h3>실행</h3>
     <div class="grid3" id="presets">${(Object.keys(PRESETS) as PresetId[]).map(id => `<button data-preset="${id}" title="${PRESETS[id].description}">${PRESETS[id].label}</button>`).join('')}<button id="demo" title="카메라 순회 + 주기적 묶음 투입">자동 데모</button></div>

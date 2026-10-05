@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { processorPaths, byproductPoint } from '../lab/device-layout';
+import { byproductPoint, POCKET_COUNT, POCKET_LEAD, POCKET_WALL_HALF, PROCESSOR_EXIT_V, RECEIVER_TRAVEL, outletCenter } from '../lab/device-layout';
 import type { Simulation } from '../lab/simulation';
 import { trayGeometry } from '../physics/tray-geometry';
 import { LiveLabel, makeLabel } from './labels';
 import type { DeviceMaterials } from './materials';
+import { RawSupplyScene } from './raw-supply-scene';
 import { ResourceScope } from './resources';
 import type { Vec3 } from '../core/math';
 
@@ -18,14 +19,15 @@ export class DeviceScene {
   private sim: Simulation | null = null;
   items!: THREE.InstancedMesh; pegs!: THREE.InstancedMesh; tokens!: THREE.InstancedMesh;
   fall!: THREE.InstancedMesh; bufferChunks!: THREE.InstancedMesh;
-  chunks!: THREE.InstancedMesh; rocks!: THREE.InstancedMesh; glints!: THREE.InstancedMesh;
+  receiverItems!: THREE.InstancedMesh; chunks!: THREE.InstancedMesh; supply!: RawSupplyScene; glints!: THREE.InstancedMesh;
   pegRings!: THREE.InstancedMesh;
-  pusherMesh!: THREE.Mesh; piston!: THREE.Mesh; pressGlow!: THREE.Mesh; collectorGlow!: THREE.Mesh;
-  outletGate!: THREE.Mesh; inletGate!: THREE.Mesh;
-  processorRotor!: THREE.Mesh; pressCharge!: THREE.InstancedMesh; pressBlank!: THREE.InstancedMesh;
-  readonly mainStock = new THREE.Group();
+  pusherMesh!: THREE.Mesh; pressGlow!: THREE.Mesh; collectorGlow!: THREE.Mesh;
+  inletGate!: THREE.Mesh;
+  piston!: THREE.Group; pressCradle!: THREE.Group; scrapInletGate!: THREE.Mesh;
+  readonly dieGates: THREE.Mesh[] = [];
+  readonly outletGates: THREE.Mesh[] = [];
+  readonly pistonRods: THREE.Mesh[] = []; scrapPieces!: THREE.InstancedMesh; pressBlank!: THREE.InstancedMesh;
   selected!: THREE.Mesh;
-  mainCurve!: THREE.CurvePath<THREE.Vector3>;
   readonly boardQuat = new THREE.Quaternion();
   live!: { raw: LiveLabel; buffer: LiveLabel; feed: LiveLabel; bonus: LiveLabel; main: LiveLabel };
   size = 1;
@@ -80,7 +82,7 @@ export class DeviceScene {
   build(sim: Simulation) {
     this.clear(); this.sim = sim;
     const b = sim.scenario.board, t = sim.scenario.tray, dev = sim.device;
-    this.size = Math.max(1, t.width / 14, b.height / 16);
+    this.size = Math.max(1, t.width / 28, b.height / 16);
     this.root.add(this.boardGroup, this.trayGroup, this.chuteGroup);
     const floor = new THREE.Mesh(this.own(new THREE.PlaneGeometry(400, 400)), this.mats.floor);
     floor.rotation.x = -Math.PI / 2; floor.position.y = dev.floorY; floor.receiveShadow = true; this.root.add(floor);
@@ -103,7 +105,9 @@ export class DeviceScene {
         this.box(0.64, 0.18, 1.5, this.mats.yellow, side * (t.width / 2 + 0.6), -0.08, z);
       }
     }
-    this.buildBoard(sim); this.buildTray(sim); this.buildStations(sim); this.buildLabels(sim); this.updatePlacement();
+    this.buildBoard(sim); this.buildTray(sim); this.buildStations(sim);
+    this.supply = new RawSupplyScene(sim, this.mats, this.boardGroup); this.root.add(this.supply.root);
+    this.buildLabels(sim); this.updatePlacement();
   }
 
   private buildBoard(sim: Simulation) {
@@ -119,18 +123,6 @@ export class DeviceScene {
         this.box(0.18, 0.36, 0.13, m.orangeGlow, x, y - 0.7, 0.62, G, false);
       }
     }
-    // Open hopper: broad outlet matches hopperSpread; no cross-beam across its throat.
-    const mouth = Math.min(W - 0.5, b.hopperSpread * 2 + b.itemRadius * 2 + 0.7);
-    this.box(mouth + 1.7, 2.4, 0.16, m.metal, W / 2, 2.15, -0.1, G);
-    for (const side of [-1, 1]) {
-      const x = W / 2 + side * (mouth / 2 + 0.22);
-      const wing = this.box(0.25, 2.1, 1.2, m.yellow, x, 1.8, 0.4, G); wing.rotation.z = -side * 0.18;
-      this.plate(0.85, 0.7, x, 2.5, 1.02, G);
-    }
-    this.box(mouth + 1.4, 0.55, 0.35, m.dark, W / 2, 3.3, 0.65, G);
-    this.stripes(mouth + 1.25, 0.24, W / 2, 3.3, 0.85, G);
-    this.box(mouth, 0.4, 0.08, m.glass, W / 2, 1.25, 0.91, G, false);
-    this.rocks = this.instances(new THREE.IcosahedronGeometry(b.itemRadius, 0), m.item, 30, G);
     const pegGeo = new THREE.CylinderGeometry(b.pegRadius, b.pegRadius * 1.2, 0.62, 8); pegGeo.rotateX(Math.PI / 2); pegGeo.translate(0, 0, 0.3);
     this.pegs = this.instances(pegGeo, m.peg, sim.layout.pegs.length, G);
     this.pegRings = this.instances(new THREE.TorusGeometry(b.pegRadius + 0.08, 0.055, 6, 12), m.pegGlow, sim.layout.pegs.length, G);
@@ -154,22 +146,16 @@ export class DeviceScene {
       this.plate(1.5, 1.3, x, -H + 0.1, 1.2, G);
       this.box(0.3, 1.55, 0.1, m.yellow, x, -H + 0.1, 1.32, G);
     }
-    // The processor has a left resource port and an actual wide, open underside for scrap.
-    const sill = (W + 0.1 - sim.device.passageWidth) / 2;
-    for (const side of [-1, 1]) this.box(sill, 0.22, 1.7, m.dark, W / 2 + side * (sim.device.passageWidth + sill) / 2, -H - 1.75, 0.38, G);
-    this.box(0.18, 1.8, 1.7, m.dark, W + 0.1, -H - 0.85, 0.38, G);
-    this.box(W + 0.1, 1.8, 0.2, m.metal, W / 2, -H - 0.85, -0.48, G);
-    this.box(W + 0.1, 1.9, 0.2, m.metal, W / 2, -H - 0.6, 1.18, G);
-    this.stripes(W, 0.3, W / 2, -H - 0.52, 1.3, G);
-    for (const x of [0.35, W - 0.35]) this.plate(0.6, 1.1, x, -H - 1.15, 1.33, G);
-    for (let x = 1.3; x < W - 1; x += 0.5) this.box(0.22, 0.45, 0.08, m.darker, x, -H - 1.2, 1.31, G);
-    this.processorRotor = this.cylinder(0.4, W - 0.4, m.metalLight, W / 2, -H - 0.45, 0.3, G); this.processorRotor.rotation.z = Math.PI / 2;
-    {
-      const x = -0.28, glow = m.greenGlow;
-      // Port frame: back and sill, not a solid glowing plug.
-      this.box(0.45, 0.13, 1.4, glow, x, -H - 1.65, 0.3, G, false);
-      this.box(0.45, 0.13, 1.4, m.yellow, x, -H - 0.65, 0.3, G);
+    // Eight open receiving lanes continue the local board surface.
+    const length=PROCESSOR_EXIT_V, lane=W/POCKET_COUNT;
+    this.box(W,length,.18,m.metal,W/2,-H-length/2,-.10,G);
+    for(let i=0;i<=POCKET_COUNT;i++) {
+      this.box(POCKET_WALL_HALF*2,length-POCKET_LEAD,.78,m.metalLight,i*lane,-H-(length+POCKET_LEAD)/2,.32,G);
+      this.bolt(i*lane,-H-length+.2,.75,G);
     }
+    this.box(W,.24,.22,m.metal,W/2,-H-length,.77,G);
+    this.stripes(W,.2,W/2,-H-length,.90,G);
+    this.receiverItems=this.instances(new THREE.IcosahedronGeometry(b.itemRadius,0),m.item,sim.scenario.flow.plinkoMaxActive+32,this.root);
     this.items = this.instances(new THREE.IcosahedronGeometry(b.itemRadius, 0), m.item, Math.max(16, sim.scenario.flow.plinkoMaxActive + 8), this.root);
   }
   private instances(geometry: THREE.BufferGeometry, mat: THREE.Material, cap: number, parent: THREE.Object3D) {
@@ -232,56 +218,122 @@ export class DeviceScene {
   }
 
   private buildStations(sim: Simulation) {
-    const s = sim.scenario, t = s.tray, d = sim.device, cp = d.compressor, m = this.mats;
-    const mb = d.mainBin;
-    this.box(3.4, 0.22, 3.2, m.metal, mb.x, mb.y - 0.6, mb.z);
-    for (const side of [-1, 1]) this.box(0.2, 1.2, 3.2, m.dark, mb.x + side * 1.7, mb.y, mb.z);
-    this.box(3.4, 1.0, 0.2, m.metal, mb.x, mb.y - 0.1, mb.z + 1.6);
-    this.box(3.3, 0.12, 0.14, m.greenGlow, mb.x, mb.y + 0.46, mb.z + 1.72, this.root, false);
-    this.root.add(this.mainStock); this.mainStock.visible = false;
-    for (let i = 0; i < 12; i++) this.box(0.43, 0.2, 0.48, i % 3 ? m.metalLight : m.greenChute, mb.x + ((i % 4) - 1.5) * 0.61, mb.y - 0.34 + (i % 2) * 0.06, mb.z + (Math.floor(i / 4) - 1) * 0.6, this.mainStock);
-    // Inline press: rear parked ram, receiving shutter and open-bottom die over the tray.
-    const pressWidth = d.passageWidth, roof = d.pressTop;
-    for (const side of [-1, 1]) {
-      const x = side * (t.width / 2 + 0.9);
-      this.box(0.55, roof - d.floorY + 0.4, 0.65, m.paint, x, (roof + d.floorY) / 2, d.ramParkZ);
-      this.box(1.25, 0.25, 1.5, m.metal, x, d.floorY + 0.3, d.ramParkZ);
-      this.plate(0.95, 1.0, x, d.die.y, d.ramParkZ + 0.38, this.root);
-      // Cantilever arms remain above the entire pusher stroke and outside the falling coins.
-      this.box((t.width - pressWidth) / 2 + 0.9, 0.35, 1.4, m.dark, side * ((t.width + pressWidth) / 4 + 0.4), d.die.y - 0.22, cp.z);
-      this.box(0.22, 1.05, 3.4, m.paint, side * (pressWidth / 2 + 0.18), d.die.y + 0.3, cp.z - 0.7);
-      this.box(0.12, 0.16, 3.4, m.metalLight, side * (pressWidth / 2 + 0.18), roof - 0.3, cp.z - 0.7);
+    const s=sim.scenario,t=s.tray,d=sim.device,m=this.mats,bin=d.scrap;
+    const width=d.pressHalfWidth*2,front=d.housingFrontZ,back=d.housingBackZ;
+    const bottom=d.coinRail.y-.55,top=bin.top+.65,windowBottom=d.scrapCoverY;
+    const P=new THREE.Group();P.position.x=bin.x;this.root.add(P);
+    // Left sidecar: open chamber above an opaque conversion cabinet, supported to the base.
+    this.box(width,.25,front-back,m.metal,0,d.floorY+.15,(front+back)/2,P);
+    this.box(width,top-d.floorY,.18,m.dark,0,(top+d.floorY)/2,back,P);
+    for(const side of [-1,1]) {
+      const x=side*(width/2-.12);
+      for(const z of [front,back]) {
+        this.box(.30,top-d.floorY,.34,m.paint,x,(top+d.floorY)/2,z,P);
+        for(let y=d.floorY+.4;y<top;y+=1.15)this.bolt(x,y,z+.2,P);
+      }
+      // The right lower side is open across the four conveyor lanes.
+      const sideBottom=side>0?d.scrapBelt.y+.62:d.coinRail.y+1.15;
+      this.box(.16,top-sideBottom,front-back,m.paint,x,(top+sideBottom)/2,(front+back)/2,P);
+      this.box(.18,d.coinRail.y-.35-d.floorY,front-back,m.paint,x,(d.floorY+d.coinRail.y-.35)/2,(front+back)/2,P);
     }
-    this.box(t.width + 2.2, 0.55, 0.65, m.paint, 0, roof, d.ramParkZ);
-    this.stripes(t.width + 1.8, 0.22, 0, roof - 0.12, d.ramParkZ + 0.34, this.root);
-    this.piston = this.box(pressWidth - 0.2, 0.5, 1.1, m.metalLight, 0, roof - 0.5, d.ramParkZ);
-    this.stripes(pressWidth - 0.3, 0.18, 0, 0, 0.57, this.piston);
-    this.outletGate = this.box(pressWidth, 0.12, 1.4, m.metalLight, 0, d.die.y - t.tokenHalfHeight - 0.06, cp.z);
-    this.inletGate = this.box(pressWidth, 0.12, 1.0, m.metal, 0, d.pressIn.y - 0.3, cp.z);
-    for (const side of [-1, 1]) this.box(0.16, 0.75, 1.0, m.paint, side * (pressWidth / 2 + 0.08), d.pressIn.y + 0.04, cp.z);
-    this.box(pressWidth, 0.75, 0.10, m.metal, 0, d.pressIn.y + 0.04, cp.z - 0.5);
-    this.box(pressWidth, 0.75, 0.06, m.glass, 0, d.pressIn.y + 0.04, cp.z + 0.5, this.root, false);
-    this.pressCharge = this.instances(new THREE.DodecahedronGeometry(0.19, 0), m.chunk, 24, this.root);
-    this.pressBlank = this.instances(new THREE.CylinderGeometry(t.tokenRadius, t.tokenRadius, t.tokenHalfHeight * 2, 16), m.token, 24, this.root);
-    this.bufferChunks = this.instances(new THREE.DodecahedronGeometry(0.19, 0), m.chunk, 24, this.root);
-    this.pressGlow = this.box(pressWidth + 0.15, 0.08, 0.12, m.orangeGlow, 0, d.die.y - 0.15, cp.z + 0.84);
-    this.chunks = this.instances(new THREE.DodecahedronGeometry(0.19, 0), m.chunk, Math.max(512, s.flow.plinkoMaxActive * s.economy.byproductCap), this.root);
-    this.glints = this.instances(new THREE.BoxGeometry(0.48, 0.24, 0.38), m.glint, 32, this.root);
-    // Service cabinet and hydraulic hoses make the support frame read as factory equipment.
-    const cabinetX = -t.width / 2 - 2.1;
-    this.box(2.2, 2.7, 1.1, m.paint, cabinetX, -0.7, 0.4);
-    this.plate(1.9, 2.4, cabinetX, -0.7, 1.02, this.root);
-    for (let y = -1.5; y < -0.9; y += 0.18) this.box(1.2, 0.06, 0.04, m.darker, cabinetX, y, 1.11);
-    this.box(0.12, 0.5, 0.1, m.darker, cabinetX + 0.66, -0.55, 1.16);
-    for (const dx of [-0.3, 0, 0.3]) this.cylinder(0.075, 0.09, dx === 0 ? m.orangeGlow : m.greenGlow, cabinetX + dx, 0.05, 1.15).rotation.x = Math.PI / 2;
-    for (const side of [-1, 1]) {
-      const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(cp.x + side * (d.pressHalfWidth + 0.2), roof - 0.2, cp.z - 1.2), new THREE.Vector3(cp.x + side * (d.pressHalfWidth + 0.8), cp.y + 2, cp.z - 1.5), new THREE.Vector3(cp.x + side * (d.pressHalfWidth + 0.2), d.die.y - 0.25, cp.z - 1.2)]);
-      const hose = new THREE.Mesh(this.own(new THREE.TubeGeometry(curve, 20, 0.11, 8, false)), m.darker); this.root.add(hose);
+    this.box(width,.35,front-back,m.paint,0,top,(front+back)/2,P);
+    this.plate(width-.3,.72,0,top-.6,front+.04,P);
+    const headTop=Math.max(top+.4,d.silo.top-.25);
+    this.box(width,headTop-top,front-back,m.paint,0,(headTop+top)/2,(front+back)/2,P);
+    for(let i=0;i<3;i++) {
+      const h=(headTop-top)/3,y=top+(i+.5)*h;
+      this.plate(width-.25,Math.max(.2,h-.12),0,y,front+.05,P);
+      for(let row=0;row<3;row++)this.box(width*.55,.045,.03,m.darker,0,y-.16+row*.15,front+.16,P);
     }
-    // Work lights illuminate the same material family as the reference, without bloom obscuring paths.
-    for (const p of [{ x: cp.x, y: cp.y + 0.7, z: cp.z + 1.0 }, { x: 0, y: 1.1, z: t.depth / 2 + 0.5 }]) {
-      const light = new THREE.PointLight(0xffb431, 16, 7, 2); light.position.copy(p); this.root.add(light);
+    this.box(width,.20,.25,m.metal,0,windowBottom,front,P);
+    const glass=this.box(width-.45,bin.top-windowBottom+.05,.04,m.glass,0,(bin.top+windowBottom)/2,front+.05,P,false);glass.renderOrder=4;
+    this.box(width,.35,.3,m.metal,0,bin.top+.28,front,P);
+    const coverBottom=d.coinRail.y-.7;
+    this.box(width,windowBottom-coverBottom,.20,m.paint,0,(windowBottom+coverBottom)/2,front,P);
+    this.plate(width-.3,.63,0,windowBottom-.45,front+.12,P);
+    for(let row=0;row<3;row++)this.box(width*.52,.055,.03,m.darker,0,windowBottom-.55+row*.14,front+.22,P);
+    this.stripes(width-.2,.14,0,windowBottom-.12,front+.25,P);
+    this.box(width,.32,.35,m.paint,0,bottom,front,P);
+    this.box(width-.35,1.0,.10,m.meshGuard,0,d.floorY+1.0,front-.08,P);
+    const motor=this.cylinder(.44,.22,m.metalLight,0,d.floorY+1,front+.03,P);motor.rotation.x=Math.PI/2;
+    this.pressCradle=new THREE.Group();P.add(this.pressCradle);
+    for(const side of [-1,1]) {
+      this.box(.14,bin.top-windowBottom,.7,m.metal,side*(bin.width/2-.11),(bin.top+windowBottom)/2,bin.z,P);
+      const run=bin.width/2-bin.outletHalfWidth,rise=bin.bottom-bin.throatY;
+      const plate=this.box(Math.hypot(run,rise),.1,.65,m.metal,side*(bin.width/2+bin.outletHalfWidth)/2,(bin.bottom+bin.throatY)/2-.055,bin.z,this.pressCradle);
+      plate.rotation.z=side*Math.atan2(rise,run);
     }
+    this.inletGate=this.box(bin.outletHalfWidth*2,.1,.65,m.metalLight,0,bin.throatY-.05,bin.z,this.pressCradle);
+    this.scrapInletGate=this.box(bin.inletWidth!,.1,.68,m.metal,0,bin.top+.42,bin.z,P);
+    this.piston=new THREE.Group();P.add(this.piston);
+    this.box(bin.width-.24,.24,.66,m.metalLight,0,.12,0,this.piston);
+    this.stripes(bin.width-.38,.14,0,.12,.35,this.piston);
+    this.pistonRods.length=0;
+    for(const x of [-bin.width*.36,bin.width*.36]) {
+      this.pistonRods.push(this.cylinder(.11,1,m.metalLight,x,bin.top,bin.z,P));
+      this.box(.4,.48,.5,m.paint,x,bin.top+.35,bin.z,P);
+      this.cylinder(.07,bin.top-windowBottom,m.metal,x,(bin.top+windowBottom)/2,bin.z+.43,P);
+    }
+    this.pressGlow=this.box(.32,.16,.12,m.orangeGlow,width/2-.4,windowBottom-.4,front+.26,P);
+    const lamp=new THREE.PointLight(0xffc482,22,6,2);lamp.position.set(0,bin.top-.2,front-.2);P.add(lamp);
+
+    // Scrap collector runs left underneath the receiving pockets, into an enclosed service lift.
+    const belt=d.scrapBelt;
+    // Opaque scrap duct: no passing material or moving belt is exposed.
+    this.box(belt.right-belt.left,.55,belt.depth+.14,m.paint,(belt.left+belt.right)/2,belt.y+.12,belt.z);
+    // Housing surrounds the hidden upward route; its small shaft window exposes the chain drive.
+    const liftX=belt.left-.1,liftZ=back+.4,liftTop=bin.top+1.15;
+    this.box(.85,liftTop-belt.y,.85,m.paint,liftX,(liftTop+belt.y)/2,liftZ);
+    this.box(.48,liftTop-belt.y-.2,.035,m.meshGuard,liftX,(liftTop+belt.y)/2,liftZ+.44);
+    this.box(.85,.60,belt.z-liftZ+.6,m.paint,liftX,belt.y+.2,(belt.z+liftZ)/2);
+    this.channel(this.path([{x:belt.left,y:bin.top+1.05,z:liftZ},{x:bin.x,y:bin.top+.9,z:bin.z}]),.7,.26,m.paint,this.root);
+    // Upper side entry is visibly connected; material passes through this open mouth.
+    this.box(.18,.65,belt.depth+.16,m.metal,belt.left-.35,belt.y+.15,belt.z);
+
+    // Closed distributor. Its bottom is segmented around four real vertical outlets.
+    const deckLeft=d.die.x-d.cargoPitch,deckRight=t.width/2-.4;
+    const floor=d.coinRail.y-t.tokenHalfHeight-.12,ceiling=d.coinRail.y+.78;
+    const backZ=Math.min(d.coinRail.backZ-.65,d.outletZ-.7),frontZ=Math.max(d.coinRail.frontZ+.65,d.outletZ+.7);
+    const holeBack=d.outletZ-.62,holeFront=d.outletZ+.62;
+    this.box(deckRight-deckLeft,.14,frontZ-backZ,m.paint,(deckRight+deckLeft)/2,ceiling,(backZ+frontZ)/2);
+    for(const z of [backZ,frontZ])this.box(deckRight-deckLeft,ceiling-floor,.12,m.paint,(deckRight+deckLeft)/2,(ceiling+floor)/2,z);
+    for(const x of [deckLeft,deckRight])this.box(.12,ceiling-floor,frontZ-backZ,m.metal,x,(ceiling+floor)/2,(frontZ+backZ)/2);
+    for(const [z0,z1] of [[backZ,holeBack],[holeFront,frontZ]]) {
+      if(z1>z0)this.box(deckRight-deckLeft,.10,z1-z0,m.metal,(deckRight+deckLeft)/2,floor-.05,(z0+z1)/2);
+    }
+    this.outletGates.length=0;this.dieGates.length=0;
+    let edge=deckLeft;
+    for(let i=0;i<d.outletCount;i++) {
+      const x=outletCenter(d,i),half=d.outletWidth/2;
+      if(x-half>edge)this.box(x-half-edge,.1,holeFront-holeBack,m.metal,(edge+x-half)/2,floor-.05,d.outletZ);
+      edge=x+half;
+      this.dieGates.push(this.box(.10,1.12,d.cargoPitch-.07,m.metalLight,d.die.x+width/2-.2,d.coinRail.y+.43,d.coinRail.frontZ-i*d.cargoPitch));
+      const bottom=d.outletY-.18;
+      for(const side of [-1,1])this.box(.10,floor-bottom,1.24,m.metal,x+side*(half+.05),(floor+bottom)/2,d.outletZ);
+      // Leave a real rear slot for the sliding shutter's complete travel.
+      const gateY=d.outletY+.08;
+      for(const [low,high] of [[bottom,gateY-.075],[gateY+.075,floor]]) {
+        if(high>low)this.box(d.outletWidth,high-low,.10,m.dark,x,(low+high)/2,holeBack-.05);
+      }
+      const lip=d.outletY+.12;
+      this.box(d.outletWidth,Math.max(.06,floor-lip),.10,m.paint,x,(floor+lip)/2,holeFront+.05);
+      this.outletGates.push(this.box(d.outletWidth,.10,1.15,m.metalLight,x,d.outletY+.08,d.outletZ));
+      this.stripes(d.outletWidth,.09,x,lip+.04,holeFront+.12,this.root);
+      this.box(.2,.12,.10,m.orangeGlow,x,floor+.24,frontZ+.08);
+    }
+    if(edge<deckRight)this.box(deckRight-edge,.1,holeFront-holeBack,m.metal,(edge+deckRight)/2,floor-.05,d.outletZ);
+    for(const x of [-t.width/2-.35,t.width/2+.35]) {
+      this.box(.42,belt.y-d.floorY,.5,m.paint,x,(belt.y+d.floorY)/2,belt.z-.55);
+      this.box(.9,.2,1.0,m.metal,x,d.floorY+.12,belt.z-.55);
+    }
+    const shard=new THREE.Shape().moveTo(.92,0).lineTo(.38,.78).lineTo(-.65,.47).lineTo(-.9,-.18).lineTo(-.2,-.72).lineTo(.5,-.42).closePath();
+    const geo=new THREE.ExtrudeGeometry(shard,{depth:.24,bevelEnabled:true,bevelSize:.025,bevelThickness:.02,bevelSegments:1,steps:1});geo.translate(0,0,-.12);
+    this.scrapPieces=this.instances(geo,m.chunk,bin.displayCapacity,this.root);
+    this.pressBlank=this.instances(new THREE.CylinderGeometry(t.tokenRadius,t.tokenRadius,t.tokenHalfHeight*2,16),m.token,24,this.root);
+    this.bufferChunks=this.instances(new THREE.DodecahedronGeometry(.23,0),m.chunk,24,this.root);
+    this.chunks=this.instances(geo.clone().scale(.18,.18,.18),m.chunk,Math.max(512,s.flow.plinkoMaxActive*s.economy.byproductCap),this.root);
+    this.glints=this.instances(new THREE.BoxGeometry(.1,.1,.1),m.glint,1,this.root);
+    const light=new THREE.PointLight(0xffb431,12,7,2);light.position.set(0,1.1,t.depth/2+.5);this.root.add(light);
   }
 
   private buildLabels(sim: Simulation) {
@@ -290,11 +342,10 @@ export class DeviceScene {
       const sprite = makeLabel(text, sub, color); sprite.position.copy(p); sprite.scale.multiplyScalar(this.size * 0.85); parent.add(sprite); this.ownSprite(sprite);
     };
     add('RAW MATERIALS', '호퍼 · 원재료', '#e5b541', { x: b.width / 2, y: 4.1, z: 0.6 }, this.boardGroup);
-    add('PROCESSED', '본 재화 · 수거', '#86bd55', { x: d.mainBin.x, y: d.mainBin.y - 0.1, z: d.mainBin.z + 1.85 });
-    add('COMPRESSION', '부산물 · 압축', '#e5b541', { x: -d.pressHalfWidth - 2, y: d.die.y + 1.3, z: d.die.z });
+    add('COMPRESSION', '부산물 · 압축', '#e5b541', { x: d.scrap.x-d.pressHalfWidth-.8, y: d.die.y + 1.3, z: d.die.z });
     add('RECOVERY', '낙하 보너스', '#e5b541', { x: 0, y: -2.4, z: sim.scenario.tray.depth / 2 + 3.6 });
     this.live = { raw: new LiveLabel('#e5b541'), buffer: new LiveLabel('#e5b541'), feed: new LiveLabel('#e5b541'), bonus: new LiveLabel('#e5b541'), main: new LiveLabel('#86bd55') };
-    const places = [d.boardAnchor, { x: -d.pressHalfWidth - 2, y: d.die.y - 0.2, z: d.die.z }, { x: 0, y: d.die.y - 2, z: d.die.z }, d.collector, d.mainBin];
+    const places = [{ x: d.silo.x, y: d.silo.top - sim.scenario.board.height / 2 - 5.6, z: d.silo.z + d.silo.depth / 2 + .4 }, { x: d.scrap.x-d.pressHalfWidth-.8, y: d.die.y - 0.2, z: d.die.z }, { x: 0, y: d.die.y - 2, z: d.die.z }, d.collector, {x:0,y:d.pressIn.y+.6,z:d.housingFrontZ}];
     Object.values(this.live).forEach((l, i) => { l.sprite.position.copy(places[i]); l.sprite.position.y += i === 0 ? b.height / 2 + 5.3 : 1; this.root.add(l.sprite); this.ownSprite(l.sprite); });
   }
   private ownSprite(sprite: THREE.Sprite) { const m = sprite.material as THREE.SpriteMaterial; this.own(m); if (m.map) this.own(m.map); }
@@ -305,12 +356,11 @@ export class DeviceScene {
     this.boardQuat.set(w.rotation.x, w.rotation.y, w.rotation.z, w.rotation.w);
     this.boardGroup.position.copy(w.position); this.boardGroup.quaternion.copy(this.boardQuat); this.boardGroup.scale.copy(w.scale);
     this.placementResources.dispose(); this.chuteGroup.clear();
-    const paths = processorPaths(sim.scenario.board, sim.frame, sim.device);
-    this.mainCurve = this.path(paths.main);
-    this.channel(this.mainCurve, 1.1, 0.34, this.mats.greenChute, this.chuteGroup, true);
+    this.supply?.updatePlacement();
     // Loft the open throat between the rotated processor aperture and the fixed receiving pocket.
-    const half = sim.device.passageWidth / 2;
-    const corner = (end: number, across: number, depth: number) => byproductPoint(sim.scenario.board, sim.frame, sim.device, end, across, depth);
+    const half = sim.scenario.board.width * sim.frame.scale / 2;
+    const frontDepth=(sim.scenario.board.itemRadius+RECEIVER_TRAVEL)*sim.frame.scale+.2;
+    const corner = (end: number, across: number, depth: number) => byproductPoint(sim.scenario.board, sim.frame, sim.device, end, across*(end?sim.device.passageWidth/(half*2):1), depth);
     const quad = (a: Vec3, b: Vec3, c: Vec3, d: Vec3, mat: THREE.Material) => {
       const geo = this.placementResources.own(new THREE.BufferGeometry());
       geo.setAttribute('position', new THREE.Float32BufferAttribute([a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z,a.x,a.y,a.z,c.x,c.y,c.z,d.x,d.y,d.z], 3));
@@ -319,8 +369,10 @@ export class DeviceScene {
     };
     const back = this.placementResources.own(this.mats.metal.clone()); back.side = THREE.DoubleSide;
     quad(corner(0,-half,-0.5), corner(0,half,-0.5), corner(1,half,-0.5), corner(1,-half,-0.5), back);
-    for (const side of [-1, 1]) quad(corner(0,side*half,-0.5), corner(0,side*half,0.5), corner(1,side*half,0.5), corner(1,side*half,-0.5), back);
-    // Front stays open for inspection; two narrow braces protect the aperture corners.
+    for (const side of [-1, 1]) quad(corner(0,side*half,-0.5), corner(0,side*half,frontDepth), corner(1,side*half,frontDepth), corner(1,side*half,-0.5), back);
+    // Sealed manifold below the pocket throats.
+    const cover=this.placementResources.own(this.mats.paint.clone());cover.side=THREE.DoubleSide;
+    quad(corner(0,-half,frontDepth),corner(0,half,frontDepth),corner(1,half,frontDepth),corner(1,-half,frontDepth),cover);
 
     // Rear braced legs follow the transformed board, including compound placements.
     const board = sim.scenario.board;
@@ -332,8 +384,8 @@ export class DeviceScene {
     }
   }
   clear() {
-    this.sim = null; this.placementResources.dispose(); this.resources.dispose();
-    for (const group of [this.root, this.boardGroup, this.trayGroup, this.chuteGroup, this.mainStock]) group.clear();
+    this.sim = null; this.supply?.dispose(); this.placementResources.dispose(); this.resources.dispose();
+    for (const group of [this.root, this.boardGroup, this.trayGroup, this.chuteGroup]) group.clear();
   }
   dispose() { this.clear(); this.root.removeFromParent(); }
   setLabels(on: boolean) { this.root.traverse(o => { if ((o as THREE.Sprite).isSprite) o.visible = on; }); }
