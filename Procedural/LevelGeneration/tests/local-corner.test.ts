@@ -16,7 +16,9 @@ it.each(Object.keys(BUILDING_PROFILES) as Profile[])('%s isolates the edited cor
   const expected=new Set(result.surfaces.filter(s=>faceCorners(s.cell,s.direction).some(v=>vertexIds.has(cellId(v)))).map(s=>s.faceId));
   const affected=new Set(result.surfaces.filter(s=>s.architecture?.interpretation==='unsupported').map(s=>s.faceId));
   expect(affected).toEqual(expected);expect(affected.size).toBeLessThan(20);
-  expect(new Set(result.placements.map(p=>p.faceId)).size).toBe(result.surfaces.length);
+  expect(new Set([...result.placements.map(p=>p.faceId),...(result.scenePlacements??[]).flatMap(p=>p.faceIds??[])]).size).toBe(result.surfaces.length);
+  if(profile.startsWith('residential-'))for(const s of result.surfaces.filter(s=>s.role==='wall'&&affected.has(s.faceId)))
+    expect(result.scenePlacements!.find(p=>p.faceIds?.includes(s.faceId))!.asset).toContain('Plain');
   for(const p of result.placements){
     expect(p.tileId.startsWith('panel.'),p.faceId).toBe(affected.has(p.faceId));
     if(affected.has(p.faceId))expect(p.finishIds).toEqual([]);

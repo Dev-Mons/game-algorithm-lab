@@ -8,12 +8,13 @@ import {roadPlacements} from '../src/core/roads';
 import {LEGACY_SHOP_STYLE} from '../src/core/building-style';
 
 it('registers concepts A through D in order',()=>{
-  expect(Object.values(BUILDING_PROFILES).map(s=>s.label)).toEqual(Array.from({length:4},(_,i)=>String.fromCharCode(65+i)));
+  expect(Object.values(BUILDING_PROFILES).slice(0,4).map(s=>s.label)).toEqual(Array.from({length:4},(_,i)=>String.fromCharCode(65+i)));
+  expect(Object.keys(BUILDING_PROFILES).slice(4)).toEqual(['residential-cream','residential-red','residential-brick','residential-garage']);
   expect(Object.keys(FIXTURES).filter(k=>/^city[A-Z]$/.test(k))).toEqual(['cityA','cityB','cityC','cityD']);
   for(const profile of ['urban-office',...Array.from('efghijklmnopqrstuvwx',c=>`style-${c}`)])
     expect(()=>createDocument([],42,profile as Profile)).toThrow('Unknown current building profile');
 });
-it.each(Object.entries(BUILDING_PROFILES))('%s generates doors, roof plant, complete surfaces and round-trips',(id,style)=>{
+it.each(Object.entries(BUILDING_PROFILES).filter(([,style])=>/^[A-D]$/.test(style.label)))('%s generates doors, roof plant, complete surfaces and round-trips',(id,style)=>{
     const fixture=FIXTURES[`city${style.label}`];
     const doc=createDocument(fixture.cells,42,id as Profile,undefined,undefined,fixture.sceneInputs);
     const result=generateDocument(doc);

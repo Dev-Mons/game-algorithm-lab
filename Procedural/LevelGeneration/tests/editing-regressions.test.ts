@@ -84,7 +84,7 @@ it.each(Object.keys(FACADE_TILE_SETS) as FacadeTileSet[])('role tile replacement
   expect(replaceGrid(doc,[...doc.grid,[-1,0,0]]).buildings[0].theme?.tileSettings).toEqual(theme.tileSettings);
 });
 
-it.each(Object.keys(BUILDING_PROFILES) as (keyof typeof BUILDING_PROFILES)[])('all concepts accept custom low/corner/middle tiles (%s)',profile=>{
+it.each(Object.keys(BUILDING_PROFILES).filter(id=>!id.startsWith('residential-')) as (keyof typeof BUILDING_PROFILES)[])('A–D concepts accept custom low/corner/middle tiles (%s)',profile=>{
   const base=createDocument(box(5,7,3),42,profile);
   const doc=setBuildingTheme(base,base.buildings[0].componentId,{...base.buildingDefinition,tileSettings:{base:'D',corner:'B',body:'C',crown:'A'}});
   expect(generateDocument(doc).traces.some(t=>t.facade?.reason==='custom corner tile: B')).toBe(true);

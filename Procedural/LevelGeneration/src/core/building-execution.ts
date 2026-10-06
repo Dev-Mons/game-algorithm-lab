@@ -19,6 +19,7 @@ export interface BuildingExecutionPlans {
   facades: NonNullable<EnvironmentResult['facades']>;
   wallFacilities: EnvironmentResult['wallFacilities'];
   book: ReservationBook | undefined;
+  attachedGarages?:EnvironmentResult['attachedGarages'];
 }
 
 function indexBuildingPlans(plans: BuildingExecutionPlans) {
@@ -86,6 +87,7 @@ function prepareRuleInput(
       envelope,
       verticalBands,
       entrances: entrancePlan,
+      ...(plans.attachedGarages?.length?{coveredWallFaces:plans.attachedGarages.filter(g=>g.buildingId===component.id).flatMap(g=>g.contactFaceIds)}:{}),
     },
   };
 
@@ -117,7 +119,10 @@ function validateRuleOutput(
     if ((tile.assetKey.includes('portal-') || tile.assetKey.includes('entry')) && !portalFaces.has(p.faceId))
       throw new Error('UNPLANNED_PORTAL_OUTPUT');
   }
+  const exteriorFaces=new Set(result.surfaces.map(s=>s.faceId));
   for (const p of result.scenePlacements ?? []) {
+    if(p.faceIds?.some(id=>!exteriorFaces.has(id)))throw new Error('INVALID_SCENE_FACE_OWNER');
+    if(p.asset.startsWith('house-kit:SM_House_')&&/Door.*_3m$/.test(p.asset)&&p.faceIds?.some(id=>!portalFaces.has(id)))throw new Error('UNPLANNED_PORTAL_OUTPUT');
     const bounds = scenePlacementBounds16(p);
     assertOutputBounds(p.asset, bounds, envelope, false, outputBounds);
     p.worldBounds16 = bounds;

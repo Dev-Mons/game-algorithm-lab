@@ -12,6 +12,7 @@ import {
 import { PanelAssets } from "./panel-assets";
 import { CraftedGeometryLibrary } from "./crafted-geometry";
 import { createFaceMesh } from "./face-mesh";
+import {ResidentialGeometryLibrary} from './residential-geometry';
 import { setPlacementMatrix } from "./display-transform";
 import { SurfaceInteraction } from "./surface-interaction";
 import type { SurfaceSelection } from "./surface-edit";
@@ -115,6 +116,7 @@ export class Viewer {
     depthTest: true,
   });
   private scenePlacements = new THREE.Group();
+  private residential = new ResidentialGeometryLibrary();
   private sceneMaterials = new Map<string, THREE.MeshStandardMaterial>();
   private buildingSelection = new THREE.Group();
   private selection = new THREE.LineLoop(
@@ -274,8 +276,8 @@ export class Viewer {
       const module = hit.object.userData.modules?.[hit.instanceId ?? 0]??hit.object.userData.module;
       let faceId = hit.object.userData.faceId ?? hit.object.userData.faceIds?.[hit.instanceId ?? 0];
       if (hit.object.userData.scenePlacement?.kind === "building") {
-        const componentId = (hit.object.userData.scenePlacements?.[hit.instanceId ?? 0]??hit.object.userData.scenePlacement).componentId;
-        faceId = this.result.surfaces.find(s => s.componentId === componentId)?.faceId;
+        const placed=hit.object.userData.scenePlacements?.[hit.instanceId ?? 0]??hit.object.userData.scenePlacement;
+        faceId = placed.faceIds?.[0]??this.result.surfaces.find(s => s.componentId === placed.componentId)?.faceId;
       }
       if (!faceId) return;
       if (module?.kind === "structure") {
@@ -392,10 +394,10 @@ export class Viewer {
     const sceneMatrix=new THREE.Matrix4(),scenePosition=new THREE.Vector3(),sceneRotation=new THREE.Quaternion(),sceneScale=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
     for(const placements of sceneBatches.values()){
       const p=placements[0];
-      const vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=vegetationGeometry??this.wallFacilities.get(p.asset)??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):p.asset==='parking.island'?(this.parkingIsland??=createParkingIslandGeometry()):this.cube);
+      const houseGeometry=this.residential.get(p.asset),vegetationGeometry=p.kind==='object'?this.vegetation.get(p.asset):undefined,geometry=houseGeometry??vegetationGeometry??this.wallFacilities.get(p.asset)??this.fixtures.get(p.asset)??(p.asset==='parking.arrow'?(this.parkingArrow??=createParkingArrowGeometry()):p.asset==='parking.island'?(this.parkingIsland??=createParkingIslandGeometry()):this.cube);
       const vertexColors=!vegetationGeometry&&geometry.hasAttribute('color'),materialKey=`${p.color}${vertexColors?'|vertex':''}`;
       let material=this.sceneMaterials.get(materialKey);if(!material){material=new THREE.MeshStandardMaterial({color:p.color,roughness:.8,vertexColors});this.sceneMaterials.set(materialKey,material);}
-      const mesh=new THREE.InstancedMesh(geometry,vegetationGeometry?this.vegetation.material:material,placements.length);
+      const mesh=new THREE.InstancedMesh(geometry,houseGeometry?this.residential.material:vegetationGeometry?this.vegetation.material:material,placements.length);
       placements.forEach((p,i)=>{scenePosition.set(...p.center).add(this.displayOrigin);scenePosition.y+=p.surfaceOffset??0;sceneRotation.setFromAxisAngle(up,(p.yawQuarterTurns??0)*Math.PI/2);sceneScale.set(...p.size);sceneMatrix.compose(scenePosition,sceneRotation,sceneScale);mesh.setMatrixAt(i,sceneMatrix);});
       mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.scenePlacement=p;mesh.userData.scenePlacements=placements;mesh.computeBoundingSphere();this.scenePlacements.add(mesh);
     }
@@ -407,6 +409,7 @@ export class Viewer {
     this.renderer.domElement.dataset.parkingCirculation = JSON.stringify((result.environment?.parkingCirculation??[]).flatMap(a=>a.components.map(p=>({areaId:a.areaId,status:p.status,gateCount:p.gates.length,aisleCells:p.aisleCells.length,walkCells:p.walkCells.length,crossings:p.crossings.length,budget:p.budget,counters:p.counters,reasonCodes:p.reasonCodes}))));
     this.renderer.domElement.dataset.entrances = JSON.stringify(result.environment?.entrances??[]);
     this.renderer.domElement.dataset.parkingQuality=JSON.stringify(result.environment?.parking?.map(p=>p.quality)??[]);
+    this.renderer.domElement.dataset.attachedGarages=JSON.stringify((result.environment?.attachedGarages??[]).map(({placements,bounds16,...plan})=>plan));
     this.renderer.domElement.dataset.fixtures=JSON.stringify(result.environment?.fixtures?.placements??[]);
     stage('sceneMeshesAndPublication');
     const count = result.surfaces.length;
@@ -626,6 +629,7 @@ export class Viewer {
     this.assets.dispose();
     this.crafted.dispose();
     this.vegetation.dispose();
+    this.residential.dispose();
     this.sceneMaterials.forEach(m => m.dispose());
     this.groundPlane.geometry.dispose();
     this.groundPlane.material.dispose();

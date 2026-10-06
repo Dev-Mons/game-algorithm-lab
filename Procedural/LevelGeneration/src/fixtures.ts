@@ -2,6 +2,7 @@ import type { Vec3 } from "./core/generate";
 import type {Profile} from './core/document';
 import type {SceneInputs} from './core/scene-inputs';
 import {CONCEPT_NAMES} from './core/city-concepts';
+import {RESIDENTIAL_KIT} from './core/residential-kit';
 export function box(x: number, y: number, z: number): Vec3[] {
   const cells: Vec3[] = [];
   for (let a = 0; a < x; a++)
@@ -82,6 +83,9 @@ function sidewalkLandscapeFixture(){
   return {label:'인도 · 도로 사이 교통섬과 보도 위 건물',cells:shift(box(8,4,6),1,0,2),profile:'shop' as Profile,sceneInputs:{version:3 as const,roads,sidewalks,parkingAreas:[],objects}};
 }
 export const FIXTURES: Record<string, { label: string; cells: Vec3[];profile?:Profile;sceneInputs?:SceneInputs }> = {
+  attachedGarage:{label:'집 · 주차 영역으로 붙인 차고',cells:box(2,2,3),profile:'residential-cream',sceneInputs:{version:3,roads:[],sidewalks:[],objects:[],parkingAreas:[{id:'house-garage',anchor:[2,0,1],cells:[[2,0,1],[2,0,2],[3,0,1],[3,0,2]]}]}},
+  ...Object.fromEntries(RESIDENTIAL_KIT.examples.map((e,i)=>[`house${i+1}`,{label:`집 ${i+1} · Blender ${['크림 교차 지붕','붉은 모임 지붕','크림·벽돌 교차 지붕','벽돌 기와','열린 차고','닫힌 차고'][i]}`,
+    cells:e.cells,profile:`residential-${e.variant}` as Profile}])),
   ...cityConceptFixtures(),
   sidewalkLandscape:sidewalkLandscapeFixture(),
   referenceCLow:{label:'C · 저층 수평 띠와 옥탑',cells:[...box(10,4,6),...shift(box(5,2,3),2,4,1)],profile:'urban-shop'},

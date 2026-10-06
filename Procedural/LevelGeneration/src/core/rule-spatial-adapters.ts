@@ -5,6 +5,7 @@ import type { RuleSpatialAdapter, SpatialAdapterReference, RulePreflightInput, R
 import { cellBox16, mergeBoxes16, containedInUnion, validateBox16, hasSceneAssetBounds,hasFaceAssetBounds } from "./placement-bounds";
 import type { Box16 } from "./environment-contract";
 import type { Vec3 } from "./analysis";
+import {isResidential} from './residential-kit';
 
 const registry = new Map<string, RuleSpatialAdapter>();
 const key = (ref: SpatialAdapterReference) => `${ref.id}@${ref.version}`;
@@ -44,7 +45,8 @@ export function preflightRule(rule: BuildingRuleReference, reference: SpatialAda
   const bounds = [0,2].map(a => {
     let min = Infinity, max = -Infinity;
     for (const c of originalCells) { min = Math.min(min,c[a]); max = Math.max(max,c[a]); }
-    return [Math.max(-1000000,min-1)*16, (Math.min(1000000,max+1)+1)*16];
+    const padding=isResidential(input.options.architecture?.id)?2:1;
+    return [Math.max(-1000000,min-padding)*16, (Math.min(1000000,max+padding)+1)*16];
   });
   for (const box of all) {
     validateBox16(box);

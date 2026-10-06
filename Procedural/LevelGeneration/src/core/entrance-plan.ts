@@ -11,11 +11,16 @@ import {FACADE_ASSETS} from './facade-assets';
 import type {BuildingStyle} from './building-style';
 import {planColumns} from './column-prototype';
 import type {SceneRelationIndex} from './scene-relations';
+import {isResidential,preferredHouseDoor} from './residential-kit';
 
 export const desiredEntranceCount=(frontageCells:number,volumeCells:number,settings:typeof ENVIRONMENT.entrances)=>frontageCells===0?0:Math.min(settings.maxCount,Math.ceil(frontageCells/settings.facadeCellsPerEntry),Math.max(1,Math.ceil(volumeCells/settings.volumeCellsPerEntry)));
 interface Candidate {id:string;run:BoundaryRun;faces:Surface[];landing:Vec3[];path:AccessResult;centerDistance2:number;trace:CandidateTrace}
 const dotU=(s:Surface)=>s.cell.reduce((n,v,i)=>n+v*BASES[s.direction].u[i],0);
 function supportsPortal(style:BuildingStyle,width:1|2,bodyWidth:number,bodyHeight:number):boolean {
+  // Authored house doors have a .84m clear inner width and >1.875m height.
+  // Outdoor routing keeps the larger common 1.5m/2.25m clearance proof;
+  // the doorway itself accommodates the fixed .75m/1.875m residential body.
+  if(isResidential(style.id))return width===1;
   const keys=width===1?[style.entrance]:style.entrancePair,modules=keys.map(k=>style.modules.find(m=>m.id===k));
   if(modules.some(m=>!m||m.semantic!=='entrance'))return false;
   const assets=modules.map(m=>FACADE_ASSETS[m!.assetId]);
@@ -27,6 +32,7 @@ function supportsPortal(style:BuildingStyle,width:1|2,bodyWidth:number,bodyHeigh
 }
 export function planEntrances(document:GenerationDocument,building:ResolvedBuildingMetadata,cells:Vec3[],surfaces:Surface[],spatial:SpatialAnalysis,book:ReservationBook,solid:BoundsIndex<string>,relations?:SceneRelationIndex):EntrancePlan {
   const style=building.theme??document.buildingDefinition,settings=ENVIRONMENT,search=new AccessSearch(spatial,document,book,solid),roads=new Set(document.sceneInputs.roads.map(cellId)),faceMap=new Map(surfaces.map(s=>[s.faceId,s])),candidates:Candidate[]=[],traces:CandidateTrace[]=[];
+  const preferred=preferredHouseDoor(cells,style.id);
   const columns=new Set(planColumns(building.componentId,cells,surfaces,style.programs?'auto':'building',new Set()).faces.map(f=>f.faceId));
   const runs=spatial.buildingRuns.filter(r=>r.owner.id===building.componentId&&r.footY===style.groundY);
   for(const run of runs){
@@ -64,7 +70,8 @@ export function planEntrances(document:GenerationDocument,building:ResolvedBuild
   const separated=(a:Candidate,b:Candidate)=>a.run.id===b.run.id?
     Math.max(dotU(a.faces[0])-dotU(b.faces[b.faces.length-1])-1,dotU(b.faces[0])-dotU(a.faces[a.faces.length-1])-1)>=settings.entrances.minGapCells:distance(a,b)>=settings.entrances.minGapCells;
   const position=(a:Candidate,b:Candidate)=>compareCells(a.faces[0].cell,b.faces[0].cell)||style.frontOrder.indexOf(a.run.direction)-style.frontOrder.indexOf(b.run.direction);
-  const mainOrder=(a:Candidate,b:Candidate)=>Number(b.path.reachable)-Number(a.path.reachable)||(a.path.distanceCells??0)-(b.path.distanceCells??0)||b.run.lengthCells-a.run.lengthCells||b.faces.length-a.faces.length||a.centerDistance2-b.centerDistance2||style.frontOrder.indexOf(a.run.direction)-style.frontOrder.indexOf(b.run.direction)||position(a,b);
+  const preferredRank=(c:Candidate)=>Number(!!preferred&&c.faces.some(f=>f.direction===preferred.direction&&cellId(f.cell)===cellId(preferred.cell)));
+  const mainOrder=(a:Candidate,b:Candidate)=>Number(b.path.reachable)-Number(a.path.reachable)||preferredRank(b)-preferredRank(a)||(a.path.distanceCells??0)-(b.path.distanceCells??0)||b.run.lengthCells-a.run.lengthCells||b.faces.length-a.faces.length||a.centerDistance2-b.centerDistance2||style.frontOrder.indexOf(a.run.direction)-style.frontOrder.indexOf(b.run.direction)||position(a,b);
   const remaining=[...candidates];
   while(selected.length<desiredCount&&remaining.length){
     const frontages=new Set(selected.map(c=>c.path.targetFrontageId)),planes=new Set(selected.map(c=>`${c.run.direction}:${c.run.plane}`));

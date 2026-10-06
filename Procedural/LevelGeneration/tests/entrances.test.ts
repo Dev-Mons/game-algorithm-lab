@@ -41,7 +41,9 @@ it.each(Object.keys(BUILDING_PROFILES) as Profile[])('%s gives every separate gr
     expect(plan.entrances).toHaveLength(1);
     const entry=plan.entrances[0];expect(entry.access).toBe('local');expect(entry.pathCells).toEqual([]);
     expect(entry.roadTargetCell).toBeUndefined();expect(entry.roadFrontageId).toBeUndefined();
-    for(const id of entry.faceIds){expect(faces.get(id)!.cell[1]).toBe(0);expect(result.placements.find(p=>p.faceId===id)!.ruleId).toBe('building.entrance');}
+    for(const id of entry.faceIds){expect(faces.get(id)!.cell[1]).toBe(0);
+      if(profile.startsWith('residential-'))expect(result.scenePlacements!.find(p=>p.faceIds?.includes(id))!.asset).toMatch(/House_.*(?:Door|GaragePortal).*_3m$/);
+      else expect(result.placements.find(p=>p.faceId===id)!.ruleId).toBe('building.entrance');}
     expect(result.environment!.reservations.some(r=>r.id===entry.id&&r.kind==='entrance')).toBe(true);
   }
   expect(generateDocument({...document,grid:[...document.grid].reverse()},{cache:false})).toEqual(result);

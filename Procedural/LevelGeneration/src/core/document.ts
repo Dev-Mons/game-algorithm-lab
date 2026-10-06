@@ -9,7 +9,7 @@ import { inheritBuildings, validateBuildings, type BuildingMetadata } from "./bu
 import {
   SHOP_STYLE,
   OFFICE_STYLE,
-  URBAN_SHOP_STYLE, TOWER11_D_STYLE,
+  URBAN_SHOP_STYLE, TOWER11_D_STYLE,RESIDENTIAL_CREAM_STYLE,RESIDENTIAL_RED_STYLE,RESIDENTIAL_BRICK_STYLE,RESIDENTIAL_GARAGE_STYLE,
   validateBuildingStyle,
   type BuildingStyle,
 } from "./building-style";
@@ -39,7 +39,8 @@ export const SETTINGS = {
   hash: "h33-u32-v1",
 } as const;
 // D is the explicitly requested Tower11 concept, independent of retired presets.
-export const BUILDING_PROFILES={shop:SHOP_STYLE,office:OFFICE_STYLE,'urban-shop':URBAN_SHOP_STYLE,'tower11-d':TOWER11_D_STYLE};
+export const BUILDING_PROFILES={shop:SHOP_STYLE,office:OFFICE_STYLE,'urban-shop':URBAN_SHOP_STYLE,'tower11-d':TOWER11_D_STYLE,
+  'residential-cream':RESIDENTIAL_CREAM_STYLE,'residential-red':RESIDENTIAL_RED_STYLE,'residential-brick':RESIDENTIAL_BRICK_STYLE,'residential-garage':RESIDENTIAL_GARAGE_STYLE};
 export type Profile = keyof typeof BUILDING_PROFILES;
 function topAssetRole(key:string){const a=FACADE_ASSETS[key as FacadeAssetKey];return a&&'surfaceRole' in a?a.surfaceRole:undefined;}
 export function profileData(profile: Profile) {

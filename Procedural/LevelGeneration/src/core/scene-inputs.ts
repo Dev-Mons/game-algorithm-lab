@@ -11,7 +11,7 @@ export interface SceneInputs { version: 3; roads: Vec3[]; sidewalks: Vec3[]; obj
 export interface SceneInputsV2 { version: 2; roads: Vec3[]; objects: ObjectInput[]; parkingAreas: ParkingAreaInput[] }
 export type SceneInputsInput = SceneInputs | SceneInputsV2;
 export const emptySceneInputs = (): SceneInputs => ({version:3,roads:[],sidewalks:[],objects:[],parkingAreas:[]});
-export interface ScenePlacement { componentId?: string; input?: ObjectInput; id: string; kind: "object" | "road" | "building" | "parking" | "sidewalk"; asset: string; center: Vec3; size: Vec3; color: string; context: string; planId?: string; sourceRefs?: SourceRef[]; yawQuarterTurns?: Heading; worldBounds16?: Box16;
+export interface ScenePlacement { componentId?: string; faceIds?: string[]; input?: ObjectInput; id: string; kind: "object" | "road" | "building" | "parking" | "sidewalk"; asset: string; center: Vec3; size: Vec3; color: string; context: string; planId?: string; sourceRefs?: SourceRef[]; yawQuarterTurns?: Heading; worldBounds16?: Box16;
   /** Presentation-only lift in cells for a ground object standing on pavement; center, bounds and reservations keep Y=0. */
   surfaceOffset?: number }
 export type ObjectContext = "ground" | "roof" | "wall" | "roadside" | "median";

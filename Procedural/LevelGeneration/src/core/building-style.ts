@@ -155,6 +155,17 @@ function tower11Style():BuildingStyle {
     topTrim:'trim',frontOrder:['PZ','PX','NZ','NX'],groundY:0,roofAsset:'facade.city-roof',terraceAsset:'facade.city-terrace'};
 }
 export const TOWER11_D_STYLE=tower11Style();
+/** Residential module selection is evaluated against the actual exterior by
+ * residential-kit; the facade interface supplies common vertical/access plans. */
+export function residentialStyle(variant:'cream'|'red'|'brick'|'garage'):BuildingStyle {
+  const style=tower11Style();style.id=`residential-${variant}`;
+  style.label=variant==='cream'?'집 · 크림 사이딩':variant==='red'?'집 · 붉은 사이딩':variant==='garage'?'집 · 차고':'집 · 벽돌과 기와';
+  return style;
+}
+export const RESIDENTIAL_CREAM_STYLE=residentialStyle('cream');
+export const RESIDENTIAL_RED_STYLE=residentialStyle('red');
+export const RESIDENTIAL_BRICK_STYLE=residentialStyle('brick');
+export const RESIDENTIAL_GARAGE_STYLE=residentialStyle('garage');
 export function validateBuildingStyle(style:BuildingStyle):BuildingStyle {
   const fail=():never=>{throw new Error('INVALID_BANDED_BUILDING_STYLE');};
   const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_.:-]+$/.test(v);

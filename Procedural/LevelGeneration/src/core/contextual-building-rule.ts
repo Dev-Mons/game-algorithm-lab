@@ -10,6 +10,7 @@ import { selectTiles, DEFAULT_RULES, hash33, type FaceTrace } from './selection'
 import { faceCenter2 } from './analysis';
 
 import type { Surface } from './analysis';
+import {isResidential,planResidential} from './residential-kit';
 
 export const CONTEXTUAL_RULE_DEFINITION = {
   pipeline: 'environment-contextual-v1',
@@ -73,6 +74,14 @@ export function contextualOutput(
 ): GenerationResult {
   if (!input.context.entrances || !input.context.verticalBands)
     throw new Error('CONTEXTUAL_BUILDING_PLAN_REQUIRED');
+  if(isResidential(input.options.architecture?.id)){
+    const portals=new Set(input.context.entrances.entrances.flatMap(e=>[...e.faceIds]));
+    const scenePlacements=planResidential(input.cells,input.analysis.surfaces,input.options.architecture!.id,input.componentId,portals,new Set(input.context.coveredWallFaces??[]));
+    const owners=new Map(scenePlacements.flatMap(p=>(p.faceIds??[]).map(id=>[id,p] as const)));
+    const traces=base.traces.map(t=>({...t,assemblyNote:`Blender module ${owners.get(t.faceId)?.asset}; ${owners.get(t.faceId)?.context}`}));
+    return {...base,traces,placements:[],modules:[],scenePlacements,counters:{...base.counters,
+      placementCount:0,moduleCount:0,attachmentCount:0,ownedFaceCount:input.analysis.surfaces.length}};
+  }
   const result = applyFacadeStyle(base, { ...input.options, context: input.context });
   return {
     ...result,

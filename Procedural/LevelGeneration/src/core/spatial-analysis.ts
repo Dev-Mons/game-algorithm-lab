@@ -9,6 +9,7 @@ import {cellBox16,mergeBoxes16} from './placement-bounds';
 import {SupportIndex} from './scene-relations';
 import {BoundsIndex,ReservationBook} from './reservations';
 import {buildAccessGraph,bodyBox16,type AccessGraphData,walkSweep16} from './access-graph';
+import type {AttachedGaragePlan} from './attached-garages';
 
 export interface BoundaryRun {id:string;owner:SourceRef;footY:number;direction:'PX'|'NX'|'PZ'|'NZ';plane:number;cells:Vec3[];lengthCells:number}
 export interface SpatialRelation {from:SourceRef;to:SourceRef;contactLengthCells:number;planarDistanceCells:number;deltaY:number;containedCellCount:number;sourceCellCount:number;occluded:boolean}
@@ -32,12 +33,12 @@ export function boundaryRuns(cells:Vec3[],owner:SourceRef,exposed?:Set<string>):
   }
   return runs.sort((a,b)=>compareCells(a.cells[0],b.cells[0])||directions.indexOf(a.direction)-directions.indexOf(b.direction));
 }
-export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalysis,envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],knownComponents?:{id:string;cells:Vec3[]}[],support=new SupportIndex(document,analysis)):{spatial:SpatialAnalysis;book:ReservationBook;solidIndex:BoundsIndex<string>} {
+export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalysis,envelopes:{buildingId:string;envelope:RuleSpatialEnvelope}[],knownComponents?:{id:string;cells:Vec3[]}[],support=new SupportIndex(document,analysis),garages:readonly AttachedGaragePlan[]=[]):{spatial:SpatialAnalysis;book:ReservationBook;solidIndex:BoundsIndex<string>} {
   const fixed:Reservation[]=[],solidIndex=new BoundsIndex<string>(),diagnostics:SpatialAnalysis['diagnostics']=[];
   for(const b of document.buildings) {
     const envelope=envelopes.find(p=>p.buildingId===b.componentId)?.envelope;
     if(!envelope)throw new Error('RULE_SPATIAL_CONTRACT_REQUIRED');
-    const r:Reservation={id:`solid:building:${b.componentId}`,ownerId:b.componentId,sourceRefs:[{kind:'building',id:b.componentId}],kind:'solid',priority:1000,cells:[],boxes16:[...envelope.requiredBoxes16]};fixed.push(r);
+    const r:Reservation={id:`solid:building:${b.componentId}`,ownerId:b.componentId,sourceRefs:[{kind:'building',id:b.componentId},...garages.filter(g=>g.buildingId===b.componentId).map(g=>({kind:'parking' as const,id:g.areaId}))],kind:'solid',priority:1000,cells:[],boxes16:[...envelope.requiredBoxes16]};fixed.push(r);
   }
   const components=new Map<string,Vec3[]>();
   const owner=new Map<string,string>();
@@ -47,7 +48,7 @@ export function analyzeSpatial(document:GenerationDocument,analysis:VolumeAnalys
   for(const b of document.buildings){const known=knownComponents?.find(c=>c.id===b.componentId);const root=b.componentId.split(',').map(Number) as Vec3,queue=known?.cells??[root];remaining.delete(cellId(root));
     if(!known)for(let i=0;i<queue.length;i++)for(const d of ['PX','NX','PY','NY','PZ','NZ'] as Direction[]){const c=add(queue[i],BASES[d].n);if(remaining.delete(cellId(c)))queue.push(c);}
     components.set(b.componentId,known?queue:queue.sort(compareCells));
-    const r=fixed.find(r=>r.ownerId===b.componentId)!;r.cells=queue;r.boxes16=mergeBoxes16([...r.boxes16,...mergeBoxes16(queue.map(cellBox16))]);
+    const r=fixed.find(r=>r.ownerId===b.componentId)!;r.cells=[...queue,...garages.filter(g=>g.buildingId===b.componentId).flatMap(g=>g.cells)];r.boxes16=mergeBoxes16([...r.boxes16,...mergeBoxes16(queue.map(cellBox16))]);
   }
   for(const object of document.sceneInputs.objects) {
     const denied=support.forObject(object.id).filter(r=>!r.accepted);

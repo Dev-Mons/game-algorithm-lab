@@ -39,7 +39,7 @@ it("every authored face asset respects its unit footprint and declared relief li
     }
   }
 });
-it.each(Object.entries(FIXTURES))('%s has exactly one owner for every external face',(_id,fixture)=>{const r=generateDocument(createDocument(fixture.cells,42,fixture.profile,undefined,undefined,fixture.sceneInputs));validateAssembly(r.surfaces.map(s=>s.faceId),r.placements,r.modules!);expect(r.counters.ownedFaceCount).toBe(r.surfaces.length);});
+it.each(Object.entries(FIXTURES))('%s has exactly one owner for every external face',(_id,fixture)=>{const r=generateDocument(createDocument(fixture.cells,42,fixture.profile,undefined,undefined,fixture.sceneInputs));const faces=[...r.placements,...(r.scenePlacements??[]).flatMap(p=>(p.faceIds??[]).map(faceId=>({faceId})))];validateAssembly(r.surfaces.map(s=>s.faceId),faces,r.modules!);expect(r.counters.ownedFaceCount).toBe(r.surfaces.length);});
 it("actual shared geometry stays inside declared bounds and roofs have no internal bottom", () => {
   for (const asset of MODULE_ASSETS) {
     const parts = buildCraftedGeometry(asset.assetKey);

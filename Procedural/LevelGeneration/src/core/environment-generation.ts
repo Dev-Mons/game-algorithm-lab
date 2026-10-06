@@ -1,4 +1,6 @@
 import { assembleEnvironmentResult } from './environment-output';
+import {planAttachedGarages} from './attached-garages';
+import {mergeBoxes16} from './placement-bounds';
 import { planBuildingStructure } from './building-plans';
 import { fixtureWallMounts } from './building-output';
 import { resolveExecutionDocument, analyzeExecutionDocument } from './environment-analysis';
@@ -75,6 +77,8 @@ export function executeEnvironment(
     }
   };
   const { analysis, components } = measure('analysis', () => analyzeExecutionDocument(document, cache));
+  const garagePlanning=planAttachedGarages(document,analysis.surfaces,components);
+  const parkingDocument=garagePlanning.garages.length?{...document,sceneInputs:{...document.sceneInputs,parkingAreas:garagePlanning.openParkingAreas}}:document;
   const buildingsById = new Map(document.buildings.map((b) => [b.componentId, b]));
   const componentsById = new Map(components.map((c) => [c.id, c]));
   const originals = [
@@ -128,6 +132,8 @@ export function executeEnvironment(
           }),
           originals,
         );
+        const attached=garagePlanning.garages.filter(g=>g.buildingId===component.id);
+        if(attached.length)envelope.requiredBoxes16=mergeBoxes16([...envelope.requiredBoxes16,...attached.flatMap(g=>g.bounds16)]);
         preflight.push({ buildingId: component.id, envelope });
       } catch (error) {
         if (!(error instanceof Error) || !error.message.startsWith('ENV_PIPELINE_NOT_READY:')) throw error;
@@ -137,13 +143,13 @@ export function executeEnvironment(
     if (!reports.has('preflight')) report('preflight', components.length ? 'ready' : 'not-applicable');
   });
   const hasSpatial = originals.length > 0,
-    hasParking = document.sceneInputs.parkingAreas.length > 0,
+    hasParking = parkingDocument.sceneInputs.parkingAreas.length > 0,
     hasFixtures = document.sceneInputs.objects.some((o) => o.category !== 'vegetation');
   const spatialReady = preflight.length === components.length;
   const spatialRun = spatialReady
     ? measure('spatial', () => {
         const support = new SupportIndex(document, analysis, vertical);
-        const run = analyzeSpatial(document, analysis, preflight, components, support);
+        const run = analyzeSpatial(document, analysis, preflight, components, support,garagePlanning.garages);
         return {...run, support, relations: new SceneRelationIndex(support, document, run.spatial)};
       })
     : undefined;
@@ -164,7 +170,7 @@ export function executeEnvironment(
     spatialRun && hasParking
       ? measure('parkingCirculation', () => {
           const key = cache?.key('circulation', {
-            areas: document.sceneInputs.parkingAreas,
+            areas: parkingDocument.sceneInputs.parkingAreas,
             roads: document.sceneInputs.roads,
             settings: {
               parking: ENVIRONMENT.parking,
@@ -181,7 +187,7 @@ export function executeEnvironment(
           const hit = key ? cache!.get<Cached>(key) : undefined;
           if (hit) return { ...hit, domains: undefined };
           const run = planParkingCirculation(
-            document,
+            parkingDocument,
             spatialRun.spatial,
             spatialRun.book,
             spatialRun.solidIndex,
@@ -257,7 +263,7 @@ export function executeEnvironment(
       ? measure('parkingStalls', () => {
           const key = cache?.key('stalls', {
             roads: document.sceneInputs.roads,
-            areas: document.sceneInputs.parkingAreas,
+            areas: parkingDocument.sceneInputs.parkingAreas,
             settings: ENVIRONMENT.access,
             circulation: circulation.areas,
             spatial: parkingGraphKey,
@@ -270,7 +276,7 @@ export function executeEnvironment(
             return hit.plans;
           }
           const plans = planParkingStalls(
-            document,
+            parkingDocument,
             circulation.areas,
             spatialRun.spatial,
             activeBook,
@@ -328,6 +334,7 @@ export function executeEnvironment(
         facades,
         wallFacilities,
         book: finalBook,
+        attachedGarages:garagePlanning.garages,
       },
       tileLookup,
     ),
@@ -380,11 +387,12 @@ export function executeEnvironment(
     ...(contextual && !trims ? ['FIXTURE_PLAN_NOT_READY'] : []),
   );
   for (const generatedResult of generated)
-    if (generatedResult.placements.length) {
+    if (generatedResult.placements.length||generatedResult.scenePlacements?.some(p=>p.faceIds?.length)) {
       const faces = new Set(generatedResult.surfaces.map((s) => s.faceId));
-      validateAssembly([...faces], generatedResult.placements, []);
+      validateAssembly([...faces], [...generatedResult.placements,...(generatedResult.scenePlacements??[]).flatMap(p=>(p.faceIds??[]).map(faceId=>({faceId})))], []);
     }
   const stages = order.map((s) => reports.get(s)!);
+  if(garagePlanning.garages.length)stages.splice(2,0,{stage:'garages',state:spatialRun?'ready':'blocked',reasonCodes:spatialRun?[]:['PREFLIGHT_NOT_READY']});
   if (mode === 'complete' && stages.some((s) => s.state === 'blocked' || s.state === 'not-implemented'))
     throw new Error(
       'ENV_PIPELINE_NOT_READY:' +
@@ -402,6 +410,7 @@ export function executeEnvironment(
     tileLookup,
     faceLookup,
     support,
+    garageTraces:garagePlanning.traces,
     plans: {
       stages,
       preflight,
@@ -412,6 +421,7 @@ export function executeEnvironment(
       entrances,
       ...(fixtures ? { fixtures } : {}),
       ...(parking ? { parking } : {}),
+      ...(garagePlanning.garages.length?{attachedGarages:garagePlanning.garages}:{}),
       ...(circulation ? { parkingCirculation: circulation.areas } : {}),
       reservations: finalBook?.snapshot() ?? [],
       ...(spatialRun ? { spatial: spatialRun.spatial } : {}),

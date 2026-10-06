@@ -9,6 +9,7 @@ import { FACADE_ASSETS } from './facade-assets';
 import { BoundsIndex, ReservationBook } from './reservations';
 import { cellBox16, faceBounds16 } from './placement-bounds';
 import { assertOutputBounds, envelopeIndex } from './rule-spatial-adapters';
+import {isResidential} from './residential-kit';
 /** Selected fixed finish on a host face, never an independently renderable module. */
 export interface FacadeFinishSelection {
   finishId: string;
@@ -114,7 +115,7 @@ function integratedBuildings(document: GenerationDocument, vertical: readonly Ve
           document.buildingDefinition;
         const module = style.modules.find((m) => m.id === style.fallback)!;
         const asset = FACADE_ASSETS[module.assetId];
-        return 'integratedTrims' in asset && asset.integratedTrims;
+        return isResidential(style.id)||'integratedTrims' in asset && asset.integratedTrims;
       })
       .map((v) => v.buildingId),
   );

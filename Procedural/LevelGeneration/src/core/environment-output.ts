@@ -13,6 +13,7 @@ import { analyzeSidewalks, sidewalkPlacements, sidewalkSurfaceOffset, sidewalkTr
 import { vegetationPlacements } from './scene-inputs';
 import { sceneBounds16 } from './placement-bounds';
 import type { SupportIndex } from './scene-relations';
+import type {DecisionTrace} from './environment-contract';
 
 interface EnvironmentOutputInput {
   document: GenerationDocument;
@@ -24,6 +25,7 @@ interface EnvironmentOutputInput {
   tileLookup: ReadonlyMap<string, GenerationDocument['catalog']['tiles'][number]>;
   faceLookup: ReadonlyMap<string, Surface>;
   support?: SupportIndex;
+  garageTraces?:DecisionTrace[];
 }
 const withSurfaceOffset = (document: GenerationDocument, center: readonly number[]) => {
   const offset = sidewalkSurfaceOffset(document, [Math.floor(center[0]), 0, Math.floor(center[2])]);
@@ -53,6 +55,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
       ...(wallFacilities?.placements ?? []),
       ...(fixtures?.placements ?? []),
       ...parkingPlacements(parking ?? []),
+      ...(plans.attachedGarages??[]).flatMap(g=>g.placements),
       ...generated.flatMap((r) => r.scenePlacements ?? []),
       ...roadPlacements(document.sceneInputs.roads,plans.relations?.roads.map(r=>r.module)),
       ...sidewalkPlacements(document),
@@ -89,6 +92,7 @@ export function assembleEnvironmentResult(input: EnvironmentOutputInput): Genera
       ...(document.sceneInputs.sidewalks.length ? { sidewalks: analyzeSidewalks(document) } : {}),
       overlays: environmentOverlays(entrances, circulation ?? [], vertical, faceLookup, probes),
       traces: [
+        ...(input.garageTraces??[]),
         ...(input.support?.records??[]).map(r=>({
           id:r.id,ownerId:r.sourceRefs.find(s=>s.kind==='object')!.id,ruleId:'installation-support',ruleVersion:'1',
           sourceRefs:r.sourceRefs,relationIds:[r.id],readDependencies:r.readDependencies,

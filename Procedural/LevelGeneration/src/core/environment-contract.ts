@@ -46,8 +46,9 @@ export interface BuildingContextPlan {
   facadePlan?:import('./facade-plan').FacadePlan;
   facadeChanges?:import('./wall-facilities').WallFacilityPlan['changes'];
   columns?:import('./column-prototype').ColumnPlan;
+  coveredWallFaces?:string[];
 }
-export type EnvironmentStage = "preflight" | "vertical" | "spatial" | "parkingCirculation" | "entrances" | "parkingStalls" | "facade" | "fixtures" | "attachments";
+export type EnvironmentStage = "preflight" | "vertical" | "spatial" | "parkingCirculation" | "entrances" | "parkingStalls" | "facade" | "fixtures" | "attachments" | "garages";
 export type StageState = "ready" | "not-applicable" | "not-implemented" | "blocked";
 export interface StageReport { stage: EnvironmentStage; state: StageState; reasonCodes: string[] }
 export interface EnvironmentResult {
@@ -66,6 +67,7 @@ export interface EnvironmentResult {
   parkingCirculation?: import("./parking-contract").ParkingCirculationArea[];
   entrances?: import("./entrance-contract").EntrancePlan[];
   parking?: import("./parking-contract").ParkingAreaPlan[];
+  attachedGarages?:import('./attached-garages').AttachedGaragePlan[];
   fixtures?: import("./fixture-plan").FixturePlan;
   relations?: import('./scene-relations').RelationView;
 }
