@@ -198,8 +198,10 @@ export async function exportPortingBundle(root: string, output: string): Promise
   }
   await put('hash-vectors.json', await readFile(join(root, 'fixtures/hash-vectors.json')));
   await put('check.py', await readFile(join(root, 'porting/check.py')));
-  await put('START_HERE.md', await readFile(join(root, 'docs/NATIVE_PORTING.md')));
-  for (const name of ['NATIVE_PORTING.md', 'BUILDING_RULES_PORTING.md', 'PORTING_CONTRACT.md', 'COMPLETE_FACE_ASSETS.md', 'ROAD_RULES.md']) {
+  const startHere = (await readFile(join(root, 'docs/NATIVE_PORTING.md'), 'utf8'))
+    .replaceAll('(GENERATION_RULES.md', '(spec/GENERATION_RULES.md');
+  await put('START_HERE.md', startHere);
+  for (const name of ['NATIVE_PORTING.md', 'GENERATION_RULES.md']) {
     await put(`spec/${name}`, await readFile(join(root, 'docs', name)));
   }
   const historicalRoads = await put('reference/road-presentation-v1.json', await readFile(join(root, 'tests/fixtures/road-presentation-v1.json')));

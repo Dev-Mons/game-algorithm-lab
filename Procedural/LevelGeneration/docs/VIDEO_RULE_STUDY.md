@@ -1,7 +1,7 @@
 # 15개 Miniopolis 영상: 공통 생성 규칙 분석
 
 조사일: 2026-09-25. 코드 기준: `65701664aa9c4c4bb80320d58550e610511ea2b0`.
-범위: `Procedural/LevelGeneration`의 조사·분석·후속 명세. 제품 기능·런타임·기존 baseline은 변경하지 않았다.
+이 문서는 당시 관찰·가설·검증 시나리오의 출처다. 이후 구현 상태와 구분하며 현재 규칙은 [생성 규칙](GENERATION_RULES.md)을 따른다.
 
 ## 확인 결과와 읽는 순서
 
@@ -13,7 +13,7 @@
 |---|---|
 | [관찰·접근 기록](video-rule-study/OBSERVATIONS.md) | 15개 원본 링크, 전체 길이, 실제 시점, 조작 단서·전후 차이·유지 특징·한계 |
 | [프레임 갤러리](video-rule-study/evidence/gallery.html) | 시간별 캡처와 원본 재생 링크; 썸네일이 아니라 재생 영상 프레임 |
-| [통합 규칙 명세](video-rule-study/RULE_SPEC.md) | 공간 표현, 입력/출력, 단계, 충돌, 갱신·결정론·실패 계약 |
+| [제안 ID 대응](GENERATION_RULES.md#영상-연구의-제안-id) | 연구 R01–R10의 원칙과 현재 지원 경계 |
 | [가설·교차 검증·구분 실험](video-rule-study/HYPOTHESES.md) | 원본 내부 동작에 대한 확신도, 대안 설명, 반증 방법 |
 | [검증 시나리오](video-rule-study/ACCEPTANCE.md) | 다른 형태·경계·편집 순서, 음성 사례, 보존·검증 범위 |
 
@@ -25,16 +25,39 @@
 2. V03/V05/V08/V09의 식생·옥상 설비, V14의 교차로 주변 시설은 같은 오브젝트 도구라도 지지면·주변 관계를 함께 보아야 한다는 설계 근거다. 자동 종류 선택의 정확한 조건은 영상으로 확정되지 않았다.
 3. V06의 외형 교체는 부피와 스타일을 분리할 근거다. 부착물까지 완전히 불변이라는 주장은 성립하지 않는다. V07의 날씨·빛, V13의 화면 효과는 규칙 계산과 별도 표시 계층으로 다룬다.
 4. V11/V13에서 주차 구획·차량이 보이지만 진입/회차/상층 연결 증명을 관찰한 것은 아니다. 기존 프로젝트의 차량·보행 검증을 영상처럼 보이기 위해 약화하지 않는다.
-5. 현재 코드에는 이미 단일 생성 파이프라인, 실제 외피, 지역 매스 분석, 예약·접근 계획, 문맥 시설, 안정적인 anchor가 있다. 새 생성기를 통째로 만드는 대신 **관계 정보의 공통화, 경계와 빈 공간 설명, 시설 판정 근거의 일관성**을 먼저 개선한다.
+5. 분석 당시 코드에는 이미 단일 생성 파이프라인, 실제 외피, 지역 매스 분석, 예약·접근 계획, 문맥 시설, 안정적인 anchor가 있다. 새 생성기를 통째로 만드는 대신 **관계 정보의 공통화, 경계와 빈 공간 설명, 시설 판정 근거의 일관성**을 우선 개선 방향으로 제안했다.
 
 ## 근거 등급
 
 - `O01`–`O15`: 관찰표에 적은 화면 사실. 연결 영상은 `V01`–`V15`.
 - `H01`–`H10`: 내부 동작 가설. 교차 영상이 있어도 확정 사실이 아니다.
 - `R01`–`R10`: 제안 규칙. 근거가 없는 정책은 영상 유래라고 표시하지 않는다.
-- `C01`–`C12`: [분석 당시 코드 대응표](video-rule-study/RULE_SPEC.md#분석-당시-코드-대응표)의 구현/한계. 현재의 미구현 목록이 아니다.
+- `C01`–`C12`: [분석 당시 코드 대응표](#분석-당시-코드-대응표)의 구현/한계. 현재의 미구현 목록이 아니다.
 - `T01`–`T16`: 후속 구현의 검증 시나리오. 이번에 실행한 테스트가 아니다.
 
-분석 기준은 schema 6 / SceneInputs 2 / catalog 13이다. 이후 공통 관계와 도로 규칙이 구현·수정되었으므로 이 연구의 제안을 현재 구현 상태로 읽지 않는다. 세부 호환성은 현재 코드와 [네이티브 이식](NATIVE_PORTING.md), [건물 규칙](BUILDING_RULES_PORTING.md), [환경 계약](PORTING_CONTRACT.md)을 기준으로 삼았다. 이번 작업은 엔진 이식이 아니다.
+분석 당시 기준은 schema 6 / SceneInputs 2 / catalog 13이다. 이후 공통 관계·도로·주차·인도·집 규칙이 구현·수정되었다.
+현재 입력·지원 범위는 [생성 규칙](GENERATION_RULES.md), 대상 구현 절차는 [네이티브 이식](NATIVE_PORTING.md)을 따른다.
+프레임 시점·파일·해시는 [캡처 기록](video-rule-study/evidence/capture-log.json)에 있다.
 
-현재 관계·시설 계약은 [환경 계약](PORTING_CONTRACT.md), 현재 도로 분석은 [도로 규칙](ROAD_RULES.md)을 따른다. 프레임 표본의 시간·파일·해시는 [캡처 기록](video-rule-study/evidence/capture-log.json)에서 확인한다.
+## 분석 당시 코드 대응표
+
+C01–C12는 기준 커밋의 조사 주제를 식별한다. 당시 파일 줄 번호나 확장 제안을 현재의 미구현 목록으로 사용하지 않는다.
+
+| ID | 조사 대상 / 현재 확인할 참조 구현 |
+|---|---|
+| C01 | 문서·호환성·원본 입력: `document.ts`, `scene-inputs.ts` |
+| C02 | 실제 외피·성분·anchor·해시: `analysis.ts`, `buildings.ts`, `design-profile.ts` |
+| C03 | 매스·수직 지역 scope: `regions.ts`, `mass-relations.ts`, `vertical-design.ts` |
+| C04 | 입면 선점·패턴·마감 소유: `facade-layout.ts`, `facade-face-selection.ts`, `facade-trims.ts` |
+| C05 | 도로 모듈·port·교차부: `roads.ts`, `spatial-analysis.ts` |
+| C06 | 실제 보행·출입구: `access-graph.ts`, `entrance-plan.ts` |
+| C07 | 주차 외형과 별도 지상 proof: `parking-rule.ts`, `parking-circulation.ts`, `parking-stalls.ts` |
+| C08 | 문맥 시설·외벽 종류·명시 슬롯: `fixture-plan.ts`, `fixture-catalog.ts`, `wall-facilities.ts` |
+| C09 | 식생 지지·전셀 solid·메시 구분: `scene-inputs.ts`, `spatial-analysis.ts`, `vegetation-geometry.ts` |
+| C10 | 전체 재평가·예산·제한 cache: `environment-generation.ts`, `environment-cache.ts` |
+| C11 | 편집·분할·원자적 수락·이력: `surface-edit.ts`, `scene-editor.ts`, `environment-editor.ts`, `editor.ts` |
+| C12 | Viewer 재사용·좌표 표시·기둥 프로토타입: `viewer.ts`, `display-transform.ts`, `column-prototype.ts` |
+
+실내·실제 수직 이동·상층 주차·하중 해석·지형은 영상 표본과 당시 코드로 확인되지 않았다.
+신호등 자동 생성, 날씨·물·후처리 확장은 연구 제안이며 현재 실행 규칙의 필수 결과가 아니다.
+증분 실행은 전체 재평가와 동등하다는 별도 증거가 필요하며 현재 `readDependencies`가 그 증거를 대신하지 않는다.

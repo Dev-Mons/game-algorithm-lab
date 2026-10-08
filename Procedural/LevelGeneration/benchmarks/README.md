@@ -1,75 +1,67 @@
-# 현재 환경 생성 인수 보고서
+# 검증·측정 안내
 
-## 2026-09-23 A~D 리팩터링
+명령은 `Procedural/LevelGeneration`에서 실행한다. 생성 계약은 [통합 규칙](../docs/GENERATION_RULES.md),
+네이티브 참조 자료의 생성·비교는 [이식 절차](../docs/NATIVE_PORTING.md)를 따른다.
 
-이번 작업의 기준과 결과는 이전 인수 자료를 덮어쓰지 않고 별도로 보관합니다.
+## 기능 검사
 
-- `concept-preservation-baseline.json`: 이전 커밋의 의미 있는 배치·재료·완성형 geometry 기준.
-- `concept-render-baseline.json`, `concept-render-after.json`: 같은 입력·Seed·카메라의 실제 Viewer 렌더 비교.
-- `facade-core-before.json`, `facade-core-after.json`: 캐시 없는 수직/입면 계산, 스타일별 최초 1회와 반복 40회.
-- `building-edit.before.json`, `building-edit.after.json`: 넓은 상단의 실제 E/Q·연속 드래그, 최초 추가/제거와 반복 편집의 원시 표본.
-- `building-startup.before.json`, `building-startup.after.json`: 빈 계획/geometry 캐시에서 최초 장면 수락, A/C 각각 3회. 적은 표본이므로 p95를 안정적인 꼬리 지연 추정으로 쓰지 않습니다.
+| 명령 | 확인 범위 |
+|---|---|
+| `npm run verify` | 타입·단위 테스트·프로덕션 빌드 |
+| `npm run test:e2e` | 실제 브라우저 편집·선택·Undo/Redo·JSON 회귀; 성능 측정 제외 |
+| `npx vitest run tests/concept-preservation.test.ts` | 고정 입력의 의미 출력·geometry, 편집/저장 복원·cache 동등성 |
+| `npx vitest run tests/road-topology.test.ts tests/parking-layout-v2.test.ts` | 도로 경계/연결·지상 주차 배치/증명 |
+| `python -m unittest discover -s porting -p 'test_*.py'` | 독립 이식 자료 검사기 |
 
-[결과 보존](../docs/BUILDING_REFACTOR_PRESERVATION.md), [측정 구간·성능·남은 히치](../docs/BUILDING_EDIT_PERFORMANCE.md), [이식할 규칙](../docs/BUILDING_RULES_PORTING.md)을 함께 확인하세요. CPU render submission은 GPU 완료·실제 화면 paint와 구분합니다.
+변경한 기능과 실패 위험에 맞는 검사만 수행한다. 필요한 검사가 통과하면 구체적인 추가 우려 없이 전체 검사를 반복하지 않는다.
+
+## 성능 측정
+
+전체 환경 측정:
 
 ```powershell
 npm run build
-$env:BUILDING_MEASURE_OUTPUT='benchmarks/building-edit.after.json'
-npx playwright test --config playwright.building-measure.config.ts e2e/building-edit-measure.spec.ts --grep '@measure'
+npx playwright test e2e/environment.spec.ts --grep '@measure'
 ```
 
-아래는 기존 환경/도시 인수 보고서이며, 이번 편집 측정과 입력·측정 구간이 다릅니다.
+`environment-performance.json`은 최초 생성·반복 생성·실제 도로/주차 영역 편집의 표본,
+단계 시간·논리/실제 작업량·cache·입출력 signature·기기/브라우저/빌드 정보를 기록한다.
+`parking-quality.json`은 승인 구획·면적·예산·차량/보행 증명 결과다.
+현재 코드의 성능 판정은 새 실행 결과와 테스트에 정의된 기준으로 확인한다.
 
-프로젝트 디렉터리에서 `npm run build` 후 `npx playwright test e2e/environment.spec.ts --grep '@measure'`를 실행합니다.
+건물의 실제 E/Q·연속 드래그 및 빈 캐시 최초 장면 측정:
 
-- application-cold: 새 context/page/Viewer20개, 자동 생성0, 빈 planner/환경 geometry cache에서 최초 수락·검증부터 sync/수락 publication까지. 사전 예열 없음.
-- warm-repeat: 같은 입력 준비10회+측정50회.
-- first-road-edit: 새 context에서 변경 전 입력을 정확히1회 생성하고 실제 도구 드래그로 전체 strip을 추가/제거. 각각 독립20회.
-- first-area-edit: 같은 방식으로 R30의6×20 또는 경계 주차의6×28 마스크를 실제 드래그로 제거. 독립20회.
+```powershell
+npm run build
+$env:BUILDING_MEASURE_OUTPUT='benchmarks/building-edit.current.json'
+npx playwright test --config playwright.building-measure.config.ts building-edit-measure.spec.ts
+$env:BUILDING_STARTUP_OUTPUT='benchmarks/building-startup.current.json'
+npx playwright test --config playwright.building-measure.config.ts building-startup-measure.spec.ts
+```
 
-정렬한 표본의 `ceil(n*p)-1` 인덱스로 분위수를 계산합니다. 사용자 drag 이동·네트워크·GPU 완료·paint는 제외하며 명령, 입력/출력 signature, 검증, generation, sync, history, publication은 포함합니다. 접힌 Inspector 상태는 동일하고 필요 geometry library 초기화는 최초 생성 안에 포함합니다.
+입력은 A/C, Seed 42, 28×24×28, 옥상 선택 784칸이다. 최초 추가/제거는 각각 새 context 10개,
+반복 E/Q는 준비 4회 후 30회, 연속 드래그는 3층 추가/제거 제스처 5회다.
+최초 편집에는 초기 장면의 cache가 이미 있으며 빈 캐시 최초 장면 측정(스타일당 새 context 3개)과 구분한다.
 
-`environment-performance.json`은 rawSamples, 초기 상태, stage 시간, 실제/논리 expansion, cache, 입출력 signature, editId/호출 수/유용성, 정확한 입력 JSON, 기기/브라우저와 production artifact SHA256을 기록합니다. buildSHA는 정렬된 배포 JS/CSS artifact hash 목록의 SHA256이며 sourceBaseCommit과 추적 파일 diff 서명도 별도 기록합니다.
+수직/입면 순수 계산은 다음 명령으로 측정한다.
 
-목표(p95): 보통 R30/16×8×16/별동2+폭4도로+시설의도64셀은 warm100ms/cold200ms, R30 첫 편집은 각각150ms. 경계 주차/32³ 건물은 warm250ms/cold500ms, 경계 주차 첫 편집은 각각300ms입니다. 주차의 양성 유용성·안전·미검증0도 동시에 확인합니다.
+```powershell
+$env:FACADE_BENCH_REPORT='benchmarks/facade-core.current.json'
+npx vitest run experiments/facade-core-performance.test.ts
+```
 
-`parking-quality.json`은 R12/R30/L16/O30/D12와 도로 없는 음성 대조의 실제 구획/면적/예산/증명 결과입니다. `environment-performance.initial.json`은 최적화 중 실패한 최초 측정 자료를 보존하며 최종 합격 자료를 대신하지 않습니다.
+24³·Seed 17, 스타일당 최초 1회와 반복 40회이며 외피 분석·기본 배치는 측정 밖이다.
+매회 수직/입면을 다시 계산한다. 전체 환경 생성·Viewer·GPU 비용을 포함하지 않는다.
 
+## 결과 해석
 
-실패 이력은 `environment-performance.initial.json`, `environment-performance.pre-immutable.json`, `environment-performance.dense-before-identity.json`, `environment-performance.dense-before-serialization.json`에 그대로 남깁니다. 각각 초기 전체 측정, immutable 조회 이전 전체 측정, dense 입력 identity 최적화 이전, canonical serialization 개선 이전의 자료이며 최종 인수 파일과 구별합니다. 캐시 키·원본·후보 실패 이유/안전 검사 범위를 줄이거나 임계값을 낮춰 통과시킨 것이 아닙니다.
-
-`screenshots/`는 실제 e2e 실행에서 캡처한 현재 Viewer 증거입니다. 과거 결과와의 픽셀 동일성을 강제하는 golden fixture가 아닙니다.
-
-## 최종 성능 결과 — 2026-09-17
-
-모든 16개 분포가 지정 p95 목표를 통과했습니다. 수치는 ms이며 raw sample 전체는 `environment-performance.json`에 있습니다.
-
-| 입력 | 실행 | 표본 | p50 | p95 | 최대 | p95 한도 |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| R30 | application-cold | 20 | 148.3 | 156.4 | 161.3 | 200 |
-| R30 | warm-repeat | 50 | 12.2 | 14.7 | 16.7 | 100 |
-| building | application-cold | 20 | 79.1 | 83.4 | 85.2 | 200 |
-| building | warm-repeat | 50 | 25.2 | 33.0 | 38.8 | 100 |
-| annex | application-cold | 20 | 93.7 | 97.2 | 106.5 | 200 |
-| annex | warm-repeat | 50 | 37.3 | 49.8 | 55.0 | 100 |
-| boundary | application-cold | 20 | 210.8 | 222.1 | 225.9 | 500 |
-| boundary | warm-repeat | 50 | 19.3 | 29.5 | 32.0 | 250 |
-| dense | application-cold | 20 | 442.0 | 458.7 | 462.0 | 500 |
-| dense | warm-repeat | 50 | 171.5 | 214.9 | 238.6 | 250 |
-| R30 | first-road-edit / road-add | 20 | 142.5 | 148.4 | 154.3 | 150 |
-| R30 | first-road-edit / road-remove | 20 | 38.3 | 40.0 | 41.4 | 150 |
-| R30 | first-area-edit / area-remove | 20 | 94.0 | 96.9 | 97.0 | 150 |
-| boundary | first-road-edit / road-add | 20 | 203.6 | 208.8 | 208.9 | 300 |
-| boundary | first-road-edit / road-remove | 20 | 52.0 | 57.7 | 58.7 | 300 |
-| boundary | first-area-edit / area-remove | 20 | 198.3 | 204.5 | 210.5 | 300 |
-
-Production artifact SHA256: `c8df65a6c6c45c4c93b7f7b6afc04d0a8a588f4588ce10abee2befeaa9ec0e03`.
-브라우저: 153.0.8010.12; CPU: AMD Ryzen 9 7950X 16-Core Processor; OS: win32 10.0.26200.
-
-같은 production build의 cold 100회, warm 측정250회(별도 준비50회), 독립 첫 편집120회를 기록했습니다. 도로 추가는 R30 양성 유용성을 재검증하고, 도로 삭제는 NO_ROAD_GATE/구획 제거/입력 보존을 확인합니다. 영역 편집은 120/168셀 제거, anchor/ID/도로 보존, 잔류 생성물 없음과 모든 구획 proof를 확인합니다.
-
-## Issue #29 도시형 건물
-
-`npm run measure:urban`은 Node 생성기의 27개 Style/Seed/매스 표본, 최대 32³ solid, 정책 임계값 비교와 한 칸 삭제 영향 범위를 `urban-generation.json`에 기록합니다. 입력마다 1회이며 Viewer를 제외한 관측값입니다.
-
-`npm run build` 후 `npx playwright test e2e/urban-measure.spec.ts --grep "@measure"`는 기존 업무형과 도시형 업무형의 동일 32³ 볼륨을 비교합니다. 각 스타일의 새 context 최초 20회, 준비 10회 후 반복 50회를 `urban-browser-performance.json`에 기록합니다. 기존 cold 500ms / warm 250ms 기준은 보고서 행의 `passed`에서 판정하며, 테스트 통과 자체는 성능 합격을 의미하지 않습니다. GPU 완료와 paint는 측정 범위 밖입니다. 이 측정은 과거 `office`/`urban-office` 정의의 비교이며 현재 A~D 메뉴의 실행 안내가 아닙니다. 당시 도시형 32³은 cold p95 529.4ms / warm p95 292.0ms로 두 기준 모두 미달했습니다. 기능 테스트 통과와 성능 미달을 구분하며, 이전 실패·미완료 표본도 보존합니다. 현재 생성 계약은 [건물 규칙](../docs/BUILDING_RULES_PORTING.md)을 참조하세요.
+- p50/p95는 정렬 표본의 `ceil(n*p)-1` 인덱스(nearest-rank)로 계산한다. 최초 표본은 반복 통계에서 제외한다.
+- 실제 편집 시간은 native event부터 새 WebGL render 호출의 CPU 반환까지다.
+  최초 장면의 두 rAF 구간은 화면을 그릴 기회이며 GPU 완료·compositor paint·모니터 표시 지연은 측정하지 않는다.
+- `inputQueueMs`, 동기 수락, 생성, Viewer, geometry 준비, render submission을 구분한다.
+  geometry 준비는 face Mesh 구간에 포함되므로 하위 구간을 중복 합산하지 않는다.
+- 최초 편집 n=10과 최초 장면 n=3의 p95는 최댓값이다. 적은 표본으로 안정적인 극단 지연을 추정하지 않는다.
+- 브라우저·CPU·WebGL renderer와 빌드 정보를 함께 읽고 다른 GPU/기기로 수치를 일반화하지 않는다.
+  측정은 다른 테스트/벤치마크와 겹치지 않게 실행한다.
+- 연속 드래그에서 render 전에 대체된 중간 상태는 `supersededBeforeRender`로 확인한다.
+  테스트 통과와 성능 목표 충족을 구분한다.

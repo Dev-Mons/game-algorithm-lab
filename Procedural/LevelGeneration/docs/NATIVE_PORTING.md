@@ -4,6 +4,8 @@
 TypeScript는 동작과 결과를 확인하는 참조 구현이며, 기존 JS를 실행할 환경을 대상에 붙이는 것이 아니다.
 대상 엔진/언어가 지정되지 않은 자료 준비 작업에서는 특정 언어 구현을 임의로 추가하지 않는다.
 
+현재 알고리즘의 상세 계약은 [통합 생성 규칙](GENERATION_RULES.md)을 따른다.
+
 ## 실행 경계
 
 | 부분 | 참조 프로젝트 | 이식 대상 |
@@ -36,7 +38,7 @@ python porting/check.py verify artifacts/native-porting
 기존 `concept-preservation-baseline.json`의 214개 입력·419종 완성형 면 geometry를
 보존 검사한 뒤 마지막에 manifest를 쓴다. baseline을 새로 만드는 기능은 없다.
 도로 표시 개선으로 도시 4개 입력의 `scenePlacements[kind=road]`는 의도적으로 달라진다.
-그 외 필드와 419종 geometry는 기존 baseline과 일치해야 한다. [도로 규칙](ROAD_RULES.md)의
+그 외 필드와 419종 geometry는 기존 baseline과 일치해야 한다. 번들의 `reference/road-presentation-v1.json`에 담긴
 과거 도로 출력 근거로 변경 범위를 분리하며, 새 결과로 기존 baseline을 덮어쓰지 않는다.
 `expected.json`은 현재 결과이고 fixture의 `outputFingerprint`와 `intentionalChanges`,
 manifest의 `intentionalChanges`에 과거 비교 지문과 변경 사실을 구분해 남긴다.
@@ -63,7 +65,7 @@ python -m unittest discover -s porting -p 'test_*.py'
 | `meshes/*.json` | 완성형 면별 정점 속성, 삼각형 인덱스, 재질 그룹, 로컬 bounds |
 | `hash-vectors.json` | 기존 unsigned32 해시 검증 벡터 |
 | `schemas/*.schema.json` | TS utility type을 따라갈 필요 없는 JSON 형식 명세 |
-| `spec/*.md` | 층/패턴 식, 우선순위, 공간·에셋 계약의 사본 |
+| `spec/NATIVE_PORTING.md`, `spec/GENERATION_RULES.md` | 이식 절차와 통합 생성 규칙의 사본 |
 | `check.py` | 표준 라이브러리만 사용하는 독립 검사기 |
 
 카탈로그·스타일의 `$ref`는 **번들 루트 기준 경로**다. 네트워크 참조나 코드를 실행하는
@@ -71,7 +73,8 @@ python -m unittest discover -s porting -p 'test_*.py'
 predicate와 규칙 ID는 대상 언어의 명시적인 분기/등록 항목으로 구현한다. `eval`에 전달하지 않는다.
 자료에는 알고리즘 실행 코드가 없으므로, JSON만 로드해서 모든 생성 규칙이 실행되는 것은 아니다.
 `spec`의 소스 파일명은 참조 위치이며 대상 런타임에 그 파일을 연결하라는 의미가 아니다.
-사본 문서의 역사적 성능 보고서/스크린샷 링크는 원본 저장소의 참고 자료다.
+번들 안의 `START_HERE.md`에서 생성 규칙은 `spec/GENERATION_RULES.md`로 읽는다.
+규칙 문서의 테스트·연구·TS 소스 링크는 원본 저장소의 참고 자료이며 번들에는 포함하지 않는다.
 
 ## 대상 구현의 입력/출력
 
@@ -110,7 +113,7 @@ python check.py compare . native-results --case C-low-reference --section vertic
 
 `reference.json`의 내부 매스 DAG·중간 계획·후보 trace·카운터를 동일하게 구현할 필요는 없다.
 `expected.json`과 사용자 정의 규칙의 계약을 유지한다. schema는 입출력 형태를 설명하며
-공간 유효성이나 스타일의 모든 교차 제약은 `spec/PORTING_CONTRACT.md`와 규칙 명세를 따른다.
+공간 유효성이나 스타일의 모든 교차 제약은 `spec/GENERATION_RULES.md`를 따른다.
 
 ## 권장 구현 순서
 
@@ -151,6 +154,8 @@ Map/Set 열거 순서가 필요한 곳은 언어 기본 동작에 의존하지 �
 모든 카탈로그/마감 조합, 모든 사용자 정의 규칙, 모든 32³ 부피의 전수 검증은 아니다.
 현재 스타일 데이터와 전체 등록 외벽/마감 descriptor는 제공하지만, 사용하지 않은
 완성형 조합은 대상의 native geometry 구현 또는 별도 오프라인 에셋 제작이 필요하다.
+Blender 집/부속 차고의 메시·텍스처는 이 번들에 포함하지 않는다. 해당 고정 자료와 조립 규칙은
+`src/assets/residential`과 생성 규칙의 집 절을 별도로 사용한다.
 독립 시설·도로·식생의 메시, 브라우저 canvas 텍스처, 조명/카메라/UI는 포함하지 않는다.
 팔레트 JSON은 색상 자료이며 재질/텍스처 전체를 대체하지 않는다.
 

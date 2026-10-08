@@ -34,7 +34,7 @@ This repository is a collection of game algorithm experiments and R&D projects.
 
 아래 안내는 `Procedural/LevelGeneration`에만 적용하며, 모든 명령은 해당 디렉터리에서 실행한다.
 
-- 먼저 `Procedural/LevelGeneration/docs/NATIVE_PORTING.md`, `Procedural/LevelGeneration/docs/BUILDING_RULES_PORTING.md`, `Procedural/LevelGeneration/docs/PORTING_CONTRACT.md`를 읽고 규칙 계산의 동등성을 맞춘 뒤 렌더링 어댑터를 연결한다.
+- 먼저 `Procedural/LevelGeneration/docs/NATIVE_PORTING.md`, `Procedural/LevelGeneration/docs/GENERATION_RULES.md`를 읽고 규칙 계산의 동등성을 맞춘 뒤 렌더링 어댑터를 연결한다.
 
 - `npm run port:export`는 기존 baseline을 읽기만 하며 순수 데이터·입출력 fixture·메시 자료를 새 폴더에 내보낸다. 생성 자료를 손으로 고치거나 변경 후 결과로 기존 baseline을 갱신해 차이를 숨기지 않는다.
 - `Procedural/LevelGeneration/porting/check.py`는 Python 표준 라이브러리만 사용하는 개발용 검사기다. 자료 무결성, 입력 복원, 대상 출력의 JSON 경로별 비교 명령은 `Procedural/LevelGeneration/docs/NATIVE_PORTING.md`에 있다.
