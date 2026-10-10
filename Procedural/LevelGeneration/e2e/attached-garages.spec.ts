@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect,type Page} from '@playwright/test';
 import {createDocument,exportDocument} from '../src/core/document';
 import {box} from '../src/fixtures';
@@ -11,7 +12,7 @@ test('parking paint attaches a garage to a house, with source selection, deletio
     await expect(page.locator('#status')).toHaveText('OK');
   };
   await load(exportDocument(doc));
-  await page.locator('#edit-mode').selectOption('parking');
+  await page.locator('[data-tool="parking"]').click();
   const selectMask=async()=>{
     await page.locator('[data-camera="top"]').click();
     const point=async(cell:number[])=>page.evaluate(c=>(window as any).environmentMeasure.point(c),cell);
@@ -24,7 +25,7 @@ test('parking paint attaches a garage to a house, with source selection, deletio
   await expect(page.locator('[data-stage="garages"]')).toHaveAttribute('data-state','ready');
   await expect(page.locator('#parking-summary')).toContainText('집에 붙인 차고');
   const garage=JSON.parse((await canvas.getAttribute('data-attached-garages'))!)[0];
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'parking',id:garage.areaId}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'parking',id:garage.areaId}));
   await page.locator('#plan-inspector summary').filter({hasText:'분석 · 계획'}).click();
   await expect(page.locator('#plan-inspector')).toContainText('attachedGarages');
   await page.locator('[data-camera="iso"]').click();
@@ -38,7 +39,7 @@ test('parking paint attaches a garage to a house, with source selection, deletio
   expect(saved.grid).toEqual(doc.grid);expect(saved.sceneInputs.parkingAreas[0].cells).toHaveLength(4);
   await load(JSON.stringify(saved));
   await expect(canvas).toHaveAttribute('data-scene-assets',assets!);
-  await page.locator('#edit-mode').selectOption('parking');
+  await page.locator('[data-tool="parking"]').click();
   await page.locator('#parking-area').selectOption(garage.areaId);
   await selectMask();await page.keyboard.press('q');
   await expect(canvas).toHaveAttribute('data-attached-garages','[]');

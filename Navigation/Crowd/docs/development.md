@@ -76,9 +76,10 @@ npm run measure:lab -- --presets=legacy --agents=1000 --scenario=open-field --st
 npm run measure:fluid -- --scenario=winding-corners --agents=1000 --steps=900 --output=test-results/crowd-continuity.json
 ```
 
-웹과 같은 공유 평행 방향장을 CLI에서 측정하려면 `measure:lab`에 `--parallel=true --corridor=false`를 지정합니다.
+웹과 같은 공유 유체 방향장을 CLI에서 측정하려면 `measure:lab`에 `--fluid=true --corridor=false`를 지정합니다.
+이전 웹 기본값인 공유 평행 방향장과 비교할 때는 같은 조건에 `--fluid=false --parallel=true`를 사용합니다.
 웹 기본 각도별 회전 가속도 포함하려면 `--adaptive-turning=true`를 함께 지정합니다. 생략/false는 기존 고정 회전 속도 방식입니다.
-과거 통로 안내와 비교할 때는 같은 seed·맵·인원·step에 `--parallel=false --corridor=true`를 사용합니다. 두 CLI 옵션의 기본값은 false입니다.
+과거 통로 안내와 비교할 때는 같은 seed·맵·인원·step에 `--parallel=false --corridor=true`를 사용합니다. 세 CLI 옵션의 기본값은 false입니다.
 
 CLI 목록은 프리셋 등록을 따릅니다. `measure:lab`은 조합별 별도 Node 프로세스에서 실행하며 steps에
 warmup이 포함됩니다. quality=0/1/10은 감사 없음/매 tick/10tick마다입니다. 초기 접촉 검사는 warmup=0을 씁니다.

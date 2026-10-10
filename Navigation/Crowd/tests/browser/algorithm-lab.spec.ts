@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { PRESETS } from '../../src/algorithms/lab/registry';
 
-test('shared parallel routing runs without stored lanes or extra per-agent steering', async ({ page }, info) => {
+test('shared fluid routing runs without stored lanes or extra per-agent steering', async ({ page }, info) => {
   test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -9,7 +9,8 @@ test('shared parallel routing runs without stored lanes or extra per-agent steer
     await page.goto(`/?agents=1000&scenario=${scenario}&paused=true&radius=1.5&largePercent=5&largeScale=4&corridor=true`);
     await expect(page.locator('#corridor-routing')).toHaveCount(0);
     expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.corridorRouting)).toBe(false);
-    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.parallelRouting)).toBe(true);
+    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.parallelRouting)).toBe(false);
+    expect(await page.evaluate(() => window.crowdDebug.simulation().navigator.fluidRouting)).toBe(true);
     await page.locator('label:has(#debug-flow)').click();
     const initial = await page.evaluate(() => window.crowdDebug.getSnapshot().hash);
     await page.evaluate(() => {

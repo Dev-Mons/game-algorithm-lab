@@ -31,6 +31,6 @@ test('A reference towers use continuous ribbons and preserve the editable entry 
     }
   }
   // The built-in example is also accessible without importing a file.
-  await page.locator('#fixture').selectOption('referenceA');await expect(page.locator('#profile')).toHaveValue('shop');
+  await page.locator('#fixture').selectOption('referenceA');await expect(page.locator('[data-style="shop"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('#status')).toHaveText('OK');expect(errors).toEqual([]);
 });

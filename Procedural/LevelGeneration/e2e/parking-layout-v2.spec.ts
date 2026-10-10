@@ -10,7 +10,7 @@ async function load(page:Page,doc:ReturnType<typeof parkingFixture>,name:string)
 test('a real one-cell edit preserves usable rows, history and the exact saved mask',async({page},info)=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/?measure=1');
   await load(page,parkingFixture('R12'),'parking.json');await page.locator('[data-camera="top"]').click();
-  await page.locator('#edit-mode').selectOption('parking');await page.locator('#parking-area').selectOption('R12');
+  await page.locator('[data-tool="parking"]').click();await page.locator('#parking-area').selectOption('R12');
   const point=await page.evaluate(()=>(window as any).environmentMeasure.point([5,0,5]));
   await page.mouse.click(point.x,point.y);await page.keyboard.press('q');
   await expect(page.locator('#parking-summary')).toContainText('검증 17대');

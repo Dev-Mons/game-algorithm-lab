@@ -4,9 +4,10 @@ import { CrowdKernel, DEFAULT_CROWD_CONFIG } from '../../src/core';
 import { auditGeometry } from '../../src/core/lab-results';
 import { getScenario } from '../../src/scenarios/scenarios';
 
-it.each([false, true])('keeps the converging rocky-pass front filled without disabling pressure or contacts (parallel=%s)', parallelRouting => {
-  const s = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 10000, agentRadius: 1.5,
-    largeAgentPercent: 5, largeAgentScale: 2, adaptiveTurning: true, parallelRouting }, getScenario('rocky-pass'));
+it.each(['grid', 'parallel', 'fluid'])('keeps the converging rocky-pass front filled without disabling pressure or contacts (%s)', routing => {
+  const s = new CrowdSimulation({ ...DEFAULT_CONFIG, agentCount: 10000, agentRadius: 1.5, largeAgentPercent: 5,
+    largeAgentScale: 2, adaptiveTurning: true, parallelRouting: routing === 'parallel', fluidRouting: routing === 'fluid' },
+  getScenario('rocky-pass'));
   // The unscaled spawn is capacity limited; do not call this a 10k population.
   expect(s.state.count).toBe(3989);
   const front = (top: number, bottom: number): number => {
@@ -34,8 +35,9 @@ it.each([false, true])('keeps the converging rocky-pass front filled without dis
   expect(middle).toBeGreaterThan(250);
   expect(maximumWalls).toBe(0);
   // Existing fixed-budget contacts leave ~1.26px peak overlap in this dense
-  // mixed-size replay. Filling the front must not double that compression.
-  expect(maximumPenetration).toBeLessThan(1.3);
+  // mixed-size replay (1.33px when the fluid field converges into the rock
+  // gaps). Filling the front must not double that compression.
+  expect(maximumPenetration).toBeLessThan(routing === 'fluid' ? 1.4 : 1.3);
   expect(pressureActive && contactsActive).toBe(true);
 }, 20_000);
 

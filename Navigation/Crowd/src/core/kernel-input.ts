@@ -33,6 +33,9 @@ export function validateCrowdConfig(config: CrowdConfig): void {
   if (config.parallelRouting !== undefined && typeof config.parallelRouting !== 'boolean') {
     throw new TypeError('config.parallelRouting must be boolean.');
   }
+  if (config.fluidRouting !== undefined && typeof config.fluidRouting !== 'boolean') {
+    throw new TypeError('config.fluidRouting must be boolean.');
+  }
   if (config.adaptiveTurning !== undefined && typeof config.adaptiveTurning !== 'boolean') {
     throw new TypeError('config.adaptiveTurning must be boolean.');
   }

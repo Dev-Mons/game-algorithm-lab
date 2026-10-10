@@ -28,7 +28,7 @@ test("saved special rule renders and preserves theme independence through edit/h
   await expect(page.locator("#building-rule")).toHaveCount(0);
   await expect(canvas).toHaveAttribute("data-scene-assets", /parking-deck/);
   await expect(page.locator("#stats strong").first()).toHaveText("18");
-  await page.locator("#building-theme").selectOption("office");
+  await page.locator('[data-style="office"]').click();
   await expect(canvas).toHaveAttribute("data-scene-assets", /parking-deck/);
   await page.locator('[data-camera="iso"]').click();
   await page.screenshot({ path: info.outputPath("parking-rule.png") });

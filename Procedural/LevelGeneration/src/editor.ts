@@ -9,8 +9,21 @@ import {
 import {
   exportDocument,canonicalJSON,
   loadDocument,
+  profileData,
+  setBuildingTheme,
   type GenerationDocument,
+  type Profile,
 } from "./core/document";
+import { buildingComponents } from "./core/buildings";
+
+/** Volumes made only of new cells are new buildings and take the chosen build style. */
+export function themeNewBuildings(previousGrid: Vec3[], next: GenerationDocument, style: Profile) {
+  if (style === next.catalog.id) return next;
+  const previous = new Set(previousGrid.map(cellId));
+  return buildingComponents(next.grid)
+    .filter(c => c.cells.every(cell => !previous.has(cellId(cell))))
+    .reduce((doc, c) => setBuildingTheme(doc, c.id, profileData(style).architecture), next);
+}
 
 export function editBox(
   grid: Vec3[],

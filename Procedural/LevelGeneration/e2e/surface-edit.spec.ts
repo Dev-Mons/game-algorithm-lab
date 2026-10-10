@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import { test, expect, type Page } from "@playwright/test";
 import { createDocument } from "../src/core/document";
 
@@ -55,7 +56,7 @@ test("drag only selects; E/Q edit while right mouse and form typing never edit",
     await page.keyboard.press('q');await expect(count(page)).toHaveText('1');
     await page.keyboard.press('e');await expect(count(page)).toHaveText('2');
   }
-  await page.locator('#seed').focus();await page.keyboard.press('q');
+  await openMenu(page,'generate');await page.locator('#seed').focus();await page.keyboard.press('q');
   await expect(count(page)).toHaveText('2');
   await page.locator('canvas').focus();await page.keyboard.press('Alt+q');
   await expect(count(page)).toHaveText('2');
@@ -101,7 +102,7 @@ test("multi-cell selection persists through edits; camera and cancelled selectio
   await page.keyboard.press('e');await expect(count(page)).toHaveText('18');
   await page.keyboard.press('Escape');await page.mouse.up();
   await expect(page.locator('canvas')).toHaveAttribute('data-selection-cells','0');
-  await page.mouse.move(c.x,c.y);await page.mouse.down();await page.mouse.move(10,10);await page.mouse.up();
+  await page.mouse.move(c.x,c.y);await page.mouse.down();await page.mouse.move(-10,-10);await page.mouse.up();
   await expect(page.locator('canvas')).toHaveAttribute('data-selection-cells','0');
   await page.mouse.move(c.x,c.y);await page.mouse.down();await page.mouse.move(c.x+20,c.y+20);
   await page.locator('canvas').dispatchEvent('pointercancel');await page.mouse.up();
@@ -147,8 +148,8 @@ test("side-face pyramid and keys follow the normal on a narrow viewport",async({
   await dragHandle(page,1.2);await expect(count(page)).toHaveText('2');
   await page.keyboard.press('q');await expect(count(page)).toHaveText('1');
   await page.keyboard.press('e');await expect(count(page)).toHaveText('2');
-  const beforeZoom=await handlePosition(page);
-  await page.mouse.move(beforeZoom.x,beforeZoom.y);
+  // The full-height portrait view starts close enough that the extruded face is at the edge; zoom from the centre.
+  await page.mouse.move(c.x,c.y);
   await page.mouse.wheel(0,1800);
   await expect.poll(async()=>Math.abs((await handlePosition(page)).axisX)).toBeGreaterThan(.2);
   await dragHandle(page,1.2);await expect(count(page)).toHaveText('3');

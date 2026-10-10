@@ -27,9 +27,11 @@ export async function fileAction(page: Page, id: string) {
   if (await page.locator('#file-menu').getAttribute('open') === null) await page.locator('#file-menu>summary').click();
   await page.locator('#' + id).click();
 }
-export async function exportProject(page: Page) {
+export async function exportProject(page: Page, format: 'legacy' | 'split' = 'legacy') {
   await closeSettings(page);
-  if (!await page.locator('#settings-dialog').isVisible()) await page.locator('#export').click();
+  if (await page.locator('#settings-dialog').isVisible()) return;
+  await page.locator('#export').click();
+  if (await page.locator('#export-dialog').isVisible()) await page.locator('#export-format').selectOption(format);
 }
 export async function saveProject(page: Page) { await closeSettings(page); await page.locator('#save').click(); }
 export async function undo(page: Page) { await closeSettings(page); await page.locator('#undo').click(); }

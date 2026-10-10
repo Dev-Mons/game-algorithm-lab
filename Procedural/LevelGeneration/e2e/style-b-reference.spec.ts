@@ -35,6 +35,6 @@ test('B reference curtain wall and dark roof render with complete face ownership
       await page.locator('[data-camera="top"]').click();await page.locator('canvas').screenshot({path:`${directory}/top.png`});
     }
   }
-  await page.locator('#fixture').selectOption('referenceB');await expect(page.locator('#profile')).toHaveValue('office');
+  await page.locator('#fixture').selectOption('referenceB');await expect(page.locator('[data-style="office"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('#status')).toHaveText('OK');expect(errors).toEqual([]);
 });

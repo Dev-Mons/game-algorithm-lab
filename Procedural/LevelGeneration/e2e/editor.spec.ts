@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {generateDocument} from '../src/core/generate-document';
 import { expect, test } from "@playwright/test";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
@@ -15,7 +16,7 @@ test("edit stepped volume, inspect overhang, save/reload, display invariance and
   await page.locator(".inspect-details summary").first().click();
   await page.locator(".layers summary").click();
   await page.locator("#fixture").selectOption("single");
-  await page.locator("#profile").selectOption("office");
+  await page.locator('[data-style="office"]').click();
   async function importGrid(grid: number[][]) {
     await page.locator("#file").setInputFiles({ name: "edit.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(createDocument(grid, 42, "office"))) });
   }
@@ -75,7 +76,7 @@ test("edit stepped volume, inspect overhang, save/reload, display invariance and
   await expect(page.locator("#error")).toContainText("32 cells");
   await expect(page.locator("#save")).toBeEnabled();
   await expect(page.locator("#face option")).toHaveCount(expected.surfaces.length);
-  await page.locator("#retry").click();
+  await openMenu(page,"generate");await page.locator("#retry").click();
   await expect(page.locator("#status")).toHaveText("OK");
   await page.locator("#file").setInputFiles({
     name: "bad.json",

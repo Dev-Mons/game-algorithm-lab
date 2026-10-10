@@ -5,8 +5,7 @@ test("object mode installs modular vegetation without voxels, removes, restores 
   await page.goto("/");
   await page.locator("#file").setInputFiles({name:"empty.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(createDocument([],42,"shop")))});
   await page.locator('[data-camera="top"]').click();
-  await page.locator("#edit-mode").selectOption("object");
-  await page.locator("#object-category").selectOption("vegetation");
+  await page.locator('[data-object="vegetation"]').click();
   const canvas=page.locator("canvas"), b=(await canvas.boundingBox())!;
   const click=async()=>{await page.mouse.click(b.x+b.width/2+2,b.y+b.height/2+2);await page.keyboard.press('e');};
   await click();

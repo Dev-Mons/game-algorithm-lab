@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect} from '@playwright/test';
 
 import {createDocument} from '../tests/custom-frame-document';
@@ -47,7 +48,7 @@ test('priority 4 saved facilities and column display render without building par
   await expect(page.locator('#status')).toHaveText('OK');await expectCompleteFaces(page,result);
   for(const kind of ['balcony','fire-escape','elevator'])await expect(page.locator('canvas')).toHaveAttribute('data-scene-assets',new RegExp(`wall-facility.${kind}`));
   await page.screenshot({path:info.outputPath('wall-facilities.png')});
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
   await expect(page.locator('#design-family, #design-program, #design-palette, #building-column')).toHaveCount(0);
   const cells=[...box(7,1,5),...box(7,1,5).map(([x,,z])=>[x,5,z] as Vec3),...[1,2,3,4].flatMap(y=>[[1,y,1],[5,y,1],[1,y,3],[5,y,3]] as Vec3[])];
   const columns=createDocument(cells,17,'urban-office'),r=generateDocument(columns);

@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {createDocument,loadDocument} from '../src/core/document';
@@ -10,22 +11,29 @@ import {expectCompleteFaces} from './complete-faces';
 async function load(page:Page,input:ReturnType<typeof createDocument>){await page.locator('#file').setInputFiles({name:'banded.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(input))});await expect(page.locator('#status')).toHaveText('OK');}
 async function save(page:Page){const waiting=page.waitForEvent('download');await page.locator('#save').click();const path=await(await waiting).path();const text=await readFile(path!,'utf8');return {text,document:loadDocument(text)};}
 
-test('A–D style menus apply C globally and per building and preserve it on reload',async({page})=>{
+test('bottom style bar builds new volumes in C and restyles a selected building',async({page})=>{
   await page.goto('/');await load(page,createDocument(box(8,10,4),42,'office'));
-  await expect(page.locator('#profile option')).toHaveText(Array.from({length:4},(_,i)=>String.fromCharCode(65+i)));
-  await expect(page.locator('#building-theme option')).toHaveText(['전역 스타일 사용',...Array.from({length:4},(_,i)=>String.fromCharCode(65+i))]);
-  await page.locator('#profile').selectOption({label:'C'});
+  expect(await page.locator('[data-style]').evaluateAll(b=>b.map(e=>e.getAttribute('aria-label')))).toEqual(['건물 · A','건물 · B','건물 · C','건물 · D','건물 · 집 · 크림 사이딩','건물 · 집 · 붉은 사이딩','건물 · 집 · 벽돌과 기와','건물 · 집 · 차고']);
+  await expect(page.locator('[data-style="office"]')).toHaveAttribute('aria-pressed','true');
+  const unchanged=await save(page);
+  await page.locator('[data-style="urban-shop"]').click();
+  await expect(page.locator('[data-style="urban-shop"]')).toHaveAttribute('aria-pressed','true');
+  expect((await save(page)).text).toBe(unchanged.text);
+  await page.locator('#fixture').selectOption('facade');
   await expect(page.locator('#status')).toHaveText('OK');
   const saved=await save(page),result=generateDocument(saved.document);
   expect(saved.document.buildingDefinition.label).toBe('C');
   expect(saved.document.buildingDefinition.roofAsset).toBe('facade.streamline-c-roof');
   expect(result.placements.some(p=>p.tileId.includes('streamline-c-'))).toBe(true);
   await expectCompleteFaces(page,result);
-  await load(page,saved.document);await expect(page.locator('#profile')).toHaveValue('urban-shop');
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
-  await page.locator('#building-theme').selectOption({label:'A'});
-  await page.locator('#building-theme').selectOption({label:'C'});
+  await load(page,unchanged.document);await expect(page.locator('[data-style="office"]')).toHaveAttribute('aria-pressed','true');
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
+  await expect(page.locator('[data-style="office"]')).toHaveClass(/current/);
+  await page.locator('[data-style="shop"]').click();
+  await page.locator('[data-style="urban-shop"]').click();
+  await expect(page.locator('[data-style="urban-shop"]')).toHaveClass(/current/);
   const themed=await save(page);expect(themed.document.buildings[0].theme!.label).toBe('C');
+  expect(themed.document.buildingDefinition.label).toBe('B');
   await load(page,themed.document);await expectCompleteFaces(page,generateDocument(themed.document));
 });
 test('banded H1/H2/H12, annex cap, setback and accessible portal are real shared geometry',async({page},info)=>{

@@ -21,6 +21,8 @@ import { validateGoalRegions } from './goal-regions';
 export type CrowdPass = 'density' | 'navigation' | 'desired' | 'avoidance' | 'contact';
 
 const EPSILON = 1e-9;
+/** Approach speed floor (fraction of maxSpeed) that lets bodies cross the arrival boundary. */
+const MINIMUM_APPROACH_SPEED = 0.15;
 
 const ZERO_METRICS: StepMetrics = {
   activeCount: 0,
@@ -491,7 +493,9 @@ export class CrowdKernel {
     // FlowField alone decides whether a direct-goal contribution is safe.
     // A failed sample must never turn into an unchecked direction through a wall.
     const navigator = this.navigatorForAgent(agent);
-    if (!this.config.corridorRouting || this.config.parallelRouting) return navigator.sampleDirection(x, y, out);
+    if (!this.config.corridorRouting || this.config.parallelRouting || this.config.fluidRouting) {
+      return navigator.sampleDirection(x, y, out);
+    }
     return navigator.sampleDirection(x, y, out, this.navigationLane[agent], this.navigationRoute[agent]);
   }
 
@@ -584,8 +588,11 @@ export class CrowdKernel {
           navigator = goals.size === 0 && primary ? primary
             : new FlowField(this.config.width, this.config.height, this.config.navCellSize);
           navigator.preserveBlockedGoal = this.config.preserveBlockedGoal ?? false;
-          navigator.corridorRouting = this.config.parallelRouting ? false : this.config.corridorRouting ?? false;
-          navigator.parallelRouting = this.config.parallelRouting ?? false;
+          // Fluid routing takes precedence over parallel routing, which takes precedence over lanes.
+          navigator.fluidRouting = this.config.fluidRouting ?? false;
+          navigator.parallelRouting = navigator.fluidRouting ? false : this.config.parallelRouting ?? false;
+          navigator.corridorRouting = this.config.fluidRouting || this.config.parallelRouting
+            ? false : this.config.corridorRouting ?? false;
           navigator.sampledDirectionPreview = true;
           navigator.corridorArrivalDistance = Math.max(this.config.arrivalSlowRadius, this.config.goalRadius + this.config.navCellSize);
           navigator.rebuild(goal, this.obstacles, clearance, this.destinationRegions);
@@ -631,11 +638,13 @@ export class CrowdKernel {
         goal.y,
       ));
       // Region arrival requires actually entering it. Keep a small approach
-      // speed so slowdown never settles just outside its boundary.
+      // speed so slowdown never settles just outside its boundary. The fluid
+      // field may still wrap an occluding corner inside the slowdown ring, so
+      // its point goals keep the same floor instead of creeping to a halt.
       const speed = this.config.maxSpeed * (this.destinationRegions.length
-        ? clamp(distance / Math.max(EPSILON, this.config.arrivalSlowRadius), 0.15, 1) : clamp(
+        ? clamp(distance / Math.max(EPSILON, this.config.arrivalSlowRadius), MINIMUM_APPROACH_SPEED, 1) : clamp(
         (distance - this.config.goalRadius) / slowSpan,
-        0,
+        this.config.fluidRouting ? MINIMUM_APPROACH_SPEED : 0,
         1,
       ));
       const positionX = current.x[agent]!;
@@ -652,7 +661,7 @@ export class CrowdKernel {
     // Portal routes can approach the arrival circle asymptotically. Tolerate
     // roundoff only; keep frozen legacy replay arithmetic unchanged.
     const arrivalRadiusSquared = this.config.goalRadius * this.config.goalRadius
-      + (this.config.corridorRouting || this.config.parallelRouting ? EPSILON * Math.max(1, 2 * this.config.goalRadius) : 0);
+      + (this.config.corridorRouting || this.config.parallelRouting || this.config.fluidRouting ? EPSILON * Math.max(1, 2 * this.config.goalRadius) : 0);
     for (let agent = 0; agent < state.count; agent += 1) {
       if (state.active[agent] !== 1) continue;
       const goal = this.flowGoals[this.agentFlow[agent]!]!;

@@ -20,8 +20,7 @@ for (const category of ["lighting", "vegetation", "facility"] as const) {
         buffer: Buffer.from(JSON.stringify(createDocument(grid, 42, "shop"))),
       });
     await page.locator('[data-camera="top"]').click();
-    await page.locator("#edit-mode").selectOption("object");
-    await page.locator("#object-category").selectOption(category);
+    await page.locator(`[data-object="${category}"]`).click();
     const b = (await page.locator("canvas").boundingBox())!,
       x = b.x + b.width / 2,
       y = b.y + b.height / 2,

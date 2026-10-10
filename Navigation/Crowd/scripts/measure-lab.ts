@@ -44,6 +44,8 @@ const scaled = arg('scale') !== 'false';
 const corridorRouting = arg('corridor') === 'true';
 const parallelRouting = arg('parallel') === 'true';
 if (arg('parallel') !== undefined && !['true', 'false'].includes(arg('parallel')!)) throw new RangeError('--parallel must be true or false');
+const fluidRouting = arg('fluid') === 'true';
+if (arg('fluid') !== undefined && !['true', 'false'].includes(arg('fluid')!)) throw new RangeError('--fluid must be true or false');
 const adaptiveTurning = arg('adaptive-turning') === 'true';
 if (arg('adaptive-turning') !== undefined && !['true', 'false'].includes(arg('adaptive-turning')!)) throw new RangeError('--adaptive-turning must be true or false');
 if (arg('corridor') !== undefined && !['true', 'false'].includes(arg('corridor')!)) throw new RangeError('--corridor must be true or false');
@@ -86,7 +88,7 @@ async function runWorker(item: Case): Promise<void> {
   try {
     const scale = scaled ? Math.sqrt(item.agents / 1000) : 1;
     const scenario = scaleScenario(scenarios.find(candidate => candidate.id === item.scenario)!, scale);
-    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, corridorRouting, parallelRouting, adaptiveTurning, preset: item.preset, seed, agentCount: item.agents,
+    const simulation = new CrowdSimulation({ ...DEFAULT_CONFIG, corridorRouting, parallelRouting, fluidRouting, adaptiveTurning, preset: item.preset, seed, agentCount: item.agents,
       width: DEFAULT_CONFIG.width * scale, height: DEFAULT_CONFIG.height * scale }, scenario);
     let commandMs = 0;
     const setupCommands: NonNullable<Measurement['setupCommands']> = [];

@@ -12,6 +12,16 @@ const DIRECT_GOAL_DENSITY_FALLOFF = 0.1;
 // target by this span, congestion avoidance must keep the full obstacle-aware
 // static progress instead of escaping through the crowd's rear.
 const STATIC_PROGRESS_DENSITY_SPAN = 0.875;
+// SSOR-preconditioned CG for the fluid drainage potential. The final relative
+// residual is far below the direction resolution of the 24px preview; the
+// intermediate reweighting passes only need a warm start for the next pass.
+const FLUID_SSOR_OMEGA = 1.7;
+const FLUID_RELATIVE_TOLERANCE = 1e-8;
+const FLUID_REWEIGHT_TOLERANCE = 1e-3;
+const FLUID_MAXIMUM_ITERATIONS = 10_000;
+// Six damped passes settle the p=3 directions to about one degree.
+const FLUID_REWEIGHT_PASSES = 6;
+const FLUID_MINIMUM_CONDUCTANCE = 1e-4;
 const OFFSETS = [
   [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
   [-1, -1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [1, 1, Math.SQRT2],
@@ -138,18 +148,26 @@ export class FlowField implements GlobalNavigator {
   readonly directionY: Float64Array;
   /** Backward-compatible alias for the final potential. */
   readonly costs: Float64Array;
+  /** Drainage potential of the fluid field; Infinity outside its reachable cells. */
+  readonly fluidPotential: Float64Array;
   goalCell = -1;
   preserveBlockedGoal = false;
   corridorRouting = false;
   parallelRouting = false;
+  /** Shared drainage directions; takes precedence over parallel and corridor routing. */
+  fluidRouting = false;
   sampledDirectionPreview = false;
   corridorArrivalDistance: number;
   private corridor: CorridorField | null = null;
   private readonly corridorTarget = { x: 0, y: 0 };
-  private corridorPreview: { x: Float64Array; y: Float64Array } | null = null;
+  private sharedPreview: { x: Float64Array; y: Float64Array } | null = null;
+  private fluidReady = false;
+  private readonly fluidTargetSeed: Int32Array;
   /** Shared navigation preview; physical pushing and movement constraints are separate. */
-  get displayDirectionX(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.x : this.directionX; }
-  get displayDirectionY(): Float64Array { return !this.hasDynamicSample && this.corridorPreview ? this.corridorPreview.y : this.directionY; }
+  get displayDirectionX(): Float64Array { return !this.hasDynamicSample && this.sharedPreview ? this.sharedPreview.x : this.directionX; }
+  get displayDirectionY(): Float64Array { return !this.hasDynamicSample && this.sharedPreview ? this.sharedPreview.y : this.directionY; }
+  /** Dynamic congestion routing replaces the fluid field once it has sampled the crowd. */
+  private get fluidActive(): boolean { return this.fluidReady && !this.hasDynamicSample; }
   private goalRegions: readonly Rect[] = [];
   /** Valid seed count per region, for authoring diagnostics (overlap is allowed). */
   readonly regionSeedCounts: number[] = [];
@@ -215,6 +233,8 @@ export class FlowField implements GlobalNavigator {
     this.minimumDirectGoalProgress = new Float64Array(this.cellCount);
     this.staticProgressDrop = new Float64Array(this.cellCount);
     this.minimumDynamicStaticDrop = new Float64Array(this.cellCount);
+    this.fluidPotential = new Float64Array(this.cellCount).fill(Number.POSITIVE_INFINITY);
+    this.fluidTargetSeed = new Int32Array(this.cellCount).fill(-1);
     this.costs = this.dynamicPotential;
     this.heap = new IndexedMinHeap(this.cellCount);
   }
@@ -352,16 +372,17 @@ export class FlowField implements GlobalNavigator {
       if (!this.isSegmentSafe(x, y, goalX, goalY)) { goalX = this.seedX[seed]!; goalY = this.seedY[seed]!; }
     }
     const hasDirectRoute = this.hasLineOfSight(x, y, goalX, goalY);
+    const fluid = this.fluidActive;
+    const arriving = Math.hypot(goalX - x, goalY - y) <= this.corridorArrivalDistance;
     // Portal cuts extend past the obstacles into open space. Following every
     // cut there creates artificial turns and remaps inlet lanes across an entire
     // room. Release those cuts only in a certified clear room-to-goal area (or
     // near arrival), as point LOS alone cuts corners and collapses the lanes.
-    const directApproach = hasDirectRoute && this.corridor && (
-      this.corridor.canApproachDirectly(x, y)
-      || Math.hypot(goalX - x, goalY - y) <= this.corridorArrivalDistance
-    );
+    // The fluid field already converges on the goal and only yields on arrival.
+    const directApproach = hasDirectRoute && (fluid ? arriving
+      : this.corridor && (this.corridor.canApproachDirectly(x, y) || arriving));
     if (this.corridor && !this.hasDynamicSample && !directApproach
-      && (!this.parallelRouting || !this.corridorPreview)) {
+      && (!this.parallelRouting || !this.sharedPreview)) {
       // Anticipate the turn over six cells, then shorten at tight/occluded
       // corners. Keep the shorter horizons and safe portal target as fallbacks.
       for (let attempt = 0; attempt < 5; attempt++) {
@@ -394,7 +415,7 @@ export class FlowField implements GlobalNavigator {
     const index10 = row0 * this.columns + column1;
     const index01 = row1 * this.columns + column0;
     const index11 = row1 * this.columns + column1;
-    const shared = this.parallelRouting && !this.hasDynamicSample ? this.corridorPreview : null;
+    const shared = (this.parallelRouting || fluid) && !this.hasDynamicSample ? this.sharedPreview : null;
     const fieldX = this.sampleStencil(
       shared?.x ?? this.directionX,
       index00, index10, index01, index11,
@@ -492,20 +513,29 @@ export class FlowField implements GlobalNavigator {
     }
     const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
     const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
+    const fluid = this.fluidActive, targets = this.routeTargetSeeds();
     let best = Infinity, seed = -1;
     for (let ny = Math.max(0, row - 1); ny <= Math.min(this.rows - 1, row + 1); ny++) {
       for (let nx = Math.max(0, column - 1); nx <= Math.min(this.columns - 1, column + 1); nx++) {
         const cell = ny * this.columns + nx;
-        if (this.dynamicTargetSeed[cell]! < 0) continue;
+        if (targets[cell]! < 0) continue;
         const cx = Math.min(this.width - EPSILON, (nx + .5) * this.cellSize);
         const cy = Math.min(this.height - EPSILON, (ny + .5) * this.cellSize);
-        const cost = this.dynamicPotential[cell]! + Math.hypot(cx - x, cy - y) / this.cellSize * this.dynamicTraversalCost[cell]!;
+        // A drainage basin is owned by position: keep the body's own cell and
+        // use the most downstream neighbour only from an uncovered fringe.
+        const cost = fluid
+          ? (nx === column && ny === row ? -Infinity : this.fluidPotential[cell]!)
+          : this.dynamicPotential[cell]! + Math.hypot(cx - x, cy - y) / this.cellSize * this.dynamicTraversalCost[cell]!;
         if (cost >= best || !this.isSegmentSafe(x, y, cx, cy)) continue;
         best = cost;
-        seed = this.dynamicTargetSeed[cell]!;
+        seed = targets[cell]!;
       }
     }
     return seed;
+  }
+
+  private routeTargetSeeds(): Int32Array {
+    return this.fluidActive ? this.fluidTargetSeed : this.dynamicTargetSeed;
   }
 
   private buildRegionSeeds(): void {
@@ -583,7 +613,12 @@ export class FlowField implements GlobalNavigator {
 
   private rebuildCorridor(): void {
     this.corridor = null;
-    this.corridorPreview = null;
+    this.sharedPreview = null;
+    this.fluidReady = false;
+    if (this.fluidRouting) {
+      this.rebuildFluidField();
+      return;
+    }
     if (!this.corridorRouting && !this.parallelRouting) {
       if (this.sampledDirectionPreview) this.rebuildDirectionPreview();
       return;
@@ -626,7 +661,236 @@ export class FlowField implements GlobalNavigator {
       this.sampleDirection((column + 0.5) * this.cellSize, (row + 0.5) * this.cellSize, direction);
       preview.x[cell] = direction.x; preview.y[cell] = direction.y;
     }
-    this.corridorPreview = preview;
+    this.sharedPreview = preview;
+  }
+
+  /**
+   * Fluid routing follows a drainage potential instead of room axes: every
+   * reachable cell emits one unit that drains into the goal seeds, with zero
+   * flux through walls (Neumann) and fixed seed values (Dirichlet). Its descent
+   * stays parallel in straight passages, bends on nested arcs around corners
+   * and widens after openings. Plain drainage (constant conductance) lets a
+   * busy stream that enters an open bay spill sideways, even away from the
+   * goal. Conductance proportional to the local slope (a p=3 Laplacian)
+   * flattens the head of busy streams, so they keep heading downstream while
+   * the bends stay smooth. Positive conductances keep the discrete minimum
+   * principle: every unknown cell has a strictly lower 4-neighbour, so descent
+   * cannot stall before a seed. Branches share the flux by width and length
+   * rather than by shortest distance.
+   */
+  private rebuildFluidField(): void {
+    const potential = this.fluidPotential;
+    potential.fill(Number.POSITIVE_INFINITY);
+    this.fluidTargetSeed.fill(-1);
+    const reachable = (cell: number): boolean => this.blocked[cell] === 0 && Number.isFinite(this.staticPotential[cell]);
+    const unknown = new Int32Array(this.cellCount).fill(-1);
+    const cells: number[] = [];
+    for (let cell = 0; cell < this.cellCount; cell++) {
+      if (!reachable(cell)) continue;
+      if (this.goalRegions.length ? this.seedRegion[cell]! >= 0 : cell === this.goalCell) {
+        potential[cell] = this.goalRegions.length ? this.seedCost[cell]! : 0;
+        this.fluidTargetSeed[cell] = cell;
+        continue;
+      }
+      unknown[cell] = cells.length;
+      cells.push(cell);
+    }
+    // Slots: west, north (earlier unknowns) then east, south.
+    const count = cells.length;
+    const adjacent = new Int32Array(count * 4).fill(-1);
+    const neighbors = new Int32Array(count * 4).fill(-1);
+    for (let index = 0; index < count; index++) {
+      const cell = cells[index]!, column = cell % this.columns, row = (cell - column) / this.columns;
+      const slots = [
+        column > 0 ? cell - 1 : -1, row > 0 ? cell - this.columns : -1,
+        column < this.columns - 1 ? cell + 1 : -1, row < this.rows - 1 ? cell + this.columns : -1,
+      ];
+      for (let slot = 0; slot < 4; slot++) {
+        const next = slots[slot]!;
+        if (next < 0 || !reachable(next)) continue;
+        adjacent[index * 4 + slot] = next;
+        neighbors[index * 4 + slot] = unknown[next]!;
+      }
+    }
+    const weights = new Float64Array(count * 4);
+    const diagonal = new Float64Array(count);
+    const rhs = new Float64Array(count);
+    const conductance = new Float64Array(count).fill(1);
+    const slope = new Float64Array(count);
+    const solution = new Float64Array(count);
+    const gradient = { x: 0, y: 0 };
+    for (let pass = 0; pass <= FLUID_REWEIGHT_PASSES && count > 0; pass++) {
+      if (pass > 0) {
+        // Damped reweighting: the geometric mean of old and new conductance
+        // removes the period-two oscillation of plain p=3 reweighting.
+        let mean = 0;
+        for (let index = 0; index < count; index++) {
+          this.fluidGradient(cells[index]!, gradient);
+          slope[index] = Math.hypot(gradient.x, gradient.y);
+          mean += slope[index]!;
+        }
+        mean = Math.max(EPSILON, mean / count);
+        for (let index = 0; index < count; index++) {
+          conductance[index] = Math.sqrt(conductance[index]! * Math.max(FLUID_MINIMUM_CONDUCTANCE, slope[index]! / mean));
+        }
+      }
+      for (let index = 0; index < count; index++) {
+        diagonal[index] = 0;
+        rhs[index] = 1;
+        for (let slot = 0; slot < 4; slot++) {
+          const next = adjacent[index * 4 + slot]!, neighbor = neighbors[index * 4 + slot]!;
+          if (next < 0) { weights[index * 4 + slot] = 0; continue; }
+          const weight = neighbor >= 0 ? (conductance[index]! + conductance[neighbor]!) * 0.5 : conductance[index]!;
+          weights[index * 4 + slot] = neighbor >= 0 ? weight : 0;
+          diagonal[index]! += weight;
+          if (neighbor < 0) rhs[index]! += weight * potential[next]!;
+        }
+      }
+      this.solveFluidPotential(neighbors, weights, diagonal, rhs, solution,
+        pass === FLUID_REWEIGHT_PASSES ? FLUID_RELATIVE_TOLERANCE : FLUID_REWEIGHT_TOLERANCE);
+      for (let index = 0; index < count; index++) potential[cells[index]!] = solution[index]!;
+    }
+
+    if (this.goalRegions.length) {
+      // Each basin keeps the exit its steepest 4-neighbour descent reaches.
+      const order = Int32Array.from(cells).sort((a, b) => potential[a]! - potential[b]! || a - b);
+      for (const cell of order) {
+        const column = cell % this.columns, row = (cell - column) / this.columns;
+        let lowest = potential[cell]!, target = this.staticTargetSeed[cell]!;
+        for (const next of [
+          column > 0 ? cell - 1 : -1, row > 0 ? cell - this.columns : -1,
+          column < this.columns - 1 ? cell + 1 : -1, row < this.rows - 1 ? cell + this.columns : -1,
+        ]) {
+          if (next < 0 || !(potential[next]! < lowest) || this.fluidTargetSeed[next]! < 0) continue;
+          lowest = potential[next]!;
+          target = this.fluidTargetSeed[next]!;
+        }
+        this.fluidTargetSeed[cell] = target;
+      }
+    }
+    this.fluidReady = true;
+
+    const preview = { x: new Float64Array(this.cellCount), y: new Float64Array(this.cellCount) };
+    const lookAhead = this.cellSize * 0.8;
+    const fallback = { x: 0, y: 0 };
+    for (const cell of cells) {
+      const column = cell % this.columns, row = (cell - column) / this.columns;
+      this.fluidGradient(cell, gradient);
+      let directionX = gradient.x, directionY = gradient.y;
+      let length = Math.hypot(directionX, directionY);
+      const x = Math.min(this.width - EPSILON, (column + 0.5) * this.cellSize);
+      const y = Math.min(this.height - EPSILON, (row + 0.5) * this.cellSize);
+      if (length <= EPSILON * Math.max(1, Math.abs(potential[cell]!))) {
+        // An exact split point: leave it along the steepest checked descent.
+        this.sampleSafeDiscreteDirection(x, y, lookAhead, fallback);
+        directionX = fallback.x; directionY = fallback.y; length = Math.hypot(directionX, directionY);
+      }
+      if (length <= EPSILON) continue;
+      directionX /= length; directionY /= length;
+      if (!this.isSegmentSafe(x, y, x + directionX * lookAhead, y + directionY * lookAhead)) {
+        // Wrapping a convex corner can graze it at the cell centre. Turn half
+        // way towards the checked discrete descent before using it outright.
+        this.sampleSafeDiscreteDirection(x, y, lookAhead, fallback);
+        const blendX = directionX + fallback.x, blendY = directionY + fallback.y;
+        const blendLength = Math.hypot(blendX, blendY);
+        if (blendLength > EPSILON
+          && this.isSegmentSafe(x, y, x + blendX / blendLength * lookAhead, y + blendY / blendLength * lookAhead)) {
+          directionX = blendX / blendLength; directionY = blendY / blendLength;
+        } else {
+          directionX = fallback.x; directionY = fallback.y;
+        }
+      }
+      preview.x[cell] = directionX;
+      preview.y[cell] = directionY;
+    }
+    this.sharedPreview = preview;
+  }
+
+  /** Descent vector from central differences; walls and the map edge mirror the cell. */
+  private fluidGradient(cell: number, out: Vec2): void {
+    const potential = this.fluidPotential, value = potential[cell]!;
+    const column = cell % this.columns, row = (cell - column) / this.columns;
+    const sample = (next: number): number => next >= 0 && Number.isFinite(potential[next]) ? potential[next]! : value;
+    out.x = sample(column > 0 ? cell - 1 : -1) - sample(column < this.columns - 1 ? cell + 1 : -1);
+    out.y = sample(row > 0 ? cell - this.columns : -1) - sample(row < this.rows - 1 ? cell + this.columns : -1);
+  }
+
+  /**
+   * Conjugate gradient with a symmetric SSOR preconditioner (row-major sweeps)
+   * for the weighted 5-point system; `solution` is the warm start and result.
+   */
+  private solveFluidPotential(
+    neighbors: Int32Array, weights: Float64Array, diagonal: Float64Array, rhs: Float64Array,
+    solution: Float64Array, tolerance: number,
+  ): void {
+    const count = diagonal.length, omega = FLUID_SSOR_OMEGA;
+    const residual = new Float64Array(count);
+    const preconditioned = new Float64Array(count);
+    const search = new Float64Array(count);
+    const product = new Float64Array(count);
+    const multiply = (input: Float64Array, output: Float64Array): void => {
+      for (let index = 0; index < count; index++) {
+        let value = diagonal[index]! * input[index]!;
+        for (let slot = 0; slot < 4; slot++) {
+          const next = neighbors[index * 4 + slot]!;
+          if (next >= 0) value -= weights[index * 4 + slot]! * input[next]!;
+        }
+        output[index] = value;
+      }
+    };
+    const precondition = (): void => {
+      for (let index = 0; index < count; index++) {
+        let sum = residual[index]!;
+        for (let slot = 0; slot < 2; slot++) {
+          const next = neighbors[index * 4 + slot]!;
+          if (next >= 0) sum += weights[index * 4 + slot]! * preconditioned[next]!;
+        }
+        preconditioned[index] = sum * omega / diagonal[index]!;
+      }
+      for (let index = 0; index < count; index++) {
+        preconditioned[index] = preconditioned[index]! * diagonal[index]! * (2 - omega) / omega;
+      }
+      for (let index = count - 1; index >= 0; index--) {
+        let sum = preconditioned[index]!;
+        for (let slot = 2; slot < 4; slot++) {
+          const next = neighbors[index * 4 + slot]!;
+          if (next >= 0) sum += weights[index * 4 + slot]! * preconditioned[next]!;
+        }
+        preconditioned[index] = sum * omega / diagonal[index]!;
+      }
+    };
+    multiply(solution, product);
+    let rhsNorm = 0, initialNorm = 0;
+    for (let index = 0; index < count; index++) {
+      residual[index] = rhs[index]! - product[index]!;
+      rhsNorm += rhs[index]! * rhs[index]!;
+      initialNorm += residual[index]! * residual[index]!;
+    }
+    const threshold = rhsNorm * tolerance * tolerance;
+    if (initialNorm <= threshold) return;
+    precondition();
+    search.set(preconditioned);
+    let rho = 0;
+    for (let index = 0; index < count; index++) rho += residual[index]! * preconditioned[index]!;
+    for (let iteration = 0; iteration < FLUID_MAXIMUM_ITERATIONS && rho > 0; iteration++) {
+      multiply(search, product);
+      let curvature = 0;
+      for (let index = 0; index < count; index++) curvature += search[index]! * product[index]!;
+      const step = rho / curvature;
+      let residualNorm = 0;
+      for (let index = 0; index < count; index++) {
+        solution[index]! += step * search[index]!;
+        residual[index]! -= step * product[index]!;
+        residualNorm += residual[index]! * residual[index]!;
+      }
+      if (residualNorm <= threshold) break;
+      precondition();
+      let nextRho = 0;
+      for (let index = 0; index < count; index++) nextRho += residual[index]! * preconditioned[index]!;
+      const beta = nextRho / rho;
+      rho = nextRho;
+      for (let index = 0; index < count; index++) search[index] = preconditioned[index]! + beta * search[index]!;
+    }
   }
 
   private hasLineOfSight(startX: number, startY: number, endX: number, endY: number): boolean {
@@ -671,6 +935,8 @@ export class FlowField implements GlobalNavigator {
     const column = clamp(Math.floor(x / this.cellSize), 0, this.columns - 1);
     const row = clamp(Math.floor(y / this.cellSize), 0, this.rows - 1);
     const cell = row * this.columns + column;
+    const fluid = this.fluidActive;
+    const current = this.fluidPotential[cell]!;
     let bestCost = Number.POSITIVE_INFINITY;
     let bestX = 0;
     let bestY = 0;
@@ -682,11 +948,20 @@ export class FlowField implements GlobalNavigator {
         || nextColumn >= this.columns || nextRow >= this.rows
       ) continue;
       const next = nextRow * this.columns + nextColumn;
-      if (
-        this.blocked[next] === 1
-        || !this.preservesStaticProgress(cell, next, dx, dy, movementCost)
-        || this.dynamicPotential[next]! >= bestCost
-      ) continue;
+      if (this.blocked[next] === 1) continue;
+      // The fluid fallback descends its own potential by slope; mixing in the
+      // shortest-path field would flip bodies between branches near walls.
+      let cost: number;
+      if (fluid) {
+        if (Number.isFinite(current) && !(this.fluidPotential[next]! < current)) continue;
+        cost = Number.isFinite(current)
+          ? (this.fluidPotential[next]! - current) / movementCost
+          : this.fluidPotential[next]!;
+      } else {
+        if (!this.preservesStaticProgress(cell, next, dx, dy, movementCost)) continue;
+        cost = this.dynamicPotential[next]!;
+      }
+      if (cost >= bestCost) continue;
       if (dx !== 0 && dy !== 0 && !this.diagonalIsOpen(column, row, nextColumn, nextRow)) continue;
       const scale = dx !== 0 && dy !== 0 ? Math.SQRT1_2 : 1;
       const directionX = dx * scale;
@@ -697,7 +972,7 @@ export class FlowField implements GlobalNavigator {
         x + directionX * lookAhead,
         y + directionY * lookAhead,
       )) continue;
-      bestCost = this.dynamicPotential[next]!;
+      bestCost = cost;
       bestX = directionX;
       bestY = directionY;
     }
@@ -709,6 +984,8 @@ export class FlowField implements GlobalNavigator {
   private sampleLocalEscapeDirection(
     x: number, y: number, column: number, row: number, lookAhead: number, out: Vec2,
   ): void {
+    const fluid = this.fluidActive;
+    const potential = fluid ? this.fluidPotential : this.dynamicPotential;
     let bestCost = Number.POSITIVE_INFINITY;
     // A displaced body may have to step sideways before it can descend the
     // field again. Connect its actual position to reachable local cell centers,
@@ -717,12 +994,12 @@ export class FlowField implements GlobalNavigator {
     for (let ny = Math.max(0, row - 1); ny <= Math.min(this.rows - 1, row + 1); ny++) {
       for (let nx = Math.max(0, column - 1); nx <= Math.min(this.columns - 1, column + 1); nx++) {
         const cell = ny * this.columns + nx;
-        if (this.blocked[cell] === 1 || !Number.isFinite(this.dynamicPotential[cell])) continue;
+        if (this.blocked[cell] === 1 || !Number.isFinite(potential[cell])) continue;
         const dx = (nx + 0.5) * this.cellSize - x;
         const dy = (ny + 0.5) * this.cellSize - y;
         const distance = Math.hypot(dx, dy);
         if (distance <= EPSILON) continue;
-        const cost = this.dynamicPotential[cell]!
+        const cost = fluid ? potential[cell]! : potential[cell]!
           + distance / this.cellSize * this.dynamicTraversalCost[cell]!;
         if (cost >= bestCost) continue;
         const scale = Math.max(1, lookAhead / distance);
@@ -993,10 +1270,11 @@ export class FlowField implements GlobalNavigator {
     if (region >= 0) {
       // Adjacent cells can lead to opposite exits. Do not cancel their arrows
       // across the watershed; interpolate only the chosen destination's side.
-      if (this.seedRegion[this.dynamicTargetSeed[index00]!] !== region) weight00 = 0;
-      if (this.seedRegion[this.dynamicTargetSeed[index10]!] !== region) weight10 = 0;
-      if (this.seedRegion[this.dynamicTargetSeed[index01]!] !== region) weight01 = 0;
-      if (this.seedRegion[this.dynamicTargetSeed[index11]!] !== region) weight11 = 0;
+      const targets = this.routeTargetSeeds();
+      if (this.seedRegion[targets[index00]!] !== region) weight00 = 0;
+      if (this.seedRegion[targets[index10]!] !== region) weight10 = 0;
+      if (this.seedRegion[targets[index01]!] !== region) weight01 = 0;
+      if (this.seedRegion[targets[index11]!] !== region) weight11 = 0;
       const weight = weight00 + weight10 + weight01 + weight11;
       if (weight <= EPSILON) return 0;
       return (buffer[index00]! * weight00 + buffer[index10]! * weight10

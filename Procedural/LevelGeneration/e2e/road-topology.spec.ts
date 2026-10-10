@@ -9,7 +9,7 @@ const documentFor=(roads:Vec3[])=>createDocument([],42,'office',undefined,undefi
 async function load(page:Page,doc:GenerationDocument,name:string){
   await page.locator('#file').setInputFiles({name,mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
   await expect(page.locator('#scene-name')).toHaveText(name);await expect(page.locator('#error')).toBeHidden();
-  await page.locator('[data-camera="top"]').click();await page.locator('#edit-mode').selectOption('road');
+  await page.locator('[data-camera="top"]').click();await page.locator('[data-tool="road"]').click();
 }
 async function save(page:Page){
   const pending=page.waitForEvent('download');await page.locator('#save').click();

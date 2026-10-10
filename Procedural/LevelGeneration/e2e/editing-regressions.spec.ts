@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect,type Page} from '@playwright/test';
 import {createDocument,loadDocument} from '../src/core/document';
 import {box} from '../src/fixtures';
@@ -34,7 +35,7 @@ test('selected building shows only outer edges and role tile UI persists with un
   await page.goto('/');
   const doc=createDocument(box(4,7,3),42,'shop');
   await page.locator('#file').setInputFiles({name:'tiles.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(doc))});
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'building',id:'0,0,0'}));
   await expect(page.locator('canvas')).toHaveAttribute('data-building-outline-segments',String(4*(4+7+3)));
   await page.locator('#facade-tiles summary').click();
   await page.locator('#tile-base').selectOption('D');
@@ -50,10 +51,9 @@ test('selected building shows only outer edges and role tile UI persists with un
   await page.screenshot({path:info.outputPath('facade-tile-settings.png')});
   await page.locator('#tile-reset').click();
   for(const role of ['base','body','corner','crown'])await expect(page.locator(`#tile-${role}`)).toHaveValue('');
-  await page.locator('#edit-mode').selectOption('object');
-  await page.locator('#object-category').selectOption('facility');
+  await page.locator('[data-object="facility"]').click();
   await expect(page.locator('#facility-kind')).toHaveCount(0);
-  await expect(page.locator('#object-tools')).toContainText('발코니');
+  await expect(page.locator('[data-menu="help"]')).toContainText('발코니');
   expect(errors).toEqual([]);
 });
 

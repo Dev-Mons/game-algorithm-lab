@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {generateDocument} from '../src/core/generate-document';
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
@@ -17,9 +18,9 @@ test("current styles, city generation and save/load work together", async ({
   await expect(page.locator("#status")).toHaveText("OK");
   await page.locator(".inspect-details summary").first().click();
   await page.locator("#fixture").selectOption("facade");
-  for(const profile of ['shop','office']){await page.locator('#profile').selectOption(profile);await expect(page.locator('#status')).toHaveText('OK');await page.locator('#face').selectOption('1,1,2|PZ');await expect(page.locator('#facade-info')).toContainText('스타일');}
+  for(const profile of ['shop','office']){await page.locator(`[data-style="${profile}"]`).click();await page.locator('#fixture').selectOption('facade');await expect(page.locator('#status')).toHaveText('OK');await page.locator('#face').selectOption('1,1,2|PZ');await expect(page.locator('#facade-info')).toContainText('스타일');}
   await page.locator("#new").click();
-  await page.locator(".city-tools summary").click();
+  await openMenu(page,"generate");
   await page.locator("#city-layout").selectOption("courtyard");
   await page.locator("#city-generate").click();
   await expect(page.locator("#status")).toHaveText("OK");
@@ -62,7 +63,7 @@ test("current styles, city generation and save/load work together", async ({
     buffer: Buffer.from(JSON.stringify(corrupt)),
   });
   await expect(page.locator("#error")).toContainText("metadata");
-  await page.locator("#retry").click();
+  await openMenu(page,"generate");await page.locator("#retry").click();
   await expect(page.locator("#status")).toHaveText("OK");
   const large = createDocument(
     [[999_999, 0, 999_999]],

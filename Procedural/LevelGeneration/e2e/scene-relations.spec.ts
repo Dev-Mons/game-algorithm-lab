@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect,type Page} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 import {createDocument,loadDocument,replaceGrid,type GenerationDocument} from '../src/core/document';
@@ -16,7 +17,7 @@ async function save(page:Page){
   for await(const chunk of stream!)chunks.push(Buffer.from(chunk));return loadDocument(Buffer.concat(chunks).toString());
 }
 async function inspect(page:Page,id:string){
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'object',id}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'object',id}));
   await page.locator('#plan-inspector summary').filter({hasText:'지지 · 경계 · 도로 관계'}).click();
 }
 const executionCounts=(page:Page)=>page.evaluate(()=>{
@@ -31,7 +32,7 @@ test('relation Inspector and real object deletion keep absolute slots through hi
   await inspect(page,'roof-lights');await expect(page.locator('#plan-inspector')).toContainText('EXPOSED_SURFACE_SUPPORT');
   await expect(page.locator('#plan-inspector')).toContainText('supportOwner');
   await page.screenshot({path:info.outputPath('roof-support-inspector.png')});
-  await page.locator('[data-camera="top"]').click();await page.locator('#edit-mode').selectOption('object');await page.locator('#object-category').selectOption('lighting');
+  await page.locator('[data-camera="top"]').click();await page.locator('[data-object="lighting"]').click();
   const point=await page.evaluate(()=>(window as any).environmentMeasure.point([1,1,1]));await page.mouse.click(point.x,point.y);await page.keyboard.press('q');
   await expect(page.locator('#edit-note')).toContainText('제거 완료');
   const cut=await save(page);expect(cut.sceneInputs.objects.flatMap(o=>o.cells)).toHaveLength(3);

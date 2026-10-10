@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {test,expect,type Page} from '@playwright/test';
 import {Quaternion,Vector3} from 'three';
 import {createDocument} from '../src/core/document';
@@ -57,7 +58,7 @@ test('top-view forward travel follows pitch and focus loss stops held navigation
   const canvas=page.locator('canvas'),start=await pose(page);
   await page.keyboard.down('w');
   await expect.poll(async()=>delta(start.position,(await pose(page)).position).y).toBeLessThan(-.3);
-  await page.locator('#seed').focus();
+  await openMenu(page,'generate');await page.locator('#seed').focus();
   const stopped=await pose(page);
   await page.waitForTimeout(150);
   expect(delta(stopped.position,(await pose(page)).position).length()).toBeLessThan(.00001);

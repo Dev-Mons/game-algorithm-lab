@@ -115,7 +115,7 @@ for(const [label,profile,height] of [['A','shop',7],['C','urban-shop',3]] as con
       await target.locator('canvas').focus();await target.keyboard.press('Escape');
       await target.locator('[data-camera="iso"]').click();
       await target.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-      return target.locator('canvas').screenshot({path:path.join(directory,name),style:'.stage-top,.camera-bar,#selection-status,.stage-bottom{visibility:hidden!important}'});
+      return target.locator('canvas').screenshot({path:path.join(directory,name),style:'.hud,#selection-status,.build-bar,.edit-toast{visibility:hidden!important}'});
     };
     const freshComparison=async(name:string)=>{
       const document:GenerationDocument=await page.evaluate(()=>(window as any).environmentMeasure.snapshot().document);

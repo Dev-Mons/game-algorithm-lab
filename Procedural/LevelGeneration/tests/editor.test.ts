@@ -1,10 +1,11 @@
 import {generateDocument} from '../src/core/generate-document';
 import { expect, it } from "vitest";
-import { DocumentHistory, editBox, extrudeRegion } from "../src/editor";
+import { DocumentHistory, editBox, extrudeRegion, themeNewBuildings } from "../src/editor";
 import {
   createDocument,
   exportDocument,
   profileData,
+  replaceGrid,
 } from "../src/core/document";
 import { generate } from "../src/core/generate";
 
@@ -55,4 +56,12 @@ it("history preserves full documents, branches correctly, skips no-ops and bound
   bounded.commit(c);
   expect(bounded.undo()).toEqual(b);
   expect(bounded.canUndo).toBe(false);
+});
+
+it("build style themes only buildings made entirely of new cells", () => {
+  const before = createDocument([[0, 0, 0], [1, 0, 0]], 42, "office");
+  const grid = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [5, 0, 0], [5, 1, 0]] as [number, number, number][];
+  const next = themeNewBuildings(before.grid, replaceGrid(before, grid), "residential-red");
+  expect(next.buildings.map(b => [b.componentId, b.theme?.id])).toEqual([["0,0,0", undefined], ["5,0,0", "residential-red"]]);
+  expect(themeNewBuildings(before.grid, replaceGrid(before, grid), "office")).toEqual(replaceGrid(before, grid));
 });

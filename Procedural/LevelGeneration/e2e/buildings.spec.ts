@@ -8,12 +8,12 @@ test("click selects whole building, theme preserves volume, Escape hides panel a
   await page.mouse.click(b.x+b.width/2,b.y+b.height/2);
   await expect(page.locator("#building-selection")).toBeVisible();
   await expect(page.locator("canvas")).toHaveAttribute("data-building-id","0,0,0");
-  await page.locator("#building-theme").selectOption("office");
+  await page.locator('[data-style="office"]').click();
   await expect(page.locator("#stats strong").first()).toHaveText("2");
   await page.locator("canvas").focus(); await page.keyboard.press("Control+z");
-  await expect(page.locator("#building-theme")).toHaveValue("shop");
+  await expect(page.locator('[data-style="shop"]')).toHaveClass(/current/);
   await page.keyboard.press("Control+Shift+z");
-  await expect(page.locator("#building-theme")).toHaveValue("office");
+  await expect(page.locator('[data-style="office"]')).toHaveClass(/current/);
   await page.keyboard.press("Escape");
   await expect(page.locator("#building-selection")).toBeHidden();
 });

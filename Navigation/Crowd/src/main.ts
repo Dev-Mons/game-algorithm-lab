@@ -56,7 +56,8 @@ const requestedPaused = params.get('paused') === 'true';
 const config: SimulationConfig = {
   ...DEFAULT_CONFIG,
   corridorRouting: false,
-  parallelRouting: true,
+  parallelRouting: false,
+  fluidRouting: true,
   adaptiveTurning: params.get('adaptiveTurning') !== 'false',
   preset: PRESETS.some(p => p.id === params.get('preset')) ? params.get('preset') as PresetId : 'legacy',
   agentCount: requestedAgents,

@@ -28,6 +28,7 @@ describe('native port contract against the pre-extraction solver', () => {
     run.config.excessSpeedHalfLife = .15;
     run.config.corridorRouting = true;
     run.config.parallelRouting = true;
+    run.config.fluidRouting = true;
     expect(parseCrowdRun(run)).toBe(run);
     run.config.excessSpeedHalfLife = -1;
     expect(() => parseCrowdRun(run)).toThrow(/excessSpeedHalfLife/);
@@ -40,6 +41,9 @@ describe('native port contract against the pre-extraction solver', () => {
     delete invalid.config.corridorRouting;
     invalid.config.parallelRouting = 1;
     expect(() => parseCrowdRun(invalid)).toThrow(/parallelRouting/);
+    delete invalid.config.parallelRouting;
+    invalid.config.fluidRouting = 'true';
+    expect(() => parseCrowdRun(invalid)).toThrow(/fluidRouting/);
   });
   it('preserves the frozen evidence bytes', () => {
     const manifest = JSON.parse(readFileSync(new URL('manifest.json', root), 'utf8')) as { files: Record<string, string> };

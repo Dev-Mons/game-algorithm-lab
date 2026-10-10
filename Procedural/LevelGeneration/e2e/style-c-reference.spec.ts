@@ -27,7 +27,7 @@ test('C low, high and portal references render with complete ownership and savea
         await page.locator('canvas').screenshot({path:`${directory}/${name}-iso.png`});
       }
     }
-    await page.locator('#fixture').selectOption(name);await expect(page.locator('#profile')).toHaveValue('urban-shop');
+    await page.locator('#fixture').selectOption(name);await expect(page.locator('[data-style="urban-shop"]')).toHaveAttribute('aria-pressed','true');
     await expect(page.locator('#status')).toHaveText('OK');
   }
   expect(errors).toEqual([]);

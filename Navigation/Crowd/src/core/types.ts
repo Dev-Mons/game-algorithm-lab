@@ -56,6 +56,8 @@ export interface CrowdConfig {
   corridorRouting?: boolean;
   /** Shared parallel directions cached from geometry; no persistent per-agent lane. */
   parallelRouting?: boolean;
+  /** Shared drainage-potential directions; overrides parallel and corridor routing. */
+  fluidRouting?: boolean;
   /** Keep an obstacle-covered goal cell blocked. Omitted means false for legacy replays. */
   preserveBlockedGoal?: boolean;
   dynamicFlowRebuildInterval: number;

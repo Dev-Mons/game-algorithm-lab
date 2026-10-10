@@ -1,3 +1,4 @@
+import {openMenu} from './hud';
 import {validateStallProof} from '../src/core/parking-stalls';
 import {test,expect} from '@playwright/test';
 // Explicit screenshots below cover normal cases; performance contexts avoid failure capture overhead.
@@ -35,14 +36,14 @@ test('environment pipeline loads inputs and real supported structure; invalid lo
 
 test('parking area drag, source selection and history work with internal defaults',async({page},info)=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
-  await page.locator('#edit-mode').selectOption('parking');await page.locator('[data-camera="top"]').click();
+  await page.locator('[data-tool="parking"]').click();await page.locator('[data-camera="top"]').click();
   const canvas=page.locator('canvas'),b=(await canvas.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2;
   await page.mouse.move(x-70,y-70);await page.mouse.down();await page.mouse.move(x+70,y+70,{steps:5});await page.mouse.up();
   await page.keyboard.press('e');
   const first=await savedDocument(page),area=first.sceneInputs.parkingAreas[0];expect(area.cells.length).toBeGreaterThan(1);
   let counts=JSON.parse((await page.locator('#viewport').getAttribute('data-execution-counts'))!);
   expect(counts.generationCount).toBe(2);expect(counts.viewerSyncCount).toBe(2);expect(counts.historyCommitCount).toBe(1);
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'parking',id:area.id}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'parking',id:area.id}));
   await page.locator('#plan-inspector summary').filter({hasText:'선택 · 탈락 근거'}).click();
   await expect(page.locator('#plan-inspector')).toContainText('NO_ROAD');
   await expect(page.locator('#environment-setting, #environment-value, #environment-apply')).toHaveCount(0);
@@ -135,7 +136,7 @@ test('contextual fixtures render authored clusters and refresh after a road chan
   expect(fixtures.every(p=>p.asset==='fixture.utility-cabinet')).toBe(true);
   expect(fixtures.every(p=>JSON.parse(p.context).accessMode==='service-unverified')).toBe(true);
   expect(new Set(fixtures.map(p=>p.center.map(Math.floor).join(',')))).toEqual(new Set(scene.objects[0].cells.map(c=>c.join(','))));
-  await page.locator('#source-select').selectOption(JSON.stringify({kind:'object',id:'intent'}));
+  await openMenu(page,'inspect');await page.locator('#source-select').selectOption(JSON.stringify({kind:'object',id:'intent'}));
   await page.locator('#plan-inspector summary').filter({hasText:'선택 · 탈락 근거'}).click();
   await expect(page.locator('#plan-inspector')).toContainText('MAINTENANCE_ROUTE_UNVERIFIED');
   await expect(page.locator('#plan-inspector')).toContainText('NO_ROAD');
@@ -170,7 +171,7 @@ test.describe('performance protocol',()=>{
   if(scope!=='all'&&scope!==name)continue;
   const doc=fixtures[name],samples:MeasurementSample[]=[];for(let i=0;i<20;i++){
    const {context,page}=await open();try{const before=structuredClone(doc);if(operation==='road-add')before.sceneInputs.roads=[];const setup=await accept(page,before);quality(setup,name,operation!=='road-add');
-    await page.locator('#edit-mode').selectOption(operation==='area-remove'?'parking':'road');if(operation==='area-remove')await page.locator('#parking-area').selectOption(doc.sceneInputs.parkingAreas[0].id);
+    await page.locator(`[data-tool="${operation==='area-remove'?'parking':'road'}"]`).click();if(operation==='area-remove')await page.locator('#parking-area').selectOption(doc.sceneInputs.parkingAreas[0].id);
     await page.locator('[data-camera="top"]').click();
     const cells=operation==='area-remove'?[[name==='R30'?24:26,0,0],[name==='R30'?29:31,0,name==='R30'?19:27]]:[[0,0,-4],[name==='R30'?29:31,0,-1]];
     const points=await page.evaluate(cells=>cells.map(c=>(window as any).environmentMeasure.point(c)),cells);

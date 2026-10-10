@@ -20,8 +20,15 @@ export interface SkillNode extends EffectDefinition {
   Prerequisites: string[];
   Tags: string[];
   CustomData: string;
+  // Placement-level unlock rules. Omitted fields use unlockDefaults and are not part of the legacy single-table row.
+  PrerequisiteMode?: 'All' | 'Any';
+  RequiredParentRank?: number;
+  RequiredTreePoints?: number;
 }
-export type SkillPreset = Omit<SkillNode, 'SkillId' | 'X' | 'Y' | 'Prerequisites'>;
+export type SkillPreset = Omit<SkillNode, 'SkillId' | 'X' | 'Y' | 'Prerequisites' | UnlockKey>;
+type UnlockKey = typeof unlockKeys[number];
+export type UnlockRule = Required<Pick<SkillNode, UnlockKey>>;
+export interface UnrealExportSettings { treeId: string; contentPath: string }
 
 export interface Project {
   format: 'skill-tree-studio';
@@ -30,12 +37,17 @@ export interface Project {
   nodes: SkillNode[];
   presets?: SkillPreset[];
   effectTargets?: EffectTarget[];
+  unreal?: UnrealExportSettings;
 }
 
 export const DEFAULT_SIZE = 36;
 export const GRID = 24;
 const MAX_NODES = 2000;
 const effectKeys = ['StatId', 'ModifierOp', 'ValuePerRank', 'DescriptionTemplate', 'MaxDescriptionTemplate'] as const;
+const unlockKeys = ['PrerequisiteMode', 'RequiredParentRank', 'RequiredTreePoints'] as const;
+export const unlockDefaults: UnlockRule = { PrerequisiteMode: 'All', RequiredParentRank: 1, RequiredTreePoints: 0 };
+export const unrealIdPattern = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
+export const contentPathPattern = /^\/Game(?:\/[A-Za-z0-9_]+)*$/;
 const keys = ['Name', 'SkillId', 'DisplayName', 'Description', 'X', 'Y', 'Category', 'Icon', 'IconSymbol', 'NodeShape', 'NodeSize', 'NodeColor', 'Cost', 'MaxLevel', 'Prerequisites', 'Tags', 'CustomData', ...effectKeys];
 export const presetFields = ['DisplayName', 'Description', 'Category', 'Icon', 'IconSymbol', 'NodeShape', 'NodeSize', 'NodeColor', 'Cost', 'MaxLevel', 'Tags', 'CustomData', ...effectKeys] as const;
 
@@ -62,7 +74,7 @@ export function validateProject(value: unknown): asserts value is Project {
   const ids = new Set<string>();
   for (const raw of value.nodes) {
     if (!object(raw)) throw new Error('노드 데이터가 객체가 아닙니다.');
-    const extra = Object.keys(raw).filter(key => !keys.includes(key));
+    const extra = Object.keys(raw).filter(key => !keys.includes(key) && !(unlockKeys as readonly string[]).includes(key));
     if (extra.length) throw new Error(`알 수 없는 필드: ${extra.join(', ')}. 추가 정보는 CustomData를 사용하세요.`);
     for (const key of ['Name', 'DisplayName', 'Description', 'Category', 'Icon', 'IconSymbol', 'NodeShape', 'NodeColor', 'CustomData']) {
       if (typeof raw[key] !== 'string') throw new Error(`${key} 필드는 문자열이어야 합니다.`);
@@ -99,6 +111,11 @@ export function validateProject(value: unknown): asserts value is Project {
         throw new Error(`${id}: ${key}는 비어 있지 않은 문자열 배열이어야 합니다.`);
       if (new Set(entries.map(entry => entry.toLowerCase())).size !== entries.length)
         throw new Error(`${id}: ${key}에 중복 값이 있습니다.`);
+    }
+    if (raw.PrerequisiteMode !== undefined && raw.PrerequisiteMode !== 'All' && raw.PrerequisiteMode !== 'Any') throw new Error(`${id}: 선행 조건 방식은 All 또는 Any여야 합니다.`);
+    for (const [key, min] of [['RequiredParentRank', 1], ['RequiredTreePoints', 0]] as const) {
+      if (raw[key] !== undefined && (!Number.isInteger(raw[key]) || (raw[key] as number) < min || (raw[key] as number) > 2147483647))
+        throw new Error(`${id}: ${key}는 ${min} 이상의 int32 정수여야 합니다.`);
     }
     try {
       if (!object(JSON.parse(raw.CustomData as string))) throw new Error();
@@ -137,6 +154,11 @@ export function validateProject(value: unknown): asserts value is Project {
       for (const key of presetFields) if (JSON.stringify(node[key]) !== JSON.stringify(preset[key])) throw new Error(`${node.Name}: ${key}가 프리셋과 다릅니다. 공통 속성은 프리셋에서 수정하세요.`);
     }
   }
+  if (value.unreal !== undefined) {
+    const unreal = value.unreal;
+    if (!object(unreal) || Object.keys(unreal).some(key => key !== 'treeId' && key !== 'contentPath')) throw new Error('언리얼 내보내기 설정이 올바르지 않습니다.');
+    validateUnrealSettings(unreal as unknown as UnrealExportSettings);
+  }
   if (value.effectTargets !== undefined) {
     if (!Array.isArray(value.effectTargets) || value.effectTargets.length > MAX_NODES) throw new Error('효과 대상은 최대 2,000개까지 등록할 수 있습니다.');
     const targetIds = new Set<string>();
@@ -151,6 +173,31 @@ export function validateProject(value: unknown): asserts value is Project {
     for (const item of [...nodes, ...((value.presets ?? []) as SkillPreset[])]) {
       if (item.StatId && !targetIds.has(item.StatId.toLowerCase())) throw new Error(`${item.Name}: 등록되지 않은 효과 대상 ${item.StatId}입니다.`);
     }
+  }
+}
+
+export function validateUnrealSettings(settings: UnrealExportSettings) {
+  if (typeof settings.treeId !== 'string' || !unrealIdPattern.test(settings.treeId) || settings.treeId.toLowerCase() === 'none')
+    throw new Error('트리 ID는 영문/밑줄로 시작하는 1~64자 영문·숫자·밑줄이어야 합니다. 예: MachineGun');
+  if (typeof settings.contentPath !== 'string' || !contentPathPattern.test(settings.contentPath) || settings.contentPath.length > 200)
+    throw new Error('콘텐츠 폴더는 /Game으로 시작하는 영문·숫자·밑줄 경로여야 합니다. 예: /Game/SkillTree/Data');
+}
+
+export function unrealSettings(project: Project): UnrealExportSettings {
+  return project.unreal ?? { treeId: 'SkillTree', contentPath: '/Game/SkillTree/Data' };
+}
+
+export function unlockRule(node: SkillNode): UnlockRule {
+  return { PrerequisiteMode: node.PrerequisiteMode ?? unlockDefaults.PrerequisiteMode,
+    RequiredParentRank: node.RequiredParentRank ?? unlockDefaults.RequiredParentRank,
+    RequiredTreePoints: node.RequiredTreePoints ?? unlockDefaults.RequiredTreePoints };
+}
+
+// Default values are omitted so untouched placements keep their previous project JSON.
+export function setUnlockRule(node: SkillNode, rule: UnlockRule) {
+  for (const key of unlockKeys) {
+    if (rule[key] === unlockDefaults[key]) delete node[key];
+    else Object.assign(node, { [key]: rule[key] });
   }
 }
 
@@ -298,6 +345,7 @@ export class History {
 
 export function machineGunProject(): Project {
   const project = createProject('머신건 스킬 트리');
+  project.unreal = { treeId: 'MachineGun', contentPath: '/Game/SkillTree/Data' };
   const definitions: [string, string, string, number, number, number, string[]][] = [
     ['MachineGunDamage', '머신건 공격력 증가', 'machine-gun', 0, 120, 5, []],
     ['MachineGunFireRate', '머신건 발사 속도 증가', 'machine-gun-magazine', 192, 24, 5, ['MachineGunDamage']],
@@ -321,6 +369,7 @@ export function machineGunProject(): Project {
 
 export function demoProject(): Project {
   const project = createProject('아케인 아틀라스');
+  project.unreal = { treeId: 'ArcaneAtlas', contentPath: '/Game/SkillTree/Data' };
   const definitions: [string, string, string, number, number, string[], number][] = [
     ['ArcaneRoot', '마력의 근원', '기본', 0, 0, [], 1],
     ['Flame', '화염구', '화염', 144, -144, ['Mana'], 3],

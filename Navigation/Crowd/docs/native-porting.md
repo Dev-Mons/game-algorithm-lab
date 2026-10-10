@@ -92,6 +92,10 @@ true에서는 [통로 안내](architecture.md#경로-안내)의 공유 영역 �
 `config.parallelRouting`은 선택 boolean이며 웹은 true를 사용합니다. 생략/false는 기존 계산을 보존합니다.
 true에서는 [공유 평행 방향장](architecture.md#경로-안내)을 반경별로 캐시하고 현재 위치에서 샘플합니다.
 `corridorRouting`보다 우선하며 객체별 좌우 위치·분기 기억을 사용하지 않습니다. 동적 비용 안내는 계속 우선합니다.
+`config.fluidRouting`도 선택 boolean이며 현재 웹은 이 값을 true로 사용합니다. 생략/false는 기존 계산을 보존합니다.
+true에서는 [공유 유체 방향장](architecture.md#경로-안내)의 p=3 배수 포텐셜·감쇠 재가중·하강 방향·다중 출구 소속과
+점 목표의 최소 접근 속도를 재구현해야 하며, `parallelRouting`·`corridorRouting`보다 우선합니다. 추가 누적 상태는 없습니다.
+반복 해법의 부동소수 순서가 달라지면 방향이 미세하게 달라질 수 있으므로 비트 일치 대신 방향 각도 오차로 비교합니다.
 
 ## 외력 입력
 
